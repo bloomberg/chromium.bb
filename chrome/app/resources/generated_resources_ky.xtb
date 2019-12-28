@@ -3128,7 +3128,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5496587651328244253">Уюштуруу</translation>
 <translation id="5499313591153584299">Бул файлдын компьютериңизге зыяны тийип калышы мүмкүн.</translation>
 <translation id="5502500733115278303">Firefox'тон импорттолгон</translation>
-<translation id="5505264765875738116">Сайттар билдирмелери жөнөтүүнү сурана алышпайт</translation>
+<translation id="5505264765875738116">Сайттар билдирмелерди жөнөтүүнү сурана алышпайт</translation>
 <translation id="5505307013568720083">Сыя түгөндү</translation>
 <translation id="5507756662695126555">Баш тартпастык</translation>
 <translation id="5509693895992845810">&amp;Төмөнкүдөй сактоо…</translation>
@@ -3679,7 +3679,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" /> ичинен <ph name="NETWORK_INDEX" />-тармак, <ph name="PHONE_NAME" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" />%, Телефондун батареясы <ph name="BATTERY_STATUS" />%, Туташуу</translation>
 <translation id="6268252012308737255"><ph name="APP" /> менен ачуу</translation>
 <translation id="6268718011101775129">NFC</translation>
-<translation id="6270391203985052864">Сайттар билдирмелери жөнөтүүнү сурана алышат</translation>
+<translation id="6270391203985052864">Сайттар билдирмелерди жөнөтүүнү сурана алышат</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />Тутум менен колдонмо жөнүндө маалымат<ph name="END_LINK1" /> жана <ph name="BEGIN_LINK2" />чендер<ph name="END_LINK2" /> жөнөтүлсүн</translation>
 <translation id="6272643420381259437">Плагин жүктөлүп алынып жатканда ката (<ph name="ERROR" />) кетти</translation>
 <translation id="6273677812470008672">Сапат</translation>

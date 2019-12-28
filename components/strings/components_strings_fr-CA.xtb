@@ -325,7 +325,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />d'exécuter Network Diagnostics<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Traduire cette page</translation>
 <translation id="2479410451996844060">URL de recherche non valide</translation>
-<translation id="2482370039860827034">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome vous recommande de visiter <ph name="WEBSITE_1" /> et <ph name="WEBSITE_2" />, ainsi que tout autre site sur lesquels vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
+<translation id="2482370039860827034">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome vous recommande de visiter <ph name="WEBSITE_1" /> et <ph name="WEBSITE_2" />, ainsi que tout autre site sur lequel vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="248348093745724435">Politiques applicables à la machine</translation>
 <translation id="2491120439723279231">Le certificat du serveur contient des erreurs.</translation>
@@ -338,7 +338,7 @@
 <translation id="2505268675989099013">Protéger le compte</translation>
 <translation id="2515629240566999685">De vérifier le signal dans votre zone</translation>
 <translation id="2521385132275182522">Agrafe en bas à droite</translation>
-<translation id="2521483867890026383">Vous venez d'entrer votre mot de passe sur un site trompeur. Chromium vous recommande de visiter <ph name="WEBSITE_1" /> et <ph name="WEBSITE_2" />, ainsi que tout autre site sur lesquels vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
+<translation id="2521483867890026383">Vous venez d'entrer votre mot de passe sur un site trompeur. Chromium vous recommande de visiter <ph name="WEBSITE_1" /> et <ph name="WEBSITE_2" />, ainsi que tout autre site sur lequel vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
 <translation id="2523886232349826891">Carte enregistrée sur cet appareil uniquement</translation>
 <translation id="2524461107774643265">Ajouter plus de renseignements</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{et 1 autre}one{et # autre}other{et # autres}}</translation>
@@ -593,7 +593,7 @@
 <translation id="3828924085048779000">La phrase de passe est obligatoire.</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> a installé des extensions offrant des fonctions supplémentaires. Les extensions ont accès à certaines de vos données.</translation>
 <translation id="3832522519263485449">Perforation multiple à gauche</translation>
-<translation id="3838154488026099170">Vous venez d'entrer votre mot de passe sur un site trompeur. Chromium vous recommande de visiter <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" />, ainsi que tout autre site sur lesquels vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
+<translation id="3838154488026099170">Vous venez d'entrer votre mot de passe sur un site trompeur. Chromium vous recommande de visiter <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" />, ainsi que tout autre site sur lequel vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3858027520442213535">Mettre à jour la date et l'heure</translation>
 <translation id="3884278016824448484">Identifiant de périphérique en conflit</translation>
@@ -631,7 +631,7 @@
 <translation id="4072486802667267160">Une erreur s'est produite lors du traitement de votre commande. Veuillez réessayer.</translation>
 <translation id="4075732493274867456">Le client et le serveur ne prennent pas en charge une version habituelle du protocole SSL et de la suite de chiffrement.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome vous recommande de visiter <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" />, ainsi que tout autre site sur lesquels vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
+<translation id="4077092919748553596">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome vous recommande de visiter <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> et <ph name="WEBSITE_3" />, ainsi que tout autre site sur lequel vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
 <translation id="4079302484614802869">La configuration du mandataire est réglée à l'utilisation d'une adresse URL de script .pac, et non des serveurs mandataires fixes.</translation>
 <translation id="4082393374666368382">Paramètres - Gestion</translation>
 <translation id="4098354747657067197">Vous naviguez vers un site Web trompeur</translation>
@@ -1473,7 +1473,7 @@ Détails supplémentaires :
 <translation id="8105368624971345109">Désactiver</translation>
 <translation id="8118489163946903409">Mode de paiement</translation>
 <translation id="8127301229239896662">« <ph name="SOFTWARE_NAME" /> » n'a pas été correctement installé sur votre ordinateur ou votre réseau. Demandez à votre administrateur informatique de résoudre ce problème.</translation>
-<translation id="8128526133099929547">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome vous recommande de visiter <ph name="WEBSITE_1" />, ainsi que tout autre site sur lesquels vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
+<translation id="8128526133099929547">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome vous recommande de visiter <ph name="WEBSITE_1" />, ainsi que tout autre site sur lequel vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8149426793427495338">Votre ordinateur s'est mis en veille.</translation>
 <translation id="8150722005171944719">Le fichier à l'adresse <ph name="URL" /> n'est pas lisible. Il est possible qu'il ait été supprimé ou déplacé, ou que les autorisations associées à ce fichier empêchent d'y accéder.</translation>
@@ -1491,7 +1491,7 @@ Détails supplémentaires :
 <translation id="8218327578424803826">Emplacement attribué :</translation>
 <translation id="8220146938470311105">Enveloppe C7/C6</translation>
 <translation id="8220639454292072926">Rapports d'entreprise</translation>
-<translation id="8221250263817408492">Vous venez d'entrer votre mot de passe sur un site trompeur. Chromium vous recommande de visiter <ph name="WEBSITE_1" />, ainsi que tout autre site sur lesquels vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
+<translation id="8221250263817408492">Vous venez d'entrer votre mot de passe sur un site trompeur. Chromium vous recommande de visiter <ph name="WEBSITE_1" />, ainsi que tout autre site sur lequel vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
 <translation id="8225771182978767009">La personne qui a configuré cet ordinateur a choisi de bloquer ce site.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Ouvrir la page dans un nouvel onglet de navigation privée</translation>

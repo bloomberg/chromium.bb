@@ -1024,7 +1024,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2445484935443597917">Crear un novo perfil</translation>
 <translation id="2446585455334014596"><ph name="APP_NAME" /> quere verificar a túa identidade</translation>
 <translation id="2448312741937722512">Tipo</translation>
-<translation id="2448734521821581858">As cookies son ficheiros creados polos sitios web e poden ser de dous tipos: propias ou de terceiros. As propias son as que crean os sitios que visitas. Neste caso, o sitio en cuestión aparece na barra de enderezos. As de terceiros son as que crean outros sitios. Parte do contido que ves nos sitios que visitas, como anuncios ou imaxes, pertence a eses outros sitios.</translation>
+<translation id="2448734521821581858">As cookies son ficheiros creados polos sitios web e poden ser de dous tipos: propias ou de terceiros. As propias son as que crean os sitios que visitas. Neste caso, o sitio en cuestión aparece na barra de enderezos. As de terceiros son as que crean outros sitios. Parte do contido que ves nos sitios que visitas, como anuncios ou imaxes, pertence a esoutros sitios.</translation>
 <translation id="2450223707519584812">Non poderás engadir usuarios porque faltan as claves da API de Google. Consulta <ph name="DETAILS_URL" /> para obter máis información.</translation>
 <translation id="2450849356604136918">non hai visualizacións activas</translation>
 <translation id="2451298179137331965">2x</translation>
@@ -4104,7 +4104,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6920989436227028121">Abrir como pestana normal</translation>
 <translation id="6921104647315081813">Borrar actividades</translation>
 <translation id="692114467174262153">Non se puido abrir <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
-<translation id="6922128026973287222">Garda datos e navega máis rápido co Economizador de datos de Google. Fai clic para obter máis información.</translation>
+<translation id="6922128026973287222">Garda datos e navega máis rápido co aforro de datos de Google. Fai clic para obter máis información.</translation>
 <translation id="6922745772873733498">Introduce un PIN para poder imprimir</translation>
 <translation id="6923132443355966645">Desprazar/facer clic</translation>
 <translation id="6923633482430812883">Produciuse un erro ao montar o sistema compartido. Comproba que o servidor de ficheiros ao que te conectas sexa compatible con SMB versión 2 ou posteriores.</translation>

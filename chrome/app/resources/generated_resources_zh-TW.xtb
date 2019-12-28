@@ -3126,7 +3126,7 @@
 <translation id="5496587651328244253">整理</translation>
 <translation id="5499313591153584299">這個檔案可能對你的電腦有害。</translation>
 <translation id="5502500733115278303">從 Firefox 匯入的書籤</translation>
-<translation id="5505264765875738116">不允許網站要求傳送通知給你</translation>
+<translation id="5505264765875738116">網站無法要求傳送通知給你</translation>
 <translation id="5505307013568720083">墨水已用盡</translation>
 <translation id="5507756662695126555">不可否認性</translation>
 <translation id="5509693895992845810">另存為(&amp;A)...</translation>
@@ -3623,7 +3623,7 @@
 <translation id="6196640612572343990">封鎖第三方 Cookie</translation>
 <translation id="6196854373336333322">您的 Proxy 設定已受到擴充功能「<ph name="EXTENSION_NAME" />」控制，該擴充功能可變更、中斷、或監視您在網路上的行為。如果您不確定這項變更的發生原因，建議您停用該擴充功能。</translation>
 <translation id="6198102561359457428">登出然後再次登入...</translation>
-<translation id="6198252989419008588">變更 PIN</translation>
+<translation id="6198252989419008588">變更 PIN 碼</translation>
 <translation id="6202304368170870640">你可以使用 PIN 碼登入裝置，或將裝置解鎖。</translation>
 <translation id="6206311232642889873">複製圖片(&amp;Y)</translation>
 <translation id="6207200176136643843">重設為預設縮放等級</translation>
@@ -3868,7 +3868,7 @@
 <translation id="6555810572223193255">目前無法執行清理作業</translation>
 <translation id="6556866813142980365">重做</translation>
 <translation id="6557290421156335491">我的捷徑</translation>
-<translation id="6561560012278703671">使用低擾模式 (禁止網站顯示通知，以免干擾)</translation>
+<translation id="6561560012278703671">使用低擾式通知 (禁止網站顯示通知，以免干擾)</translation>
 <translation id="6561726789132298588">Enter 鍵</translation>
 <translation id="656293578423618167">檔案路徑或檔案名稱過長。請縮短檔案名稱或選擇其他儲存位置。</translation>
 <translation id="6563469144985748109">你的管理員尚未核准這個網站</translation>
@@ -5252,7 +5252,7 @@
 <translation id="8546186510985480118">裝置空間即將用盡</translation>
 <translation id="8546306075665861288">圖片快取</translation>
 <translation id="8546541260734613940">[*.]example.com</translation>
-<translation id="854655314928502177">Web Proxy Auto Discovery 網址：</translation>
+<translation id="854655314928502177">網路 Proxy 自動探索網址：</translation>
 <translation id="8546930481464505581">自訂 Touch Bar</translation>
 <translation id="8547013269961688403">啟用全螢幕放大鏡</translation>
 <translation id="85486688517848470">按住搜尋鍵即可切換最上排按鍵的行為</translation>

@@ -325,7 +325,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />執行網路診斷<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">翻譯這個網頁</translation>
 <translation id="2479410451996844060">無效的搜尋網址。</translation>
-<translation id="2482370039860827034">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和使用這個密碼的其他網站變更密碼。</translation>
+<translation id="2482370039860827034">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="248348093745724435">裝置政策</translation>
 <translation id="2491120439723279231">伺服器憑證含有錯誤。</translation>
@@ -338,7 +338,7 @@
 <translation id="2505268675989099013">保護帳戶</translation>
 <translation id="2515629240566999685">檢查所在位置的網路訊號</translation>
 <translation id="2521385132275182522">釘裝 (右下方)</translation>
-<translation id="2521483867890026383">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和使用這個密碼的其他網站變更密碼。</translation>
+<translation id="2521483867890026383">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="2523886232349826891">僅儲存在這部裝置</translation>
 <translation id="2524461107774643265">新增詳細資訊</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{和另外 1 個網域}other{和另外 # 個網域}}</translation>
@@ -593,7 +593,7 @@
 <translation id="3828924085048779000">通關密語欄位不得留空。</translation>
 <translation id="3831915413245941253"><ph name="ENROLLMENT_DOMAIN" /> 的管理員已安裝支援額外功能的擴充功能。這些擴充功能可存取你的部分資料。</translation>
 <translation id="3832522519263485449">多孔 (左側)</translation>
-<translation id="3838154488026099170">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" />，以及使用這個密碼的其他網站變更密碼。</translation>
+<translation id="3838154488026099170">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" />，以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3858027520442213535">更新日期和時間</translation>
 <translation id="3884278016824448484">裝置識別碼發生衝突</translation>
@@ -631,7 +631,7 @@
 <translation id="4072486802667267160">處理你的訂單時發生錯誤，請再試一次。</translation>
 <translation id="4075732493274867456">用戶端和伺服器不支援一般 SSL 通訊協定版本或加密套件。</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" />，以及使用這個密碼的其他網站變更密碼。</translation>
+<translation id="4077092919748553596">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" />，以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="4079302484614802869">Proxy 設定已設為使用 .pac 指令碼網址，而非固定的 Proxy 伺服器。</translation>
 <translation id="4082393374666368382">設定 - 管理</translation>
 <translation id="4098354747657067197">你要瀏覽的是詐騙網站</translation>
@@ -1473,7 +1473,7 @@
 <translation id="8105368624971345109">關閉</translation>
 <translation id="8118489163946903409">付款方式</translation>
 <translation id="8127301229239896662">「<ph name="SOFTWARE_NAME" />」未正確安裝在電腦或網路上。請通知 IT 管理員解決這個問題。</translation>
-<translation id="8128526133099929547">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" /> 和使用這個密碼的其他網站變更密碼。</translation>
+<translation id="8128526133099929547">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" /> 以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8149426793427495338">您的電腦已進入睡眠模式。</translation>
 <translation id="8150722005171944719">無法讀取位於 <ph name="URL" /> 的檔案。這個檔案可能已遭移除或移動位置，或者檔案權限為禁止存取。</translation>
@@ -1491,7 +1491,7 @@
 <translation id="8218327578424803826">指派的位置：</translation>
 <translation id="8220146938470311105">C7/C6 (信封)</translation>
 <translation id="8220639454292072926">企業報告</translation>
-<translation id="8221250263817408492">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" /> 和使用這個密碼的其他網站變更密碼。</translation>
+<translation id="8221250263817408492">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" /> 以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="8225771182978767009">設定這部電腦的使用者選擇封鎖這個網站。</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">在新的無痕式分頁中開啟網頁</translation>

@@ -3122,7 +3122,7 @@
 <translation id="5496587651328244253">ଆୟୋଜିତ</translation>
 <translation id="5499313591153584299">ଏହି ଫାଇଲ୍ ଆପଣଙ୍କର କମ୍ପ୍ୟୁଟର୍ ପାଇଁ କ୍ଷତିକାରକ ହୋଇପାରେ।</translation>
 <translation id="5502500733115278303">Firefox ରୁ ଆମଦାନି କରାଗଲା</translation>
-<translation id="5505264765875738116">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପଠାଇବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକ କହିପାରିବେ ନାହିଁ</translation>
+<translation id="5505264765875738116">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପଠାଇବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକ ପଚାରିପାରିବେ ନାହିଁ</translation>
 <translation id="5505307013568720083">ସ୍ୟାହୀ ଶେଷ ହୋଇଯାଇଛି</translation>
 <translation id="5507756662695126555">ସ୍ୱୀକାର କରିବା</translation>
 <translation id="5509693895992845810">ଏହି &amp;ରୂପେ ସେଭ୍ କରନ୍ତୁ...</translation>
@@ -3673,7 +3673,7 @@
 <translation id="6267547857941397424"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="PHONE_NAME" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ଫୋନ୍‌ ବ୍ୟାଟେରୀ <ph name="BATTERY_STATUS" />%, ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="6268252012308737255"><ph name="APP" />ରେ ଖୋଲନ୍ତୁ</translation>
 <translation id="6268718011101775129">NFC</translation>
-<translation id="6270391203985052864">ସାଇଟ୍‌ଗୁଡ଼ିକ ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପଠାଇବାକୁ କହିପାରନ୍ତି</translation>
+<translation id="6270391203985052864">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକୁ ପଠାଇବାକୁ ସାଇଟ୍‌ଗୁଡ଼ିକ ପଚାରିପାରିବେ</translation>
 <translation id="6270770586500173387"><ph name="BEGIN_LINK1" />ସିଷ୍ଟମ୍‌ ଏବଂ ଆପ୍‌ ସୂଚନା <ph name="END_LINK1" /> ଏବଂ <ph name="BEGIN_LINK2" />ମେଟ୍ରିକ୍ସ<ph name="END_LINK2" /> ପଠାନ୍ତୁ</translation>
 <translation id="6272643420381259437">ପ୍ଲଗ୍‌ଇନ୍ ଡାଉନ୍‌ଲୋଡ୍ କରିବା ସମୟରେ ଏକ ତ୍ରୁଟି (<ph name="ERROR" />) ଦେଖାଯାଇଥିଲା</translation>
 <translation id="6273677812470008672">ଗୁଣବତ୍ତା</translation>
@@ -3865,7 +3865,7 @@ Google Chrome ଆପଣଙ୍କ ମୋବାଇଲ୍ ଡାଟା ବ୍ୟବ
 <translation id="6555810572223193255">ବର୍ତ୍ତମାନ ’କ୍ଲିନ୍‍ଅପ୍’ ଉପଲବ୍ଧ ନାହିଁ</translation>
 <translation id="6556866813142980365">ରି-ଡୁ କରନ୍ତୁ</translation>
 <translation id="6557290421156335491">ମୋର ସର୍ଟକଟ୍‌ଗୁଡ଼ିକ</translation>
-<translation id="6561560012278703671">’କ୍ୱାଇଟର୍ ମେସେଜିଂ’ ବ୍ୟବହାର କରନ୍ତୁ (ଆପଣଙ୍କୁ ବାଧା ଦେବାରୁ ବିଜ୍ଞପ୍ତି ପ୍ରମ୍ପ୍ଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ)</translation>
+<translation id="6561560012278703671">’କ୍ୱାଇଟର୍ ମେସେଜିଂ’ ବ୍ୟବହାର କରନ୍ତୁ (ଆପଣଙ୍କୁ ବାଧା ଦେବାରୁ ବିଜ୍ଞପ୍ତି ପ୍ରମ୍ପ୍ଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରେ)</translation>
 <translation id="6561726789132298588">ଏଣ୍ଟର୍</translation>
 <translation id="656293578423618167">ଫାଇଲ୍‌ର ପାଥ୍‍ କିମ୍ବା ନାମ ବହୁତ ଲମ୍ବା ଅଟେ।  ଦୟାକରି ଛୋଟ ନାମରେ କିମ୍ବା ଅନ୍ୟ ଏକ ଲୋକେସନ୍‌ରେ ସେଭ୍‌ କରନ୍ତୁ।</translation>
 <translation id="6563469144985748109">ଏପର୍ଯ୍ୟନ୍ତସୁଦ୍ଧା ଆପଣଙ୍କର ପରିଚାଳକ ଏହାକୁ ଅନୁମୋଦିତ କରିନାହାନ୍ତି</translation>

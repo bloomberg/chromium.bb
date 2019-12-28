@@ -716,7 +716,7 @@
 <translation id="4356973930735388585">Baliteke webgune honetako erasotzaileak ordenagailuan programa arriskutsuak instalatzen saiatzea bertako informazioa (besteak beste, argazkiak, pasahitzak, mezuak eta kreditu-txartelak) lapurtzeko edo ezabatzeko.</translation>
 <translation id="4358059973562876591">Baliteke zehaztu dituzun txantiloiak ez aplikatzea, DnsOverHttpsMode gidalerroaren errore bat dela eta.</translation>
 <translation id="4358461427845829800">Kudeatu ordainketa-metodoak…</translation>
-<translation id="4359160567981085931">Webgune engainagarri batean idatzi duzu pasahitza. Baliteke Chrome-k laguntzea. Pasahitza aldatzeko eta Google-ri jakinarazteko kontua arriskuan egon daitekeela, egin klik Babestu kontua botoian.</translation>
+<translation id="4359160567981085931">Webgune engainagarri batean idatzi duzu pasahitza. Chrome-k lagundu egin diezazuke. Pasahitza aldatzeko eta Google-ri agian kontua arriskuan dagoela jakinarazteko, egin klik Babestu kontua botoian.</translation>
 <translation id="4367563149485757821">Number-12 (gutun-azala)</translation>
 <translation id="437058704415269440">Kontuaren saldoa</translation>
 <translation id="4372516964750095882">Fanfold-Us</translation>
@@ -1461,7 +1461,7 @@ Xehetasun gehiago:
 <translation id="8042918947222776840">Aukeratu jasotze-metodoa</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" ez dago behar bezala konfiguratuta. "<ph name="SOFTWARE_NAME" />" desinstalatuta konpondu ohi da arazo hori. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8066955247577885446">Arazoren bat izan da.</translation>
-<translation id="8067872629359326442">Webgune engainagarri batean idatzi duzu pasahitza. Baliteke Chromium-ek laguntzea. Pasahitza aldatzeko eta Google-ri jakinarazteko kontua arriskuan egon daitekeela, egin klik Babestu kontua botoian.</translation>
+<translation id="8067872629359326442">Webgune engainagarri batean idatzi duzu pasahitza. Chromium-ek lagundu egin diezazuke. Pasahitza aldatzeko eta Google-ri agian kontua arriskuan dagoela jakinarazteko, egin klik Babestu kontua botoian.</translation>
 <translation id="8074253406171541171">10x13 (gutun-azala)</translation>
 <translation id="8078141288243656252">Ezin da oharpenik egin dokumentua biratuta dagoenean</translation>
 <translation id="8079031581361219619">Webgunea berriz kargatu nahi duzu?</translation>

@@ -325,7 +325,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Kjør Nettverksdiagnose<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Oversett denne siden</translation>
 <translation id="2479410451996844060">Ugyldig nettadresse for søk.</translation>
-<translation id="2482370039860827034">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler at du går til <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" /> , samt andre nettsteder der du bruker dette passordet, og bytter det nå.</translation>
+<translation id="2482370039860827034">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chrome anbefaler at du går til <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" />, samt andre nettsteder der du bruker dette passordet, og bytter det nå.</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="248348093745724435">Maskininnstillinger</translation>
 <translation id="2491120439723279231">Tjenerens sertifikat inneholder feil.</translation>
@@ -338,7 +338,7 @@
 <translation id="2505268675989099013">Beskytt kontoen</translation>
 <translation id="2515629240566999685">Sjekk signalet i området ditt</translation>
 <translation id="2521385132275182522">Stift nede til høyre</translation>
-<translation id="2521483867890026383">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" /> , samt andre nettsteder der du bruker dette passordet, og bytter det nå.</translation>
+<translation id="2521483867890026383">Du har nettopp skrevet inn passordet ditt på et villedende nettsted. Chromium anbefaler at du går til <ph name="WEBSITE_1" /> og <ph name="WEBSITE_2" />, samt andre nettsteder der du bruker dette passordet, og bytter det nå.</translation>
 <translation id="2523886232349826891">Kun lagret på denne enheten</translation>
 <translation id="2524461107774643265">Legg til mer informasjon</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{og 1 til}other{og # til}}</translation>

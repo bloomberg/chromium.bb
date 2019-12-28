@@ -325,7 +325,7 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Pokrenuti dijagnostiku mreže<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">Prevedi ovu stranicu</translation>
 <translation id="2479410451996844060">Nevažeći URL za pretraživanje.</translation>
-<translation id="2482370039860827034">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /> te na druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
+<translation id="2482370039860827034">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /> te druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
 <translation id="2482878487686419369">Obavještenja</translation>
 <translation id="248348093745724435">Pravila uređaja</translation>
 <translation id="2491120439723279231">Potvrda servera sadrži greške.</translation>
@@ -338,7 +338,7 @@
 <translation id="2505268675989099013">Zaštitite račun</translation>
 <translation id="2515629240566999685">Provjeriti signal u svojoj oblasti</translation>
 <translation id="2521385132275182522">Spajanje u donjem desnom uglu</translation>
-<translation id="2521483867890026383">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chromium preporučuje da odete na <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /> te na druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
+<translation id="2521483867890026383">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chromium preporučuje da odete na <ph name="WEBSITE_1" /> i <ph name="WEBSITE_2" /> te druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
 <translation id="2523886232349826891">Sačuvano isključivo na ovom uređaju</translation>
 <translation id="2524461107774643265">Dodajte više informacija</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{i još 1}one{i još #}few{i još #}other{i još #}}</translation>
@@ -646,7 +646,7 @@
 <translation id="4072486802667267160">Došlo je do greške prilikom obrade vaše narudžbe. Pokušajte ponovo.</translation>
 <translation id="4075732493274867456">Klijent i server ne podržavaju verziju zajedničkog SSL protokola ili paket za šifriranje.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /> te na druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
+<translation id="4077092919748553596">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i <ph name="WEBSITE_3" /> te druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
 <translation id="4079302484614802869">Konfiguracija proxy poslužitelja postavljena je za upotrebu URL-a .pac skripte, a ne fiksnih proxy poslužitelja.</translation>
 <translation id="4082393374666368382">Postavke – Upravljanje</translation>
 <translation id="4098354747657067197">Pred vama je obmanjujuća web lokacija</translation>
@@ -1489,7 +1489,7 @@ Dodatni detalji:
 <translation id="8105368624971345109">Isključi</translation>
 <translation id="8118489163946903409">Način plaćanja</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />" nije pravilno instaliran na vaš računar ili mrežu. Zamolite IT administratora da riješi taj problem.</translation>
-<translation id="8128526133099929547">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" /> te na druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
+<translation id="8128526133099929547">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chrome preporučuje da odete na <ph name="WEBSITE_1" /> i druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8149426793427495338">Računar je u stanju mirovanja.</translation>
 <translation id="8150722005171944719">Fajl na URL-u <ph name="URL" /> nije čitljiv.  Možda je uklonjen, premješten ili odobrenja fajla sprečavaju pristup.</translation>
@@ -1507,7 +1507,7 @@ Dodatni detalji:
 <translation id="8218327578424803826">Dodijeljena lokacija:</translation>
 <translation id="8220146938470311105">C7/C6 (koverta)</translation>
 <translation id="8220639454292072926">Izvještavanje za preduzeća</translation>
-<translation id="8221250263817408492">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chromium preporučuje da odete na <ph name="WEBSITE_1" /> te na druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
+<translation id="8221250263817408492">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chromium preporučuje da odete na <ph name="WEBSITE_1" /> i druge web lokacije na kojima ste koristili ovu lozinku i odmah je promijenite.</translation>
 <translation id="8225771182978767009">Osoba koja je postavila računalo blokirala je tu web-lokaciju.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8238581221633243064">Otvorite stranicu u novoj anonimnoj kartici</translation>

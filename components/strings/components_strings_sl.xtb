@@ -608,7 +608,7 @@
 <translation id="3828924085048779000">Prazno geslo ni dovoljeno.</translation>
 <translation id="3831915413245941253">Domena <ph name="ENROLLMENT_DOMAIN" /> je namestila razširitve zaradi dodatnih funkcij. Razširitve imajo dostop do nekaterih vaših podatkov.</translation>
 <translation id="3832522519263485449">Večkratno luknjanje na levi</translation>
-<translation id="3838154488026099170">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
+<translation id="3838154488026099170">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3858027520442213535">Posodobi datum in uro</translation>
 <translation id="3884278016824448484">Identifikator naprave je v sporu</translation>
@@ -646,7 +646,7 @@
 <translation id="4072486802667267160">Pri obdelavi naročila je prišlo do napake. Poskusite znova.</translation>
 <translation id="4075732493274867456">Odjemalec in strežnik ne podpirata skupne različice protokola SSL ali šifrirne zbirke.</translation>
 <translation id="4075941231477579656">Touch ID</translation>
-<translation id="4077092919748553596">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
+<translation id="4077092919748553596">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chrome priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> in <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="4079302484614802869">Konfiguracija strežnika proxy je nastavljena na uporabo URL-ja skripta .pac, ne na stalne strežnike proxy.</translation>
 <translation id="4082393374666368382">Nastavitve – upravljanje</translation>
 <translation id="4098354747657067197">Zavajajoče spletno mesto</translation>
