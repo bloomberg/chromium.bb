@@ -6,6 +6,9 @@
 # A helper to query build_log data contained in internal analysis_service
 # events.
 
+# Make sure we have prod access so we don't fail without getting any work done.
+prodcertstatus 1>/dev/null 2>/dev/null || prodaccess
+
 when="last3days"
 string_data=""
 limit=30
