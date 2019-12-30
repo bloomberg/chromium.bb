@@ -493,6 +493,15 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
               AOM_CICP_MC_ICTCP);
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
 
+#if !CONFIG_TUNE_VMAF
+  if (extra_cfg->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
+      extra_cfg->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING) {
+    ERROR(
+        "This error may be related to the wrong configuration options: try to "
+        "set -DCONFIG_TUNE_VMAF=1 at the time CMake is run.");
+  }
+#endif
+
 #if CONFIG_TUNE_VMAF
   RANGE_CHECK(extra_cfg, tuning, AOM_TUNE_PSNR,
               AOM_TUNE_VMAF_WITHOUT_PREPROCESSING);

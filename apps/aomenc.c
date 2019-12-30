@@ -394,10 +394,8 @@ static const struct arg_enum_list tuning_enum[] = {
   { "cdef-dist", AOM_TUNE_CDEF_DIST },
   { "daala-dist", AOM_TUNE_DAALA_DIST },
 #endif
-#if CONFIG_TUNE_VMAF
   { "vmaf_with_preprocessing", AOM_TUNE_VMAF_WITH_PREPROCESSING },
   { "vmaf_without_preprocessing", AOM_TUNE_VMAF_WITHOUT_PREPROCESSING },
-#endif
   { NULL, 0 }
 };
 static const arg_def_t tune_metric =
