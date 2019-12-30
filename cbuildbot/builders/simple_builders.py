@@ -544,8 +544,8 @@ class DistributedBuilder(SimpleBuilder):
       if self._run.config.master:
         self._RunStage(report_stages.SlaveFailureSummaryStage)
 
-      is_master_release = config_lib.IsCanaryMaster(self._run.config)
-      if is_master_release:
+      if (config_lib.IsCanaryMaster(self._run.config) and
+          self._run.manifest_branch == 'master'):
         if build_finished:
           self._RunStage(completion_stages.UpdateChromeosLKGMStage)
         else:
