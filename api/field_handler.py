@@ -74,6 +74,17 @@ def handle_chroot(message, clear_field=True, parse_goma=True):
   return handler.parse_chroot(common_pb2.Chroot())
 
 
+def handle_goma(message, chroot_path):
+  """Find and parse the GomaConfig field, returning the Goma instance."""
+  for descriptor in message.DESCRIPTOR.fields:
+    field = getattr(message, descriptor.name)
+    if isinstance(field, common_pb2.GomaConfig):
+      goma_config = field
+      return controller_util.ParseGomaConfig(goma_config, chroot_path)
+
+  return None
+
+
 class PathHandler(object):
   """Handles copying a file or directory into or out of the chroot."""
 

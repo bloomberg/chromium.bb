@@ -254,7 +254,11 @@ class Router(object):
         with field_handler.sync_dirs(input_msg, sync_tmp, prefix=chroot.path):
           # Parse the chroot and clear the chroot field in the input message.
           chroot = field_handler.handle_chroot(input_msg)
-          # import pdb; pdb.set_trace();
+
+          if not chroot.goma:
+            goma = field_handler.handle_goma(input_msg, chroot.path)
+            chroot.goma = goma
+
           new_input = os.path.join(tempdir, self.REEXEC_INPUT_FILE)
           chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
           new_output = os.path.join(tempdir, self.REEXEC_OUTPUT_FILE)

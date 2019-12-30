@@ -60,9 +60,11 @@ def ParseChroot(chroot_message, parse_goma=True):
 
   goma = ParseGomaConfig(chroot_message.goma, path) if parse_goma else None
 
-  return Chroot(path=path, cache_dir=cache_dir, chrome_root=chrome_root,
-                env=env, goma=goma)
+  chroot = Chroot(
+      path=path, cache_dir=cache_dir, chrome_root=chrome_root, env=env)
+  chroot.goma = goma
 
+  return chroot
 
 def ParseGomaConfig(goma_message, chroot_path):
   """Parse a goma config message."""
