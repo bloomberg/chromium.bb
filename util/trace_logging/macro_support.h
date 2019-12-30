@@ -43,7 +43,7 @@ namespace openscreen {
 namespace internal {
 
 inline bool IsTraceLoggingEnabled(TraceCategory::Value category) {
-  auto* const destination = GetTracingDestination();
+  const CurrentTracingDestination destination;
   return destination && destination->IsTraceLoggingEnabled(category);
 }
 

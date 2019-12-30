@@ -18,12 +18,10 @@ bool TextTraceLoggingPlatform::IsTraceLoggingEnabled(
 }
 
 TextTraceLoggingPlatform::TextTraceLoggingPlatform() {
-  OSP_DCHECK(!GetTracingDestination());
   StartTracing(this);
 }
 
 TextTraceLoggingPlatform::~TextTraceLoggingPlatform() {
-  OSP_DCHECK_EQ(GetTracingDestination(), this);
   StopTracing();
 }
 

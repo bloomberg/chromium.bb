@@ -16,6 +16,8 @@ namespace openscreen {
 // use this, implement the TraceLoggingPlatform interface and call
 // StartTracing() and StopTracing() to turn tracing on/off (see
 // platform/base/trace_logging_activation.h).
+//
+// All methods must be thread-safe and re-entrant.
 class TraceLoggingPlatform {
  public:
   virtual ~TraceLoggingPlatform();

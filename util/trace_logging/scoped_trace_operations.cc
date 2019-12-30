@@ -21,12 +21,12 @@ bool ScopedTraceOperation::TraceAsyncEnd(const uint32_t line,
                                          TraceId id,
                                          Error::Code e) {
   auto end_time = Clock::now();
-  auto* const current_platform = GetTracingDestination();
-  if (current_platform == nullptr) {
-    return false;
+  const CurrentTracingDestination destination;
+  if (destination) {
+    destination->LogAsyncEnd(line, file, end_time, id, e);
+    return true;
   }
-  current_platform->LogAsyncEnd(line, file, end_time, id, e);
-  return true;
+  return false;
 }
 
 ScopedTraceOperation::ScopedTraceOperation(TraceId trace_id,
@@ -111,24 +111,22 @@ TraceLoggerBase::TraceLoggerBase(TraceCategory::Value category,
                       ids.root) {}
 
 SynchronousTraceLogger::~SynchronousTraceLogger() {
-  auto* const current_platform = GetTracingDestination();
-  if (current_platform == nullptr) {
-    return;
+  const CurrentTracingDestination destination;
+  if (destination) {
+    auto end_time = Clock::now();
+    destination->LogTrace(this->name_, this->line_number_, this->file_name_,
+                          this->start_time_, end_time, this->to_hierarchy(),
+                          this->result_);
   }
-  auto end_time = Clock::now();
-  current_platform->LogTrace(this->name_, this->line_number_, this->file_name_,
-                             this->start_time_, end_time, this->to_hierarchy(),
-                             this->result_);
 }
 
 AsynchronousTraceLogger::~AsynchronousTraceLogger() {
-  auto* const current_platform = GetTracingDestination();
-  if (current_platform == nullptr) {
-    return;
+  const CurrentTracingDestination destination;
+  if (destination) {
+    destination->LogAsyncStart(this->name_, this->line_number_,
+                               this->file_name_, this->start_time_,
+                               this->to_hierarchy());
   }
-  current_platform->LogAsyncStart(this->name_, this->line_number_,
-                                  this->file_name_, this->start_time_,
-                                  this->to_hierarchy());
 }
 
 TraceIdSetter::~TraceIdSetter() = default;

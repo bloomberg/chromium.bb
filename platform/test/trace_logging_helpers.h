@@ -20,17 +20,13 @@ enum ArgumentId { kFirst, kSecond };
 class MockLoggingPlatform : public TraceLoggingPlatform {
  public:
   MockLoggingPlatform() {
-    OSP_DCHECK(!GetTracingDestination());
     StartTracing(this);
 
     ON_CALL(*this, IsTraceLoggingEnabled(::testing::_))
         .WillByDefault(::testing::Return(true));
   }
 
-  ~MockLoggingPlatform() override {
-    OSP_DCHECK_EQ(GetTracingDestination(), this);
-    StopTracing();
-  }
+  ~MockLoggingPlatform() override { StopTracing(); }
 
   MOCK_METHOD1(IsTraceLoggingEnabled, bool(TraceCategory::Value category));
   MOCK_METHOD7(LogTrace,
