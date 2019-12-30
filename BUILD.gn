@@ -70,6 +70,7 @@ source_set("openscreen_unittests_all") {
     "cast/receiver:unittests",
     "cast/sender:unittests",
     "cast/streaming:unittests",
+    "cast/test:make_crl_tests",
     "cast/test:unittests",
     "discovery:unittests",
     "osp:unittests",
