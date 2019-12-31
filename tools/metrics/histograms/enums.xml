@@ -4911,6 +4911,7 @@ Unknown properties are collapsed to zero. -->
   <int value="-1442160010" label="Serial"/>
   <int value="-1314032804" label="MediaSessionImpl::OnServiceCreated"/>
   <int value="-1303768664" label="PopupBlockerTabHelper"/>
+  <int value="-1192330754" label="autofill::ContentAutofillDriver"/>
   <int value="-866479064" label="content::protocol::SecurityHandler"/>
   <int value="-684843031" label="SafeBrowsingTriggeredPopupBlocker"/>
   <int value="-438850149" label="PermissionRequestManager"/>
@@ -4924,6 +4925,8 @@ Unknown properties are collapsed to zero. -->
   <int value="2013040510" label="RenderFrameDevToolsAgentHost"/>
   <int value="2024383223"
       label="ChromePasswordManagerClient::BindCredentialManager"/>
+  <int value="2129248270"
+      label="password_manager::ContentPasswordManagerDriver"/>
 </enum>
 
 <enum name="BackForwardCacheEvictedAfterDocumentRestoredReason">
