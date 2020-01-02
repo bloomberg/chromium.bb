@@ -1,5 +1,5 @@
 import { getGPU } from '../../framework/gpu/implementation.js';
-import { Fixture } from '../../framework/index.js';
+import { Fixture, assert, unreachable } from '../../framework/index.js';
 
 type glslang = typeof import('@webgpu/glslang/dist/web-devel/glslang');
 type Glslang = import('@webgpu/glslang/dist/web-devel/glslang').Glslang;
@@ -27,7 +27,7 @@ export class GPUTest extends Fixture {
 
     try {
       await this.device.popErrorScope();
-      throw new Error('There was an error scope on the stack at the beginning of the test');
+      unreachable('There was an error scope on the stack at the beginning of the test');
     } catch (ex) {}
 
     this.device.pushErrorScope('out-of-memory');
@@ -42,13 +42,13 @@ export class GPUTest extends Fixture {
     if (this.initialized) {
       const gpuValidationError = await this.device.popErrorScope();
       if (gpuValidationError !== null) {
-        if (!(gpuValidationError instanceof GPUValidationError)) throw new Error();
+        assert(gpuValidationError instanceof GPUValidationError);
         this.fail(`Unexpected validation error occurred: ${gpuValidationError.message}`);
       }
 
       const gpuOutOfMemoryError = await this.device.popErrorScope();
       if (gpuOutOfMemoryError !== null) {
-        if (!(gpuOutOfMemoryError instanceof GPUOutOfMemoryError)) throw new Error();
+        assert(gpuOutOfMemoryError instanceof GPUOutOfMemoryError);
         this.fail('Unexpected out-of-memory error occurred');
       }
     }
@@ -80,9 +80,11 @@ export class GPUTest extends Fixture {
   }
 
   makeShaderModuleFromGLSL(stage: ShaderStage, glsl: string): GPUShaderModule {
-    if (!glslangInstance) {
-      throw new Error('GLSL compiler is not instantiated. Run `await t.initGLSL()` first');
-    }
+    assert(
+      glslangInstance !== undefined,
+      'GLSL compiler is not instantiated. Run `await t.initGLSL()` first'
+    );
+
     const code = glslangInstance.compileGLSL(glsl, stage, false);
     return this.device.createShaderModule({ code });
   }

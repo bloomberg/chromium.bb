@@ -1,5 +1,6 @@
 import { TestCaseRecorder } from './logger.js';
 import { ParamSpec } from './params/index.js';
+import { assert } from './util/index.js';
 
 export class SkipTestCase extends Error {}
 
@@ -30,12 +31,10 @@ export class Fixture {
   }
 
   async finalize(): Promise<void> {
-    if (this.numOutstandingAsyncExpectations !== 0) {
-      throw new Error(
-        'there were outstanding asynchronous expectations (e.g. shouldReject) at the end of the test'
-      );
-    }
-
+    assert(
+      this.numOutstandingAsyncExpectations === 0,
+      'there were outstanding asynchronous expectations (e.g. shouldReject) at the end of the test'
+    );
     await Promise.all(this.eventualExpectations);
   }
 

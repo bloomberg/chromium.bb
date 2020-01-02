@@ -2,7 +2,7 @@ export const description = `
 Unit tests for TestGroup.
 `;
 
-import { Fixture, TestGroup, poptions } from '../../framework/index.js';
+import { Fixture, TestGroup, assert, poptions } from '../../framework/index.js';
 
 import { TestGroupTest } from './test_group_test.js';
 import { UnitTest } from './unit_test.js';
@@ -68,9 +68,7 @@ g.test('stack', async t0 => {
 
   const search = /unittests[\/\\]test_group\.spec\.[tj]s|suites[\/\\]unittests[\/\\]unit_test\.[tj]s/;
   for (const { logs } of res.cases) {
-    if (logs === undefined) {
-      throw new Error('expected logs');
-    }
+    assert(logs !== undefined, 'expected logs');
     const l = logs[0].toJSON();
     t0.expect(search.test(l));
     const st = l.split('\n');

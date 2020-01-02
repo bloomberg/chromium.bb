@@ -9,6 +9,7 @@ import * as path from 'path';
 
 const fg = require('fast-glob');
 
+import { assert } from '../framework/index.js';
 import { TestSuiteListingEntry } from '../framework/listing.js';
 import { TestSpec } from '../framework/loader.js';
 
@@ -31,12 +32,8 @@ export async function crawl(suite: string): Promise<TestSuiteListingEntry[]> {
       const testPath = f.substring(0, f.length - specSuffix.length);
       const filename = `../../${specDir}/${testPath}.spec.js`;
       const mod = (await import(filename)) as TestSpec;
-      if (mod.description === undefined) {
-        throw new Error('Test spec file missing description: ' + filename);
-      }
-      if (mod.g === undefined) {
-        throw new Error('Test spec file missing TestGroup definition: ' + filename);
-      }
+      assert(mod.description !== undefined, 'Test spec file missing description: ' + filename);
+      assert(mod.g !== undefined, 'Test spec file missing TestGroup definition: ' + filename);
       groups.push({
         path: testPath,
         description: mod.description.trim(),

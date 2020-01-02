@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as process from 'process';
 
 import { TestSpecID } from '../framework/id.js';
+import { assert } from '../framework/index.js';
 import { TestLoader } from '../framework/loader.js';
 import { LiveTestCaseResult, Logger } from '../framework/logger.js';
 import { makeQueryString } from '../framework/url_query.js';
@@ -71,9 +72,7 @@ for (const a of process.argv.slice(2)) {
       }
     }
 
-    if (running.length === 0) {
-      throw new Error('found no tests!');
-    }
+    assert(running.length !== 0, 'found no tests!');
 
     await Promise.all(running);
 

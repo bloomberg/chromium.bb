@@ -4,6 +4,7 @@ import { TestCaseID } from './id.js';
 import { LiveTestCaseResult, TestCaseRecorder, TestSpecRecorder } from './logger.js';
 import { ParamSpec, ParamSpecIterable, paramsEquals } from './params/index.js';
 import { checkPublicParamType, extractPublicParams } from './url_query.js';
+import { assert } from './util/index.js';
 
 export interface RunCase {
   readonly id: TestCaseID;
@@ -36,27 +37,22 @@ export class TestGroup<F extends Fixture> implements RunCaseIterable {
   }
 
   private checkName(name: string): void {
-    if (!validNames.test(name)) {
-      throw new Error(`Invalid test name ${name}; must match [${validNames}]+`);
-    }
-    if (name !== decodeURIComponent(name)) {
+    assert(validNames.test(name), `Invalid test name ${name}; must match [${validNames}]+`);
+    assert(
       // Shouldn't happen due to the rule above. Just makes sure that treated
       // unencoded strings as encoded strings is OK.
-      throw new Error(`Not decodeURIComponent-idempotent: ${name} !== ${decodeURIComponent(name)}`);
-    }
+      name === decodeURIComponent(name),
+      `Not decodeURIComponent-idempotent: ${name} !== ${decodeURIComponent(name)}`
+    );
+    assert(!this.seen.has(name), `Duplicate test name: ${name}`);
 
-    if (this.seen.has(name)) {
-      throw new Error(`Duplicate test name: ${name}`);
-    }
     this.seen.add(name);
   }
 
   // TODO: This could take a fixture, too, to override the one for the group.
   test(name: string, fn: TestFn<F>): Test<F> {
     // Replace spaces with underscores for readability.
-    if (name.indexOf('_') !== -1) {
-      throw new Error('Invalid test name ${name}: contains underscore (use space)');
-    }
+    assert(name.indexOf('_') === -1, 'Invalid test name ${name}: contains underscore (use space)');
     name = name.replace(/ /g, '_');
 
     this.checkName(name);
@@ -81,9 +77,7 @@ class Test<F extends Fixture> {
   }
 
   params(specs: ParamSpecIterable): void {
-    if (this.cases !== null) {
-      throw new Error('test case is already parameterized');
-    }
+    assert(this.cases === null, 'test case is already parameterized');
     const cases = Array.from(specs);
     const seen: ParamSpec[] = [];
     // This is n^2.
@@ -96,9 +90,7 @@ class Test<F extends Fixture> {
         checkPublicParamType(v);
       }
 
-      if (seen.some(x => paramsEquals(x, publicParams))) {
-        throw new Error('Duplicate test case params');
-      }
+      assert(!seen.some(x => paramsEquals(x, publicParams)), 'Duplicate test case params');
       seen.push(publicParams);
     }
     this.cases = cases;

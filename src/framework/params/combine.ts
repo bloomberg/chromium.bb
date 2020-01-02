@@ -1,3 +1,5 @@
+import { assert } from '../util/index.js';
+
 import { ParamSpec, ParamSpecIterable, ParamSpecIterator } from './index.js';
 
 export function pcombine(...params: ParamSpecIterable[]): ParamSpecIterable {
@@ -6,9 +8,7 @@ export function pcombine(...params: ParamSpecIterable[]): ParamSpecIterable {
 
 function merge(a: ParamSpec, b: ParamSpec): ParamSpec {
   for (const key of Object.keys(a)) {
-    if (b.hasOwnProperty(key)) {
-      throw new Error('Duplicate key: ' + key);
-    }
+    assert(!b.hasOwnProperty(key), 'Duplicate key: ' + key);
   }
   return { ...a, ...b };
 }

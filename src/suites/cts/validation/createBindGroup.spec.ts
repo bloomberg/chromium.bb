@@ -2,7 +2,7 @@ export const description = `
 createBindGroup validation tests.
 `;
 
-import { TestGroup, pcombine, poptions } from '../../../framework/index.js';
+import { TestGroup, pcombine, poptions, unreachable } from '../../../framework/index.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -169,7 +169,9 @@ g.test('buffer binding must contain exactly one buffer of its type', async t => 
     resource = t.getSampledTexture().createView();
   } else if (resourceType === 'storage-texture') {
     resource = t.getStorageTexture().createView();
-  } else throw new Error();
+  } else {
+    unreachable('Unexpected resource type');
+  }
 
   let shouldError = bindingType !== resourceType;
   if (bindingType === 'readonly-storage-buffer' && resourceType === 'storage-buffer') {
@@ -222,7 +224,7 @@ g.test('texture binding must have correct usage', async t => {
   } else if (type === 'storage-texture') {
     usage = GPUTextureUsage.STORAGE;
   } else {
-    throw new Error('Unexpected binding type');
+    unreachable('Unexpected binding type');
   }
 
   const goodDescriptor: GPUTextureDescriptor = {
@@ -296,7 +298,7 @@ g.test('texture must have correct component type', async t => {
   } else if (textureComponentType === 'uint') {
     format = 'r8uint';
   } else {
-    throw new Error('Unexpected texture component type');
+    unreachable('Unexpected texture component type');
   }
 
   const goodDescriptor: GPUTextureDescriptor = {

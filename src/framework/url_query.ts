@@ -1,5 +1,6 @@
 import { TestCaseID, TestSpecID } from './id.js';
 import { ParamArgument, ParamSpec } from './params/index.js';
+import { unreachable } from './util/index.js';
 
 export function encodeSelectively(s: string): string {
   let ret = encodeURIComponent(s);
@@ -37,7 +38,7 @@ export function checkPublicParamType(v: ParamArgument): void {
     }
     return;
   }
-  throw new Error('Invalid type for test case params ' + v);
+  unreachable('Invalid type for test case params ' + v);
 }
 
 export function makeQueryString(spec: TestSpecID, testcase?: TestCaseID): string {

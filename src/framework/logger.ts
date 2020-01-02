@@ -3,7 +3,7 @@ import { TestSpecID } from './id.js';
 import { ParamSpec } from './params/index.js';
 import { makeQueryString } from './url_query.js';
 import { extractPublicParams } from './url_query.js';
-import { getStackTrace, now } from './util/index.js';
+import { assert, getStackTrace, now } from './util/index.js';
 import { version } from './version.js';
 
 type Status = 'running' | 'pass' | 'skip' | 'warn' | 'fail';
@@ -105,9 +105,8 @@ export class TestCaseRecorder {
   }
 
   finish(): void {
-    if (this.startTime < 0) {
-      throw new Error('finish() before start()');
-    }
+    assert(this.startTime >= 0, 'finish() before start()');
+
     const endTime = now();
     // Round to next microsecond to avoid storing useless .xxxx00000000000002 in results.
     this.result.timems = Math.ceil((endTime - this.startTime) * 1000) / 1000;

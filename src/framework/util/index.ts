@@ -2,6 +2,16 @@ import { timeout } from './timeout.js';
 
 export * from './stack.js';
 
+export function assert(condition: boolean, msg?: string): asserts condition {
+  if (!condition) {
+    throw new Error(msg);
+  }
+}
+
+export function unreachable(msg?: string): never {
+  throw new Error(msg);
+}
+
 // performance.now() is available in all browsers, but not in scope by default in Node.
 // tslint:disable-next-line no-var-requires
 const perf = typeof performance !== 'undefined' ? performance : require('perf_hooks').performance;
