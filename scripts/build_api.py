@@ -171,6 +171,10 @@ def main(argv):
     if opts.tee_log:
       stack.Add(tee.Tee, opts.tee_log)
       logging.info('Teeing stdout and stderr to %s', opts.tee_log)
+    tee_log_env_value = os.environ.get('BUILD_API_TEE_LOG_FILE')
+    if tee_log_env_value:
+      stack.Add(tee.Tee, tee_log_env_value)
+      logging.info('Teeing stdout and stderr to env path %s', tee_log_env_value)
 
     if opts.mock_invalid:
       # --mock-invalid handling. We print error messages, but no output is ever

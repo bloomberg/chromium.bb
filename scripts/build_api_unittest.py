@@ -46,3 +46,12 @@ class BuildApiScriptTest(cros_test_lib.MockTempDirTestCase):
                     'chromite.api.PackageService/GetTargetVersions'])
     contents = osutils.ReadFile(self.tee_log)
     self.assertIn('Teeing stdout', contents)
+
+  def testEnvTee(self):
+    """Call build_api with tee-log set, verify log contents."""
+    os.environ['BUILD_API_TEE_LOG_FILE'] = self.tee_log
+    build_api.main(['--input-json', self.input_json,
+                    '--output-json', self.output_json,
+                    'chromite.api.PackageService/GetTargetVersions'])
+    contents = osutils.ReadFile(self.tee_log)
+    self.assertIn('Teeing stdout and stderr to env path ', contents)
