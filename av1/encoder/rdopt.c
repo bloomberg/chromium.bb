@@ -2231,10 +2231,9 @@ static AOM_INLINE void PrintPredictionUnitStats(const AV1_COMP *const cpi,
                                                 MACROBLOCK *x,
                                                 const RD_STATS *const rd_stats,
                                                 BLOCK_SIZE plane_bsize) {
-  if (rd_stats->invalid_rate) return;
   if (rd_stats->rate == INT_MAX || rd_stats->dist == INT64_MAX) return;
 
-  if (cpi->sf.inter_mode_rd_model_estimation == 1 &&
+  if (cpi->sf.inter_sf.inter_mode_rd_model_estimation == 1 &&
       (tile_data == NULL ||
        !tile_data->inter_mode_rd_models[plane_bsize].ready))
     return;
@@ -2250,10 +2249,10 @@ static AOM_INLINE void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   FILE *fout = fopen(output_file, "a");
   if (!fout) return;
 
-  const MACROBLOCKD *const xd = &x->e_mbd;
+  MACROBLOCKD *const xd = &x->e_mbd;
   const int plane = 0;
   struct macroblock_plane *const p = &x->plane[plane];
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  struct macroblockd_plane *pd = &xd->plane[plane];
   const int diff_stride = block_size_wide[plane_bsize];
   int bw, bh;
   get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
@@ -2261,6 +2260,7 @@ static AOM_INLINE void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   const int num_samples = bw * bh;
   const int dequant_shift = (is_cur_buf_hbd(xd)) ? xd->bd - 5 : 3;
   const int q_step = p->dequant_QTX[1] >> dequant_shift;
+  const int shift = (xd->bd - 8);
 
   const double rate_norm = (double)rd_stats->rate / num_samples;
   const double dist_norm = (double)rd_stats->dist / num_samples;
@@ -2333,7 +2333,7 @@ static AOM_INLINE void PrintPredictionUnitStats(const AV1_COMP *const cpi,
   fprintf(fout, " %g %g %g %g %g %g %g %g", hdist[0], hdist[1], hdist[2],
           hdist[3], vdist[0], vdist[1], vdist[2], vdist[3]);
 
-  if (cpi->sf.inter_mode_rd_model_estimation == 1) {
+  if (cpi->sf.inter_sf.inter_mode_rd_model_estimation == 1) {
     assert(tile_data->inter_mode_rd_models[plane_bsize].ready);
     const int64_t overall_sse = get_sse(cpi, x);
     int est_residue_cost = 0;
