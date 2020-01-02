@@ -56,14 +56,27 @@ g.test('combine/mixed', t => {
 });
 
 g.test('filter', t => {
-  t.expectSpecEqual(pfilter([{ a: true, x: 1 }, { a: false, y: 2 }], p => p.a), [
-    { a: true, x: 1 },
-  ]);
+  t.expectSpecEqual(
+    pfilter(
+      [
+        { a: true, x: 1 },
+        { a: false, y: 2 },
+      ],
+      p => p.a
+    ),
+    [{ a: true, x: 1 }]
+  );
 });
 
 g.test('exclude', t => {
   t.expectSpecEqual(
-    pexclude([{ a: true, x: 1 }, { a: false, y: 2 }], [{ a: true }, { a: false, y: 2 }]),
+    pexclude(
+      [
+        { a: true, x: 1 },
+        { a: false, y: 2 },
+      ],
+      [{ a: true }, { a: false, y: 2 }]
+    ),
     [{ a: true, x: 1 }]
   );
 });

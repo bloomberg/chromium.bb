@@ -20,7 +20,10 @@ const listingData: { [k: string]: TestSuiteListingEntry[] } = {
     { path: 'bar/buzz', description: 'desc 1d' },
     { path: 'baz', description: 'desc 1e' },
   ],
-  suite2: [{ path: '', description: 'desc 2a' }, { path: 'foof', description: 'desc 2b' }],
+  suite2: [
+    { path: '', description: 'desc 2a' },
+    { path: 'foof', description: 'desc 2b' },
+  ],
 };
 
 const specsData: { [k: string]: TestSpecOrReadme } = {
