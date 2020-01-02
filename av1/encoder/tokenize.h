@@ -22,7 +22,6 @@ extern "C" {
 
 typedef struct {
   aom_cdf_prob *color_map_cdf;
-  // TODO(yaowu: use packed enum type if appropriate)
   uint8_t token;
 } TOKENEXTRA;
 
