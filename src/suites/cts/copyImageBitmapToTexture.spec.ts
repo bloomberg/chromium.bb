@@ -50,7 +50,6 @@ class F extends GPUTest {
     rowPitch: number,
     bytesPerPixel: number
   ): string | undefined {
-    const size = exp.byteLength;
     const lines = [];
     let failedPixels = 0;
     for (let i = 0; i < height; ++i) {
@@ -71,7 +70,7 @@ class F extends GPUTest {
         break;
       }
     }
-    return this.handleErrorMessage(actual, exp, size, failedPixels, lines);
+    return failedPixels > 0 ? lines.join('\n') : undefined;
   }
 
   // Using drawImage to extract imageBitmap content.
@@ -160,7 +159,7 @@ g.test('from image element', async t => {
   );
 }).params(
   pcombine(
-    poptions('width', [4, 15, 256]), //
-    poptions('height', [1, 2, 256])
+    poptions('width', [1, 2, 4, 15, 255, 256]), //
+    poptions('height', [1, 2, 4, 15, 255, 256])
   )
 );
