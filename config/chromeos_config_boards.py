@@ -138,6 +138,7 @@ x86_internal_release_boards = frozenset([
     'lars',
     'lulu',
     'monroe',
+    'mushu',
     'nami',
     'nautilus',
     'ninja',

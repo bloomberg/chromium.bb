@@ -1559,6 +1559,12 @@
   monroe-payloads-tryjob
   monroe-release-tryjob
   monroe-unittest-stress
+  mushu-full-tryjob
+  mushu-llvm-next-toolchain-tryjob
+  mushu-llvm-toolchain-tryjob
+  mushu-payloads-tryjob
+  mushu-release-tryjob
+  mushu-unittest-stress
   nami-factory-nami-10715.B-factorybranch-tryjob
   nami-full-tryjob
   nami-kvm-full-tryjob
