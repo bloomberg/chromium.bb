@@ -1,0 +1,111 @@
+#!/bin/bash
+# Copyright 2020 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# A helper tool to query for relative rootfs size differences detected during
+# CQ runs.
+
+CL="$1"
+
+[[ -z "$CL" ]] && {
+  echo "You must supply a CL."
+  exit 1
+}
+
+prodcertstatus &>/dev/null || prodaccess
+
+f1-sql \
+  -csv_output=1 \
+  << SQLtoHERE
+-- Note that some data is missing from the chromeos_ci_eng.buildbucket_builds
+-- table. https://crbug.com/1038752 is tracking that issue.
+-- select * from chromeos_ci_eng.buildbucket_builds where id = 8892492747888114240;
+WITH bb_ids AS (
+  SELECT
+    bb.id as ids
+  FROM
+    chromeos_ci_eng.buildbucket_builds AS bb
+  CROSS JOIN
+    UNNEST(input.gerrit_changes) AS changes
+  WHERE
+    changes.change=${CL}
+)
+
+, builds AS (
+  SELECT
+    bb.id AS bb_id,
+    bb.builder,
+    bb.input.gitiles_commit.id AS snapshot_hash,
+    JSON_EXTRACT_SCALAR(bb.input.properties, '$.build_target.name') AS build_target,
+    ARRAY_TO_STRING(ARRAY(SELECT
+                            CONCAT('https://', c.host, '/c/', c.project, '/+/',
+                                   CAST(c.change AS STRING), '/',
+                                   CAST(c.patchset AS STRING))
+                          FROM
+                            UNNEST(bb.input.gerrit_changes) AS c), ' ') as patches
+
+  FROM
+    chromeos_ci_eng.buildbucket_builds AS bb
+
+  WHERE
+    bb.id IN (SELECT ids from bb_ids)
+)
+
+SELECT
+  build_target,
+  patches AS patch_urls,
+  snapshot_hash,
+  current_base_rootfs_size - baseline_base_rootfs_size AS rootfs_size_diff,
+  current_build_id AS build_id,
+  current_base_rootfs_size,
+  baseline_build_id,
+  baseline_base_rootfs_size
+FROM (
+  SELECT
+    build_target,
+    current_build_id,
+    patches,
+    snapshot_hash,
+    e1.gauge AS current_base_rootfs_size,
+    baseline_build_id,
+    e2.gauge AS baseline_base_rootfs_size
+  FROM (
+    SELECT
+      builds.build_target,
+      builds.bb_id AS current_build_id,
+      builds.patches AS patches,
+      builds.snapshot_hash AS snapshot_hash,
+      bb_parent.id AS baseline_build_id
+    FROM
+      builds
+    JOIN
+      chromeos_ci_eng.buildbucket_builds AS bb_parent
+    ON
+      bb_parent.input.gitiles_commit.id = builds.snapshot_hash AND
+      bb_parent.builder.builder LIKE CONCAT(builds.build_target, '-snapshot') AND
+      JSON_EXTRACT_SCALAR(bb_parent.input.properties, '$.build_target.name') = builds.build_target
+  )
+  JOIN
+    chromeos_ci_eng.analysis_event_log.\`all\` AS ael1
+  ON
+    ael1.build_id = current_build_id
+  CROSS JOIN
+    UNNEST(ael1.create_image_result.events) AS e1
+  JOIN
+    chromeos_ci_eng.analysis_event_log.\`all\` AS ael2
+  ON
+    ael2.build_id = baseline_build_id
+  CROSS JOIN
+    UNNEST(ael2.create_image_result.events) AS e2
+  WHERE
+    e1.name LIKE '%.total_size.%' AND
+    e2.name LIKE '%.total_size.%'
+  )
+WHERE
+  build_target IS NOT NULL AND
+  current_base_rootfs_size IS NOT NULL AND
+  baseline_base_rootfs_size IS NOT NULL
+ORDER BY
+  rootfs_size_diff DESC;
+SQLtoHERE
