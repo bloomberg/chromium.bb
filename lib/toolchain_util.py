@@ -96,7 +96,7 @@ CHROME_AFDO_VERIFIER_BOARDS = {'samus': 'silvermont',
 KERNEL_AFDO_VERIFIER_BOARDS = {'lulu': '3.14', 'chell': '3.18', 'eve': '4.4'}
 
 AFDO_ALERT_RECIPIENTS = [
-    'chromeos-toolchain-sheriff@grotations.appspotmail.com'
+    'chromeos-toolchain-oncall1@google.com'
 ]
 
 # RegExps
