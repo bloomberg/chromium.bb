@@ -628,6 +628,11 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // 0: no breakout
   // 1: use model based rd breakout
   int model_based_post_interp_filter_breakout;
+
+  // Reuse compound type rd decision when exact match is found
+  // 0: No reuse
+  // 1: Reuse the compound type decision
+  int reuse_compound_type_decision;
 } INTER_MODE_SPEED_FEATURES;
 
 typedef struct INTERP_FILTER_SPEED_FEATURES {

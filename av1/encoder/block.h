@@ -193,12 +193,14 @@ typedef struct {
   int64_t dist[COMPOUND_TYPES];
   int32_t model_rate[COMPOUND_TYPES];
   int64_t model_dist[COMPOUND_TYPES];
+  int comp_rs2[COMPOUND_TYPES];
   int_mv mv[2];
   MV_REFERENCE_FRAME ref_frames[2];
   PREDICTION_MODE mode;
   int_interpfilters filter;
   int ref_mv_idx;
   int is_global[2];
+  INTERINTER_COMPOUND_DATA interinter_comp;
 } COMP_RD_STATS;
 
 // Struct for buffers used by compound_type_rd() function.

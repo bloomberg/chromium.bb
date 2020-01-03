@@ -435,6 +435,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.prune_motion_mode_level = boosted ? 2 : 3;
     if (cpi->oxcf.enable_smooth_interintra)
       sf->inter_sf.disable_smooth_interintra = boosted ? 0 : 1;
+    sf->inter_sf.reuse_compound_type_decision = 1;
 
     sf->intra_sf.prune_palette_search_level = 2;
 
@@ -941,6 +942,7 @@ static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {
   inter_sf->disable_interinter_wedge = 0;
   inter_sf->prune_ref_mv_idx_search = 0;
   inter_sf->prune_warped_prob_thresh = 0;
+  inter_sf->reuse_compound_type_decision = 0;
 }
 
 static AOM_INLINE void init_interp_sf(INTERP_FILTER_SPEED_FEATURES *interp_sf) {
