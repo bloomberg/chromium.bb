@@ -91,7 +91,7 @@ class F extends GPUTest {
 
 export const g = new TestGroup(F);
 
-g.test('from image element', async t => {
+g.test('from ImageData', async t => {
   const { width, height } = t.params;
 
   // The texture format is rgba8uint, so the bytes per pixel is 4.
