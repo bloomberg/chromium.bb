@@ -37,9 +37,15 @@ void ComputeSuperRes(const void* source, const int upscaled_width,
     const Pixel* const src_x = &src[subpixel_x >> kSuperResScaleBits];
     const int src_x_subpixel =
         (subpixel_x & kSuperResScaleMask) >> kSuperResExtraBits;
-    for (int i = 0; i < kSuperResFilterTaps; ++i) {
-      sum += src_x[i] * kUpscaleFilter[src_x_subpixel][i];
-    }
+    // The sign of each tap is: - + - + + - + -
+    sum -= src_x[0] * kUpscaleFilterUnsigned[src_x_subpixel][0];
+    sum += src_x[1] * kUpscaleFilterUnsigned[src_x_subpixel][1];
+    sum -= src_x[2] * kUpscaleFilterUnsigned[src_x_subpixel][2];
+    sum += src_x[3] * kUpscaleFilterUnsigned[src_x_subpixel][3];
+    sum += src_x[4] * kUpscaleFilterUnsigned[src_x_subpixel][4];
+    sum -= src_x[5] * kUpscaleFilterUnsigned[src_x_subpixel][5];
+    sum += src_x[6] * kUpscaleFilterUnsigned[src_x_subpixel][6];
+    sum -= src_x[7] * kUpscaleFilterUnsigned[src_x_subpixel][7];
     dst[x] =
         Clip3(RightShiftWithRounding(sum, kFilterBits), 0, (1 << bitdepth) - 1);
     subpixel_x += step;

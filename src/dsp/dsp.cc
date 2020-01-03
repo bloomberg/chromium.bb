@@ -108,6 +108,7 @@ void DspInit() {
     LoopRestorationInit_NEON();
     MaskBlendInit_NEON();
     ObmcInit_NEON();
+    SuperResInit_NEON();
     WarpInit_NEON();
     WeightMaskInit_NEON();
 #endif  // LIBGAV1_ENABLE_NEON

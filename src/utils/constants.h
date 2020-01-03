@@ -700,7 +700,8 @@ extern const int8_t kWienerTapsMin[3];
 
 extern const int8_t kWienerTapsMax[3];
 
-extern const int16_t kUpscaleFilter[kSuperResFilterShifts][kSuperResFilterTaps];
+extern const uint8_t kUpscaleFilterUnsigned[kSuperResFilterShifts]
+                                           [kSuperResFilterTaps];
 
 // An int8_t version of the kWarpedFilters array.
 // Note: The array could be removed with a performance penalty.

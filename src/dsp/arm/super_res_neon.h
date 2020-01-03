@@ -14,26 +14,24 @@
  * limitations under the License.
  */
 
-#ifndef LIBGAV1_SRC_DSP_SUPER_RES_H_
-#define LIBGAV1_SRC_DSP_SUPER_RES_H_
+#ifndef LIBGAV1_SRC_DSP_ARM_SUPER_RES_NEON_H_
+#define LIBGAV1_SRC_DSP_ARM_SUPER_RES_NEON_H_
 
-// Pull in LIBGAV1_DspXXX defines representing the implementation status
-// of each function. The resulting value of each can be used by each module to
-// determine whether an implementation is needed at compile time.
-// IWYU pragma: begin_exports
-
-// ARM:
-#include "src/dsp/arm/super_res_neon.h"
-
-// IWYU pragma: end_exports
+#include "src/dsp/dsp.h"
+#include "src/utils/cpu.h"
 
 namespace libgav1 {
 namespace dsp {
 
-// Initializes Dsp::super_res_row. This function is not thread-safe.
-void SuperResInit_C();
+// Initializes Dsp::super_res. This function is not thread-safe.
+void SuperResInit_NEON();
 
 }  // namespace dsp
 }  // namespace libgav1
 
-#endif  // LIBGAV1_SRC_DSP_SUPER_RES_H_
+#if LIBGAV1_ENABLE_NEON
+#define LIBGAV1_Dsp8bpp_SuperRes LIBGAV1_CPU_NEON
+#define LIBGAV1_Dsp8bpp_SuperResClip LIBGAV1_CPU_NEON
+#endif  // LIBGAV1_ENABLE_NEON
+
+#endif  // LIBGAV1_SRC_DSP_ARM_SUPER_RES_NEON_H_

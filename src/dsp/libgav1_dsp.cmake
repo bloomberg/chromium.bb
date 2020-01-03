@@ -88,6 +88,8 @@ list(APPEND libgav1_dsp_sources_neon
             "${libgav1_source}/dsp/arm/mask_blend_neon.h"
             "${libgav1_source}/dsp/arm/obmc_neon.cc"
             "${libgav1_source}/dsp/arm/obmc_neon.h"
+            "${libgav1_source}/dsp/arm/super_res_neon.cc"
+            "${libgav1_source}/dsp/arm/super_res_neon.h"
             "${libgav1_source}/dsp/arm/warp_neon.cc"
             "${libgav1_source}/dsp/arm/warp_neon.h"
             "${libgav1_source}/dsp/arm/weight_mask_neon.cc"
