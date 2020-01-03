@@ -376,15 +376,16 @@ void VisualViewport::SetSize(const IntSize& size) {
   TRACE_EVENT_INSTANT1("loading", "viewport", TRACE_EVENT_SCOPE_THREAD, "data",
                        ViewportToTracedValue());
 
+  if (!MainFrame())
+    return;
+
   // Need to re-compute sizes for the overlay scrollbars.
   if (scrollbar_layer_horizontal_) {
     DCHECK(scrollbar_layer_vertical_);
     UpdateScrollbarLayer(kHorizontalScrollbar);
     UpdateScrollbarLayer(kVerticalScrollbar);
+    MainFrame()->View()->SetVisualViewportNeedsRepaint();
   }
-
-  if (!MainFrame())
-    return;
 
   EnqueueResizeEvent();
 }
