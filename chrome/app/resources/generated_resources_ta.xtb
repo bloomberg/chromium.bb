@@ -559,6 +559,8 @@
 <translation id="177336675152937177">ஹோஸ்ட் செய்யப்பட்ட ஆப்ஸின் தரவு</translation>
 <translation id="1776712937009046120">பயனரைச் சேர்</translation>
 <translation id="1776883657531386793"><ph name="OID" />: <ph name="INFO" /></translation>
+<translation id="1777310661937894236">இந்தச் சாதனத்தை <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> நிர்வகிக்கிறது.
+    உங்கள் <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> கணக்கில் உள்நுழைவதைத் தொடர, 'அடுத்து' என்பதைக் கிளிக் செய்யவும்.</translation>
 <translation id="1779652936965200207">"<ph name="DEVICE_NAME" />" இல் இந்தக் கடவுவிசையை உள்ளிடுக:</translation>
 <translation id="1780152987505130652">குழுவை மூடுக</translation>
 <translation id="1781291988450150470">தற்போதைய பின்</translation>
@@ -746,6 +748,7 @@
 <translation id="2048653237708779538">இச்செயலைச் செய்ய இயலாது</translation>
 <translation id="2050339315714019657">செங்குத்து நிலை</translation>
 <translation id="2053312383184521053">செயல்படா நிலையில் இருக்கும் தரவு</translation>
+<translation id="2055585478631012616">திறந்துள்ள தாவல்களில் உள்ளவை உட்பட இந்தத் தளங்களிலிருந்து வெளியேற்றப்படுவீர்கள்</translation>
 <translation id="205560151218727633">Google அசிஸ்டண்ட் லோகோ</translation>
 <translation id="2058456167109518507">சாதனம் கண்டறியப்பட்டுள்ளது</translation>
 <translation id="2059913712424898428">நேர மண்டலம்</translation>
@@ -1288,6 +1291,7 @@
 <translation id="2800760947029405028">படத்தை ஏற்று</translation>
 <translation id="2803375539583399270">பின்னை உள்ளிடவும்</translation>
 <translation id="2804043232879091219">மாற்று உலாவியைத் திறக்க முடியவில்லை</translation>
+<translation id="2804667941345577550">திறந்துள்ள தாவல்களிலிருந்து உட்பட இந்தத் தளத்திலிருந்து வெளியேற்றப்படுவீர்கள்</translation>
 <translation id="2804680522274557040">கேமரா முடக்கப்பட்டுள்ளது</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
 <translation id="2805756323405976993">ஆப்ஸ்</translation>
@@ -2193,6 +2197,7 @@
 <translation id="407520071244661467">அளவு</translation>
 <translation id="4075639477629295004"><ph name="FILE_NAME" />ஐ அலைபரப்ப முடியவில்லை.</translation>
 <translation id="4077917118009885966">இந்தத் தளத்தில் விளம்பரங்கள் தடுக்கப்பட்டன</translation>
+<translation id="4077919383365622693"><ph name="SITE" /> தளத்தால் சேமிக்கப்பட்ட தரவும் குக்கீகளும்.</translation>
 <translation id="4079140982534148664">'மேம்பட்ட எழுத்துப் பிழை சரிபார்க்கும்' அம்சத்தைப் பயன்படுத்து</translation>
 <translation id="4081242589061676262">கோப்பை அலைபரப்ப முடியவில்லை.</translation>
 <translation id="4084682180776658562">புக்மார்க்</translation>
@@ -2567,6 +2572,7 @@
 <translation id="4665446389743427678"><ph name="SITE" /> சேகரித்த தரவு அனைத்தும் நீக்கப்படும்.</translation>
 <translation id="4668721319092543482"><ph name="PLUGIN_NAME" />ஐ இயக்க, கிளிக் செய்யவும்</translation>
 <translation id="4672657274720418656">பக்கத்தைப் பிரி</translation>
+<translation id="46733273239502219">நிறுவப்பட்ட ஆப்ஸிலுள்ள ஆஃப்லைன் தரவும் அழிக்கப்படும்</translation>
 <translation id="4673442866648850031">ஸ்டைலஸ் அகற்றப்பட்டதும், ஸ்டைலஸ் கருவிகளைத் திற</translation>
 <translation id="4677585247300749148">அணுகல்தன்மை நிகழ்வுகளுக்கு, <ph name="URL" /> பதிலளிக்க விரும்புகிறது</translation>
 <translation id="4677772697204437347">GPU நினைவகம்</translation>
@@ -2699,6 +2705,7 @@
 <translation id="4876273079589074638">இந்தச் சிதைவிற்கான காரணங்களை ஆராய்ந்து, சரிசெய்வதற்கு எங்கள் பொறியாளர்களுக்கு உதவவும். முடிந்தால், என்ன நடந்தது என்பதைத் துல்லியமாகப் பட்டியலிடவும். நீங்கள் வழங்கும் சிறிய தகவலும் எங்களுக்கு உதவும்!</translation>
 <translation id="4876895919560854374">திரையைப் பூட்டவும் மற்றும் தடைநீக்கவும்</translation>
 <translation id="4877276003880815204">கூறுகளை ஆய்வு செய்</translation>
+<translation id="4878653975845355462">பிரத்தியேகமான பின்புலங்கள் உங்கள் நிர்வாகியால் முடக்கப்பட்டுள்ளன</translation>
 <translation id="4879491255372875719">தானியங்கு (இயல்பு)</translation>
 <translation id="4880328057631981605">ஆக்சஸ் பாயிண்ட் நேம்</translation>
 <translation id="4880827082731008257">தேடல் வரலாறு</translation>
@@ -3258,6 +3265,7 @@
 <translation id="5687326903064479980">நேரமண்டலம்</translation>
 <translation id="5689516760719285838">இருப்பிடம்</translation>
 <translation id="56907980372820799">தரவை இணை</translation>
+<translation id="5691180005790455277"><ph name="SITE_GROUP_NAME" /> மற்றும் அதன் கீழுள்ள தளங்களால் சேமிக்கப்பட்ட தரவு மற்றும் குக்கீகள் அனைத்தும் அழிக்கப்படும்.</translation>
 <translation id="5691511426247308406">குடும்பம்</translation>
 <translation id="5692183275898619210">அச்சிடப்பட்டது</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" இலிருந்து தவறான செயல்பாடு நடந்தது எனப் புகாரளி</translation>
@@ -3885,6 +3893,7 @@
 <translation id="6602956230557165253">வழிசெலுத்த இடது மற்றும் வலது அம்புக்குறி விசைகளைப் பயன்படுத்தவும்.</translation>
 <translation id="6605847144724004692">இதுவரை எந்தப் பயனராலும் மதிப்பிடப்படவில்லை.</translation>
 <translation id="6607831829715835317">மேலும் கருவி&amp;கள்</translation>
+<translation id="6611972847767394631">உங்கள் தாவல்களை இங்கே காணலாம்</translation>
 <translation id="6612358246767739896">பாதுகாக்கப்பட்ட உள்ளடக்கம்</translation>
 <translation id="6615455863669487791">எனக்கு காண்பி</translation>
 <translation id="6618097958368085618">பரவாயில்லை, வைத்திரு</translation>
@@ -5706,6 +5715,7 @@
 <translation id="9188732951356337132">உபயோகம் &amp; கண்டறிதல் தரவை அனுப்புக. கண்டறிதல் தரவு, சாதனம் மற்றும் ஆப்ஸ் உபயோகத் தரவு போன்றவற்றை இந்தச் சாதனம் தற்போது Googleளுக்குத் தானாக அனுப்புகிறது. இது உங்கள் பிள்ளையை அடையாளம் கண்டறியப் பயன்படுத்தப்படாது, இது சிஸ்டம் மற்றும் ஆப்ஸின் நிலைத்தன்மையை மேம்படுத்தவும் பிற மேம்பாடுகளைச் செய்யவும் உதவும். ஒருங்கிணைக்கப்பட்ட சில தரவுகள், Google ஆப்ஸ் மற்றும் Android டெவெலப்பர்கள் போன்ற கூட்டாளர்களுக்கும் உதவும். உங்கள் பிள்ளையின் கணக்கில் கூடுதல் ’இணையம் &amp; ஆப்ஸ் செயல்பாடு’ அமைப்பு இயக்கப்பட்டிருந்தால், இந்தத் தரவு அவரது Google கணக்கில் சேமிக்கப்படலாம். <ph name="BEGIN_LINK2" />மேலும் அறிக<ph name="END_LINK2" /></translation>
 <translation id="9190063653747922532">L2TP/IPsec + முன்பே-பகிர்ந்து கொள்ளப்பட்ட விசை</translation>
 <translation id="920045321358709304"><ph name="SEARCH_ENGINE" /> இல் தேடு</translation>
+<translation id="9201023452444595544">இருக்கும் ஆஃப்லைன் தரவு அழிக்கப்படும்</translation>
 <translation id="9201220332032049474">திரைப் பூட்டு விருப்பங்கள்</translation>
 <translation id="9203398526606335860">&amp;சுயவிவரமாக்கம் இயக்கப்பட்டது</translation>
 <translation id="9203904171912129171">சாதனத்தைத் தேர்ந்தெடுக்கவும்</translation>
@@ -5718,6 +5728,7 @@
 <translation id="9220525904950070496">கணக்கை அகற்றுக</translation>
 <translation id="9220820413868316583">விரலை எடுத்துவிட்டு மீண்டும் தொடவும்.</translation>
 <translation id="923467487918828349">அனைத்தும் காண்பி</translation>
+<translation id="929117907539171075">நிறுவப்பட்ட ஆப்ஸிலுள்ள ஆஃப்லைன் தரவும் அழிக்கப்படும்</translation>
 <translation id="930268624053534560">விவரமான நேரமுத்திரைகள்</translation>
 <translation id="932327136139879170">முகப்பு</translation>
 <translation id="932508678520956232">அச்சிடலைத் தொடங்க முடியவில்லை.</translation>

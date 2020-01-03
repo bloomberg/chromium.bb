@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
-<translation id="100812568230599391">Αλλάξτε το στυλ προβολής σε παρεμβολή.</translation>
+<translation id="100812568230599391">Αλλάξτε το στιλ προβολής σε παρεμβολή.</translation>
 <translation id="1011903154582639569">Εντοπίστε ένα πλήκτρο και έπειτα σηκώστε το δάκτυλό σας για να πληκτρολογήσετε</translation>
 <translation id="1012173283529841972">Στοιχείο λίστας</translation>
 <translation id="1013742170491673792">αναζήτηση ρόλου</translation>
@@ -23,7 +23,7 @@
 <translation id="1114836634143403764">Πρόταση</translation>
 <translation id="1120743664840974483">{"α": "Αστέρι", "β": "Βάτραχος", "γ": "Γάτα", "δ": "Δέντρο", "ε": "Ελέφαντας", "ζ": "Ζάρι", "η": "Ήλιος", "θ": "Θησαυρός", "ι": "Ιππότης", "κ": "Κότα","λ": "Λαγός", "μ": "Μήλο", "ν": "Νάνος", "ξ": "Ξιφίας", "ο": "Ομπρέλα","π": "Πάπια", "ρ": "Ρόδι", "σ": "Σαλιγκάρι", "τ": "Τρένο", "υ": "Υποβρύχιο", "φ": "Φεγγάρι", "χ": "Χελιδόνι", "ψ": "Ψάρι","ω": "Ώρα"}</translation>
 <translation id="1120938014254001895">Σύρετε δύο δάκτυλα προς τα πάνω</translation>
-<translation id="1124771028211010580">Το τρέχον στυλ προβολής είναι η παράθεση.</translation>
+<translation id="1124771028211010580">Το τρέχον στιλ προβολής είναι η παράθεση.</translation>
 <translation id="1126928665165112660">Δεν είναι πλάγια γραφή</translation>
 <translation id="113582498867142724">Συλλογή <ph name="TAG" /> με <ph name="NUM" /> στοιχεία</translation>
 <translation id="1155043339247954670">Δεν υπάρχει επόμενο στοιχείο στη λίστα.</translation>
@@ -521,7 +521,7 @@
 <translation id="4591507479202817876">, επιλέχθηκε</translation>
 <translation id="4597532268155981612">φόρμα</translation>
 <translation id="4597896406374528575">Απρίλιος</translation>
-<translation id="460018603901637538">Αλλάξτε το στυλ προβολής σε παράθεση.</translation>
+<translation id="460018603901637538">Αλλάξτε το στιλ προβολής σε παράθεση.</translation>
 <translation id="4601367666219428522">πίνακας <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
 <translation id="4615592953348396470">Παράβλεψη του επόμενου πατήματος πλήκτρου</translation>
 <translation id="461613135510474570">Πρόταση</translation>
@@ -890,7 +890,7 @@
 <translation id="7153618581592392745">Λιλά</translation>
 <translation id="7157306005867877619">Περίληψη</translation>
 <translation id="7161771961008409533">Αναδυόμενο κουμπί</translation>
-<translation id="7165714724802225287">Το τρέχον στυλ προβολής είναι η παρεμβολή.</translation>
+<translation id="7165714724802225287">Το τρέχον στιλ προβολής είναι η παρεμβολή.</translation>
 <translation id="7167657087543110">εκφώνηση χαρακτήρων</translation>
 <translation id="7170733337935166589">Μετάβαση προς τα εμπρός κατά τη συνεχόμενη ανάγνωση</translation>
 <translation id="7173102181852295013">Σκούρο μπλε</translation>

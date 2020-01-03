@@ -325,7 +325,6 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />नेटवर्क निदान चलाकर देखें<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">इस पेज का अनुवाद करें</translation>
 <translation id="2479410451996844060">गलत खोज URL.</translation>
-<translation id="2482370039860827034">आपने अभी-अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. Chrome, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, और उन साइटों पर जाकर पासवर्ड बदलने का सुझाव देता है जिन पर आपने इसे इस्तेमाल किया था.</translation>
 <translation id="2482878487686419369">सूचनाएं</translation>
 <translation id="248348093745724435">मशीन के लिए नीतियां</translation>
 <translation id="2491120439723279231">सर्वर के प्रमाणपत्र में त्रुटियां हैं.</translation>
@@ -338,7 +337,6 @@
 <translation id="2505268675989099013">खाते की सुरक्षा करें</translation>
 <translation id="2515629240566999685">अपने इलाके में सिग्नल की जाँच करें</translation>
 <translation id="2521385132275182522">नीचे दाईं ओर स्टेपल</translation>
-<translation id="2521483867890026383">आपने अभी-अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. क्रोमियम, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, और उन साइटों पर जाकर पासवर्ड बदलने का सुझाव देता है जिन पर आपने इसे इस्तेमाल किया था.</translation>
 <translation id="2523886232349826891">सिर्फ़ इस डिवाइस पर सेव किया गया</translation>
 <translation id="2524461107774643265">ज़्यादा जानकारी जोड़ें</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{और 1 और व्यक्ति}one{और # और लोग}other{और # और लोग}}</translation>
@@ -666,7 +664,7 @@
 <translation id="4171400957073367226">गलत सत्यापन हस्ताक्षर</translation>
 <translation id="4173315687471669144">फ़ूल्ज़कैप</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> और आइटम}one{<ph name="ITEM_COUNT" /> और आइटम}other{<ph name="ITEM_COUNT" /> और आइटम}}</translation>
-<translation id="4176463684765177261">अक्षम किए गए</translation>
+<translation id="4176463684765177261">बंद किया गया</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
 <translation id="4194250254487269611">माफ़ करें, आपके कार्ड को अभी सेव नहीं किया जा सकता</translation>
 <translation id="4196861286325780578">&amp;ले जाना फिर से करें</translation>
@@ -720,6 +718,7 @@
 <translation id="4340982228985273705">इस कंप्यूटर की पहचान एंटरप्राइज़ की ओर से प्रबंधित होने के रूप में नहीं की गई है, इसलिए नीति सिर्फ़ Chrome वेबस्टोर पर होस्ट किए जाने वाले एक्सटेंशन ही अपने आप इंस्टॉल कर सकती है. Chrome वेबस्टोर अपडेट यूआरएल "<ph name="CWS_UPDATE_URL" />" है.</translation>
 <translation id="4346197816712207223">स्वीकार किए जाने वाले क्रेडिट कार्ड</translation>
 <translation id="4346833872170306413">आरओसी-16के</translation>
+<translation id="4349531505348777662">आपने अभी-अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. Chrome, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, और उन साइटों पर जाकर पासवर्ड बदलने का सुझाव देता है जिन पर आपने इसे इस्तेमाल किया था.</translation>
 <translation id="4356973930735388585">इस साइट पर मौजूद हमलावर आपके कंप्यूटर पर ऐसे खतरनाक प्रोग्राम इंस्टॉल करने की कोशिश कर सकते हैं जो आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुरा लेते हैं या उसे मिटा देते हैं.</translation>
 <translation id="4358059973562876591">आपकी ओर से तय किए गए टेम्प्लेट, DnsOverHttpsMode नीति की गड़बड़ी की वजह से लागू नहीं हो सकते.</translation>
 <translation id="4358461427845829800">भुगतान विधियां प्रबंधित करें...</translation>
@@ -1243,6 +1242,7 @@
 <translation id="6970216967273061347">जिला</translation>
 <translation id="6973656660372572881">फ़िक्‍स्‍ड प्रॉक्‍सी सर्वर और .pac स्‍क्रिप्‍ट URL दोनों ही बताए गए हैं.</translation>
 <translation id="6973932557599545801">माफ़ करें, मैं आपकी मदद नहीं कर सकती. कृपया खुद करने की कोशिश करें.</translation>
+<translation id="6975012522936652259">आपने अभी-अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. क्रोमियम, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, और उन साइटों पर जाकर पासवर्ड बदलने का सुझाव देता है जिन पर आपने इसे इस्तेमाल किया था.</translation>
 <translation id="6979158407327259162">Google डिस्क</translation>
 <translation id="6979440798594660689">म्यूट करें (डिफ़ॉल्ट)</translation>
 <translation id="6989763994942163495">अतिरिक्त सेटिंग दिखाएं...</translation>

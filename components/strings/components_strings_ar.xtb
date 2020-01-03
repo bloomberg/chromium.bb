@@ -325,7 +325,6 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />تشغيل بيانات تشخيص الشبكة<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">ترجم هذه الصفحة</translation>
 <translation id="2479410451996844060">‏عنوان URL للبحث غير صالح.</translation>
-<translation id="2482370039860827034">‏لقد أدخلت للتو كلمة مرورك في موقع إلكتروني مريب، لذا يُوصي Chrome بالانتقال إلى <ph name="WEBSITE_1" /> و<ph name="WEBSITE_2" /> وأيّة مواقع إلكترونية أخرى تستخدم فيها كلمة المرور هذه وتغييرها الآن.</translation>
 <translation id="2482878487686419369">الإشعارات</translation>
 <translation id="248348093745724435">سياسات الأجهزة</translation>
 <translation id="2491120439723279231">تحتوي شهادة الخادم على أخطاء.</translation>
@@ -338,7 +337,6 @@
 <translation id="2505268675989099013">حماية الحساب</translation>
 <translation id="2515629240566999685">التحقّق من اتصال الإنترنت في منطقتك</translation>
 <translation id="2521385132275182522">وضع دبوس أسفل اليمين</translation>
-<translation id="2521483867890026383">‏لقد أدخلت للتو كلمة مرورك في موقع إلكتروني مريب، لذا، يُوصي متصفح Chromium بالانتقال إلى <ph name="WEBSITE_1" /> و<ph name="WEBSITE_2" /> وأيّة مواقع إلكترونية أخرى تستخدم فيها كلمة المرور هذه وتغيير الكلمة الآن.</translation>
 <translation id="2523886232349826891">سيتم حفظ البطاقة على هذا الجهاز فقط</translation>
 <translation id="2524461107774643265">إضافة مزيد من المعلومات</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{وكلمة مرور واحدة أخرى}zero{و# كلمة مرور أخرى}two{وكلمتا مرور أخريان}few{و# كلمات مرور أخرى}many{و# كلمة مرور أخرى}other{و# كلمة مرور أخرى}}</translation>
@@ -681,7 +679,7 @@
 <translation id="4221630205957821124">‏&lt;h4&gt;الخطوة 1: تسجيل الدخول إلى البوابة&lt;/h4&gt;
     &lt;p&gt;تتطلّب شبكات Wi-Fi تسجيل الدخول في أماكن مثل المقاهي أو المطارات. للاطّلاع على صفحة تسجيل الدخول، انتقِل إلى صفحةٍ تستخدم رمز &lt;code&gt;http://&lt;/code&gt;.&lt;/p&gt;
     &lt;ol&gt;
-    &lt;li&gt;انتقِل إلى أي موقع إنترنت يبدأ برمز &lt;code&gt;http://&lt;/code&gt;، مثل&lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
+    &lt;li&gt;انتقِل إلى أي موقع إلكتروني يبدأ برمز &lt;code&gt;http://&lt;/code&gt;، مثل&lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
     &lt;li&gt;عندما تُفتح صفحة تسجيل الدخول، سجّل الدخول لاستخدام الويب.&lt;/li&gt;
     &lt;/ol&gt;
     &lt;h4&gt;الخطوة 2: فتح الصفحة في "وضع التصفح المتخفي" (على أجهزة الكمبيوتر فقط)&lt;/h4&gt;
@@ -723,6 +721,7 @@
 <translation id="4340982228985273705">‏لا يتم رصد جهاز الكمبيوتر هذا كمؤسسة مُدارة حتى تتمكن السياسة فقط من التثبيت التلقائي للإضافات التي تمت استضافتها في سوق Chrome الإلكتروني. ويكون عنوان URL للتحديث في سوق Chrome الإلكتروني هو "<ph name="CWS_UPDATE_URL" />".</translation>
 <translation id="4346197816712207223">بطاقات الائتمان المقبولة</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">‏لقد أدخلت للتو كلمة مرورك في موقع إلكتروني مريب. ينصحك Chrome بالانتقال إلى <ph name="WEBSITE_1" /> و<ph name="WEBSITE_2" /> ومواقع إلكترونية أخرى تستخدم فيها كلمة المرور هذه، ثم تغيير كلمة المرور الآن.</translation>
 <translation id="4356973930735388585">قد يحاول المهاجمون الموجودون على هذا الموقع تثبيت برامج خطيرة على الكمبيوتر التابع لك تسرق معلوماتك أو تحذفها (على سبيل المثال، الصور وكلمات المرور والرسائل وبطاقات الائتمان).</translation>
 <translation id="4358059973562876591">‏قد لا يتم تطبيق النماذج التي حدّدتها بسبب حدوث خطأ في سياسة DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">إدارة طرق الدفع...</translation>
@@ -1246,6 +1245,7 @@
 <translation id="6970216967273061347">حي</translation>
 <translation id="6973656660372572881">‏تم تحديد كل من الخوادم الوكيلة الثابتة وعنوان URL للنص البرمجي pac.</translation>
 <translation id="6973932557599545801">عذرًا، لا يمكنني مساعدتك، يُرجى المتابعة بنفسك.</translation>
+<translation id="6975012522936652259">‏لقد أدخلت للتو كلمة مرورك في موقع إلكتروني مريب. ينصحك Chromium بالانتقال إلى <ph name="WEBSITE_1" /> و<ph name="WEBSITE_2" /> ومواقع إلكترونية أخرى تستخدم فيها كلمة المرور هذه، ثم تغيير كلمة المرور الآن.</translation>
 <translation id="6979158407327259162">Google Drive</translation>
 <translation id="6979440798594660689">كتم الصوت (تلقائي)</translation>
 <translation id="6989763994942163495">عرض الإعدادات المتقدمة...</translation>

@@ -156,7 +156,7 @@
 <translation id="1205489148908752564">قراءة وتغيير المستخدمين في القائمة البيضاء</translation>
 <translation id="1206407435587370571">‏استكشاف جهاز Chromebook</translation>
 <translation id="1209796539517632982">خوادم الأسماء التلقائية</translation>
-<translation id="1211364473545090084">استخدِم الويب دون حفظ سجلّ التصفُّح باستخدام نافذة تصفُّح متخفٍ</translation>
+<translation id="1211364473545090084">استخدِم الويب بدون حفظ سجلّ التصفُّح باستخدام نافذة تصفُّح متخفٍ</translation>
 <translation id="1211769675100312947">الاختصارات التي نظمتها</translation>
 <translation id="1213037489357051291">تم إعداد <ph name="NUM_FINGERPRINTS" /> من بصمات الإصبع</translation>
 <translation id="1215411991991485844">تمت إضافة تطبيق جديد في الخلفية</translation>
@@ -666,7 +666,7 @@
 <translation id="1916502483199172559">الصورة الرمزية التلقائية الحمراء</translation>
 <translation id="1918141783557917887">أص&amp;غر</translation>
 <translation id="1919345977826869612">الإعلانات</translation>
-<translation id="1919814239594435008">تم السماح بالمكون الإضافي دون استخدام وضع الحماية</translation>
+<translation id="1919814239594435008">تم السماح بالمكون الإضافي بدون استخدام وضع الحماية</translation>
 <translation id="1920390473494685033">جهات الاتصال</translation>
 <translation id="1921050530041573580">إقران هاتفك مع الرسائل</translation>
 <translation id="1921584744613111023"><ph name="DPI" /> نقطة لكل بوصة</translation>
@@ -1025,7 +1025,7 @@
 <translation id="2445484935443597917">إنشاء ملف شخصي جديد</translation>
 <translation id="2446585455334014596">يريد <ph name="APP_NAME" /> إثبات هويتك</translation>
 <translation id="2448312741937722512">النوع</translation>
-<translation id="2448734521821581858">ملفات تعريف الارتباط هي ملفات تُنشئها المواقع الإلكترونية التي تزورها. يوجد نوعان من ملفات تعريف الارتباط: ملفات تعريف الارتباط للطرف الأول التي يُنشؤها الموقع الإلكتروني الذي تزوره، ويتم عرض الموقع الإلكتروني في شريط العناوين. وملفات تعريف الارتباط التابعة لجهات خارجية التي تُنشؤها مواقع إلكترونية أخرى، حيث تمتلك هذه المواقع الإلكترونية بعض المحتويات، مثل الإعلانات أو الصور، والتي يمكنك مشاهدتها في المواقع الإلكترونية التي تزورها.</translation>
+<translation id="2448734521821581858">ملفات تعريف الارتباط هي ملفات تُنشئها المواقع الإلكترونية التي تزورها. يوجد نوعان من ملفات تعريف الارتباط: ملفات تعريف الارتباط للطرف الأول التي يُنشؤها الموقع الإلكتروني الذي تزوره، ويتم عرض الموقع الإلكتروني في شريط العناوين. وملفات تعريف الارتباط التابعة لجهات خارجية التي تُنشؤها مواقع إلكترونية أخرى، حيث تمتلك هذه المواقع الإلكترونية بعض المحتوى، مثل الإعلانات أو الصور، والذي يمكنك مشاهدته على المواقع الإلكترونية التي تزورها.</translation>
 <translation id="2450223707519584812">‏لن تتمكن من إضافة المستخدمين لأن مفاتيح واجهة برمجة تطبيقات Google مفقودة. راجع <ph name="DETAILS_URL" /> للحصول على تفاصيل.</translation>
 <translation id="2450849356604136918">ليس هناك أي عروض نشطة</translation>
 <translation id="2451298179137331965">الضعف</translation>
@@ -1214,7 +1214,7 @@
 <translation id="2695749433451188613">‏بروتوكول الطباعة على الإنترنت (HTTPS)</translation>
 <translation id="2699911226086014512">تعذَّر إتمام عملية رقم التعريف الشخصي باستخدام الرمز <ph name="RETRIES" />.</translation>
 <translation id="2701737434167469065">تسجيل الدخول، <ph name="EMAIL" /></translation>
-<translation id="270358213449696159">‏محتويات بنود نظام التشغيل Google Chrome</translation>
+<translation id="270358213449696159">‏محتوى بنود نظام التشغيل Google Chrome</translation>
 <translation id="2704184184447774363">‏توقيع المستند لـ Microsoft</translation>
 <translation id="270516211545221798">سرعة لوحة اللمس</translation>
 <translation id="2705736684557713153">مرّر لأسفل الشاشة وفعّل التوصيل الفوري إذا كان ظاهرًا. وفي حال عدم ظهوره، تكون قد أنهيت الإجراءات.</translation>
@@ -3814,7 +3814,7 @@
 <translation id="6472893788822429178">عرض زر الصفحة الرئيسية</translation>
 <translation id="6473842110411557830">‏صورة توضيحية لـ Powerwash</translation>
 <translation id="6474884162850599008">‏إلغاء ربط حساب Google Drive</translation>
-<translation id="6475697075626596525"><ph name="APP_NAME" /> يود أن يشارك محتويات شاشتك. اختر ما ترغب في مشاركته.</translation>
+<translation id="6475697075626596525"><ph name="APP_NAME" /> يود أن يشارك محتوى شاشتك. اختر ما ترغب في مشاركته.</translation>
 <translation id="6478248366783946499">هل تريد الاحتفاظ بالملف الضار؟</translation>
 <translation id="6483485061007832714">فتح التنزيل</translation>
 <translation id="6483805311199035658">يجري فتح <ph name="FILE" />...</translation>
@@ -4010,7 +4010,7 @@
 <translation id="6790428901817661496">التشغيل</translation>
 <translation id="6790497603648687708">تمت إضافة <ph name="EXTENSION_NAME" /> عن بُعد</translation>
 <translation id="6790820461102226165">إضافة شخص...</translation>
-<translation id="6792072150955115067">يود <ph name="APP_NAME" /> أن يشارك محتويات شاشتك مع <ph name="TARGET_NAME" />. اختر ما ترغب في مشاركته.</translation>
+<translation id="6792072150955115067">يود <ph name="APP_NAME" /> أن يشارك محتوى شاشتك مع <ph name="TARGET_NAME" />. اختر ما ترغب في مشاركته.</translation>
 <translation id="6793604637258913070">تمييز علامة إقحام النص عندما تظهر أو تتحرك</translation>
 <translation id="6795884519221689054">باندا</translation>
 <translation id="6797493596609571643">عفوًا، حدث خطأ ما.</translation>
@@ -4383,7 +4383,7 @@
 <translation id="7308002049209013926">‏استخدم Launcher للوصول بسرعة إلى التطبيقات والأنشطة الجديدة. وللوصول إلى هنا من خلال لوحة المفاتيح، اضغط على Alt + Shift + L.</translation>
 <translation id="7309257895202129721">عرض &amp;عناصر التحكم</translation>
 <translation id="7310598146671372464">‏تعذّر تسجيل الدخول لأن الخادم لا يدعم أنواع تشفير Kerberos المحدَّدة. يُرجى الاتصال بمشرفك.</translation>
-<translation id="7311079019872751559">الوصول إلى المكون الإضافي دون استخدام وضع الحماية</translation>
+<translation id="7311079019872751559">الوصول إلى المكون الإضافي بدون استخدام وضع الحماية</translation>
 <translation id="73174032666024687"><ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
 <translation id="7321545336522791733">خادم يتعذر الوصول إليه</translation>
 <translation id="7324297612904500502">منتدى الإصدار التجريبي</translation>
@@ -5285,7 +5285,7 @@
 <translation id="8594908476761052472">تصوير فيديو</translation>
 <translation id="8596540852772265699">ملفات مخصصة</translation>
 <translation id="8597845839771543242">شكل الموقع:</translation>
-<translation id="8598453409908276158">تم حظر المكوّن الإضافي دون استخدام وضع الحماية</translation>
+<translation id="8598453409908276158">تم حظر المكوّن الإضافي بدون استخدام وضع الحماية</translation>
 <translation id="8601206103050338563">‏مصادقة TLS (بروتوكول أمان طبقة النقل) لشبكة الإنترنت العالمية (WWW)</translation>
 <translation id="8602851771975208551">‏أضاف برنامج آخر بجهاز الكمبيوتر تطبيقًا قد يؤدي إلى تغيير طريقة عمل Chrome.</translation>
 <translation id="8605428685123651449">‏ذاكرة SQLite</translation>

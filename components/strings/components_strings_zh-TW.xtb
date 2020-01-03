@@ -325,7 +325,6 @@
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />執行網路診斷<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">翻譯這個網頁</translation>
 <translation id="2479410451996844060">無效的搜尋網址。</translation>
-<translation id="2482370039860827034">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="248348093745724435">裝置政策</translation>
 <translation id="2491120439723279231">伺服器憑證含有錯誤。</translation>
@@ -338,7 +337,6 @@
 <translation id="2505268675989099013">保護帳戶</translation>
 <translation id="2515629240566999685">檢查所在位置的網路訊號</translation>
 <translation id="2521385132275182522">釘裝 (右下方)</translation>
-<translation id="2521483867890026383">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="2523886232349826891">僅儲存在這部裝置</translation>
 <translation id="2524461107774643265">新增詳細資訊</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{和另外 1 個網域}other{和另外 # 個網域}}</translation>
@@ -708,6 +706,7 @@
 <translation id="4340982228985273705">系統偵測結果顯示這台電腦未受企業管理，因此政策只能自動安裝透過 Chrome 線上應用程式商店代管的擴充功能。Chrome 線上應用程式商店更新網址為「<ph name="CWS_UPDATE_URL" />」。</translation>
 <translation id="4346197816712207223">接受的信用卡</translation>
 <translation id="4346833872170306413">Roc-16K</translation>
+<translation id="4349531505348777662">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="4356973930735388585">攻擊者可能會試圖透過這個網站在你的電腦上安裝危險程式，藉此竊取或刪除你的資訊 (例如相片、密碼、郵件和信用卡資料)。</translation>
 <translation id="4358059973562876591">DnsOverHttpsMode 政策發生錯誤，因此系統無法套用你指定的範本。</translation>
 <translation id="4358461427845829800">管理付款方式...</translation>
@@ -1230,6 +1229,7 @@
 <translation id="6970216967273061347">District</translation>
 <translation id="6973656660372572881">已指定固定的 Proxy 伺服器和 .pac 指令碼網址。</translation>
 <translation id="6973932557599545801">抱歉，目前無法提供協助，請自行填入資料。</translation>
+<translation id="6975012522936652259">你剛才在詐騙網站上輸入了密碼。Chromium 建議你立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及也使用這個密碼的其他網站變更密碼。</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
 <translation id="6979440798594660689">靜音 (預設)</translation>
 <translation id="6989763994942163495">顯示進階設定...</translation>

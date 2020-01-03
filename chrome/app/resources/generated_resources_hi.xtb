@@ -511,7 +511,7 @@
 <translation id="1712349894969001173">यह पासवर्ड अपने iPhone पर पाएं</translation>
 <translation id="1712552549805331520"><ph name="URL" /> आपके स्थानीय कंप्यूटर पर हमेशा के लिए डेटा संग्रहित करना चाहता है</translation>
 <translation id="1717218214683051432">मोशन सेंसर</translation>
-<translation id="1718835860248848330">अंतिम घंटा</translation>
+<translation id="1718835860248848330">पिछला घंटा</translation>
 <translation id="1719312230114180055">ध्यान दें: आपका फ़िंगरप्रिंट किसी मज़बूत पासवर्ड या पिन की तुलना में कम सुरक्षित हो सकता है.</translation>
 <translation id="1720318856472900922">TLS WWW सर्वर प्रमाणीकरण</translation>
 <translation id="1721312023322545264">आपको <ph name="NAME" /> से इस साइट पर जाने की अनुमति लेनी होगी</translation>
@@ -1062,7 +1062,7 @@
 <translation id="249113932447298600">क्षमा करें, डिवाइस <ph name="DEVICE_LABEL" /> इस समय समर्थित नहीं है.</translation>
 <translation id="249303669840926644">पंजीकरण पूरा नहीं किया जा सका</translation>
 <translation id="2495777824269688114">ज़्यादा सुविधाएं खोजें या उत्तर पाएं. सहायता के लिए “?” चुनें.</translation>
-<translation id="2496180316473517155">ब्राउज़िंग इतिहास...</translation>
+<translation id="2496180316473517155">ब्राउज़िंग इतिहास</translation>
 <translation id="2497229222757901769">माउस की गति</translation>
 <translation id="2497852260688568942">सिंक को आपके व्यवस्थापक ने अक्षम कर दिया है</translation>
 <translation id="2498539833203011245">छोटा करें</translation>
@@ -1129,7 +1129,7 @@
 <translation id="257779572837908839">मीटिंग के लिए Chromebox के रूप में सेट अप करें</translation>
 <translation id="2580889980133367162"><ph name="HOST" /> को एकाधिक फ़ाइलें हमेशा डाउनलोड करने दें</translation>
 <translation id="2580924999637585241">कुल: <ph name="NUMBER_OF_SHEETS" /> <ph name="SHEETS_LABEL" /></translation>
-<translation id="258095186877893873">लंबी</translation>
+<translation id="258095186877893873">लंबा</translation>
 <translation id="2582253231918033891"><ph name="PRODUCT_NAME" /> <ph name="PRODUCT_VERSION" /> (प्‍लेटफ़ॉर्म <ph name="PLATFORM_VERSION" />) <ph name="DEVICE_SERIAL_NUMBER" /></translation>
 <translation id="2584109212074498965">Kerberos टिकट नहीं मिल सका. फिर से कोशिश करें या अपने संगठन के डिवाइस एडमिन से संपर्क करें. (गड़बड़ी कोड <ph name="ERROR_CODE" />).</translation>
 <translation id="2585724835339714757">यह टैब आपकी स्क्रीन शेयर कर रहा है.</translation>
@@ -1161,7 +1161,7 @@
 <translation id="2629227353894235473">Android ऐप्लिकेशन डेवलप करें</translation>
 <translation id="2630681426381349926">शुरू करने के लिए वाई-फ़ाई  से कनेक्ट करें</translation>
 <translation id="2631120081682787498">क्या आप वाकई इस टैब को बंद करना चाहते हैं?</translation>
-<translation id="2631498379019108537">अलमारी में इनपुट विकल्प दिखाएं</translation>
+<translation id="2631498379019108537">शेल्फ़ में इनपुट के विकल्प दिखाएं</translation>
 <translation id="2633212996805280240">"<ph name="EXTENSION_NAME" />" निकालें?</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> इंस्टॉल नहीं कर सका, लेकिन इसकी डिस्क इमेज से चलना जारी रहेगा.</translation>
 <translation id="2633764681656412085">FIDO</translation>
@@ -2232,7 +2232,7 @@
 <translation id="4110895898888439383">उच्च कंट्रास्ट मोड में वेब ब्राउज़ करें</translation>
 <translation id="4112194537011183136"><ph name="DEVICE_NAME" /> (ऑफ़लाइन)</translation>
 <translation id="4115002065223188701">नेटवर्क नहीं मिल रहा है</translation>
-<translation id="4115080753528843955">कुछ सामग्री सेवाएं, सुरक्षित सामग्री के एक्सेस की अनुमति देने के उद्देश्य से खास पहचान करने वालों का इस्तेमाल करती है</translation>
+<translation id="4115080753528843955">सुरक्षित कॉन्टेंट को ऐक्सेस करने की अनुमति देने के लिए, कुछ कॉन्टेंट सेवाएं विशेष पहचानकर्ताओं का इस्तेमाल करती हैं.</translation>
 <translation id="4115378294792113321">मैजेंटा</translation>
 <translation id="4118579674665737931">कृपया डिवाइस को फिर से चालू करें और दोबारा कोशिश करें.</translation>
 <translation id="4120388883569225797">यह सुरक्षा कुंजी रीसेट नहीं हो पा रही है</translation>
@@ -2266,7 +2266,7 @@
 <translation id="4172051516777682613">हमेशा दिखाएं</translation>
 <translation id="4175137578744761569">हल्का बैंगनी और सफ़ेद</translation>
 <translation id="4175737294868205930">स्थायी जगह</translation>
-<translation id="4176463684765177261">अक्षम किए गए</translation>
+<translation id="4176463684765177261">बंद किया गया</translation>
 <translation id="4180788401304023883">CA प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" मिटाएं?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">भाषाएं</translation>
@@ -3735,7 +3735,7 @@
 <translation id="6352773953037195952">सबसे ज़्यादा</translation>
 <translation id="6354918092619878358">SECG अंडाकार वक्र secp256r1 (अर्थात ANSI X9.62 prime256v1, NIST P-256)</translation>
 <translation id="635609604405270300">डिवाइस चालू रखें</translation>
-<translation id="63566973648609420">आपके सुरक्षित किए गए डेटा को सिर्फ़ वही व्यक्ति पढ़ सकता है जिसके पास आपका पासफ़्रेज़ है. पासफ़्रेज़ Google को भेजा नहीं जाता है या न हीं Google पासफ़्रेज़ स्टोर करता है. अगर आप अपना पासफ़्रेज़ भूल जाते हैं या यह सेटिंग बदलना चाहते हैं, तो आपको <ph name="BEGIN_LINK" />सिंक रीसेट करना होगा<ph name="END_LINK" />.</translation>
+<translation id="63566973648609420">आपके सुरक्षित किए गए डेटा को सिर्फ़ वही व्यक्ति पढ़ सकता है जिसके पास आपका लंबा पासवर्ड है. लंबा पासवर्ड Google को नहीं भेजा जाता है. Google इसे सेव भी नहीं करता है. अगर आप अपना लंबा पासवर्ड भूल जाते हैं या यह सेटिंग बदलना चाहते हैं, तो आपको <ph name="BEGIN_LINK" />सिंक रीसेट करना होगा<ph name="END_LINK" />.</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" /> परिवार में स्वागत है. यह कोई साधारण कंप्यूटर नहीं है.</translation>
 <translation id="6358884629796491903">ड्रैगन</translation>
 <translation id="6361850914223837199">गड़बड़ी विवरण:</translation>
@@ -3752,7 +3752,7 @@
 <translation id="6385543213911723544">साइटें कुकी डेटा को सेव सकती हैं और पढ़ सकती हैं</translation>
 <translation id="6386099547750337629">अगर ऐसा नहीं होना चाहिए था, तो कृपया 'सहायता' से संपर्क करें.</translation>
 <translation id="6387674443318562538">वर्टिकल (ऊपर से नीचे की ओर) रूप से छोटे-छोटे हिस्सों में बांटें यानी स्प्लिट करें</translation>
-<translation id="6388429472088318283">खोज की भाषाएं</translation>
+<translation id="6388429472088318283">भाषाएं खोजें</translation>
 <translation id="6390799748543157332">इस विंडो में आप जो पेज देखते हैं वे ब्राउज़र इतिहास में दिखाई नहीं देंगे और वे आपके खोले गए सभी मेहमान विंडो बंद करने के बाद कंप्यूटर पर कुकी जैसे दूसरे चिह्न नहीं छोड़ेंगे. हालांकि, आपकी डाउनलोड की गई सभी फ़ाइलें सुरक्षित रहेंगी.</translation>
 <translation id="6393156038355142111">मज़बूत पासवर्ड सुझाएं</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />सिस्टम की जानकारी<ph name="END_LINK1" /> और <ph name="BEGIN_LINK2" />मेट्रिक्स<ph name="END_LINK2" /> भेजें</translation>
@@ -3984,7 +3984,7 @@
 <translation id="6740234557573873150"><ph name="FILE_NAME" /> को रोका गया</translation>
 <translation id="6742339027238151589">स्‍क्रिप्‍ट पर ऐक्सेस करने योग्य</translation>
 <translation id="6745592621698551453">अभी अपडेट करें</translation>
-<translation id="6746124502594467657">नीचे जाएं</translation>
+<translation id="6746124502594467657">नीचे ले जाएं</translation>
 <translation id="674632704103926902">टैप करके खींचना चालू करें</translation>
 <translation id="6748217015615267851">रेंडरर: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">आप आगे बढ़ सकते हैं, लेकिन केवल आपके समन्वयित डेटा और सेटिंग को पुनर्स्थापित किया जाएगा. सभी स्थानीय डेटा खो जाएगा.</translation>
@@ -4067,7 +4067,7 @@
 <translation id="6865313869410766144">ऑटोमैटिक भरने वाले फ़ॉर्म का डेटा</translation>
 <translation id="6865598234501509159">पेज <ph name="LANGUAGE" /> भाषा में नहीं है</translation>
 <translation id="6865708901122695652">WebRTC इवेंट लॉग (<ph name="WEBRTC_EVENT_LOG_COUNT" />)</translation>
-<translation id="686664946474413495">रंग का चटकीलापन</translation>
+<translation id="686664946474413495">कलर टेंपरेचर</translation>
 <translation id="6870888490422746447">शेयर करने के लिए कोई ऐप्लिकेशन चुनें:</translation>
 <translation id="6871644448911473373">OCSP प्रतिसादी: <ph name="LOCATION" /></translation>
 <translation id="6872781471649843364">आपने जो पासवर्ड डाला है उसे सर्वर ने अस्‍वीकार कर दिया है.</translation>
@@ -4757,7 +4757,7 @@
 <translation id="7835178595033117206">बुकमार्क हटाया गया</translation>
 <translation id="7837776265184002579">आपका होमपेज <ph name="URL" /> में बदल दिया गया था.</translation>
 <translation id="7839051173341654115">मीडिया देखें/बैकअप लें</translation>
-<translation id="7839192898639727867">प्रमाणपत्र विषय कुंजी ID</translation>
+<translation id="7839192898639727867">प्रमाणपत्र विषय कुंजी आईडी</translation>
 <translation id="7842692330619197998">अगर आपको नया खाता बनाना है, तो g.co/ChromeEnterpriseAccount पर जाएं.</translation>
 <translation id="7844553762889824470">आप जो सुनना चाहते हैं उसे हाइलाइट करें, फिर Search + S दबाएं. चुनने के लिए आप 'खोज की' को भी दबाकर रख सकते हैं या अपनी प्रोफ़ाइल इमेज के पास स्थित 'चुनें और सुनें' आइकॉन पर टैप करें.</translation>
 <translation id="7844992432319478437">अंतर अपडेट हो रहा है</translation>
@@ -4913,7 +4913,7 @@
 <translation id="8041089156583427627">सुझाव भेजें</translation>
 <translation id="8042142357103597104">टेक्स्ट की पारदर्शिता</translation>
 <translation id="8044262338717486897"><ph name="LINUX_APP_NAME" /> काम नहीं कर रहा है.</translation>
-<translation id="8044899503464538266">धीमा</translation>
+<translation id="8044899503464538266">धीमी</translation>
 <translation id="8045253504249021590">सिंक को Google डैशबोर्ड के माध्यम से बंद कर दिया गया है.</translation>
 <translation id="8045923671629973368">ऐप्लिकेशन आईडी या वेबस्टोर यूआरएल डालें</translation>
 <translation id="804786196054284061">असली उपयोगकर्ता के लाइसेंस का समझौता</translation>
