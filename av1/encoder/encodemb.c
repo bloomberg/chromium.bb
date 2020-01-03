@@ -385,10 +385,10 @@ void av1_foreach_transformed_block_in_plane(
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   const BLOCK_SIZE max_unit_bsize =
       get_plane_block_size(BLOCK_64X64, pd->subsampling_x, pd->subsampling_y);
-  int mu_blocks_wide = mi_size_wide[max_unit_bsize];
-  int mu_blocks_high = mi_size_high[max_unit_bsize];
-  mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
-  mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
+  const int mu_blocks_wide =
+      AOMMIN(mi_size_wide[max_unit_bsize], max_blocks_wide);
+  const int mu_blocks_high =
+      AOMMIN(mi_size_high[max_unit_bsize], max_blocks_high);
 
   // Keep track of the row and column of the blocks we use so that we know
   // if we are in the unrestricted motion border.
