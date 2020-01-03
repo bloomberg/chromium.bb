@@ -116,6 +116,25 @@ ProcessResult MinidumpProcessor::Process(
 
     process_state->crash_reason_ = GetCrashReason(
         dump, &process_state->crash_address_);
+
+    process_state->exception_record_.set_code(
+        exception->exception()->exception_record.exception_code,
+        // TODO(ivanpe): Populate description.
+        /* description = */ "");
+    process_state->exception_record_.set_flags(
+        exception->exception()->exception_record.exception_flags,
+        // TODO(ivanpe): Populate description.
+        /* description = */ "");
+    process_state->exception_record_.set_nested_exception_record_address(
+        exception->exception()->exception_record.exception_record);
+    process_state->exception_record_.set_address(process_state->crash_address_);
+    for (uint32_t i = 0;
+         i < exception->exception()->exception_record.number_parameters; i++) {
+      process_state->exception_record_.add_parameter(
+          exception->exception()->exception_record.exception_information[i],
+          // TODO(ivanpe): Populate description.
+          /* description = */ "");
+    }
   }
 
   // This will just return an empty string if it doesn't exist.
