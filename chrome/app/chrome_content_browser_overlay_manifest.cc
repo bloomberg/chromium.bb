@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "chrome/common/available_offline_content.mojom.h"
 #include "chrome/common/cache_stats_recorder.mojom.h"
-#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/common/net_benchmarking.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/contextual_search/content/common/mojom/contextual_search_js_api_service.mojom.h"
@@ -133,7 +132,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 cros::mojom::CameraAppDeviceProvider,
 #endif
                 media::mojom::MediaEngagementScoreDetailsProvider,
-                media_router::mojom::MediaRouter,
                 page_load_metrics::mojom::PageLoadMetrics,
 
                 // WebUI-only interfaces go below this line. These should be

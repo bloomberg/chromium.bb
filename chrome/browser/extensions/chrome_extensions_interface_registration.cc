@@ -12,8 +12,6 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "build/branding_buildflags.h"
-#include "chrome/browser/media/router/media_router_feature.h"       // nogncheck
-#include "chrome/browser/media/router/mojo/media_router_desktop.h"  // nogncheck
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
@@ -140,16 +138,6 @@ void RegisterChromeInterfacesForExtension(
     content::RenderFrameHost* render_frame_host,
     const Extension* extension) {
   DCHECK(extension);
-  content::BrowserContext* context =
-      render_frame_host->GetProcess()->GetBrowserContext();
-  if (media_router::MediaRouterEnabled(context) &&
-      extension->permissions_data()->HasAPIPermission(
-          APIPermission::kMediaRouterPrivate)) {
-    registry->AddInterface(
-        base::Bind(&media_router::MediaRouterDesktop::BindToReceiver,
-                   base::RetainedRef(extension), context));
-  }
-
 #if defined(OS_CHROMEOS)
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -185,10 +173,5 @@ void RegisterChromeInterfacesForExtension(
   }
 #endif
 }
-
-void PopulateChromeFrameBindersForExtension(
-    service_manager::BinderMapWithContext<content::RenderFrameHost*>* map,
-    content::RenderFrameHost* render_frame_host,
-    const Extension* extension) {}
 
 }  // namespace extensions
