@@ -3477,12 +3477,10 @@ static void generate_psnr_packet(AV1_COMP *cpi) {
   int i;
   PSNR_STATS psnr;
 #if CONFIG_AV1_HIGHBITDEPTH
-  // TODO(yaowu): unify these two versions into one.
-  if (cpi->common.seq_params.use_highbitdepth)
-    aom_calc_highbd_psnr(cpi->source, &cpi->common.cur_frame->buf, &psnr,
-                         cpi->td.mb.e_mbd.bd, cpi->oxcf.input_bit_depth);
-  else
-    aom_calc_psnr(cpi->source, &cpi->common.cur_frame->buf, &psnr);
+  const uint32_t in_bit_depth = cpi->oxcf.input_bit_depth;
+  const uint32_t bit_depth = cpi->td.mb.e_mbd.bd;
+  aom_calc_highbd_psnr(cpi->source, &cpi->common.cur_frame->buf, &psnr,
+                       bit_depth, in_bit_depth);
 #else
   aom_calc_psnr(cpi->source, &cpi->common.cur_frame->buf, &psnr);
 #endif
@@ -6303,18 +6301,13 @@ static void adjust_image_stat(double y, double u, double v, double all,
 static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
   AV1_COMMON *const cm = &cpi->common;
   double samples = 0.0;
-  uint32_t in_bit_depth = 8;
-  uint32_t bit_depth = 8;
+  const uint32_t in_bit_depth = cpi->oxcf.input_bit_depth;
+  const uint32_t bit_depth = cpi->td.mb.e_mbd.bd;
 
 #if CONFIG_INTER_STATS_ONLY
   if (cm->current_frame.frame_type == KEY_FRAME) return;  // skip key frame
 #endif
   cpi->bytes += frame_bytes;
-
-  if (cm->seq_params.use_highbitdepth) {
-    in_bit_depth = cpi->oxcf.input_bit_depth;
-    bit_depth = cm->seq_params.bit_depth;
-  }
   if (cm->show_frame) {
     const YV12_BUFFER_CONFIG *orig = cpi->source;
     const YV12_BUFFER_CONFIG *recon = &cpi->common.cur_frame->buf;
@@ -6326,11 +6319,7 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
       double frame_ssim2 = 0.0, weight = 0.0;
       aom_clear_system_state();
 #if CONFIG_AV1_HIGHBITDEPTH
-      // TODO(yaowu): unify these two versions into one.
-      if (cm->seq_params.use_highbitdepth)
-        aom_calc_highbd_psnr(orig, recon, &psnr, bit_depth, in_bit_depth);
-      else
-        aom_calc_psnr(orig, recon, &psnr);
+      aom_calc_highbd_psnr(orig, recon, &psnr, bit_depth, in_bit_depth);
 #else
       aom_calc_psnr(orig, recon, &psnr);
 #endif
