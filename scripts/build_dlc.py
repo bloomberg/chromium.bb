@@ -76,7 +76,8 @@ class DlcGenerator(object):
   _DLC_ROOT_DIR = 'root'
 
   def __init__(self, src_dir, sysroot, install_root_dir, fs_type,
-               pre_allocated_blocks, version, dlc_id, dlc_package, name):
+               pre_allocated_blocks, version, dlc_id, dlc_package, name,
+               preload):
     """Object initializer.
 
     Args:
@@ -89,6 +90,7 @@ class DlcGenerator(object):
       dlc_id: (str) DLC ID.
       dlc_package: (str) DLC Package.
       name: (str) DLC name.
+      preload: (bool) allow for preloading DLC.
     """
     self.src_dir = src_dir
     self.sysroot = sysroot
@@ -99,6 +101,7 @@ class DlcGenerator(object):
     self.dlc_id = dlc_id
     self.dlc_package = dlc_package
     self.name = name
+    self.preload = preload
 
     self.meta_dir = os.path.join(self.install_root_dir, DLC_META_DIR,
                                  self.dlc_id, self.dlc_package)
@@ -286,6 +289,7 @@ class DlcGenerator(object):
         'size': blocks * self._BLOCK_SIZE,
         'table-sha256-hash': table_hash,
         'version': self.version,
+        'preload-allowed': self.preload,
     }
 
   def GenerateVerity(self):
@@ -399,6 +403,8 @@ def GetParser():
   one_dlc.add_argument('--fs-type', metavar='FS_TYPE', default=_SQUASHFS_TYPE,
                        choices=(_SQUASHFS_TYPE, _EXT4_TYPE),
                        help='File system type of the image.')
+  one_dlc.add_argument('--preload', default=False, action='store_true',
+                       help='Allow preloading of DLC.')
   return parser
 
 
@@ -462,7 +468,8 @@ def main(argv):
                                  version=opts.version,
                                  dlc_id=opts.id,
                                  dlc_package=opts.package,
-                                 name=opts.name)
+                                 name=opts.name,
+                                 preload=opts.preload)
     dlc_generator.GenerateDLC()
   else:
     CopyAllDlcs(opts.sysroot, opts.install_root_dir)

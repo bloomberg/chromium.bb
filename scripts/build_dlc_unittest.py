@@ -81,7 +81,8 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
                                   version=_VERSION,
                                   dlc_id=_ID,
                                   dlc_package=_PACKAGE,
-                                  name=_NAME)
+                                  name=_NAME,
+                                  preload=False)
 
   def testSetInstallDir(self):
     """Tests install_root_dir is used correclty."""
@@ -173,6 +174,7 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
         'version': _VERSION,
         'is-removable': True,
         'manifest-version': 1,
+        'preload-allowed': False,
     })
 
   def testVerifyImageSize(self):
