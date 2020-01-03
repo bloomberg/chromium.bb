@@ -23,6 +23,7 @@
 #include <memory>
 
 #include "src/dsp/constants.h"
+#include "src/dsp/dsp.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/blocking_counter.h"
 #include "src/utils/compiler_attributes.h"
@@ -153,28 +154,6 @@ void CopyPlane(const uint8_t* source, int source_stride, const int width,
     memcpy(dst, src, width * sizeof(Pixel));
     src += source_stride;
     dst += dest_stride;
-  }
-}
-
-template <int bitdepth, typename Pixel>
-void ComputeSuperRes(const uint8_t* source, const int upscaled_width,
-                     const int initial_subpixel_x, const int step,
-                     uint8_t* const dest) {
-  const auto* src = reinterpret_cast<const Pixel*>(source);
-  auto* dst = reinterpret_cast<Pixel*>(dest);
-  src -= DivideBy2(kSuperResFilterTaps);
-  int subpixel_x = initial_subpixel_x;
-  for (int x = 0; x < upscaled_width; ++x) {
-    int sum = 0;
-    const Pixel* const src_x = &src[subpixel_x >> kSuperResScaleBits];
-    const int src_x_subpixel =
-        (subpixel_x & kSuperResScaleMask) >> kSuperResExtraBits;
-    for (int i = 0; i < kSuperResFilterTaps; ++i) {
-      sum += src_x[i] * kUpscaleFilter[src_x_subpixel][i];
-    }
-    dst[x] =
-        Clip3(RightShiftWithRounding(sum, kFilterBits), 0, (1 << bitdepth) - 1);
-    subpixel_x += step;
   }
 }
 
@@ -897,8 +876,8 @@ void PostFilter::ApplySuperRes(
                             line_buffer_start, /*dest_stride=*/0);
         ExtendLine<uint16_t>(line_buffer_start, plane_width, kSuperResBorder,
                              kSuperResBorder);
-        ComputeSuperRes<10, uint16_t>(line_buffer_start, upscaled_width,
-                                      initial_subpixel_x, step, input);
+        dsp_.super_res_row(line_buffer_start, upscaled_width,
+                           initial_subpixel_x, step, input);
         continue;
       }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
@@ -906,8 +885,8 @@ void PostFilter::ApplySuperRes(
                          /*dest_stride=*/0);
       ExtendLine<uint8_t>(line_buffer_start, plane_width, kSuperResBorder,
                           kSuperResBorder);
-      ComputeSuperRes<8, uint8_t>(line_buffer_start, upscaled_width,
-                                  initial_subpixel_x, step, input);
+      dsp_.super_res_row(line_buffer_start, upscaled_width, initial_subpixel_x,
+                         step, input);
     }
   }
 }

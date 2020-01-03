@@ -342,6 +342,18 @@ using CdefFilteringFunc = void (*)(const void* source, ptrdiff_t source_stride,
                                    int direction, void* dest,
                                    ptrdiff_t dest_stride);
 
+// Upscaling process function signature. Section 7.16.
+// Operates on a single row.
+// |source| is the input frame buffer at the given row.
+// |dest| is the output row.
+// |upscaled_width| is the width of the output frame.
+// |step| is the number of subpixels to move the kernel for the next destination
+// pixel.
+// |initial_subpixel_x| is a base offset from which |step| increments.
+using SuperResRowFunc = void (*)(const void* source, const int upscaled_width,
+                                 const int initial_subpixel_x, const int step,
+                                 void* const dest);
+
 // Loop restoration function signature. Sections 7.16, 7.17.
 // |source| is the input frame buffer, which is deblocked and cdef filtered.
 // |dest| is the output.
@@ -760,6 +772,7 @@ struct Dsp {
   LoopFilterFuncs loop_filters;
   CdefDirectionFunc cdef_direction;
   CdefFilteringFunc cdef_filter;
+  SuperResRowFunc super_res_row;
   LoopRestorationFuncs loop_restorations;
   ConvolveFuncs convolve;
   ConvolveScaleFuncs convolve_scale;

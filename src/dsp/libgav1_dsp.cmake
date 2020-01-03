@@ -50,6 +50,8 @@ list(APPEND libgav1_dsp_sources
             "${libgav1_source}/dsp/mask_blend.h"
             "${libgav1_source}/dsp/obmc.cc"
             "${libgav1_source}/dsp/obmc.h"
+            "${libgav1_source}/dsp/super_res.cc"
+            "${libgav1_source}/dsp/super_res.h"
             "${libgav1_source}/dsp/warp.cc"
             "${libgav1_source}/dsp/warp.h"
             "${libgav1_source}/dsp/weight_mask.cc"
