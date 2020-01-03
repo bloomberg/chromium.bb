@@ -2087,26 +2087,25 @@ bool ObuParser::ParseFrameHeader() {
 }
 
 bool ObuParser::ParsePadding(const uint8_t* data, size_t size) {
-  // The spec allows a padding OBU to be header-only (i.e., obu_size = 0). So
-  // check trailing bits only if size > 0.
-  if (size > 0) {
-    // The payload of a padding OBU is byte aligned. Therefore the first
-    // trailing byte should be 0x80. See https://crbug.com/aomedia/2393.
-    const int i = GetLastNonzeroByteIndex(data, size);
-    if (i < 0) {
-      LIBGAV1_DLOG(ERROR, "Trailing bit is missing.");
-      return false;
-    }
-    if (data[i] != 0x80) {
-      LIBGAV1_DLOG(
-          ERROR,
-          "The last nonzero byte of the payload data is 0x%x, should be 0x80.",
-          data[i]);
-      return false;
-    }
-    // Skip all bits before the trailing bit.
-    bit_reader_->SkipBytes(i);
+  // The spec allows a padding OBU to be header-only (i.e., |size| = 0). So
+  // check trailing bits only if |size| > 0.
+  if (size == 0) return true;
+  // The payload of a padding OBU is byte aligned. Therefore the first
+  // trailing byte should be 0x80. See https://crbug.com/aomedia/2393.
+  const int i = GetLastNonzeroByteIndex(data, size);
+  if (i < 0) {
+    LIBGAV1_DLOG(ERROR, "Trailing bit is missing.");
+    return false;
   }
+  if (data[i] != 0x80) {
+    LIBGAV1_DLOG(
+        ERROR,
+        "The last nonzero byte of the payload data is 0x%x, should be 0x80.",
+        data[i]);
+    return false;
+  }
+  // Skip all bits before the trailing bit.
+  bit_reader_->SkipBytes(i);
   return true;
 }
 
