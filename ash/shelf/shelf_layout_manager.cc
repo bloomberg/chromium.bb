@@ -1046,6 +1046,17 @@ gfx::Rect ShelfLayoutManager::GetNavigationBounds() const {
   return nav_bounds;
 }
 
+gfx::Rect ShelfLayoutManager::GetHotseatBounds() const {
+  gfx::Vector2d offset = target_bounds_.shelf_bounds.OffsetFromOrigin();
+  gfx::Rect hotseat_bounds = target_bounds_.hotseat_bounds_in_shelf;
+  hotseat_bounds.Offset(offset);
+  return hotseat_bounds;
+}
+
+float ShelfLayoutManager::GetOpacity() const {
+  return target_bounds_.opacity;
+}
+
 int ShelfLayoutManager::CalculateHotseatYInShelf(
     HotseatState hotseat_target_state) const {
   DCHECK(shelf_->IsHorizontalAlignment());
@@ -1465,13 +1476,9 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(
     status_widget->SetBounds(status_bounds);
 
     // Let the navigation widget handle its own layout changes.
-    nav_widget->UpdateLayout();
+    nav_widget->UpdateLayout(animate);
 
-    gfx::Vector2d hotseat_offset =
-        target_bounds_.shelf_bounds.OffsetFromOrigin();
-    gfx::Rect hotseat_bounds = target_bounds_.hotseat_bounds_in_shelf;
-    hotseat_bounds.Offset(hotseat_offset);
-    hotseat_widget->SetBounds(hotseat_bounds);
+    hotseat_widget->UpdateLayout(animate);
 
     // Do not update the work area during overview animation.
     if (!suspend_work_area_update_) {
