@@ -216,7 +216,7 @@ g.test('texture binding must have correct usage', async t => {
     ],
   });
 
-  let usage: GPUTextureUsage;
+  let usage: GPUTextureUsageFlags;
   if (type === 'sampled-texture') {
     usage = GPUTextureUsage.SAMPLED;
   } else if (type === 'storage-texture') {
@@ -242,7 +242,7 @@ g.test('texture binding must have correct usage', async t => {
     layout: bindGroupLayout,
   });
 
-  function* mismatchedTextureUsages(): Iterable<GPUTextureUsage> {
+  function* mismatchedTextureUsages(): Iterable<GPUTextureUsageFlags> {
     yield GPUTextureUsage.COPY_SRC;
     yield GPUTextureUsage.COPY_DST;
     if (type !== 'sampled-texture') {

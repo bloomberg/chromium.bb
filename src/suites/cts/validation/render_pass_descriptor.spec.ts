@@ -15,7 +15,7 @@ class F extends ValidationTest {
       arrayLayerCount?: number;
       mipLevelCount?: number;
       sampleCount?: number;
-      usage?: GPUTextureUsage;
+      usage?: GPUTextureUsageFlags;
     } = {}
   ): GPUTexture {
     const {
