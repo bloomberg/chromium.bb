@@ -156,23 +156,6 @@ class SchemaVersionedMySQLConnection(object):
     except IOError as e:
       log.warning('Error reading %s from file %s: %s', key, file_path, e)
 
-  def _UpdateSslArgs(self, key, db_credentials_dir, filename):
-    """Read an ssl argument for the sql connection from the given file.
-
-    side effect: store argument in self._ssl_args
-
-    Args:
-      key: Name of the ssl argument to read.
-      db_credentials_dir: The directory containing the credentials.
-      filename: Name of the file to read.
-    """
-    file_path = os.path.join(db_credentials_dir, filename)
-    if os.path.exists(file_path):
-      if 'ssl' not in self._ssl_args:
-        self._ssl_args['ssl'] = {}
-      self._ssl_args['ssl'][key] = file_path
-      self._ssl_args['ssl']['check_hostname'] = True
-
   def _UpdateConnectArgs(self, db_credentials_dir, for_service=False):
     """Update all connection args from |db_credentials_dir|."""
     self._UpdateConnectUrlArgs('username', db_credentials_dir, 'user.txt')
@@ -181,10 +164,6 @@ class SchemaVersionedMySQLConnection(object):
     if not for_service:
       self._UpdateConnectUrlArgs('host', db_credentials_dir, 'host.txt')
       self._UpdateConnectUrlArgs('port', db_credentials_dir, 'port.txt')
-
-      self._UpdateSslArgs('cert', db_credentials_dir, 'client-cert.pem')
-      self._UpdateSslArgs('key', db_credentials_dir, 'client-key.pem')
-      self._UpdateSslArgs('ca', db_credentials_dir, 'server-ca.pem')
     else:
       self._UpdateConnectUrlQuery(
           'unix_socket', db_credentials_dir, 'unix_socket.txt')
@@ -253,7 +232,6 @@ class SchemaVersionedMySQLConnection(object):
     # mysql args that are optionally provided by files in db_credentials_dir
     self._connect_url_args = {}
     self._connect_url_args['query'] = {}
-    self._ssl_args = {}
     self._UpdateConnectArgs(db_credentials_dir, for_service=for_service)
 
     tmp_connect_url = sqlalchemy.engine.url.URL(
@@ -264,7 +242,6 @@ class SchemaVersionedMySQLConnection(object):
     # engine here because the real engine will be opened with a default
     # database name given by |db_name|.
     temp_engine = sqlalchemy.create_engine(tmp_connect_url,
-                                           connect_args=self._ssl_args,
                                            listeners=[self._listener_class()])
 
     databases = self._ExecuteWithEngine('SHOW DATABASES',
@@ -585,7 +562,6 @@ class SchemaVersionedMySQLConnection(object):
       return self._engine
     else:
       e = sqlalchemy.create_engine(self._connect_url,
-                                   connect_args=self._ssl_args,
                                    listeners=[self._listener_class()])
       self._engine = e
       self._engine_pid = pid
