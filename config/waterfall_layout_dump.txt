@@ -341,6 +341,7 @@
     macchiato-ground-release
     mistral-release
     monroe-release
+    mushu-release
     nami-kvm-release
     nami-release
     nautilus-release
@@ -1477,6 +1478,7 @@
     macchiato-ground-release-tryjob
     mistral-release-tryjob
     monroe-release-tryjob
+    mushu-release-tryjob
     nami-kvm-release-tryjob
     nami-release-tryjob
     nautilus-release-tryjob

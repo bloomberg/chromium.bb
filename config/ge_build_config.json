@@ -986,6 +986,18 @@
       ]
     },
     {
+      "name": "mushu",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "UNKNOWN"
+        }
+      ]
+    },
+    {
       "name": "ninja",
       "configs": [
         {
