@@ -52,11 +52,6 @@ void av1_foreach_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE plane_bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg);
 
-void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
-                                   BLOCK_SIZE bsize,
-                                   foreach_transformed_block_visitor visit,
-                                   void *arg, const int num_planes);
-
 void av1_encode_sby_pass1(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize);
 
 void av1_setup_xform(const AV1_COMMON *cm, MACROBLOCK *x, TX_SIZE tx_size,

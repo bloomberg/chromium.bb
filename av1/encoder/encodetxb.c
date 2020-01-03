@@ -2141,8 +2141,19 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
     av1_reset_skip_context(xd, bsize, num_planes);
     return;
   }
-  av1_foreach_transformed_block(xd, bsize, av1_update_and_record_txb_context,
-                                &arg, num_planes);
+
+  for (int plane = 0; plane < num_planes; ++plane) {
+    const struct macroblockd_plane *const pd = &xd->plane[plane];
+    const int ss_x = pd->subsampling_x;
+    const int ss_y = pd->subsampling_y;
+    if (plane &&
+        !is_chroma_reference(xd->mi_row, xd->mi_col, bsize, ss_x, ss_y)) {
+      continue;
+    }
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
+    av1_foreach_transformed_block_in_plane(
+        xd, plane_bsize, plane, av1_update_and_record_txb_context, &arg);
+  }
 }
 
 CB_COEFF_BUFFER *av1_get_cb_coeff_buffer(const struct AV1_COMP *cpi, int mi_row,

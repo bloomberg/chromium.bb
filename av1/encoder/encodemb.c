@@ -408,23 +408,6 @@ void av1_foreach_transformed_block_in_plane(
   }
 }
 
-void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
-                                   BLOCK_SIZE bsize,
-                                   foreach_transformed_block_visitor visit,
-                                   void *arg, const int num_planes) {
-  for (int plane = 0; plane < num_planes; ++plane) {
-    const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const int ss_x = pd->subsampling_x;
-    const int ss_y = pd->subsampling_y;
-    if (plane &&
-        !is_chroma_reference(xd->mi_row, xd->mi_col, bsize, ss_x, ss_y)) {
-      continue;
-    }
-    const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, ss_x, ss_y);
-    av1_foreach_transformed_block_in_plane(xd, plane_bsize, plane, visit, arg);
-  }
-}
-
 typedef struct encode_block_pass1_args {
   AV1_COMMON *cm;
   MACROBLOCK *x;
