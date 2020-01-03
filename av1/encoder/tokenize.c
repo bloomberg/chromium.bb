@@ -130,7 +130,7 @@ void av1_tokenize_color_map(const MACROBLOCK *const x, int plane,
                         counts, map_pb_cdf);
 }
 
-static void tokenize_vartx(ThreadData *td, RUN_TYPE dry_run, TX_SIZE tx_size,
+static void tokenize_vartx(ThreadData *td, TX_SIZE tx_size,
                            BLOCK_SIZE plane_bsize, int blk_row, int blk_col,
                            int block, int plane, void *arg) {
   MACROBLOCK *const x = &td->mb;
@@ -151,16 +151,9 @@ static void tokenize_vartx(ThreadData *td, RUN_TYPE dry_run, TX_SIZE tx_size,
   if (tx_size == plane_tx_size || plane) {
     plane_bsize = get_plane_block_size(mbmi->sb_type, pd->subsampling_x,
                                        pd->subsampling_y);
-    if (!dry_run) {
-      av1_update_and_record_txb_context(plane, block, blk_row, blk_col,
-                                        plane_bsize, tx_size, arg);
-    } else if (dry_run == DRY_RUN_NORMAL) {
-      av1_update_txb_context_b(plane, block, blk_row, blk_col, plane_bsize,
-                               tx_size, arg);
-    } else {
-      printf("DRY_RUN_COSTCOEFFS is not supported yet\n");
-      assert(0);
-    }
+    av1_update_and_record_txb_context(plane, block, blk_row, blk_col,
+                                      plane_bsize, tx_size, arg);
+
   } else {
     // Half the block size in transform block unit.
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
@@ -177,8 +170,8 @@ static void tokenize_vartx(ThreadData *td, RUN_TYPE dry_run, TX_SIZE tx_size,
 
         if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
-        tokenize_vartx(td, dry_run, sub_txs, plane_bsize, offsetr, offsetc,
-                       block, plane, arg);
+        tokenize_vartx(td, sub_txs, plane_bsize, offsetr, offsetc, block, plane,
+                       arg);
         block += step;
       }
     }
@@ -198,7 +191,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
 
   const int num_planes = av1_num_planes(cm);
   MB_MODE_INFO *const mbmi = xd->mi[0];
-  struct tokenize_b_args arg = { cpi, td, 0, allow_update_cdf };
+  struct tokenize_b_args arg = { cpi, td, 0, allow_update_cdf, dry_run };
 
   if (mbmi->skip) {
     av1_reset_skip_context(xd, bsize, num_planes);
@@ -238,8 +231,8 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td,
         const int unit_width = AOMMIN(mu_blocks_wide + idx, mi_width);
         for (int blk_row = idy; blk_row < unit_height; blk_row += bh) {
           for (int blk_col = idx; blk_col < unit_width; blk_col += bw) {
-            tokenize_vartx(td, dry_run, max_tx_size, plane_bsize, blk_row,
-                           blk_col, block, plane, &arg);
+            tokenize_vartx(td, max_tx_size, plane_bsize, blk_row, blk_col,
+                           block, plane, &arg);
             block += step;
           }
         }

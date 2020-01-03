@@ -29,18 +29,19 @@ struct AV1_COMP;
 struct ThreadData;
 struct FRAME_COUNTS;
 
-struct tokenize_b_args {
-  const struct AV1_COMP *cpi;
-  struct ThreadData *td;
-  int this_rate;
-  uint8_t allow_update_cdf;
-};
-
 enum {
   OUTPUT_ENABLED = 0,
   DRY_RUN_NORMAL,
   DRY_RUN_COSTCOEFFS,
 } UENUM1BYTE(RUN_TYPE);
+
+struct tokenize_b_args {
+  const struct AV1_COMP *cpi;
+  struct ThreadData *td;
+  int this_rate;
+  uint8_t allow_update_cdf;
+  RUN_TYPE dry_run;
+};
 
 // Note in all the tokenize functions rate if non NULL is incremented
 // with the coefficient token cost only if dry_run = DRY_RUN_COSTCOEFS,

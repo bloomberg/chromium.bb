@@ -65,11 +65,6 @@ int av1_get_txb_entropy_context(const tran_low_t *qcoeff,
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
                             RUN_TYPE dry_run, BLOCK_SIZE bsize,
                             uint8_t allow_update_cdf);
-
-void av1_update_txb_context_b(int plane, int block, int blk_row, int blk_col,
-                              BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                              void *arg);
-
 void av1_update_and_record_txb_context(int plane, int block, int blk_row,
                                        int blk_col, BLOCK_SIZE plane_bsize,
                                        TX_SIZE tx_size, void *arg);
