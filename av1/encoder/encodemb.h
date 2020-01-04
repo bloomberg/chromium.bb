@@ -45,6 +45,14 @@ enum {
   AV1_XFORM_QUANT_TYPES,
 } UENUM1BYTE(AV1_XFORM_QUANT);
 
+// Available optimization types to optimize the quantized coefficients.
+enum {
+  NONE_OPT = 0,            // No optimization.
+  TRELLIS_OPT = 1,         // Trellis optimization. See `av1_optimize_b()`.
+  DROPOUT_OPT = 2,         // Dropout optimization. See `av1_dropout_qcoeff()`.
+  TRELLIS_DROPOUT_OPT = 3  // Perform dropout after trellis optimization.
+} UENUM1BYTE(OPT_TYPE);
+
 void av1_encode_sb(const struct AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
                    RUN_TYPE dry_run);
 
@@ -68,6 +76,32 @@ void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
 int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
                    int block, TX_SIZE tx_size, TX_TYPE tx_type,
                    const TXB_CTX *const txb_ctx, int fast_mode, int *rate_cost);
+
+// This function can be used as (i) a further optimization to reduce the
+// redundancy of quantized coefficients (a.k.a., `qcoeff`) after trellis
+// optimization, or (ii) an alternative to trellis optimization in high-speed
+// compression mode (e.g., real-time mode under speed-6) due to its LOW time
+// complexity. The rational behind is to drop out the may-be redundant quantized
+// coefficient which is among a bunch of zeros. NOTE: This algorithm is not as
+// accurate as trellis optimization since the hyper-parameters are hard-coded
+// instead of dynamic search. More adaptive logic may improve the performance.
+// This function should be applied to all or partical block cells.
+// Inputs:
+//   mb: Pointer to the MACROBLOCK to perform dropout on.
+//   plane: Index of the plane to which the target block belongs.
+//   block: Index of the target block.
+//   tx_size: Transform size of the target block.
+//   tx_type: Transform type of the target block. This field is particularly
+//            used to find out the scan order of the block.
+//   qindex: Quantization index used for target block. In general, all blocks
+//           in a same plane share the same quantization index. This field is
+//           particularly used to determine how many zeros should be used to
+//           drop out a coefficient.
+// Returns:
+//   Nothing will be returned, but `qcoeff`, `dqcoeff`, `eob`, as well as
+//   `txb_entropy_ctx`, which `mb` points to, may be modified by this function.
+void av1_dropout_qcoeff(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
+                        TX_TYPE tx_type, int qindex);
 
 void av1_subtract_block(const MACROBLOCKD *xd, int rows, int cols,
                         int16_t *diff, ptrdiff_t diff_stride,

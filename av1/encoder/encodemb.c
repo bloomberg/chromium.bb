@@ -101,6 +101,147 @@ int av1_optimize_b(const struct AV1_COMP *cpi, MACROBLOCK *mb, int plane,
                               rate_cost, cpi->oxcf.sharpness, fast_mode);
 }
 
+// Hyper-parameters for dropout optimization, based on following logics.
+// TODO(yjshen): These settings are tuned by experiments. They may still be
+// optimized for better performance.
+// (1) Coefficients which are large enough will ALWAYS be kept.
+const tran_low_t DROPOUT_COEFF_MAX = 2;  // Max dropout-able coefficient.
+// (2) Continuous coefficients will ALWAYS be kept. Here rigorous continuity is
+//     NOT required. For example, `5 0 0 0 7` is treated as two continuous
+//     coefficients if three zeros do not fulfill the dropout condition.
+const int DROPOUT_CONTINUITY_MAX = 2;  // Max dropout-able continuous coeff.
+// (3) Dropout operation is NOT applicable to blocks with large or small
+//     quantization index.
+const int DROPOUT_Q_MAX = 128;
+const int DROPOUT_Q_MIN = 16;
+// (4) Recall that dropout optimization will forcibly set some quantized
+//     coefficients to zero. The key logic on determining whether a coefficient
+//     should be dropped is to check the number of continuous zeros before AND
+//     after this coefficient. The exact number of zeros for judgement depends
+//     on block size and quantization index. More concretely, block size
+//     determines the base number of zeros, while quantization index determines
+//     the multiplier. Intuitively, larger block requires more zeros and larger
+//     quantization index also requires more zeros (more information is lost
+//     when using larger quantization index).
+const int DROPOUT_BEFORE_BASE_MAX = 32;  // Max base number for leading zeros.
+const int DROPOUT_BEFORE_BASE_MIN = 16;  // Min base number for leading zeros.
+const int DROPOUT_AFTER_BASE_MAX = 32;   // Max base number for trailing zeros.
+const int DROPOUT_AFTER_BASE_MIN = 16;   // Min base number for trailing zeros.
+const int DROPOUT_MULTIPLIER_MAX = 8;    // Max multiplier on number of zeros.
+const int DROPOUT_MULTIPLIER_MIN = 2;    // Min multiplier on number of zeros.
+const int DROPOUT_MULTIPLIER_Q_BASE = 32;  // Base Q to compute multiplier.
+
+void av1_dropout_qcoeff(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
+                        TX_TYPE tx_type, int qindex) {
+  MACROBLOCKD *const xd = &mb->e_mbd;
+  const struct macroblock_plane *const p = &mb->plane[plane];
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  tran_low_t *const qcoeff = p->qcoeff + BLOCK_OFFSET(block);
+  tran_low_t *const dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
+  const int tx_width = tx_size_wide[tx_size];
+  const int tx_height = tx_size_high[tx_size];
+  const int max_eob = av1_get_max_eob(tx_size);
+  const SCAN_ORDER *const scan_order = get_scan(tx_size, tx_type);
+
+  // Early return if `qindex` is out of range.
+  if (qindex > DROPOUT_Q_MAX || qindex < DROPOUT_Q_MIN) {
+    return;
+  }
+
+  // Compute number of zeros used for dropout judgement.
+  const int base_size = AOMMAX(tx_width, tx_height);
+  const int multiplier = CLIP(qindex / DROPOUT_MULTIPLIER_Q_BASE,
+                              DROPOUT_MULTIPLIER_MIN, DROPOUT_MULTIPLIER_MAX);
+  const int dropout_num_before =
+      multiplier *
+      CLIP(base_size, DROPOUT_BEFORE_BASE_MIN, DROPOUT_BEFORE_BASE_MAX);
+  const int dropout_num_after =
+      multiplier *
+      CLIP(base_size, DROPOUT_AFTER_BASE_MIN, DROPOUT_AFTER_BASE_MAX);
+
+  // Early return if there are not enough non-zero coefficients.
+  if (p->eobs[block] == 0 || p->eobs[block] <= dropout_num_before) {
+    return;
+  }
+
+  int count_zeros_before = 0;
+  int count_zeros_after = 0;
+  int count_nonzeros = 0;
+  // Index of the first non-zero coefficient after sufficient number of
+  // continuous zeros. If equals to `-1`, it means number of leading zeros
+  // hasn't reach `dropout_num_before`.
+  int idx = -1;
+  int eob = 0;  // New end of block.
+
+  for (int i = 0; i < p->eobs[block]; ++i) {
+    const int scan_idx = scan_order->scan[i];
+    if (qcoeff[scan_idx] > DROPOUT_COEFF_MAX) {  // Keep large coefficients.
+      count_zeros_before = 0;
+      count_zeros_after = 0;
+      idx = -1;
+      eob = i + 1;
+    } else if (qcoeff[scan_idx] == 0) {  // Count zeros.
+      if (idx == -1) {
+        ++count_zeros_before;
+      } else {
+        ++count_zeros_after;
+      }
+    } else {  // Count non-zeros.
+      if (count_zeros_before >= dropout_num_before) {
+        idx = (idx == -1) ? i : idx;
+        ++count_nonzeros;
+      } else {
+        count_zeros_before = 0;
+        eob = i + 1;
+      }
+    }
+
+    // Handle continuity.
+    if (count_nonzeros > DROPOUT_CONTINUITY_MAX) {
+      count_zeros_before = 0;
+      count_zeros_after = 0;
+      idx = -1;
+      eob = i + 1;
+    }
+
+    // Handle the trailing zeros after original end of block.
+    if (idx != -1 && i == p->eobs[block] - 1) {
+      count_zeros_after += (max_eob - p->eobs[block]);
+    }
+
+    // Set redundant coefficients to zeros if needed.
+    if (count_zeros_after >= dropout_num_after) {
+      for (int j = idx; j <= i; ++j) {
+        qcoeff[scan_order->scan[j]] = 0;
+        dqcoeff[scan_order->scan[j]] = 0;
+      }
+      count_zeros_before += (i - idx + 1);
+      count_zeros_after = 0;
+      count_nonzeros = 0;
+    } else if (i == p->eobs[block] - 1) {
+      eob = i + 1;
+    }
+  }
+
+  if (eob != p->eobs[block]) {
+    p->eobs[block] = eob;
+    p->txb_entropy_ctx[block] =
+        (uint8_t)av1_get_txb_entropy_context(qcoeff, scan_order, eob);
+  }
+}
+
+// Settings for optimization type. NOTE: To set optimization type for all intra
+// frames, both `KEY_BLOCK_OPT_TYPE` and `INTRA_BLOCK_OPT_TYPE` should be set.
+// TODO(yjshen): These settings are hard-coded and look okay for now. They
+// should be made configurable later.
+// Blocks of key frames ONLY.
+const OPT_TYPE KEY_BLOCK_OPT_TYPE = TRELLIS_DROPOUT_OPT;
+// Blocks of intra frames (key frames EXCLUSIVE).
+const OPT_TYPE INTRA_BLOCK_OPT_TYPE = TRELLIS_DROPOUT_OPT;
+// Blocks of inter frames. (NOTE: Dropout optimization is DISABLED by default
+// if trellis optimization is on for inter frames.)
+const OPT_TYPE INTER_BLOCK_OPT_TYPE = TRELLIS_DROPOUT_OPT;
+
 enum {
   QUANT_FUNC_LOWBD = 0,
   QUANT_FUNC_HIGHBD = 1,
@@ -258,11 +399,20 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
     av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,
                     &quant_param);
 
-    if (quant_param.use_optimize_b) {
+    // Whether trellis or dropout optimization is required for inter frames.
+    const bool do_trellis = INTER_BLOCK_OPT_TYPE == TRELLIS_OPT ||
+                            INTER_BLOCK_OPT_TYPE == TRELLIS_DROPOUT_OPT;
+    const bool do_dropout = INTER_BLOCK_OPT_TYPE == DROPOUT_OPT ||
+                            INTER_BLOCK_OPT_TYPE == TRELLIS_DROPOUT_OPT;
+
+    if (quant_param.use_optimize_b && do_trellis) {
       TXB_CTX txb_ctx;
       get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
       av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx,
                      args->cpi->sf.rd_sf.trellis_eob_fast, &dummy_rate_cost);
+    }
+    if (!quant_param.use_optimize_b && do_dropout) {
+      av1_dropout_qcoeff(x, plane, block, tx_size, tx_type, cm->base_qindex);
     }
   } else {
     p->eobs[block] = 0;
@@ -583,11 +733,29 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,
                     &quant_param);
 
-    if (quant_param.use_optimize_b) {
+    // Whether trellis or dropout optimization is required for key frames and
+    // intra frames.
+    const bool do_trellis = (frame_is_intra_only(cm) &&
+                             (KEY_BLOCK_OPT_TYPE == TRELLIS_OPT ||
+                              KEY_BLOCK_OPT_TYPE == TRELLIS_DROPOUT_OPT)) ||
+                            (!frame_is_intra_only(cm) &&
+                             (INTRA_BLOCK_OPT_TYPE == TRELLIS_OPT ||
+                              INTRA_BLOCK_OPT_TYPE == TRELLIS_DROPOUT_OPT));
+    const bool do_dropout = (frame_is_intra_only(cm) &&
+                             (KEY_BLOCK_OPT_TYPE == DROPOUT_OPT ||
+                              KEY_BLOCK_OPT_TYPE == TRELLIS_DROPOUT_OPT)) ||
+                            (!frame_is_intra_only(cm) &&
+                             (INTRA_BLOCK_OPT_TYPE == DROPOUT_OPT ||
+                              INTRA_BLOCK_OPT_TYPE == TRELLIS_DROPOUT_OPT));
+
+    if (quant_param.use_optimize_b && do_trellis) {
       TXB_CTX txb_ctx;
       get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
       av1_optimize_b(args->cpi, x, plane, block, tx_size, tx_type, &txb_ctx,
                      args->cpi->sf.rd_sf.trellis_eob_fast, &dummy_rate_cost);
+    }
+    if (do_dropout) {
+      av1_dropout_qcoeff(x, plane, block, tx_size, tx_type, cm->base_qindex);
     }
   }
 
