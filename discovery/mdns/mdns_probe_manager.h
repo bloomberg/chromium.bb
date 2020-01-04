@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "discovery/mdns/mdns_domain_confirmed_provider.h"
 #include "discovery/mdns/mdns_probe.h"
 #include "discovery/mdns/mdns_records.h"
 #include "platform/base/error.h"
@@ -53,18 +54,6 @@ class MdnsProbeManager {
 class MdnsProbeManagerImpl : public MdnsProbe::Observer,
                              public MdnsProbeManager {
  public:
-  class Callback {
-   public:
-    virtual ~Callback();
-
-    // Called once the probing phase has been completed, and a DomainName has
-    // been confirmed. The callee is expected to register records for the
-    // newly confirmed name in this callback. Note that the requested name and
-    // the confirmed name may differ if conflict resolution has occurred.
-    virtual void OnDomainFound(const DomainName& requested_name,
-                               const DomainName& confirmed_name) = 0;
-  };
-
   // |sender|, |querier|, |random_delay|, and |task_runner|, must all persist
   // for the duration of this object's lifetime.
   MdnsProbeManagerImpl(MdnsSender* sender,
@@ -85,7 +74,7 @@ class MdnsProbeManagerImpl : public MdnsProbe::Observer,
   // NOTE: |endpoint| is used to generate a 'fake' address record to use for
   // the probe query. See MdnsProbe::PerformProbeIteration() for further
   // details.
-  Error StartProbe(Callback* callback,
+  Error StartProbe(MdnsDomainConfirmedProvider* callback,
                    DomainName requested_name,
                    IPEndpoint endpoint);
 
@@ -107,13 +96,13 @@ class MdnsProbeManagerImpl : public MdnsProbe::Observer,
   struct OngoingProbe {
     OngoingProbe(std::unique_ptr<MdnsProbe> probe,
                  DomainName name,
-                 Callback* callback);
+                 MdnsDomainConfirmedProvider* callback);
 
     // NOTE: unique_ptr objects are used to avoid issues when the container
     // holding this object is resized.
     std::unique_ptr<MdnsProbe> probe;
     DomainName requested_name;
-    Callback* callback;
+    MdnsDomainConfirmedProvider* callback;
   };
 
   // MdnsProbe::Observer overrides.

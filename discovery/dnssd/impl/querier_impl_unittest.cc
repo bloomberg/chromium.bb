@@ -40,14 +40,13 @@ class MockMdnsService : public MdnsService {
 
   MOCK_METHOD1(ReinitializeQueries, void(const DomainName& name));
 
-  void RegisterRecord(const MdnsRecord& record) override { FAIL(); }
-
-  void DeregisterRecord(const MdnsRecord& record) override { FAIL(); }
-
-  void UpdateRegisteredRecord(const MdnsRecord& old_record,
-                              const MdnsRecord& new_record) override {
-    FAIL();
-  }
+  // Unused.
+  MOCK_METHOD3(StartProbe,
+               Error(MdnsDomainConfirmedProvider*, DomainName, IPEndpoint));
+  MOCK_METHOD1(RegisterRecord, Error(const MdnsRecord&));
+  MOCK_METHOD1(UnregisterRecord, Error(const MdnsRecord&));
+  MOCK_METHOD2(UpdateRegisteredRecord,
+               Error(const MdnsRecord&, const MdnsRecord&));
 };
 
 SrvRecordRdata CreateSrvRecord() {

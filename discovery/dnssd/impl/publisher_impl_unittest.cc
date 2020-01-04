@@ -34,10 +34,12 @@ class MockMdnsService : public MdnsService {
 
   void ReinitializeQueries(const DomainName& name) override { FAIL(); }
 
+  MOCK_METHOD3(StartProbe,
+               Error(MdnsDomainConfirmedProvider*, DomainName, IPEndpoint));
   MOCK_METHOD2(UpdateRegisteredRecord,
-               void(const MdnsRecord&, const MdnsRecord&));
-  MOCK_METHOD1(RegisterRecord, void(const MdnsRecord& record));
-  MOCK_METHOD1(DeregisterRecord, void(const MdnsRecord& record));
+               Error(const MdnsRecord&, const MdnsRecord&));
+  MOCK_METHOD1(RegisterRecord, Error(const MdnsRecord& record));
+  MOCK_METHOD1(UnregisterRecord, Error(const MdnsRecord& record));
 };
 
 class PublisherTesting : public PublisherImpl {
@@ -59,7 +61,8 @@ TEST(DnsSdPublisherImplTests, TestRegisterAndDeregister) {
   int seen = 0;
   EXPECT_CALL(publisher.mdns_service(), RegisterRecord(_))
       .Times(4)
-      .WillRepeatedly([&seen, &address](const MdnsRecord& record) mutable {
+      .WillRepeatedly([&seen,
+                       &address](const MdnsRecord& record) mutable -> Error {
         if (record.dns_type() == DnsType::kA) {
           const ARecordRdata& data = absl::get<ARecordRdata>(record.rdata());
           if (data.ipv4_address() == address) {
@@ -72,14 +75,16 @@ TEST(DnsSdPublisherImplTests, TestRegisterAndDeregister) {
             seen++;
           }
         };
+        return Error::None();
       });
   publisher.Register(record);
   EXPECT_EQ(seen, 2);
 
   seen = 0;
-  EXPECT_CALL(publisher.mdns_service(), DeregisterRecord(_))
+  EXPECT_CALL(publisher.mdns_service(), UnregisterRecord(_))
       .Times(4)
-      .WillRepeatedly([&seen, &address](const MdnsRecord& record) mutable {
+      .WillRepeatedly([&seen,
+                       &address](const MdnsRecord& record) mutable -> Error {
         if (record.dns_type() == DnsType::kA) {
           const ARecordRdata& data = absl::get<ARecordRdata>(record.rdata());
           if (data.ipv4_address() == address) {
@@ -92,6 +97,7 @@ TEST(DnsSdPublisherImplTests, TestRegisterAndDeregister) {
             seen++;
           }
         };
+        return Error::None();
       });
   publisher.DeregisterAll("_service._udp");
   EXPECT_EQ(seen, 2);
@@ -118,18 +124,22 @@ TEST(DnsSdPublisherImplTests, TestUpdate) {
   DnsSdInstanceRecord record2("instance", "_service._udp", "domain",
                               {address2, 80}, std::move(txt2));
   EXPECT_CALL(publisher.mdns_service(), RegisterRecord(_))
-      .WillOnce([](const MdnsRecord& record) {
+      .WillOnce([](const MdnsRecord& record) -> Error {
         EXPECT_EQ(record.dns_type(), DnsType::kAAAA);
+        return Error::None();
       });
-  EXPECT_CALL(publisher.mdns_service(), DeregisterRecord(_))
-      .WillOnce([](const MdnsRecord& record) {
+  EXPECT_CALL(publisher.mdns_service(), UnregisterRecord(_))
+      .WillOnce([](const MdnsRecord& record) -> Error {
         EXPECT_EQ(record.dns_type(), DnsType::kA);
+        return Error::None();
       });
   EXPECT_CALL(publisher.mdns_service(), UpdateRegisteredRecord(_, _))
-      .WillOnce([](const MdnsRecord& record, const MdnsRecord& record2) {
-        EXPECT_EQ(record.dns_type(), DnsType::kTXT);
-        EXPECT_EQ(record2.dns_type(), DnsType::kTXT);
-      });
+      .WillOnce(
+          [](const MdnsRecord& record, const MdnsRecord& record2) -> Error {
+            EXPECT_EQ(record.dns_type(), DnsType::kTXT);
+            EXPECT_EQ(record2.dns_type(), DnsType::kTXT);
+            return Error::None();
+          });
   EXPECT_EQ(publisher.UpdateRegistration(record2), Error::None());
 }
 

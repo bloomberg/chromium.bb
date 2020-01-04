@@ -81,7 +81,7 @@ Error PublisherImpl::UpdateRegistration(const DnsSdInstanceRecord& record) {
     if (pair.second.first == absl::nullopt) {
       mdns_publisher_->RegisterRecord(pair.second.second.value());
     } else if (pair.second.second == absl::nullopt) {
-      mdns_publisher_->DeregisterRecord(pair.second.first.value());
+      mdns_publisher_->UnregisterRecord(pair.second.first.value());
     } else if (pair.second.first.value() != pair.second.second.value()) {
       mdns_publisher_->UpdateRegisteredRecord(pair.second.first.value(),
                                               pair.second.second.value());
@@ -96,7 +96,7 @@ int PublisherImpl::DeregisterAll(const std::string& service) {
   for (auto it = published_records_.begin(); it != published_records_.end();) {
     if (it->service_id() == service) {
       for (const auto& mdns_record : GetDnsRecords(*it)) {
-        mdns_publisher_->DeregisterRecord(mdns_record);
+        mdns_publisher_->UnregisterRecord(mdns_record);
       }
       removed_count++;
       it = published_records_.erase(it);

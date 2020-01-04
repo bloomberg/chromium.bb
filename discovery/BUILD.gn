@@ -6,6 +6,7 @@ import("//build_overrides/build.gni")
 
 source_set("mdns") {
   sources = [
+    "mdns/mdns_domain_confirmed_provider.h",
     "mdns/mdns_probe.cc",
     "mdns/mdns_probe.h",
     "mdns/mdns_probe_manager.cc",

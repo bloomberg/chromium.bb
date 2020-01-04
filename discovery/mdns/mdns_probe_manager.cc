@@ -13,8 +13,6 @@ namespace discovery {
 
 MdnsProbeManager::~MdnsProbeManager() = default;
 
-MdnsProbeManagerImpl::Callback::~Callback() = default;
-
 MdnsProbeManagerImpl::MdnsProbeManagerImpl(MdnsSender* sender,
                                            MdnsQuerier* querier,
                                            MdnsRandom* random_delay,
@@ -31,7 +29,7 @@ MdnsProbeManagerImpl::MdnsProbeManagerImpl(MdnsSender* sender,
 
 MdnsProbeManagerImpl::~MdnsProbeManagerImpl() = default;
 
-Error MdnsProbeManagerImpl::StartProbe(Callback* callback,
+Error MdnsProbeManagerImpl::StartProbe(MdnsDomainConfirmedProvider* callback,
                                        DomainName requested_name,
                                        IPEndpoint endpoint) {
   // TODO(rwkeane): Ensure the requested name isn't already being queried for.
@@ -68,7 +66,7 @@ void MdnsProbeManagerImpl::OnProbeSuccess(MdnsProbe* probe) {
     std::unique_ptr<MdnsProbe> probe = std::move(it->probe);
     completed_probes_.push_back(std::move(probe));
     DomainName requested = std::move(it->requested_name);
-    Callback* callback = it->callback;
+    MdnsDomainConfirmedProvider* callback = it->callback;
     ongoing_probes_.erase(it);
     callback->OnDomainFound(requested, probe->target_name());
   }
@@ -81,7 +79,7 @@ void MdnsProbeManagerImpl::OnProbeFailure(MdnsProbe* probe) {
 MdnsProbeManagerImpl::OngoingProbe::OngoingProbe(
     std::unique_ptr<MdnsProbe> probe,
     DomainName name,
-    Callback* callback)
+    MdnsDomainConfirmedProvider* callback)
     : probe(std::move(probe)),
       requested_name(std::move(name)),
       callback(callback) {}
