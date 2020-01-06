@@ -180,6 +180,29 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   return bestsme;
 }
 
+static int is_duplicate_mv(int_mv candidate_mv, int_mv *center_mvs,
+                           int center_mvs_count, int skip_repeated_mv_level) {
+  int_mv candidate_mv_full; /* full-pixel value */
+  static int mv_shift_lookup[2] = { 0, 3 };
+  int shift = mv_shift_lookup[skip_repeated_mv_level];
+  int i;
+
+  candidate_mv_full.as_mv.col = (candidate_mv.as_mv.col >> shift);
+  candidate_mv_full.as_mv.row = (candidate_mv.as_mv.row >> shift);
+
+  for (i = 0; i < center_mvs_count; i++) {
+    int_mv center_mv_full;
+    center_mv_full.as_mv.col = (center_mvs[i].as_mv.col >> shift);
+    center_mv_full.as_mv.row = (center_mvs[i].as_mv.row >> shift);
+
+    if (candidate_mv_full.as_int == center_mv_full.as_int) {
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 static AOM_INLINE void mode_estimation(
     AV1_COMP *cpi, MACROBLOCK *x, MACROBLOCKD *xd, struct scale_factors *sf,
     int frame_idx, int mi_row, int mi_col, BLOCK_SIZE bsize, TX_SIZE tx_size,
@@ -307,7 +330,8 @@ static AOM_INLINE void mode_estimation(
     if (xd->up_available) {
       TplDepStats *ref_tpl_stats = &tpl_frame->tpl_stats_ptr[av1_tpl_ptr_pos(
           cpi, mi_row - mi_height, mi_col, tpl_frame->stride)];
-      if (ref_tpl_stats->mv[rf_idx].as_int != 0) {
+      if (!is_duplicate_mv(ref_tpl_stats->mv[rf_idx], center_mvs, refmv_count,
+                           cpi->sf.tpl_sf.skip_repeated_mv_level)) {
         center_mvs[refmv_count].as_int = ref_tpl_stats->mv[rf_idx].as_int;
         ++refmv_count;
       }
@@ -316,8 +340,8 @@ static AOM_INLINE void mode_estimation(
     if (xd->left_available) {
       TplDepStats *ref_tpl_stats = &tpl_frame->tpl_stats_ptr[av1_tpl_ptr_pos(
           cpi, mi_row, mi_col - mi_width, tpl_frame->stride)];
-      if (ref_tpl_stats->mv[rf_idx].as_int != 0 &&
-          ref_tpl_stats->mv[rf_idx].as_int != center_mvs[1].as_int) {
+      if (!is_duplicate_mv(ref_tpl_stats->mv[rf_idx], center_mvs, refmv_count,
+                           cpi->sf.tpl_sf.skip_repeated_mv_level)) {
         center_mvs[refmv_count].as_int = ref_tpl_stats->mv[rf_idx].as_int;
         ++refmv_count;
       }
@@ -326,9 +350,8 @@ static AOM_INLINE void mode_estimation(
     if (xd->up_available && mi_col + mi_width < xd->tile.mi_col_end) {
       TplDepStats *ref_tpl_stats = &tpl_frame->tpl_stats_ptr[av1_tpl_ptr_pos(
           cpi, mi_row - mi_height, mi_col + mi_width, tpl_frame->stride)];
-      if (ref_tpl_stats->mv[rf_idx].as_int != 0 &&
-          ref_tpl_stats->mv[rf_idx].as_int != center_mvs[1].as_int &&
-          ref_tpl_stats->mv[rf_idx].as_int != center_mvs[2].as_int) {
+      if (!is_duplicate_mv(ref_tpl_stats->mv[rf_idx], center_mvs, refmv_count,
+                           cpi->sf.tpl_sf.skip_repeated_mv_level)) {
         center_mvs[refmv_count].as_int = ref_tpl_stats->mv[rf_idx].as_int;
         ++refmv_count;
       }

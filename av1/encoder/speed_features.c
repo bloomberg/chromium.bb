@@ -460,6 +460,8 @@ static void set_good_speed_features_framesize_independent(
         cm->allow_screen_content_tools ? 0 : 2;
     sf->lpf_sf.reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
     sf->hl_sf.second_alt_ref_filtering = 0;
+
+    sf->tpl_sf.skip_repeated_mv_level = 1;
   }
 
   if (speed >= 4) {
@@ -843,6 +845,7 @@ static AOM_INLINE void init_hl_sf(HIGH_LEVEL_SPEED_FEATURES *hl_sf) {
 static AOM_INLINE void init_tpl_sf(TPL_SPEED_FEATURES *tpl_sf) {
   tpl_sf->prune_intra_modes = 0;
   tpl_sf->reduce_first_step_size = 0;
+  tpl_sf->skip_repeated_mv_level = 0;
 }
 
 static AOM_INLINE void init_gm_sf(GLOBAL_MOTION_SPEED_FEATURES *gm_sf) {
