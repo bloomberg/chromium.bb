@@ -147,6 +147,7 @@ x86_internal_release_boards = frozenset([
     'novato-arc64',
     'octopus',
     'orco',
+    'palkia',
     'poppy',
     'puff',
     'pyro',

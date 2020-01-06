@@ -1664,6 +1664,12 @@
   orco-unittest-stress
   orderfile-generate-toolchain-tryjob
   orderfile-verify-toolchain-tryjob
+  palkia-full-tryjob
+  palkia-llvm-next-toolchain-tryjob
+  palkia-llvm-toolchain-tryjob
+  palkia-payloads-tryjob
+  palkia-release-tryjob
+  palkia-unittest-stress
   poppy-full-tryjob
   poppy-llvm-next-toolchain-tryjob
   poppy-llvm-toolchain-tryjob
