@@ -1006,7 +1006,7 @@ typedef struct {
 static FRAME_DIFF temporal_filter_iterate_c(
     AV1_COMP *cpi, YV12_BUFFER_CONFIG **frames, int frame_count,
     int alt_ref_index, int strength, double sigma, int is_key_frame,
-    struct scale_factors *ref_scale_factors) {
+    struct scale_factors *ref_scale_factors, int second_alt_ref) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   const int mb_cols = get_cols(frames[alt_ref_index]->y_crop_width);
@@ -1117,14 +1117,15 @@ static FRAME_DIFF temporal_filter_iterate_c(
         blk_mvs[3] = kZeroMv;
 
         if (frame == alt_ref_index) {
-          blk_fw[0] = blk_fw[1] = blk_fw[2] = blk_fw[3] = 2;
+          const int weight = second_alt_ref ? 4 : 2;
+          blk_fw[0] = blk_fw[1] = blk_fw[2] = blk_fw[3] = weight;
           use_32x32 = 1;
           // Change ref_mv sign for following frames.
           best_ref_mv1.row *= -1;
           best_ref_mv1.col *= -1;
         } else {
-          int thresh_low = 10000;
-          int thresh_high = 20000;
+          int thresh_low = 10000 >> second_alt_ref;
+          int thresh_high = 20000 >> second_alt_ref;
           int blk_bestsme[4] = { INT_MAX, INT_MAX, INT_MAX, INT_MAX };
 
           // Find best match in this frame by MC
@@ -1505,8 +1506,12 @@ static int estimate_strength(AV1_COMP *cpi, int distance, int group_boost,
 // Apply buffer limits and context specific adjustments to arnr filter.
 static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
                                int *arnr_frames, int *arnr_strength,
-                               double *sigma, int *frm_bwd, int *frm_fwd) {
+                               double *sigma, int *frm_bwd, int *frm_fwd,
+                               int second_alt_ref) {
   int frames = cpi->oxcf.arnr_max_frames;
+
+  // Only use the 2 nearest frames in second alt ref's temporal filtering.
+  if (second_alt_ref) frames = AOMMIN(frames, 3);
 
   // Adjust number of frames in filter and strength based on gf boost level.
   if (frames > group_boost / 150) {
@@ -1548,6 +1553,12 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
   int rdmult = 0;
   double sigma = 0;
 
+  // Temporal filter 1 more alt ref if its distance >= 7. This frame is always
+  // a show existing frame.
+  const int second_alt_ref =
+      (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) &&
+      (distance >= 7) && cpi->sf.hl_sf.second_alt_ref_filtering;
+
   // TODO(yunqing): For INTNL_ARF_UPDATE type, the following me initialization
   // is used somewhere unexpectedly. Should be resolved later.
   // Initialize errorperbit, sadperbit16 and sadperbit4.
@@ -1558,7 +1569,8 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
                     cpi->common.allow_high_precision_mv, &cpi->td.mb);
 
   // Apply context specific adjustments to the arnr filter parameters.
-  if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) {
+  if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE &&
+      !second_alt_ref) {
     // TODO(weitinglin): Currently, we enforce the filtering strength on
     // internal ARFs to be zeros. We should investigate in which case it is more
     // beneficial to use non-zero strength filtering.
@@ -1588,10 +1600,11 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
   } else {
     adjust_arnr_filter(cpi, distance, rc->gfu_boost, &frames_to_blur, &strength,
                        &sigma, &frames_to_blur_backward,
-                       &frames_to_blur_forward);
+                       &frames_to_blur_forward, second_alt_ref);
     start_frame = distance + frames_to_blur_forward;
+
     cpi->common.showable_frame =
-        (strength == 0 && frames_to_blur == 1) ||
+        (strength == 0 && frames_to_blur == 1) || second_alt_ref ||
         (cpi->oxcf.enable_overlay == 0 || cpi->sf.hl_sf.disable_overlay_frames);
   }
 
@@ -1616,14 +1629,15 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
         frames[0]->y_crop_width, frames[0]->y_crop_height);
   }
 
-  FRAME_DIFF diff = temporal_filter_iterate_c(cpi, frames, frames_to_blur,
-                                              frames_to_blur_backward, strength,
-                                              sigma, distance < 0, &sf);
+  FRAME_DIFF diff = temporal_filter_iterate_c(
+      cpi, frames, frames_to_blur, frames_to_blur_backward, strength, sigma,
+      distance < 0, &sf, second_alt_ref);
 
   if (distance < 0) return 1;
 
-  if (show_existing_alt_ref != NULL &&
-      cpi->sf.hl_sf.adaptive_overlay_encoding) {
+  if ((show_existing_alt_ref != NULL &&
+       cpi->sf.hl_sf.adaptive_overlay_encoding) ||
+      second_alt_ref) {
     AV1_COMMON *const cm = &cpi->common;
     int top_index = 0, bottom_index = 0;
 
@@ -1644,10 +1658,15 @@ int av1_temporal_filter(AV1_COMP *cpi, int distance,
     const float std = (float)sqrt((float)diff.sse / mbs - mean * mean);
     const float threshold = 0.7f;
 
-    *show_existing_alt_ref = 0;
-    if (mean / ac_q_2 < threshold && std < mean * 1.2)
-      *show_existing_alt_ref = 1;
-    cpi->common.showable_frame |= *show_existing_alt_ref;
+    if (!second_alt_ref) {
+      *show_existing_alt_ref = 0;
+      if (mean / ac_q_2 < threshold && std < mean * 1.2)
+        *show_existing_alt_ref = 1;
+      cpi->common.showable_frame |= *show_existing_alt_ref;
+    } else {
+      // Use source frame if the filtered frame becomes very different.
+      if (!(mean / ac_q_2 < threshold && std < mean * 1.2)) return 0;
+    }
   }
 
   return 1;

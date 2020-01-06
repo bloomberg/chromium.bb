@@ -297,6 +297,9 @@ typedef struct HIGH_LEVEL_SPEED_FEATURES {
   // backgrounds very to cheap to encode, and the segmentation we have
   // adds overhead.
   int static_segmentation;
+
+  // Enable/disable second_alt_ref temporal filtering.
+  int second_alt_ref_filtering;
 } HIGH_LEVEL_SPEED_FEATURES;
 
 typedef struct TPL_SPEED_FEATURES {
