@@ -1214,6 +1214,7 @@ def PanProjectChecks(input_api, output_api,
 def CheckPatchFormatted(input_api,
                         output_api,
                         bypass_warnings=True,
+                        check_clang_format=True,
                         check_js=False,
                         check_python=None,
                         result_factory=None):
@@ -1221,6 +1222,9 @@ def CheckPatchFormatted(input_api,
   import git_cl
 
   display_args = []
+  if not check_clang_format:
+    display_args.append('--no-clang-format')
+
   if check_js:
     display_args.append('--js')
 
