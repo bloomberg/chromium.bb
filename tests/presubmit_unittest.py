@@ -18,6 +18,7 @@ import random
 import re
 import sys
 import tempfile
+import threading
 import time
 import unittest
 
@@ -169,12 +170,14 @@ index fe3de7b..54ae6e1 100755
     mock.patch('random.randint').start()
     mock.patch('presubmit_support.warn').start()
     mock.patch('presubmit_support.sigint_handler').start()
+    mock.patch('presubmit_support.time_time', return_value=0).start()
     mock.patch('scm.determine_scm').start()
     mock.patch('scm.GIT.GenerateDiff').start()
     mock.patch('subprocess2.Popen').start()
     mock.patch('sys.stderr', StringIO()).start()
     mock.patch('sys.stdout', StringIO()).start()
     mock.patch('tempfile.NamedTemporaryFile').start()
+    mock.patch('threading.Timer').start()
     mock.patch('multiprocessing.cpu_count', lambda: 2)
     if sys.version_info.major == 2:
       mock.patch('urllib2.urlopen').start()
@@ -2613,6 +2616,69 @@ the current line as well!
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             stdin=subprocess.PIPE),
     ])
+
+    threading.Timer.assert_not_called()
+
+    self.checkstdout('')
+
+  @mock.patch(BUILTIN_OPEN, mock.mock_open(read_data=''))
+  def testCannedRunUnitTestsWithTimer(self):
+    change = presubmit.Change(
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
+    input_api = self.MockInputApi(change, False)
+    input_api.verbose = True
+    input_api.thread_pool.timeout = 100
+    input_api.PresubmitLocalPath.return_value = self.fake_root_dir
+    presubmit.sigint_handler.wait.return_value = ('', None)
+    subprocess.Popen.return_value = mock.Mock(returncode=0)
+
+    results = presubmit_canned_checks.RunUnitTests(
+        input_api,
+        presubmit.OutputApi,
+        ['bar.py'])
+    self.assertEqual(
+        presubmit.OutputApi.PresubmitNotifyResult, results[0].__class__)
+
+    threading.Timer.assert_called_once_with(
+        input_api.thread_pool.timeout, mock.ANY)
+    threading.Timer().start.assert_called_once_with()
+    threading.Timer().cancel.assert_called_once_with()
+
+    self.checkstdout('')
+
+  @mock.patch(BUILTIN_OPEN, mock.mock_open(read_data=''))
+  def testCannedRunUnitTestsWithTimerTimesOut(self):
+    change = presubmit.Change(
+        'foo1', 'description1', self.fake_root_dir, None, 0, 0, None)
+    input_api = self.MockInputApi(change, False)
+    input_api.verbose = True
+    input_api.thread_pool.timeout = 100
+    input_api.PresubmitLocalPath.return_value = self.fake_root_dir
+    presubmit.sigint_handler.wait.return_value = ('', None)
+    subprocess.Popen.return_value = mock.Mock(returncode=1)
+
+    timer_instance = mock.Mock()
+    def mockTimer(_, fn):
+      fn()
+      return timer_instance
+    threading.Timer.side_effect = mockTimer
+
+    results = presubmit_canned_checks.RunUnitTests(
+        input_api,
+        presubmit.OutputApi,
+        ['bar.py'])
+    self.assertEqual(
+        presubmit.OutputApi.PresubmitPromptWarning, results[0].__class__)
+
+    output = StringIO()
+    results[0].handle(output)
+    self.assertIn(
+        'bar.py --verbose (0.00s) failed\nProcess timed out after 100s',
+        output.getvalue())
+
+    threading.Timer.assert_called_once_with(
+        input_api.thread_pool.timeout, mock.ANY)
+    timer_instance.start.assert_called_once_with()
 
     self.checkstdout('')
 
