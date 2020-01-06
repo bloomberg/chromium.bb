@@ -416,7 +416,7 @@ def CheckLongLines(input_api, output_api, maxlen, source_file_filter=None):
   JAVA_FILE_EXTS = ('java',)
   JAVA_EXCEPTIONS = ('import ', 'package ')
   JS_FILE_EXTS = ('js',)
-  JS_EXCEPTIONS = ("GEN('#include",)
+  JS_EXCEPTIONS = ("GEN('#include", 'import ')
   OBJC_FILE_EXTS = ('h', 'm', 'mm')
   OBJC_EXCEPTIONS = ('#define', '#endif', '#if', '#import', '#include',
                      '#pragma')

@@ -1511,6 +1511,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'bfoo',
         'cfoo',
         'dfoo']
+    # It falls back to ChangedContents when there is a failure. This is an
+    # optimization since NewContents() is much faster to execute than
+    # ChangedContents().
+    affected_file1.ChangedContents.return_value = [
+        (42, content1),
+        (43, 'hfoo'),
+        (23, 'ifoo')]
 
     change2 = presubmit.Change(
         'foo2', 'foo2\n', self.fake_root_dir, None, 0, 0, None)
@@ -1525,14 +1532,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
         'efoo',
         'ffoo',
         'gfoo']
-    # It falls back to ChangedContents when there is a failure. This is an
-    # optimization since NewContents() is much faster to execute than
-    # ChangedContents().
     affected_file2.ChangedContents.return_value = [
         (42, content2),
         (43, 'hfoo'),
         (23, 'ifoo')]
-    affected_file2.LocalPath.return_value = 'foo.cc'
 
 
     results1 = check(input_api1, presubmit.OutputApi, None)
@@ -1842,6 +1845,12 @@ the current line as well!
     self.ContentTest(check, 'GEN(\'#include "c/b/ui/webui/fixture.h"\');',
                      'foo.js', "// GEN('something');", 'foo.js',
                      presubmit.OutputApi.PresubmitPromptWarning)
+
+  def testCannedCheckJSLongImports(self):
+    check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 10)
+    self.ContentTest(check, "import {Name, otherName} from './dir/file.js';",
+                    'foo.js', "// We should import something long, eh?",
+                    'foo.js', presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckObjCExceptionLongLines(self):
     check = lambda x, y, _: presubmit_canned_checks.CheckLongLines(x, y, 80)
