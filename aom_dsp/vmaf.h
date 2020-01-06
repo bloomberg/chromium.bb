@@ -14,7 +14,7 @@
 
 #include "aom_scale/yv12config.h"
 
-int aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
-                  const YV12_BUFFER_CONFIG *distorted, double *vmaf);
+void aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
+                   const YV12_BUFFER_CONFIG *distorted, double *vmaf);
 
 #endif  // AOM_AOM_DSP_VMAF_H_

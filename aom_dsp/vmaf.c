@@ -11,8 +11,10 @@
 #include <assert.h>
 #include <libvmaf/libvmaf.h>
 #include <stdlib.h>
+
 #include "aom_dsp/vmaf.h"
 #include "aom_ports/system_state.h"
+#include "common/tools_common.h"
 
 typedef struct FrameData {
   const YV12_BUFFER_CONFIG *source;
@@ -58,8 +60,8 @@ static int read_frame_8bd(float *ref_data, float *main_data, float *temp_data,
   return 2;
 }
 
-int aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
-                  const YV12_BUFFER_CONFIG *distorted, double *vmaf) {
+void aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
+                   const YV12_BUFFER_CONFIG *distorted, double *vmaf) {
   aom_clear_system_state();
   const int width = source->y_width;
   const int height = source->y_height;
@@ -79,5 +81,5 @@ int aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
 
   aom_clear_system_state();
   *vmaf = vmaf_score;
-  return ret;
+  if (ret) fatal("Failed to compute VMAF scores.");
 }
