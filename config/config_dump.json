@@ -8895,7 +8895,7 @@
         ],
         "models": [
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\",\n        \"arc-cts-qual\",\n        \"arc-gts-qual\"\n    ]\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"arc-cts-qual\",\n        \"arc-gts-qual\"\n    ]\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360_signed\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion_signed\",\n    \"test_suites\": []\n}"
         ],
@@ -8926,7 +8926,7 @@
         "luci_builder": "Try",
         "models": [
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"bvt-perbuild\",\n        \"bvt-tast-informational\",\n        \"arc-cts-qual\",\n        \"arc-gts-qual\"\n    ]\n}",
-            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": []\n}",
+            "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360\",\n    \"test_suites\": [\n        \"sanity\",\n        \"bvt-inline\",\n        \"bvt-tast-cq\",\n        \"bvt-installer\",\n        \"bvt-arc\",\n        \"au\",\n        \"bvt-cq\",\n        \"arc-cts-qual\",\n        \"arc-gts-qual\"\n    ]\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion360_signed\",\n    \"test_suites\": []\n}",
             "{\n    \"enable_skylab\": true,\n    \"lab_board_name\": \"drallion\",\n    \"name\": \"drallion_signed\",\n    \"test_suites\": []\n}"
         ],
@@ -22502,6 +22502,7 @@
             "octavius-release",
             "octopus-release",
             "orco-release",
+            "palkia-release",
             "puff-release",
             "pyro-release",
             "rammus-release",
@@ -22684,6 +22685,7 @@
             "octavius-release-tryjob",
             "octopus-release-tryjob",
             "orco-release-tryjob",
+            "palkia-release-tryjob",
             "puff-release-tryjob",
             "pyro-release-tryjob",
             "rammus-release-tryjob",
@@ -25820,6 +25822,7 @@
         "boards": [
             "palkia"
         ],
+        "important": false,
         "vm_tests": [],
         "vm_tests_override": null
     },

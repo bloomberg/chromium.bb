@@ -354,6 +354,7 @@
     octavius-release
     octopus-release
     orco-release
+    palkia-release
     puff-release
     pyro-release
     rammus-release
@@ -1493,6 +1494,7 @@
     octavius-release-tryjob
     octopus-release-tryjob
     orco-release-tryjob
+    palkia-release-tryjob
     puff-release-tryjob
     pyro-release-tryjob
     rammus-release-tryjob
