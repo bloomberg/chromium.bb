@@ -14,6 +14,7 @@ from google.protobuf import json_format
 from chromite.api import api_config
 from chromite.api import router
 from chromite.api.gen.chromite.api import build_api_test_pb2
+from chromite.lib import chroot_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
@@ -42,8 +43,6 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase,
 
     self.subprocess_tempdir = os.path.join(self.chroot_dir, 'tempdir')
     osutils.SafeMakedirs(self.subprocess_tempdir)
-    self.PatchObject(osutils.TempDir, '__enter__',
-                     return_value=self.subprocess_tempdir)
 
   def testInputOutputMethod(self):
     """Test input/output handling."""
@@ -176,6 +175,14 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase,
     self.PatchObject(self.router, '_GetMethod',
                      return_value=self._mock_callable(expect_called=False))
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
+
+    # Patch the chroot tempdir method to return a tempdir with our subprocess
+    # tempdir so the output file will be in the expected location.
+    tempdir = osutils.TempDir()
+    original = tempdir.tempdir
+    tempdir.tempdir = self.subprocess_tempdir
+    self.PatchObject(chroot_lib.Chroot, 'tempdir', return_value=tempdir)
+
     self.rc.SetDefaultCmdResult(
         side_effect=self._writeChrootCallOutput(content='{"result": "foo"}'))
 
@@ -193,6 +200,9 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase,
     result = build_api_test_pb2.TestResultMessage()
     json_format.Parse(osutils.ReadFile(self.output_file), result)
     self.assertEqual(expected, result)
+
+    tempdir.tempdir = original
+    del tempdir
 
   def testReexecEmptyOutput(self):
     """Test calling an inside chroot method that produced no output."""

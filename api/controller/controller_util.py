@@ -25,12 +25,11 @@ class InvalidMessageError(Error):
   """Invalid message."""
 
 
-def ParseChroot(chroot_message, parse_goma=True):
+def ParseChroot(chroot_message):
   """Create a chroot object from the chroot message.
 
   Args:
     chroot_message (common_pb2.Chroot): The chroot message.
-    parse_goma (bool): Whether to try to parse the goma configs.
 
   Returns:
     Chroot: The parsed chroot object.
@@ -58,11 +57,8 @@ def ParseChroot(chroot_message, parse_goma=True):
   if features:
     env['FEATURES'] = ' '.join(features)
 
-  goma = ParseGomaConfig(chroot_message.goma, path) if parse_goma else None
-
   chroot = Chroot(
       path=path, cache_dir=cache_dir, chrome_root=chrome_root, env=env)
-  chroot.goma = goma
 
   return chroot
 

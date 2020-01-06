@@ -35,9 +35,8 @@ class InvalidResultPathError(Error):
 class ChrootHandler(object):
   """Translate a Chroot message to chroot enter arguments and env."""
 
-  def __init__(self, clear_field, parse_goma):
+  def __init__(self, clear_field):
     self.clear_field = clear_field
-    self.parse_goma = parse_goma
 
   def handle(self, message):
     """Parse a message for a chroot field."""
@@ -55,17 +54,16 @@ class ChrootHandler(object):
 
   def parse_chroot(self, chroot_message):
     """Parse a Chroot message instance."""
-    return controller_util.ParseChroot(chroot_message,
-                                       parse_goma=self.parse_goma)
+    return controller_util.ParseChroot(chroot_message)
 
 
-def handle_chroot(message, clear_field=True, parse_goma=True):
+def handle_chroot(message, clear_field=True):
   """Find and parse the chroot field, returning the Chroot instance.
 
   Returns:
     chroot_lib.Chroot
   """
-  handler = ChrootHandler(clear_field, parse_goma)
+  handler = ChrootHandler(clear_field)
   chroot = handler.handle(message)
   if chroot:
     return chroot

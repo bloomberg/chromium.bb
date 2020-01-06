@@ -38,8 +38,7 @@ class ChrootHandlerTest(cros_test_lib.TestCase):
     chroot_msg.chrome_dir = self.chrome_dir
     chroot_msg.env.features.add().feature = 'thing'
 
-    chroot_handler = field_handler.ChrootHandler(clear_field=False,
-                                                 parse_goma=True)
+    chroot_handler = field_handler.ChrootHandler(clear_field=False)
     parsed_chroot = chroot_handler.parse_chroot(chroot_msg)
 
     self.assertEqual(self.expected_chroot, parsed_chroot)
@@ -53,16 +52,14 @@ class ChrootHandlerTest(cros_test_lib.TestCase):
     message.chroot.env.features.add().feature = 'thing'
 
     # First a no-clear parse.
-    chroot_handler = field_handler.ChrootHandler(clear_field=False,
-                                                 parse_goma=True)
+    chroot_handler = field_handler.ChrootHandler(clear_field=False)
     chroot = chroot_handler.handle(message)
 
     self.assertEqual(self.expected_chroot, chroot)
     self.assertEqual(message.chroot.path, self.path)
 
     # A clear field parse.
-    clear_chroot_handler = field_handler.ChrootHandler(clear_field=True,
-                                                       parse_goma=True)
+    clear_chroot_handler = field_handler.ChrootHandler(clear_field=True)
     chroot = clear_chroot_handler.handle(message)
 
     self.assertEqual(self.expected_chroot, chroot)
@@ -73,8 +70,7 @@ class ChrootHandlerTest(cros_test_lib.TestCase):
     message = build_api_test_pb2.TestRequestMessage()
     empty_chroot = chroot_lib.Chroot()
 
-    chroot_handler = field_handler.ChrootHandler(clear_field=False,
-                                                 parse_goma=True)
+    chroot_handler = field_handler.ChrootHandler(clear_field=False)
     chroot = chroot_handler.handle(message)
 
     self.assertEqual(empty_chroot, chroot)

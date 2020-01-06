@@ -10,7 +10,6 @@ from __future__ import print_function
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import build_api_test_pb2
 from chromite.api.gen.chromiumos import common_pb2
-from chromite.cbuildbot import goma_util
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
 from chromite.lib.build_target_util import BuildTarget
@@ -41,112 +40,6 @@ class ParseChrootTest(cros_test_lib.MockTestCase):
     result = controller_util.ParseChroot(chroot_message)
 
     self.assertEqual(expected, result)
-
-  # TODO(saklein): Rewrite this test.
-  def testChrootCallToGoma(self):
-    """Test calls to goma."""
-    path = '/chroot/path'
-    cache_dir = '/cache/dir'
-    chrome_root = '/chrome/root'
-    use_flags = [{'flag': 'useflag1'}, {'flag': 'useflag2'}]
-    features = [{'feature': 'feature1'}, {'feature': 'feature2'}]
-    goma_test_dir = '/goma/test/dir'
-    goma_test_json_string = 'goma_json'
-    chromeos_goma_test_dir = '/chromeos/goma/test/dir'
-    log_dir = '/log/dir'
-    chroot_log_dir = '/chroot/path/log/dir'
-    stats_filename = 'stats_filename'
-    counterz_filename = 'counterz_filename'
-
-    # Patch goma constructor to avoid creating misc dirs.
-    patch = self.PatchObject(goma_util, 'Goma')
-
-    goma_config = common_pb2.GomaConfig(goma_dir=goma_test_dir,
-                                        goma_client_json=goma_test_json_string)
-    chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
-                                       chrome_dir=chrome_root,
-                                       env={'use_flags': use_flags,
-                                            'features': features},
-                                       goma=goma_config)
-
-    controller_util.ParseChroot(chroot_message)
-    patch.assert_called_with(goma_test_dir, goma_test_json_string,
-                             stage_name='BuildAPI', chromeos_goma_dir=None,
-                             chroot_dir=path,
-                             goma_approach=None,
-                             log_dir=None, stats_filename=None,
-                             counterz_filename=None)
-
-    goma_config.chromeos_goma_dir = chromeos_goma_test_dir
-    chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
-                                       chrome_dir=chrome_root,
-                                       env={'use_flags': use_flags,
-                                            'features': features},
-                                       goma=goma_config)
-
-    controller_util.ParseChroot(chroot_message)
-    patch.assert_called_with(goma_test_dir, goma_test_json_string,
-                             stage_name='BuildAPI',
-                             chromeos_goma_dir=chromeos_goma_test_dir,
-                             chroot_dir=path,
-                             goma_approach=None,
-                             log_dir=None, stats_filename=None,
-                             counterz_filename=None)
-
-    # Test the goma approach options.
-    goma_config.goma_approach = common_pb2.GomaConfig.RBE_PROD
-    chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
-                                       chrome_dir=chrome_root,
-                                       env={'use_flags': use_flags,
-                                            'features': features},
-                                       goma=goma_config)
-
-    controller_util.ParseChroot(chroot_message)
-    patch.assert_called_with(goma_test_dir, goma_test_json_string,
-                             stage_name='BuildAPI',
-                             chromeos_goma_dir=chromeos_goma_test_dir,
-                             chroot_dir=path,
-                             goma_approach=goma_util.GomaApproach(
-                                 '?prod', 'goma.chromium.org', True),
-                             log_dir=None, stats_filename=None,
-                             counterz_filename=None)
-
-    goma_config.goma_approach = common_pb2.GomaConfig.RBE_STAGING
-    chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
-                                       chrome_dir=chrome_root,
-                                       env={'use_flags': use_flags,
-                                            'features': features},
-                                       goma=goma_config)
-
-    controller_util.ParseChroot(chroot_message)
-    patch.assert_called_with(goma_test_dir, goma_test_json_string,
-                             stage_name='BuildAPI',
-                             chromeos_goma_dir=chromeos_goma_test_dir,
-                             chroot_dir=path,
-                             goma_approach=goma_util.GomaApproach(
-                                 '?staging', 'staging-goma.chromium.org', True),
-                             log_dir=None, stats_filename=None,
-                             counterz_filename=None)
-
-    # Test the goma log options.
-    goma_config = common_pb2.GomaConfig(goma_dir=goma_test_dir,
-                                        goma_client_json=goma_test_json_string,
-                                        log_dir={'dir': log_dir},
-                                        stats_file=stats_filename,
-                                        counterz_file=counterz_filename)
-    chroot_message = common_pb2.Chroot(path=path, cache_dir=cache_dir,
-                                       chrome_dir=chrome_root,
-                                       env={'use_flags': use_flags,
-                                            'features': features},
-                                       goma=goma_config)
-
-    controller_util.ParseChroot(chroot_message)
-    patch.assert_called_with(goma_test_dir, goma_test_json_string,
-                             stage_name='BuildAPI', chromeos_goma_dir=None,
-                             chroot_dir=path, goma_approach=None,
-                             log_dir=chroot_log_dir,
-                             stats_filename=stats_filename,
-                             counterz_filename=counterz_filename)
 
   def testWrongMessage(self):
     """Test invalid message type given."""
