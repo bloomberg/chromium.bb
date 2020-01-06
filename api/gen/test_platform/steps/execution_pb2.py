@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.steps',
   syntax='proto3',
   serialized_options=_b('Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/steps'),
-  serialized_pb=_b('\n#test_platform/steps/execution.proto\x12\x13test_platform.steps\x1a\x1ftest_platform/common/task.proto\x1a\x1btest_platform/request.proto\x1a%test_platform/steps/enumeration.proto\x1a!test_platform/config/config.proto\x1a\x1dtest_platform/taskstate.proto\"\xf7\x01\n\x0f\x45xecuteRequests\x12\x35\n\x08requests\x18\x01 \x03(\x0b\x32#.test_platform.steps.ExecuteRequest\x12Q\n\x0ftagged_requests\x18\x02 \x03(\x0b\x32\x38.test_platform.steps.ExecuteRequests.TaggedRequestsEntry\x1aZ\n\x13TaggedRequestsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.test_platform.steps.ExecuteRequest:\x02\x38\x01\"\xff\x01\n\x10\x45xecuteResponses\x12\x37\n\tresponses\x18\x01 \x03(\x0b\x32$.test_platform.steps.ExecuteResponse\x12T\n\x10tagged_responses\x18\x02 \x03(\x0b\x32:.test_platform.steps.ExecuteResponses.TaggedResponsesEntry\x1a\\\n\x14TaggedResponsesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.test_platform.steps.ExecuteResponse:\x02\x38\x01\"\xb4\x01\n\x0e\x45xecuteRequest\x12\x35\n\x0erequest_params\x18\x01 \x01(\x0b\x32\x1d.test_platform.Request.Params\x12=\n\x0b\x65numeration\x18\x02 \x01(\x0b\x32(.test_platform.steps.EnumerationResponse\x12,\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x1c.test_platform.config.Config\"\xfd\x05\n\x0f\x45xecuteResponse\x12\x45\n\x0ctask_results\x18\x01 \x03(\x0b\x32/.test_platform.steps.ExecuteResponse.TaskResult\x12U\n\x14\x63onsolidated_results\x18\x03 \x03(\x0b\x32\x37.test_platform.steps.ExecuteResponse.ConsolidatedResult\x12\'\n\x05state\x18\x02 \x01(\x0b\x32\x18.test_platform.TaskState\x1a\xc9\x03\n\nTaskResult\x12\x10\n\x08task_url\x18\x02 \x01(\t\x12\'\n\x05state\x18\x03 \x01(\x0b\x32\x18.test_platform.TaskState\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x0f\n\x07log_url\x18\x05 \x01(\t\x12\x0f\n\x07\x61ttempt\x18\x06 \x01(\x05\x12R\n\ntest_cases\x18\x07 \x03(\x0b\x32>.test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult\x12T\n\x0cprejob_steps\x18\x08 \x03(\x0b\x32>.test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult\x12\x33\n\x08log_data\x18\t \x01(\x0b\x32!.test_platform.common.TaskLogData\x1aq\n\x0eTestCaseResult\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x07verdict\x18\x02 \x01(\x0e\x32 .test_platform.TaskState.Verdict\x12\x1e\n\x16human_readable_summary\x18\x03 \x01(\t\x1aW\n\x12\x43onsolidatedResult\x12\x41\n\x08\x61ttempts\x18\x01 \x03(\x0b\x32/.test_platform.steps.ExecuteResponse.TaskResultB?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
+  serialized_pb=_b('\n#test_platform/steps/execution.proto\x12\x13test_platform.steps\x1a\x1ftest_platform/common/task.proto\x1a\x1btest_platform/request.proto\x1a%test_platform/steps/enumeration.proto\x1a!test_platform/config/config.proto\x1a\x1dtest_platform/taskstate.proto\"\xf7\x01\n\x0f\x45xecuteRequests\x12\x35\n\x08requests\x18\x01 \x03(\x0b\x32#.test_platform.steps.ExecuteRequest\x12Q\n\x0ftagged_requests\x18\x02 \x03(\x0b\x32\x38.test_platform.steps.ExecuteRequests.TaggedRequestsEntry\x1aZ\n\x13TaggedRequestsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x32\n\x05value\x18\x02 \x01(\x0b\x32#.test_platform.steps.ExecuteRequest:\x02\x38\x01\"\xff\x01\n\x10\x45xecuteResponses\x12\x37\n\tresponses\x18\x01 \x03(\x0b\x32$.test_platform.steps.ExecuteResponse\x12T\n\x10tagged_responses\x18\x02 \x03(\x0b\x32:.test_platform.steps.ExecuteResponses.TaggedResponsesEntry\x1a\\\n\x14TaggedResponsesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x33\n\x05value\x18\x02 \x01(\x0b\x32$.test_platform.steps.ExecuteResponse:\x02\x38\x01\"\xb4\x01\n\x0e\x45xecuteRequest\x12\x35\n\x0erequest_params\x18\x01 \x01(\x0b\x32\x1d.test_platform.Request.Params\x12=\n\x0b\x65numeration\x18\x02 \x01(\x0b\x32(.test_platform.steps.EnumerationResponse\x12,\n\x06\x63onfig\x18\x03 \x01(\x0b\x32\x1c.test_platform.config.Config\"\x9f\x06\n\x0f\x45xecuteResponse\x12\x45\n\x0ctask_results\x18\x01 \x03(\x0b\x32/.test_platform.steps.ExecuteResponse.TaskResult\x12U\n\x14\x63onsolidated_results\x18\x03 \x03(\x0b\x32\x37.test_platform.steps.ExecuteResponse.ConsolidatedResult\x12\'\n\x05state\x18\x02 \x01(\x0b\x32\x18.test_platform.TaskState\x1a\xeb\x03\n\nTaskResult\x12\x10\n\x08task_url\x18\x02 \x01(\t\x12\'\n\x05state\x18\x03 \x01(\x0b\x32\x18.test_platform.TaskState\x12\x0c\n\x04name\x18\x04 \x01(\t\x12\x0f\n\x07log_url\x18\x05 \x01(\t\x12\x0f\n\x07\x61ttempt\x18\x06 \x01(\x05\x12R\n\ntest_cases\x18\x07 \x03(\x0b\x32>.test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult\x12T\n\x0cprejob_steps\x18\x08 \x03(\x0b\x32>.test_platform.steps.ExecuteResponse.TaskResult.TestCaseResult\x12\x33\n\x08log_data\x18\t \x01(\x0b\x32!.test_platform.common.TaskLogData\x12 \n\x18synchronous_log_data_url\x18\n \x01(\t\x1aq\n\x0eTestCaseResult\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x31\n\x07verdict\x18\x02 \x01(\x0e\x32 .test_platform.TaskState.Verdict\x12\x1e\n\x16human_readable_summary\x18\x03 \x01(\t\x1aW\n\x12\x43onsolidatedResult\x12\x41\n\x08\x61ttempts\x18\x01 \x03(\x0b\x32/.test_platform.steps.ExecuteResponse.TaskResultB?Z=go.chromium.org/chromiumos/infra/proto/go/test_platform/stepsb\x06proto3')
   ,
   dependencies=[test__platform_dot_common_dot_task__pb2.DESCRIPTOR,test__platform_dot_request__pb2.DESCRIPTOR,test__platform_dot_steps_dot_enumeration__pb2.DESCRIPTOR,test__platform_dot_config_dot_config__pb2.DESCRIPTOR,test__platform_dot_taskstate__pb2.DESCRIPTOR,])
 
@@ -266,8 +266,8 @@ _EXECUTERESPONSE_TASKRESULT_TESTCASERESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1482,
-  serialized_end=1595,
+  serialized_start=1516,
+  serialized_end=1629,
 )
 
 _EXECUTERESPONSE_TASKRESULT = _descriptor.Descriptor(
@@ -333,6 +333,13 @@ _EXECUTERESPONSE_TASKRESULT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='synchronous_log_data_url', full_name='test_platform.steps.ExecuteResponse.TaskResult.synchronous_log_data_url', index=8,
+      number=10, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -346,7 +353,7 @@ _EXECUTERESPONSE_TASKRESULT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=1138,
-  serialized_end=1595,
+  serialized_end=1629,
 )
 
 _EXECUTERESPONSE_CONSOLIDATEDRESULT = _descriptor.Descriptor(
@@ -375,8 +382,8 @@ _EXECUTERESPONSE_CONSOLIDATEDRESULT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1597,
-  serialized_end=1684,
+  serialized_start=1631,
+  serialized_end=1718,
 )
 
 _EXECUTERESPONSE = _descriptor.Descriptor(
@@ -420,7 +427,7 @@ _EXECUTERESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=919,
-  serialized_end=1684,
+  serialized_end=1718,
 )
 
 _EXECUTEREQUESTS_TAGGEDREQUESTSENTRY.fields_by_name['value'].message_type = _EXECUTEREQUEST
