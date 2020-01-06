@@ -118,7 +118,7 @@ class CastAuthUtilTest : public ::testing::Test {
 
  protected:
   static AuthResponse CreateAuthResponse(
-      std::string* signed_data,
+      std::vector<uint8_t>* signed_data,
       ::cast::channel::HashAlgorithm digest_algorithm) {
     std::vector<std::string> chain = testing::ReadCertificatesFromPemFile(
         TEST_DATA_PREFIX "certificates/chromecast_gen1.pem");
@@ -147,21 +147,27 @@ class CastAuthUtilTest : public ::testing::Test {
                         signatures.sha256.length));
         break;
     }
-    signed_data->assign(reinterpret_cast<const char*>(signatures.message.data),
-                        signatures.message.length);
+    *signed_data = std::vector<uint8_t>(
+        signatures.message.data,
+        signatures.message.data + signatures.message.length);
 
     return response;
   }
 
   // Mangles a string by inverting the first byte.
   static void MangleString(std::string* str) { (*str)[0] = ~(*str)[0]; }
+
+  // Mangles a vector by inverting the first byte.
+  static void MangleData(std::vector<uint8_t>* data) {
+    (*data)[0] = ~(*data)[0];
+  }
 };
 
 // Note on expiration: VerifyCredentials() depends on the system clock. In
 // practice this shouldn't be a problem though since the certificate chain
 // being verified doesn't expire until 2032.
 TEST_F(CastAuthUtilTest, VerifySuccess) {
-  std::string signed_data;
+  std::vector<uint8_t> signed_data;
   AuthResponse auth_response =
       CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
   DateTime now = {};
@@ -174,7 +180,7 @@ TEST_F(CastAuthUtilTest, VerifySuccess) {
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadCA) {
-  std::string signed_data;
+  std::vector<uint8_t> signed_data;
   AuthResponse auth_response =
       CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
   MangleString(auth_response.mutable_intermediate_certificate(0));
@@ -185,7 +191,7 @@ TEST_F(CastAuthUtilTest, VerifyBadCA) {
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadClientAuthCert) {
-  std::string signed_data;
+  std::vector<uint8_t> signed_data;
   AuthResponse auth_response =
       CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
   MangleString(auth_response.mutable_client_auth_certificate());
@@ -196,7 +202,7 @@ TEST_F(CastAuthUtilTest, VerifyBadClientAuthCert) {
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadSignature) {
-  std::string signed_data;
+  std::vector<uint8_t> signed_data;
   AuthResponse auth_response =
       CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
   MangleString(auth_response.mutable_signature());
@@ -207,7 +213,7 @@ TEST_F(CastAuthUtilTest, VerifyBadSignature) {
 }
 
 TEST_F(CastAuthUtilTest, VerifyEmptySignature) {
-  std::string signed_data;
+  std::vector<uint8_t> signed_data;
   AuthResponse auth_response =
       CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
   auth_response.mutable_signature()->clear();
@@ -218,7 +224,7 @@ TEST_F(CastAuthUtilTest, VerifyEmptySignature) {
 }
 
 TEST_F(CastAuthUtilTest, VerifyUnsupportedDigest) {
-  std::string signed_data;
+  std::vector<uint8_t> signed_data;
   AuthResponse auth_response =
       CreateAuthResponse(&signed_data, ::cast::channel::SHA1);
   DateTime now = {};
@@ -231,7 +237,7 @@ TEST_F(CastAuthUtilTest, VerifyUnsupportedDigest) {
 }
 
 TEST_F(CastAuthUtilTest, VerifyBackwardsCompatibleDigest) {
-  std::string signed_data;
+  std::vector<uint8_t> signed_data;
   AuthResponse auth_response =
       CreateAuthResponse(&signed_data, ::cast::channel::SHA1);
   DateTime now = {};
@@ -243,10 +249,10 @@ TEST_F(CastAuthUtilTest, VerifyBackwardsCompatibleDigest) {
 }
 
 TEST_F(CastAuthUtilTest, VerifyBadPeerCert) {
-  std::string signed_data;
+  std::vector<uint8_t> signed_data;
   AuthResponse auth_response =
       CreateAuthResponse(&signed_data, ::cast::channel::SHA256);
-  MangleString(&signed_data);
+  MangleData(&signed_data);
   ErrorOr<CastDeviceCertPolicy> result =
       VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result);
@@ -370,9 +376,9 @@ ErrorOr<CastDeviceCertPolicy> TestVerifyRevocation(
   CRLPolicy crl_policy = CRLPolicy::kCrlRequired;
   if (!crl_required && crl_bundle.empty())
     crl_policy = CRLPolicy::kCrlOptional;
-  ErrorOr<CastDeviceCertPolicy> result =
-      VerifyCredentialsForTest(response, "", crl_policy, cast_trust_store,
-                               crl_trust_store, verification_time);
+  ErrorOr<CastDeviceCertPolicy> result = VerifyCredentialsForTest(
+      response, std::vector<uint8_t>(), crl_policy, cast_trust_store,
+      crl_trust_store, verification_time);
   // This test doesn't set the signature so it will just fail there.
   EXPECT_FALSE(result);
   return result;

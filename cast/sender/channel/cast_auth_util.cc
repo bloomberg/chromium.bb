@@ -6,7 +6,7 @@
 
 #include <openssl/rand.h>
 
-#include <vector>
+#include <algorithm>
 
 #include "cast/common/certificate/cast_cert_validator.h"
 #include "cast/common/certificate/cast_cert_validator_internal.h"
@@ -221,7 +221,7 @@ Error VerifyTLSCertificateValidity(X509* peer_cert,
 
 ErrorOr<CastDeviceCertPolicy> VerifyCredentialsImpl(
     const AuthResponse& response,
-    const std::string& signature_input,
+    const std::vector<uint8_t>& signature_input,
     const CRLPolicy& crl_policy,
     TrustStore* cast_trust_store,
     TrustStore* crl_trust_store,
@@ -256,21 +256,22 @@ ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReplyImpl(
     return result;
   }
 
-  int len = i2d_X509(peer_cert, nullptr);
-  if (len <= 0) {
+  int cert_len = i2d_X509(peer_cert, nullptr);
+  if (cert_len <= 0) {
     return Error(Error::Code::kErrCertsParse, "Serializing cert failed.");
   }
-  std::string peer_cert_der(len, 0);
-  uint8_t* data = reinterpret_cast<uint8_t*>(&peer_cert_der[0]);
+  size_t nonce_response_size = nonce_response.size();
+  std::vector<uint8_t> nonce_plus_peer_cert_der(nonce_response_size + cert_len,
+                                                0);
+  std::copy(nonce_response.begin(), nonce_response.end(),
+            &nonce_plus_peer_cert_der[0]);
+  uint8_t* data = &nonce_plus_peer_cert_der[nonce_response_size];
   if (!i2d_X509(peer_cert, &data)) {
     return Error(Error::Code::kErrCertsParse, "Serializing cert failed.");
   }
-  size_t actual_size = data - reinterpret_cast<uint8_t*>(&peer_cert_der[0]);
-  OSP_DCHECK_EQ(actual_size, peer_cert_der.size());
-  peer_cert_der.resize(actual_size);
 
-  return VerifyCredentialsImpl(response, nonce_response + peer_cert_der,
-                               crl_policy, cast_trust_store, crl_trust_store,
+  return VerifyCredentialsImpl(response, nonce_plus_peer_cert_der, crl_policy,
+                               cast_trust_store, crl_trust_store,
                                verification_time, false);
 }
 
@@ -318,7 +319,7 @@ ErrorOr<CastDeviceCertPolicy> AuthenticateChallengeReplyForTest(
 //   |signature_input| by |response.client_auth_certificate|'s public key.
 ErrorOr<CastDeviceCertPolicy> VerifyCredentialsImpl(
     const AuthResponse& response,
-    const std::string& signature_input,
+    const std::vector<uint8_t>& signature_input,
     const CRLPolicy& crl_policy,
     TrustStore* cast_trust_store,
     TrustStore* crl_trust_store,
@@ -368,9 +369,8 @@ ErrorOr<CastDeviceCertPolicy> VerifyCredentialsImpl(
   ConstDataSpan signature = {
       reinterpret_cast<const uint8_t*>(response.signature().data()),
       static_cast<uint32_t>(response.signature().size())};
-  ConstDataSpan siginput = {
-      reinterpret_cast<const uint8_t*>(signature_input.data()),
-      static_cast<uint32_t>(signature_input.size())};
+  ConstDataSpan siginput = {signature_input.data(),
+                            static_cast<uint32_t>(signature_input.size())};
   if (!verification_context->VerifySignatureOverData(signature, siginput,
                                                      digest_algorithm)) {
     return Error(Error::Code::kCastV2SignedBlobsMismatch,
@@ -382,7 +382,7 @@ ErrorOr<CastDeviceCertPolicy> VerifyCredentialsImpl(
 
 ErrorOr<CastDeviceCertPolicy> VerifyCredentials(
     const AuthResponse& response,
-    const std::string& signature_input,
+    const std::vector<uint8_t>& signature_input,
     bool enforce_revocation_checking,
     bool enforce_sha256_checking) {
   DateTime now = {};
@@ -395,7 +395,7 @@ ErrorOr<CastDeviceCertPolicy> VerifyCredentials(
 
 ErrorOr<CastDeviceCertPolicy> VerifyCredentialsForTest(
     const AuthResponse& response,
-    const std::string& signature_input,
+    const std::vector<uint8_t>& signature_input,
     CRLPolicy crl_policy,
     TrustStore* cast_trust_store,
     TrustStore* crl_trust_store,

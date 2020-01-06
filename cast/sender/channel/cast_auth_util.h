@@ -9,6 +9,7 @@
 
 #include <chrono>  // NOLINT
 #include <string>
+#include <vector>
 
 #include "cast/common/certificate/cast_cert_validator.h"
 #include "platform/base/error.h"
@@ -79,7 +80,7 @@ Error VerifyTLSCertificateValidity(X509* peer_cert,
 // |signature_input|.
 ErrorOr<CastDeviceCertPolicy> VerifyCredentials(
     const ::cast::channel::AuthResponse& response,
-    const std::string& signature_input,
+    const std::vector<uint8_t>& signature_input,
     bool enforce_revocation_checking = false,
     bool enforce_sha256_checking = false);
 
@@ -89,7 +90,7 @@ ErrorOr<CastDeviceCertPolicy> VerifyCredentials(
 // trust stores, and verification times.
 ErrorOr<CastDeviceCertPolicy> VerifyCredentialsForTest(
     const ::cast::channel::AuthResponse& response,
-    const std::string& signature_input,
+    const std::vector<uint8_t>& signature_input,
     CRLPolicy crl_policy,
     TrustStore* cast_trust_store,
     TrustStore* crl_trust_store,
