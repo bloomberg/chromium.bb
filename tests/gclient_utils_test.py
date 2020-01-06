@@ -16,13 +16,14 @@ import unittest
 
 if sys.version_info.major == 2:
   from StringIO import StringIO
+  import mock
 else:
   from io import StringIO
+  from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from testing_support import trial_dir
-from third_party import mock
 
 import gclient_utils
 import subprocess2

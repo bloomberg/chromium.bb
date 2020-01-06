@@ -9,13 +9,16 @@ import os
 import sys
 import unittest
 
+if sys.version_info.major == 2:
+  import mock
+else:
+  from unittest import mock
+
 DEPOT_TOOLS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, DEPOT_TOOLS)
 
 import subprocess
 import subprocess2
-
-from third_party import mock
 
 
 TEST_COMMAND = [

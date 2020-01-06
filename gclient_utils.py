@@ -17,12 +17,6 @@ import operator
 import os
 import pipes
 import platform
-
-try:
-  import Queue as queue
-except ImportError:  # For Py3 compatibility
-  import queue
-
 import re
 import stat
 import subprocess
@@ -30,18 +24,16 @@ import sys
 import tempfile
 import threading
 import time
-
-try:
-  import urlparse
-except ImportError:  # For Py3 compatibility
-  import urllib.parse as urlparse
-
 import subprocess2
 
 if sys.version_info.major == 2:
   from cStringIO import StringIO
+  import Queue as queue
+  import urlparse
 else:
   from io import StringIO
+  import queue
+  import urllib.parse as urlparse
 
 
 RETRY_MAX = 3

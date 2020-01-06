@@ -10,12 +10,13 @@ import unittest
 
 if sys.version_info.major == 2:
   from StringIO import StringIO
+  import mock
 else:
   from io import StringIO
+  from unittest import mock
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from third_party import mock
 import git_footers
 
 class GitFootersTest(unittest.TestCase):

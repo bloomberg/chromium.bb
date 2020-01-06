@@ -17,10 +17,16 @@ import sys
 import tempfile
 import unittest
 
+if sys.version_info.major == 2:
+  from StringIO import StringIO
+  import mock
+else:
+  from io import StringIO
+  from unittest import mock
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from testing_support.auto_stub import TestCase
-from third_party import mock
 
 import metrics
 # We have to disable monitoring before importing git_cl.
@@ -31,11 +37,6 @@ import git_cl
 import git_common
 import git_footers
 import subprocess2
-
-if sys.version_info.major == 2:
-  from StringIO import StringIO
-else:
-  from io import StringIO
 
 
 def callError(code=1, cmd='', cwd='', stdout=b'', stderr=b''):

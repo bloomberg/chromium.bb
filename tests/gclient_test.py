@@ -16,8 +16,10 @@ import sys
 import unittest
 
 if sys.version_info.major == 2:
+  import mock
   import Queue
 else:
+  from unittest import mock
   import queue as Queue
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -30,7 +32,6 @@ import gclient
 import gclient_utils
 import gclient_scm
 from testing_support import trial_dir
-from third_party import mock
 
 
 def write(filename, content):
