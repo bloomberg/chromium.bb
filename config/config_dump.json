@@ -4,7 +4,8 @@
         "afdo_generate": false,
         "afdo_generate_async": false,
         "afdo_generate_min": false,
-        "afdo_update_ebuild": false,
+        "afdo_update_chrome_ebuild": false,
+        "afdo_update_kernel_ebuild": false,
         "afdo_use": true,
         "android_gts_build_branch": null,
         "android_import_branch": null,
@@ -7089,6 +7090,7 @@
     },
     "chell-chrome-no-afdo-uprev-pre-flight-branch": {
         "_template": "pre_flight_branch",
+        "afdo_update_kernel_ebuild": true,
         "archive_build_debug": true,
         "boards": [
             "chell"
@@ -7100,6 +7102,7 @@
     },
     "chell-chrome-no-afdo-uprev-pre-flight-branch-tryjob": {
         "_template": "pre_flight_branch",
+        "afdo_update_kernel_ebuild": true,
         "archive_build_debug": true,
         "boards": [
             "chell"
@@ -7116,7 +7119,8 @@
     "chell-chrome-pre-flight-branch": {
         "_template": "pre_flight_branch",
         "afdo_generate": true,
-        "afdo_update_ebuild": true,
+        "afdo_update_chrome_ebuild": true,
+        "afdo_update_kernel_ebuild": true,
         "afdo_use": false,
         "archive_build_debug": true,
         "boards": [
@@ -7140,7 +7144,8 @@
     "chell-chrome-pre-flight-branch-tryjob": {
         "_template": "pre_flight_branch",
         "afdo_generate": true,
-        "afdo_update_ebuild": true,
+        "afdo_update_chrome_ebuild": true,
+        "afdo_update_kernel_ebuild": true,
         "afdo_use": false,
         "archive_build_debug": true,
         "boards": [

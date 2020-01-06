@@ -403,9 +403,12 @@ class SimpleBuilder(generic_builders.Builder):
                          builder_run=builder_run)
 
         if (builder_run.config.afdo_generate_min and
-            builder_run.config.afdo_update_ebuild):
+            builder_run.config.afdo_update_chrome_ebuild):
           self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage,
                          builder_run=builder_run)
+
+        if (builder_run.config.afdo_generate_min and
+            builder_run.config.afdo_update_kernel_ebuild):
           self._RunStage(afdo_stages.AFDOUpdateKernelEbuildStage,
                          builder_run=builder_run)
 
@@ -526,7 +529,8 @@ class DistributedBuilder(SimpleBuilder):
     """
     is_master_chrome_pfq = config_lib.IsMasterChromePFQ(self._run.config)
 
-    updateEbuild_successful = False
+    updateChromeEbuild_successful = False
+    updateKernelEbuild_successful = False
     try:
       # When (afdo_update_ebuild and not afdo_generate_min) is True,
       # if completion_stage passed, need to run
@@ -535,11 +539,13 @@ class DistributedBuilder(SimpleBuilder):
       # need to run AFDOUpdateChromeEbuildStage to prepare for pushing commits
       # to a staging branch.
       if ((completion_successful or is_master_chrome_pfq) and
-          self._run.config.afdo_update_ebuild and
           not self._run.config.afdo_generate_min):
-        self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage)
-        self._RunStage(afdo_stages.AFDOUpdateKernelEbuildStage)
-        updateEbuild_successful = True
+        if self._run.config.afdo_update_chrome_ebuild:
+          self._RunStage(afdo_stages.AFDOUpdateChromeEbuildStage)
+          updateChromeEbuild_successful = True
+        if self._run.config.afdo_update_kernel_ebuild:
+          self._RunStage(afdo_stages.AFDOUpdateKernelEbuildStage)
+          updateKernelEbuild_successful = True
     finally:
       if self._run.config.master:
         self._RunStage(report_stages.SlaveFailureSummaryStage)
@@ -564,7 +570,8 @@ class DistributedBuilder(SimpleBuilder):
         # push to another branch instead of master.
         stage_push = (is_master_chrome_pfq and
                       not completion_successful and
-                      updateEbuild_successful and
+                      (updateChromeEbuild_successful or
+                       updateKernelEbuild_successful) and
                       was_build_successful and
                       build_finished)
 

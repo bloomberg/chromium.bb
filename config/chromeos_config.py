@@ -2962,12 +2962,15 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   # *-pre-flight-branch builders are in chromeos_release waterfall.
+  # *-no-afdo-uprev builder skips upreving Chrome AFDO profiles in the PFQ
+  # builder, as we have separate builders to do so.
   site_config.Add(
       'chell-chrome-no-afdo-uprev-pre-flight-branch',
       site_config.templates.pre_flight_branch,
       display_label=config_lib.DISPLAY_LABEL_CHROME_PFQ,
       boards=['chell'],
       afdo_use=True,
+      afdo_update_kernel_ebuild=True,
       sync_chrome=True,
       chrome_rev=constants.CHROME_REV_STICKY,
       prebuilts=False,
@@ -2983,7 +2986,8 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       boards=['chell'],
       afdo_generate=True,
       afdo_use=False,
-      afdo_update_ebuild=True,
+      afdo_update_chrome_ebuild=True,
+      afdo_update_kernel_ebuild=True,
       sync_chrome=True,
       chrome_rev=constants.CHROME_REV_STICKY,
       hw_tests=[hw_test_list.AFDORecordTest(warn_only=True)],

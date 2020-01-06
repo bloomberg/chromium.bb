@@ -873,7 +873,10 @@ def DefaultSettings():
       afdo_generate_min=False,
 
       # Update the Chrome ebuild with the AFDO profile info.
-      afdo_update_ebuild=False,
+      afdo_update_chrome_ebuild=False,
+
+      # Update the kernel ebuild with the AFDO profile info.
+      afdo_update_kernel_ebuild=False,
 
       # Uses AFDO data. The Chrome build will be optimized using the AFDO
       # profile information found in Chrome's source tree.
