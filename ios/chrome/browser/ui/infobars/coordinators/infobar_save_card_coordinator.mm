@@ -102,6 +102,10 @@
   return self.infobarAccepted;
 }
 
+- (BOOL)infobarBannerActionWillPresentModal {
+  return self.saveCardInfoBarDelegate->upload();
+}
+
 - (void)performInfobarAction {
   // Display the modal (thus the ToS) if the card will be uploaded, this is a
   // legal requirement and shouldn't be changed.
