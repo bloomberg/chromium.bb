@@ -869,20 +869,20 @@ void PostFilter::ApplySuperRes(
     initial_subpixel_x &= kSuperResScaleMask;
     uint8_t* input = buffer->data(plane) + plane_offsets[plane];
     const uint32_t input_stride = buffer->stride(plane);
-    for (int y = 0; y < plane_height; ++y, input += input_stride) {
 #if LIBGAV1_MAX_BITDEPTH >= 10
-      if (bitdepth_ >= 10) {
-        CopyPlane<uint16_t>(input, input_stride, plane_width, 1,
-                            line_buffer_start, /*dest_stride=*/0);
+    if (bitdepth_ >= 10) {
+      for (int y = 0; y < plane_height; ++y, input += input_stride) {
+        memcpy(line_buffer_start, input, plane_width * sizeof(uint16_t));
         ExtendLine<uint16_t>(line_buffer_start, plane_width, kSuperResBorder,
                              kSuperResBorder);
         dsp_.super_res_row(line_buffer_start, upscaled_width,
                            initial_subpixel_x, step, input);
-        continue;
       }
+      continue;
+    }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
-      CopyPlane<uint8_t>(input, input_stride, plane_width, 1, line_buffer_start,
-                         /*dest_stride=*/0);
+    for (int y = 0; y < plane_height; ++y, input += input_stride) {
+      memcpy(line_buffer_start, input, plane_width);
       ExtendLine<uint8_t>(line_buffer_start, plane_width, kSuperResBorder,
                           kSuperResBorder);
       dsp_.super_res_row(line_buffer_start, upscaled_width, initial_subpixel_x,
