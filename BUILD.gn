@@ -8,6 +8,8 @@ import("osp/build/config/services.gni")
 # All compilable non-test targets in the repository (both executables and
 # source_sets).
 group("gn_all") {
+  testonly = true
+
   deps = [
     "cast/common:certificate",
     "cast/common:channel",
@@ -55,6 +57,10 @@ group("gn_all") {
       "third_party/zlib",
     ]
 
+    if (is_posix) {
+      deps += [ "cast/test:make_crl_tests" ]
+    }
+
     # TODO(crbug.com/openscreen/86): Build for Mac too once the mac buildbot
     # compiler is upgraded.
     if (!is_mac) {
@@ -70,7 +76,6 @@ source_set("openscreen_unittests_all") {
     "cast/receiver:unittests",
     "cast/sender:unittests",
     "cast/streaming:unittests",
-    "cast/test:make_crl_tests",
     "cast/test:unittests",
     "discovery:unittests",
     "osp:unittests",
