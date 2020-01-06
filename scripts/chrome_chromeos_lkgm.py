@@ -34,8 +34,9 @@ class ChromeLKGMCommitter(object):
   # landing. Since they're internal trybots, the CQ won't automatically trigger
   # them, so we have to explicitly tell it to.
   _PRESUBMIT_BOTS = [
-      'chromeos-betty-chrome',
-      'chromeos-betty-pi-arc-chrome',
+      # TODO(crbug.com/1039323): Add the two betty bots back when they're green.
+      # 'chromeos-betty-chrome',
+      # 'chromeos-betty-pi-arc-chrome',
       'chromeos-eve-compile-chrome',
       'chromeos-kevin-compile-chrome',
   ]
