@@ -2937,6 +2937,8 @@ void LocalFrameView::UpdateStyleAndLayoutIfNeededRecursive() {
     SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                              LocalFrameUkmAggregator::kLayout);
     UpdateLayout();
+  } else {
+    UpdateGeometriesIfNeeded();
   }
 
   CheckDoesNotNeedLayout();
