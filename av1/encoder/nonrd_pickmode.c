@@ -1382,17 +1382,9 @@ void av1_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
   av1_invalid_rd_stats(&best_rdc);
   av1_invalid_rd_stats(&this_rdc);
 
-  mi->ref_frame[0] = INTRA_FRAME;
-  mi->ref_frame[1] = NONE_FRAME;
-  mi->use_intrabc = 0;
-  mi->skip_mode = 0;
+  init_mbmi(mi, DC_PRED, INTRA_FRAME, NONE_FRAME, cm);
+  mi->mv[0].as_int = mi->mv[1].as_int = INVALID_MV;
 
-  // Initialize interp_filter here so we do not have to check for inter block
-  // modes in get_pred_context_switchable_interp()
-  mi->interp_filters = av1_broadcast_interp_filter(SWITCHABLE_FILTERS);
-
-  mi->mv[0].as_int = INVALID_MV;
-  mi->uv_mode = DC_PRED;
   memset(xd->tx_type_map, DCT_DCT,
          sizeof(xd->tx_type_map[0]) * ctx->num_4x4_blk);
   av1_zero(x->blk_skip);
@@ -1406,7 +1398,6 @@ void av1_pick_intra_mode(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *rd_cost,
     args.skippable = 1;
     args.rdc = &this_rdc;
     mi->tx_size = intra_tx_size;
-    init_mbmi(mi, this_mode, INTRA_FRAME, NONE_FRAME, cm);
     av1_foreach_transformed_block_in_plane(xd, bsize, 0, estimate_block_intra,
                                            &args);
     if (args.skippable) {

@@ -806,6 +806,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.use_nonrd_pick_mode = 1;
     sf->rt_sf.nonrd_check_partition_merge = 1;
     sf->rt_sf.nonrd_check_partition_split = 0;
+    sf->rt_sf.hybrid_intra_pickmode = 1;
   }
 
   if (speed >= 8) {
@@ -815,7 +816,6 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.nonrd_use_blockyrd_interp_filter = 0;
     sf->rt_sf.use_nonrd_altref_frame = 0;
     sf->rt_sf.nonrd_reduce_golden_mode_search = 1;
-    sf->rt_sf.hybrid_intra_pickmode = 1;
     sf->rt_sf.nonrd_check_partition_merge = 0;
     sf->rt_sf.nonrd_check_partition_split = 0;
 
