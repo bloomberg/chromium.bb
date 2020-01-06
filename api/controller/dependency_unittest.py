@@ -15,8 +15,8 @@ from chromite.lib import cros_test_lib
 from chromite.service import dependency as dependency_service
 
 
-class BoardBuilDependencyTest(cros_test_lib.MockTestCase,
-                              api_config.ApiConfigMixin):
+class BoardBuildDependencyTest(cros_test_lib.MockTestCase,
+                               api_config.ApiConfigMixin):
   """Unittests for board_build_dependency."""
 
   def setUp(self):

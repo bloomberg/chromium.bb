@@ -490,6 +490,16 @@ class HasChromePrebuiltTest(cros_test_lib.MockTestCase, ApiConfigMixin):
                                           self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Test that a mock call does not execute logic, returns mocked value."""
+    patch = self.PatchObject(packages_service, 'has_prebuilt')
+
+    request = self._GetRequest(board='betty')
+    packages_controller.HasChromePrebuilt(request, self.response,
+                                          self.mock_call_config)
+    patch.assert_not_called()
+    self.assertTrue(self.response.has_prebuilt)
+
   def testNoBuildTargetFails(self):
     """No build target argument should fail."""
     request = self._GetRequest()

@@ -217,3 +217,11 @@ class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,
     request = self._GetRequest([BuilderConfig.Artifacts.IMAGE_ARCHIVES])
     toolchain.BundleArtifacts(request, self.response, self.api_config)
     self.assertEqual([], list(self.response.artifacts_info))
+
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(toolchain_util, 'BundleArtifacts')
+    request = self._GetRequest([BuilderConfig.Artifacts.IMAGE_ARCHIVES])
+    toolchain.BundleArtifacts(request, self.response,
+                              self.validate_only_config)
+    patch.assert_not_called()

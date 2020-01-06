@@ -167,6 +167,18 @@ class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase,
                                                  self.validate_only_config)
     patch.assert_not_called()
 
+  def testMockCall(self):
+    """Sanity check that a mock call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'CreateSimpleChromeSysroot')
+
+    board = 'board'
+    in_proto = self._InputProto(build_target=board, use_flags=[])
+    rc = sysroot_controller.CreateSimpleChromeSysroot(in_proto,
+                                                      self._OutputProto(),
+                                                      self.mock_call_config)
+    self.assertEqual(controller.RETURN_CODE_SUCCESS, rc)
+    patch.assert_not_called()
+
   def testArgumentValidation(self):
     """Test the input argument validation."""
     # Error when no build target provided.
