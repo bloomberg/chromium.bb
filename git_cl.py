@@ -5140,12 +5140,11 @@ def CMDformat(parser, args):
   parser.add_option(
       '--no-python',
       action='store_true',
-      dest='python',
+      default=False,
       help='Disables python formatting on all python files. '
-      'Takes precedence over --python. '
-      'If neither --python or --no-python are set, python '
-      'files that have a .style.yapf file in an ancestor '
-      'directory will be formatted.')
+      'If neither --python or --no-python are set, python files that have a '
+      '.style.yapf file in an ancestor directory will be formatted. '
+      'It is an error to set both.')
   parser.add_option('--js', action='store_true',
                     help='Format javascript code with clang-format.')
   parser.add_option('--diff', action='store_true',
@@ -5153,6 +5152,11 @@ def CMDformat(parser, args):
   parser.add_option('--presubmit', action='store_true',
                     help='Used when running the script from a presubmit.')
   opts, args = parser.parse_args(args)
+
+  if opts.python is not None and opts.no_python:
+    raise parser.error('Cannot set both --python and --no-python')
+  if opts.no_python:
+    opts.python = False
 
   # Normalize any remaining args against the current path, so paths relative to
   # the current directory are still resolved as expected.
