@@ -14,13 +14,14 @@
 
 #include "src/dsp/super_res.h"
 
+#include <cassert>
+
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 #include "src/utils/constants.h"
 
 namespace libgav1 {
 namespace dsp {
-
 namespace {
 
 template <int bitdepth, typename Pixel>
@@ -28,8 +29,8 @@ void ComputeSuperRes(const void* source, const int upscaled_width,
                      const int initial_subpixel_x, const int step,
                      void* const dest) {
   assert(step <= kSuperResScaleMask);
-  const auto* src = reinterpret_cast<const Pixel*>(source);
-  auto* dst = reinterpret_cast<Pixel*>(dest);
+  const auto* src = static_cast<const Pixel*>(source);
+  auto* dst = static_cast<Pixel*>(dest);
   src -= DivideBy2(kSuperResFilterTaps);
   int subpixel_x = initial_subpixel_x;
   for (int x = 0; x < upscaled_width; ++x) {
@@ -90,5 +91,4 @@ void SuperResInit_C() {
 }
 
 }  // namespace dsp
-
 }  // namespace libgav1
