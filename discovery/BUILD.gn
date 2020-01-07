@@ -125,6 +125,7 @@ source_set("unittests") {
     "mdns/mdns_sender_unittest.cc",
     "mdns/mdns_trackers_unittest.cc",
     "mdns/mdns_writer_unittest.cc",
+    "public/dns_sd_service_watcher_unittest.cc",
   ]
 
   deps = [

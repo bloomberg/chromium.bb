@@ -5,10 +5,17 @@
 #ifndef DISCOVERY_PUBLIC_DNS_SD_SERVICE_WATCHER_H_
 #define DISCOVERY_PUBLIC_DNS_SD_SERVICE_WATCHER_H_
 
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
+
 #include "discovery/dnssd/public/dns_sd_instance_record.h"
 #include "discovery/dnssd/public/dns_sd_querier.h"
 #include "discovery/dnssd/public/dns_sd_service.h"
 #include "platform/base/error.h"
+#include "util/logging.h"
 
 namespace openscreen {
 namespace discovery {
@@ -39,27 +46,32 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
                       ServiceConverter conversion,
                       ServicesUpdatedCallback callback)
       : conversion_(conversion),
-        service_(service),
         service_name_(std::move(service_name)),
-        callback_(std::move(callback)) {}
+        callback_(std::move(callback)),
+        querier_(service ? service->Querier() : nullptr) {
+    OSP_DCHECK(querier_);
+  }
 
   ~DnsSdServiceWatcher() = default;
 
   // Starts service discovery.
   void StartDiscovery() {
-    // TODO(rwkeane): Call DnsSdQuerier::StartQuery.
+    OSP_DCHECK(!is_running_);
+    is_running_ = true;
+
+    querier_->StartQuery(service_name_, this);
   }
 
   // Stops service discovery.
   void StopDiscovery() {
-    // TODO(rwkeane): Call DnsSdQuerier::StopQuery.
+    OSP_DCHECK(is_running_);
+    is_running_ = false;
+
+    querier_->StopQuery(service_name_, this);
   }
 
   // Returns whether or not discovery is currently ongoing.
-  bool IsRunning() const {
-    // TODO(rwkeane): Implement this method.
-    return true;
-  }
+  bool is_running() const { return is_running_; }
 
   // Re-initializes the process of service discovery, even if the underlying
   // implementation would not normally do so at this time. All previously
@@ -67,7 +79,12 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
   // NOTE: This call will return an error if StartDiscovery has not yet been
   // called.
   Error ForceRefresh() {
-    // TODO(rwkeane): Implement this method.
+    if (!is_running_) {
+      return Error::Code::kOperationInvalid;
+    }
+
+    querier_->ReinitializeQueries(service_name_);
+    records_.clear();
     return Error::None();
   }
 
@@ -77,36 +94,74 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
   // NOTE: This call will return an error if StartDiscovery has not yet been
   // called.
   Error DiscoverNow() {
-    // TODO(rwkeane): Implement this method.
+    if (!is_running_) {
+      return Error::Code::kOperationInvalid;
+    }
+
+    querier_->ReinitializeQueries(service_name_);
     return Error::None();
   }
 
   // Returns the set of services which have been received so far.
-  std::vector<ConstRefT> services() const {
-    // TODO(rwkeane): Implement this method.
+  std::vector<ConstRefT> GetServices() const {
+    std::vector<ConstRefT> refs;
+    for (const auto& pair : records_) {
+      refs.push_back(*pair.second.get());
+    }
+    return refs;
   }
 
  private:
+  friend class TestServiceWatcher;
+
   // DnsSdQuerier::Callback overrides.
   void OnInstanceCreated(const DnsSdInstanceRecord& new_record) override {
-    // TODO(rwkeane): Implement this method.
+    // NOTE: existence is not checked because records may be overwritten after
+    // querier_->ReinitializeQueries() is called.
+    records_[new_record.instance_id()] =
+        std::make_unique<T>(conversion_(new_record));
+    callback_(GetServices());
   }
 
   void OnInstanceUpdated(const DnsSdInstanceRecord& modified_record) override {
-    // TODO(rwkeane): Implement this method.
+    auto it = records_.find(modified_record.instance_id());
+    if (it != records_.end()) {
+      auto ptr = std::make_unique<T>(conversion_(modified_record));
+      it->second.swap(ptr);
+
+      callback_(GetServices());
+    } else {
+      OSP_LOG << "Received modified record for non-existent DNS-SD Instance "
+              << modified_record.instance_id();
+    }
   }
 
   void OnInstanceDeleted(const DnsSdInstanceRecord& old_record) override {
-    // TODO(rwkeane): Implement this method.
+    if (records_.erase(old_record.instance_id())) {
+      callback_(GetServices());
+    } else {
+      OSP_LOG << "Received deletion of record for non-existent DNS-SD Instance "
+              << old_record.instance_id();
+    }
   }
+
+  // Set of all instance ids found so far, mapped to the T type that it
+  // represents. unique_ptr<T> entities are used so that the const refs returned
+  // from GetServices() and the ServicesUpdatedCallback can persist even once
+  // this map is resized. NOTE: Unordered map is used because this set is in
+  // many cases expected to be large.
+  std::unordered_map<std::string, std::unique_ptr<T>> records_;
+
+  // Represents whether discovery is currently running or not.
+  bool is_running_ = false;
 
   // Converts from the DNS-SD representation of a service to the outside
   // representation.
   ServiceConverter conversion_;
 
-  DnsSdService* const service_;
   std::string service_name_;
   ServicesUpdatedCallback callback_;
+  DnsSdQuerier* const querier_;
 };
 
 }  // namespace discovery
