@@ -25,8 +25,8 @@ class ServiceImpl final : public DnsSdService {
   ~ServiceImpl() override;
 
   // DnsSdService overrides.
-  DnsSdQuerier* Querier() override { return &querier_; }
-  DnsSdPublisher* Publisher() override { return &publisher_; }
+  DnsSdQuerier* GetQuerier() override { return &querier_; }
+  DnsSdPublisher* GetPublisher() override { return &publisher_; }
 
  private:
   std::unique_ptr<MdnsService> mdns_service_;

@@ -29,11 +29,11 @@ class DnsSdService {
 
   // Returns the DnsSdQuerier owned by this DnsSdService. If queries are not
   // supported, returns nullptr.
-  virtual DnsSdQuerier* Querier() = 0;
+  virtual DnsSdQuerier* GetQuerier() = 0;
 
   // Returns the DnsSdPublisher owned by this DnsSdService. If publishing is not
   // supported, returns nullptr.
-  virtual DnsSdPublisher* Publisher() = 0;
+  virtual DnsSdPublisher* GetPublisher() = 0;
 };
 
 }  // namespace discovery

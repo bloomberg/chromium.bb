@@ -39,8 +39,8 @@ class MockDnsSdService : public DnsSdService {
  public:
   MockDnsSdService() : querier_(this) {}
 
-  DnsSdQuerier* Querier() override { return &querier_; }
-  DnsSdPublisher* Publisher() override { return nullptr; }
+  DnsSdQuerier* GetQuerier() override { return &querier_; }
+  DnsSdPublisher* GetPublisher() override { return nullptr; }
 
   MOCK_METHOD2(StartQuery,
                void(const std::string& service, DnsSdQuerier::Callback* cb));

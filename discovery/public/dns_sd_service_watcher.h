@@ -48,7 +48,7 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
       : conversion_(conversion),
         service_name_(std::move(service_name)),
         callback_(std::move(callback)),
-        querier_(service ? service->Querier() : nullptr) {
+        querier_(service ? service->GetQuerier() : nullptr) {
     OSP_DCHECK(querier_);
   }
 
