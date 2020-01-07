@@ -63,6 +63,9 @@ typedef int64_t (*sse_part_extractor_type)(const YV12_BUFFER_CONFIG *a,
                                            const YV12_BUFFER_CONFIG *b,
                                            int hstart, int width, int vstart,
                                            int height);
+typedef uint64_t (*var_part_extractor_type)(const YV12_BUFFER_CONFIG *a,
+                                            int hstart, int width, int vstart,
+                                            int height);
 
 #if CONFIG_AV1_HIGHBITDEPTH
 #define NUM_EXTRACTORS (3 * (1 + 1))
@@ -71,10 +74,17 @@ static const sse_part_extractor_type sse_part_extractors[NUM_EXTRACTORS] = {
   aom_get_v_sse_part,        aom_highbd_get_y_sse_part,
   aom_highbd_get_u_sse_part, aom_highbd_get_v_sse_part,
 };
+static const var_part_extractor_type var_part_extractors[NUM_EXTRACTORS] = {
+  aom_get_y_var,        aom_get_u_var,        aom_get_v_var,
+  aom_highbd_get_y_var, aom_highbd_get_u_var, aom_highbd_get_v_var,
+};
 #else
 #define NUM_EXTRACTORS 3
 static const sse_part_extractor_type sse_part_extractors[NUM_EXTRACTORS] = {
   aom_get_y_sse_part, aom_get_u_sse_part, aom_get_v_sse_part
+};
+static const var_part_extractor_type var_part_extractors[NUM_EXTRACTORS] = {
+  aom_get_y_var, aom_get_u_var, aom_get_v_var
 };
 #endif
 
@@ -85,6 +95,14 @@ static int64_t sse_restoration_unit(const RestorationTileLimits *limits,
   return sse_part_extractors[3 * highbd + plane](
       src, dst, limits->h_start, limits->h_end - limits->h_start,
       limits->v_start, limits->v_end - limits->v_start);
+}
+
+static uint64_t var_restoration_unit(const RestorationTileLimits *limits,
+                                     const YV12_BUFFER_CONFIG *src, int plane,
+                                     int highbd) {
+  return var_part_extractors[3 * highbd + plane](
+      src, limits->h_start, limits->h_end - limits->h_start, limits->v_start,
+      limits->v_end - limits->v_start);
 }
 
 typedef struct {
@@ -1440,6 +1458,36 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
   RestSearchCtxt *rsc = (RestSearchCtxt *)priv;
   RestUnitSearchInfo *rusi = &rsc->rusi[rest_unit_idx];
 
+  const MACROBLOCK *const x = rsc->x;
+  const int64_t bits_none = x->wiener_restore_cost[0];
+
+  // Skip Wiener search for low variance contents
+  if (rsc->sf->lpf_sf.prune_wiener_based_on_src_var) {
+    const int scale[3] = { 0, 1, 2 };
+    // Obtain the normalized Qscale
+    const int qs = av1_dc_quant_QTX(rsc->cm->base_qindex, 0,
+                                    rsc->cm->seq_params.bit_depth) >>
+                   3;
+    // Derive threshold as sqr(normalized Qscale) * scale / 16,
+    const uint64_t thresh =
+        (qs * qs * scale[rsc->sf->lpf_sf.prune_wiener_based_on_src_var]) >> 4;
+    const int highbd = rsc->cm->seq_params.use_highbitdepth;
+    const uint64_t src_var =
+        var_restoration_unit(limits, rsc->src, rsc->plane, highbd);
+    // Do not perform Wiener search if source variance is lower than threshold
+    // or if the reconstruction error is zero
+    int prune_wiener = (src_var < thresh) || (rusi->sse[RESTORE_NONE] == 0);
+    if (prune_wiener) {
+      rsc->bits += bits_none;
+      rsc->sse += rusi->sse[RESTORE_NONE];
+      rusi->best_rtype[RESTORE_WIENER - 1] = RESTORE_NONE;
+      rusi->sse[RESTORE_WIENER] = INT64_MAX;
+      if (rsc->sf->lpf_sf.prune_sgr_based_on_wiener == 2)
+        rusi->skip_sgr_eval = 1;
+      return;
+    }
+  }
+
   const int wiener_win =
       (rsc->plane == AOM_PLANE_Y) ? WIENER_WIN : WIENER_WIN_CHROMA;
 
@@ -1470,8 +1518,6 @@ static AOM_INLINE void search_wiener(const RestorationTileLimits *limits,
                     limits->h_start, limits->h_end, limits->v_start,
                     limits->v_end, rsc->dgd_stride, rsc->src_stride, M, H);
 #endif
-  const MACROBLOCK *const x = rsc->x;
-  const int64_t bits_none = x->wiener_restore_cost[0];
 
   if (!wiener_decompose_sep_sym(reduced_wiener_win, M, H, vfilter, hfilter)) {
     rsc->bits += bits_none;

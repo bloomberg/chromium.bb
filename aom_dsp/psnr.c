@@ -176,6 +176,27 @@ static int64_t highbd_get_sse(const uint8_t *a, int a_stride, const uint8_t *b,
 }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
+uint64_t aom_get_y_var(const YV12_BUFFER_CONFIG *a, int hstart, int width,
+                       int vstart, int height) {
+  return aom_var_2d_u8_c(a->y_buffer + vstart * a->y_stride + hstart,
+                         a->y_stride, width, height) /
+         (width * height);
+}
+
+uint64_t aom_get_u_var(const YV12_BUFFER_CONFIG *a, int hstart, int width,
+                       int vstart, int height) {
+  return aom_var_2d_u8_c(a->u_buffer + vstart * a->uv_stride + hstart,
+                         a->uv_stride, width, height) /
+         (width * height);
+}
+
+uint64_t aom_get_v_var(const YV12_BUFFER_CONFIG *a, int hstart, int width,
+                       int vstart, int height) {
+  return aom_var_2d_u8_c(a->v_buffer + vstart * a->uv_stride + hstart,
+                         a->uv_stride, width, height) /
+         (width * height);
+}
+
 int64_t aom_get_y_sse_part(const YV12_BUFFER_CONFIG *a,
                            const YV12_BUFFER_CONFIG *b, int hstart, int width,
                            int vstart, int height) {
@@ -228,6 +249,27 @@ int64_t aom_get_v_sse(const YV12_BUFFER_CONFIG *a,
 }
 
 #if CONFIG_AV1_HIGHBITDEPTH
+uint64_t aom_highbd_get_y_var(const YV12_BUFFER_CONFIG *a, int hstart,
+                              int width, int vstart, int height) {
+  return aom_var_2d_u16_c(a->y_buffer + vstart * a->y_stride + hstart,
+                          a->y_stride, width, height) /
+         (width * height);
+}
+
+uint64_t aom_highbd_get_u_var(const YV12_BUFFER_CONFIG *a, int hstart,
+                              int width, int vstart, int height) {
+  return aom_var_2d_u16_c(a->u_buffer + vstart * a->uv_stride + hstart,
+                          a->uv_stride, width, height) /
+         (width * height);
+}
+
+uint64_t aom_highbd_get_v_var(const YV12_BUFFER_CONFIG *a, int hstart,
+                              int width, int vstart, int height) {
+  return aom_var_2d_u16_c(a->v_buffer + vstart * a->uv_stride + hstart,
+                          a->uv_stride, width, height) /
+         (width * height);
+}
+
 int64_t aom_highbd_get_y_sse_part(const YV12_BUFFER_CONFIG *a,
                                   const YV12_BUFFER_CONFIG *b, int hstart,
                                   int width, int vstart, int height) {

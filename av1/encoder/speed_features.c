@@ -456,6 +456,7 @@ static void set_good_speed_features_framesize_independent(
             : gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE ? 1
                                                                          : 2;
 
+    sf->lpf_sf.prune_wiener_based_on_src_var = 1;
     sf->lpf_sf.prune_sgr_based_on_wiener =
         cm->allow_screen_content_tools ? 0 : 2;
     sf->lpf_sf.reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
@@ -507,6 +508,7 @@ static void set_good_speed_features_framesize_independent(
     sf->lpf_sf.disable_loop_restoration_chroma =
         (boosted || cm->allow_screen_content_tools) ? 0 : 1;
     sf->lpf_sf.reduce_wiener_window_size = !boosted;
+    sf->lpf_sf.prune_wiener_based_on_src_var = 2;
 
     // TODO(any): The following features have no impact on quality and speed,
     // and are disabled.
@@ -1034,6 +1036,7 @@ static AOM_INLINE void init_winner_mode_sf(
 
 static AOM_INLINE void init_lpf_sf(LOOP_FILTER_SPEED_FEATURES *lpf_sf) {
   lpf_sf->disable_loop_restoration_chroma = 0;
+  lpf_sf->prune_wiener_based_on_src_var = 0;
   lpf_sf->prune_sgr_based_on_wiener = 0;
   lpf_sf->enable_sgr_ep_pruning = 0;
   lpf_sf->reduce_wiener_window_size = 0;
