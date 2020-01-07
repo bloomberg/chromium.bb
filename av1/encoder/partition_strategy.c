@@ -63,6 +63,10 @@ void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
          "Invalid sb_size for intra_cnn!");
   const int bsize_idx = convert_bsize_to_idx(bsize);
 
+  if (bsize == BLOCK_128X128) {
+    return;
+  }
+
   // Precompute the CNN part and cache the result in MACROBLOCK
   if (bsize == BLOCK_64X64 && !x->cnn_output_valid) {
     aom_clear_system_state();

@@ -1189,6 +1189,14 @@ enum aome_enc_control_id {
    * 0 : off, 1 : enable EXT_TILE_DEBUG
    */
   AV1E_ENABLE_EXT_TILE_DEBUG = 154,
+
+  /*!\brief Codec control function to enable the superblock multipass unit test
+   * in AV1 to ensure that the encoder does not leak state between different
+   * passes. Please note that this is only used in sb_multipass unit test.
+   *
+   * 0 : off, 1 : on
+   */
+  AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST = 155,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1674,6 +1682,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_SVC_PARAMS, aom_svc_params_t *)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_SVC_REF_FRAME_CONFIG, aom_svc_ref_frame_config_t *)
 #define AOME_CTRL_AV1E_SET_SVC_REF_FRAME_CONFIG
+
+AOM_CTRL_USE_TYPE(AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST, unsigned int)
+#define AOM_CTRL_AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */
