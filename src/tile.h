@@ -579,7 +579,7 @@ class Tile : public Allocable {
   const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias_;
   const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
       reference_frames_;
-  TemporalMotionField* motion_field_;
+  TemporalMotionField& motion_field_;
   const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint_;
   const WedgeMaskArray& wedge_masks_;
   DaalaBitReader reader_;

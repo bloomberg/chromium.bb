@@ -316,7 +316,7 @@ Tile::Tile(
     const std::array<bool, kNumReferenceFrameTypes>& reference_frame_sign_bias,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    TemporalMotionField* motion_field,
+    TemporalMotionField* const motion_field,
     const std::array<uint8_t, kNumReferenceFrameTypes>& reference_order_hint,
     const WedgeMaskArray& wedge_masks,
     const SymbolDecoderContext& symbol_decoder_context,
@@ -343,7 +343,7 @@ Tile::Tile(
       current_frame_(*current_frame),
       reference_frame_sign_bias_(reference_frame_sign_bias),
       reference_frames_(reference_frames),
-      motion_field_(motion_field),
+      motion_field_(*motion_field),
       reference_order_hint_(reference_order_hint),
       wedge_masks_(wedge_masks),
       reader_(data_, size_, frame_header_.enable_cdf_update),
@@ -446,7 +446,7 @@ bool Tile::Init() {
     SetupMotionField(frame_header_, current_frame_, reference_frames_,
                      sequence_header_.order_hint_range, row4x4_start_,
                      row4x4_end_, column4x4_start_, column4x4_end_,
-                     motion_field_);
+                     &motion_field_);
   }
   ResetLoopRestorationParams();
   initialized_ = true;
