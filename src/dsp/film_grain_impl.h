@@ -132,17 +132,7 @@ class FilmGrain {
   // Allocates noise_stripes_.
   bool AllocateNoiseStripes();
 
-  void ConstructNoiseStripes();
-
   bool AllocateNoiseImage();
-
-  // Blends the noise with the original image data.
-  void BlendNoiseWithImage(
-      const void* source_plane_y, ptrdiff_t source_stride_y,
-      const void* source_plane_u, ptrdiff_t source_stride_u,
-      const void* source_plane_v, ptrdiff_t source_stride_v, void* dest_plane_y,
-      ptrdiff_t dest_stride_y, void* dest_plane_u, ptrdiff_t dest_stride_u,
-      void* dest_plane_v, ptrdiff_t dest_stride_v) const;
 
   const FilmGrainParams& params_;
   const bool is_monochrome_;
