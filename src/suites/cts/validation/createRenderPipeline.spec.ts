@@ -2,9 +2,9 @@ export const description = `
 createRenderPipeline validation tests.
 `;
 
-import { TestGroup } from '../../../framework/index.js';
+import { TestGroup, poptions } from '../../../framework/index.js';
 import GLSL from '../../../tools/glsl.macro.js';
-import { textureFormatInfo, textureFormatParams } from '../format_info.js';
+import { textureFormatInfo, textureFormats } from '../format_info.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -125,7 +125,7 @@ g.test('at least one color state is required', async t => {
 });
 
 g.test('color formats must be renderable', async t => {
-  const { format } = t.params;
+  const format: GPUTextureFormat = t.params.format;
   const info = textureFormatInfo[format];
 
   const descriptor = t.getDescriptor({ colorStates: [{ format }] });
@@ -139,7 +139,7 @@ g.test('color formats must be renderable', async t => {
       t.device.createRenderPipeline(descriptor);
     });
   }
-}).params(textureFormatParams);
+}).params(poptions('format', textureFormats));
 
 g.test('sample count must be valid', async t => {
   const { sampleCount, _success } = t.params;

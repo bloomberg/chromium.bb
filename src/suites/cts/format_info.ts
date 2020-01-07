@@ -1,17 +1,10 @@
-import { poptions } from '../../framework/index.js';
-
-export interface TextureFormatInfo {
-  renderable: boolean;
-  color: boolean;
-  // Add fields as needed
-}
-
-interface TextureFormats {
-  [k: string]: TextureFormatInfo;
-}
-
-// prettier-ignore
-export const textureFormatInfo: TextureFormats = {
+export const textureFormatInfo: {
+  [k in GPUTextureFormat]: {
+    renderable: boolean;
+    color: boolean;
+    // Add fields as needed
+  };
+} = /* prettier-ignore */ {
   // Try to keep these manually-formatted in a readable grid.
   // (Note: this list should always match the one in the spec.)
 
@@ -62,4 +55,22 @@ export const textureFormatInfo: TextureFormats = {
   'depth24plus-stencil8':   { renderable:  true, color: false },
 };
 export const textureFormats = Object.keys(textureFormatInfo) as GPUTextureFormat[];
-export const textureFormatParams = Array.from(poptions('format', textureFormats));
+
+export const bindingTypeInfo: {
+  [k in GPUBindingType]: {
+    type: 'buffer' | 'texture' | 'sampler';
+    maxDynamicCount: number;
+    // Add fields as needed
+  };
+} = /* prettier-ignore */ {
+  'uniform-buffer':          { type: 'buffer',  maxDynamicCount: 8 },
+  'storage-buffer':          { type: 'buffer',  maxDynamicCount: 4 },
+  'readonly-storage-buffer': { type: 'buffer',  maxDynamicCount: 4 },
+  'sampler':                 { type: 'sampler', maxDynamicCount: 0 },
+  'sampled-texture':         { type: 'texture', maxDynamicCount: 0 },
+  'storage-texture':         { type: 'texture', maxDynamicCount: 0 },
+};
+export const bindingTypes = Object.keys(bindingTypeInfo) as GPUBindingType[];
+
+export const shaderStages: GPUShaderStageFlags[] = [1, 2, 4];
+export const shaderStageCombinations: GPUShaderStageFlags[] = [0, 1, 2, 3, 4, 5, 6, 7];

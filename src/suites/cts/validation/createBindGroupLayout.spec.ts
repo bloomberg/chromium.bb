@@ -2,28 +2,29 @@ export const description = `
 createBindGroupLayout validation tests.
 `;
 
-import { TestGroup } from '../../../framework/index.js';
+import { C, TestGroup, poptions } from '../../../framework/index.js';
+import { bindingTypeInfo, bindingTypes } from '../format_info.js';
 
 import { ValidationTest } from './validation_test.js';
 
-function clone(descriptor: GPUBindGroupLayoutDescriptor): GPUBindGroupLayoutDescriptor {
+function clone<T extends GPUBindGroupLayoutDescriptor>(descriptor: T): T {
   return JSON.parse(JSON.stringify(descriptor));
 }
 
 export const g = new TestGroup(ValidationTest);
 
 g.test('some binding index was specified more than once', async t => {
-  const goodDescriptor: GPUBindGroupLayoutDescriptor = {
+  const goodDescriptor = {
     bindings: [
       {
         binding: 0,
         visibility: GPUShaderStage.COMPUTE,
-        type: 'storage-buffer',
+        type: C.BindingType.StorageBuffer,
       },
       {
         binding: 1,
         visibility: GPUShaderStage.COMPUTE,
-        type: 'storage-buffer',
+        type: C.BindingType.StorageBuffer,
       },
     ],
   };
@@ -32,7 +33,7 @@ g.test('some binding index was specified more than once', async t => {
   t.device.createBindGroupLayout(goodDescriptor);
 
   const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings![1].binding = 0;
+  badDescriptor.bindings[1].binding = 0;
 
   // Binding index 0 can't be specified twice.
   t.expectValidationError(() => {
@@ -41,13 +42,9 @@ g.test('some binding index was specified more than once', async t => {
 });
 
 g.test('negative binding index', async t => {
-  const goodDescriptor: GPUBindGroupLayoutDescriptor = {
+  const goodDescriptor = {
     bindings: [
-      {
-        binding: 0,
-        visibility: GPUShaderStage.COMPUTE,
-        type: 'storage-buffer',
-      },
+      { binding: 0, visibility: GPUShaderStage.COMPUTE, type: C.BindingType.StorageBuffer },
     ],
   };
 
@@ -56,7 +53,7 @@ g.test('negative binding index', async t => {
 
   // Negative binding index can't be specified.
   const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings![0].binding = -1;
+  badDescriptor.bindings[0].binding = -1;
 
   t.expectValidationError(() => {
     t.device.createBindGroupLayout(badDescriptor);
@@ -64,17 +61,9 @@ g.test('negative binding index', async t => {
 });
 
 g.test('Visibility of bindings can be 0', async t => {
-  const descriptor: GPUBindGroupLayoutDescriptor = {
-    bindings: [
-      {
-        binding: 0,
-        visibility: 0,
-        type: 'storage-buffer',
-      },
-    ],
-  };
-
-  t.device.createBindGroupLayout(descriptor);
+  t.device.createBindGroupLayout({
+    bindings: [{ binding: 0, visibility: 0, type: 'storage-buffer' }],
+  });
 });
 
 g.test('number of dynamic buffers exceeds the maximum value', async t => {
@@ -90,7 +79,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
     });
   }
 
-  const goodDescriptor: GPUBindGroupLayoutDescriptor = {
+  const goodDescriptor = {
     bindings: [
       ...maxDynamicBufferBindings,
       {
@@ -107,18 +96,19 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
 
   // Dynamic buffers exceed maximum in a bind group layout.
   const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings![maxDynamicBufferCount].hasDynamicOffset = true;
+  badDescriptor.bindings[maxDynamicBufferCount].hasDynamicOffset = true;
 
   t.expectValidationError(() => {
     t.device.createBindGroupLayout(badDescriptor);
   });
 }).params([
-  { type: 'storage-buffer', maxDynamicBufferCount: 4 },
-  { type: 'uniform-buffer', maxDynamicBufferCount: 8 },
+  { type: C.BindingType.StorageBuffer, maxDynamicBufferCount: 4 },
+  { type: C.BindingType.UniformBuffer, maxDynamicBufferCount: 8 },
 ]);
 
 g.test('dynamic set to true is allowed only for buffers', async t => {
-  const { type, _success } = t.params;
+  const type: GPUBindingType = t.params.type;
+  const success = bindingTypeInfo[type].type === 'buffer';
 
   const descriptor = {
     bindings: [
@@ -131,20 +121,7 @@ g.test('dynamic set to true is allowed only for buffers', async t => {
     ],
   };
 
-  if (_success) {
-    // Control case
+  t.expectValidationError(() => {
     t.device.createBindGroupLayout(descriptor);
-  } else {
-    // Dynamic set to true is not allowed in some cases.
-    t.expectValidationError(() => {
-      t.device.createBindGroupLayout(descriptor);
-    });
-  }
-}).params([
-  { type: 'uniform-buffer', _success: true },
-  { type: 'storage-buffer', _success: true },
-  { type: 'readonly-storage-buffer', _success: true },
-  { type: 'sampler', _success: false },
-  { type: 'sampled-texture', _success: false },
-  { type: 'storage-texture', _success: false },
-]);
+  }, !success);
+}).params(poptions('type', bindingTypes));

@@ -2,8 +2,8 @@ export const description = `
 createTexture validation tests.
 `;
 
-import { TestGroup } from '../../../framework/index.js';
-import { textureFormatInfo, textureFormatParams } from '../format_info.js';
+import { TestGroup, poptions } from '../../../framework/index.js';
+import { textureFormatInfo, textureFormats } from '../format_info.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -72,8 +72,10 @@ g.test('validation of mipLevelCount', async t => {
   { width: 32, height: 32, mipLevelCount: 1, _success: true }, // mipLevelCount of 1 is allowed
   { width: 32, height: 32, mipLevelCount: 0, _success: false }, // mipLevelCount of 0 is not allowed
   { width: 32, height: 32, mipLevelCount: 6, _success: true }, // full mip chains are allowed (Mip level sizes: 32, 16, 8, 4, 2, 1)
-  { width: 31, height: 32, mipLevelCount: 7, _success: false }, // too big mip chains on width are disallowed (Mip level width: 31, 15, 7, 3, 1, 1)
-  { width: 32, height: 31, mipLevelCount: 7, _success: false }, // too big mip chains on height are disallowed (Mip level width: 31, 15, 7, 3, 1, 1)
+  { width: 31, height: 32, mipLevelCount: 6, _success: true }, // full mip chains are allowed (Mip level sizes: 31x32, 15x16, 7x8, 3x4, 1x2, 1x1)
+  { width: 32, height: 31, mipLevelCount: 6, _success: true }, // full mip chains are allowed (Mip level sizes: 32x31, 16x15, 8x7, 4x3, 2x1, 1x1)
+  { width: 31, height: 32, mipLevelCount: 7, _success: false }, // too big mip chains on width are disallowed (Mip level sizes: 31x32, 15x16, 7x8, 3x4, 1x2, 1x1, ?x?)
+  { width: 32, height: 31, mipLevelCount: 7, _success: false }, // too big mip chains on height are disallowed (Mip level sizes: 32x31, 16x15, 8x7, 4x3, 2x1, 1x1, ?x?)
   { width: 32, height: 32, mipLevelCount: 100, _success: false }, // undefined shift check if miplevel is bigger than the integer bit width
   { width: 32, height: 8, mipLevelCount: 6, _success: true }, // non square mip map halves the resolution until a 1x1 dimension. (Mip maps: 32 * 8, 16 * 4, 8 * 2, 4 * 1, 2 * 1, 1 * 1)
 ]);
@@ -128,7 +130,7 @@ g.test('it is invalid to submit a destroyed texture before and after encode', as
 ]);
 
 g.test('it is invalid to have an output attachment texture with non renderable format', async t => {
-  const { format } = t.params;
+  const format: GPUTextureFormat = t.params.format;
   const info = textureFormatInfo[format];
 
   const descriptor = t.getDescriptor({ width: 1, height: 1, format });
@@ -136,6 +138,6 @@ g.test('it is invalid to have an output attachment texture with non renderable f
   t.expectValidationError(() => {
     t.device.createTexture(descriptor);
   }, !info.renderable);
-}).params(textureFormatParams);
+}).params(poptions('format', textureFormats));
 
 // TODO: Add tests for compressed texture formats
