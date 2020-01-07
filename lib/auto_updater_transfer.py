@@ -39,7 +39,6 @@ from __future__ import division
 from __future__ import print_function
 
 import abc
-import glob
 import os
 import re
 
@@ -335,12 +334,11 @@ class LocalTransfer(Transfer):
 
   def GetPayloadPropsFile(self):
     """Finds the local payload properties file."""
-    # Payload properties file is available locally so just catch the first
-    # json file and assume it is a payload property file.
+    # Payload properties file is available locally so just catch it next to the
+    # payload file.
     if self._local_payload_props_path is None:
-      prop_file = glob.glob(os.path.join(self._payload_dir, '*.json'))[0]
-      self._local_payload_props_path = os.path.join(self._payload_dir,
-                                                    prop_file)
+      self._local_payload_props_path = os.path.join(
+          self._payload_dir, GetPayloadPropertiesFileName(self._payload_name))
     return self._local_payload_props_path
 
   def GetPayloadProps(self):
