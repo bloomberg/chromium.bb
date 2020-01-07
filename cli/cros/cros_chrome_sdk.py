@@ -696,6 +696,7 @@ class ChromeSDKCommand(command.CliCommand):
                         'download/downloadurl')
   _GOMA_TGZ = 'goma-goobuntu.tgz'
 
+  _CHROME_CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
   _HOST_BINUTILS_DIR = 'third_party/binutils/Linux_x64/Release/bin/'
 
   EBUILD_ENV = (
@@ -725,23 +726,6 @@ class ChromeSDKCommand(command.CliCommand):
   SDK_GOMA_DIR_ENV = 'SDK_GOMA_DIR'
 
   GOMACC_PORT_CMD = ['./gomacc', 'port']
-
-  # Args located in the ebuild's env that we should ignore and let chrome's
-  # build files handle themselves.
-  # TODO(crbug.com/937821): Switch this from a list of args we ignore to a
-  # list we don't ignore once the latter is sufficiently small. (i.e. When it's
-  # just target compiler flags.)
-  CHROME_FALLTHROUGH_ARGS = {
-      'cros_host_cc',
-      'cros_host_cxx',
-      'cros_host_ld',
-      'cros_host_ar',
-      'cros_host_is_clang',
-      'cros_v8_snapshot_cc',
-      'cros_v8_snapshot_cxx',
-      'cros_v8_snapshot_ld',
-      'cros_v8_snapshot_ar',
-  }
 
   # Override base class property to use cache related commandline options.
   use_caching_options = True
@@ -990,6 +974,8 @@ class ChromeSDKCommand(command.CliCommand):
     for var in ('CXX', 'CC', 'LD'):
       env[var] = self._FixGoldPath(env[var], target_tc_path)
 
+    chrome_clang_path = os.path.join(options.chrome_src, self._CHROME_CLANG_DIR)
+
     # Either we are forcing the use of clang through options or GN
     # args say we should be using clang.
     if options.clang or gn_is_clang:
@@ -1010,7 +996,14 @@ class ChromeSDKCommand(command.CliCommand):
     # https://crbug.com/917193.
     env.setdefault('READELF', sdk_ctx.target_tc + '-readelf')
 
+    # For host compiler, we use the compiler that comes with Chrome
+    # instead of the target compiler.
+    env['CC_host'] = os.path.join(chrome_clang_path, 'clang')
+    env['CXX_host'] = os.path.join(chrome_clang_path, 'clang++')
+    env['LD_host'] = env['CXX_host']
+
     binutils_path = os.path.join(options.chrome_src, self._HOST_BINUTILS_DIR)
+    env['AR_host'] = os.path.join(binutils_path, 'ar')
     env['NM_host'] = os.path.join(binutils_path, 'nm')
     env['READELF_host'] = os.path.join(binutils_path, 'readelf')
 
@@ -1069,8 +1062,6 @@ class ChromeSDKCommand(command.CliCommand):
 
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
     gn_args = gn_helpers.FromGNArgs(env['GN_ARGS'])
-    for arg in self.CHROME_FALLTHROUGH_ARGS:
-      gn_args.pop(arg, None)
     self._SetupTCEnvironment(sdk_ctx, options, env, gn_args['is_clang'])
 
     # Add managed components to the PATH.
@@ -1120,6 +1111,9 @@ class ChromeSDKCommand(command.CliCommand):
     # We should not use the binutils from the host system.
     gn_args['linux_use_bundled_binutils'] = True
 
+    # Need to reset these after the env vars have been fixed by
+    # _SetupTCEnvironment.
+    gn_args['cros_host_is_clang'] = True
     # v8 snapshot is built on the host, so we need to set this.
     # See crosbug/618346.
     gn_args['cros_v8_snapshot_is_clang'] = True
@@ -1136,9 +1130,19 @@ class ChromeSDKCommand(command.CliCommand):
         [env.get('CFLAGS', '')] + modified_env_cc.split()[1:])
     gn_args['cros_target_extra_cxxflags'] = ' '.join(
         [env.get('CXXFLAGS', '')] + modified_env_cxx.split()[1:])
+    gn_args['cros_host_cc'] = self._ModifyPathForGomaBuild(env['CC_host'])
+    gn_args['cros_host_cxx'] = self._ModifyPathForGomaBuild(env['CXX_host'])
+    gn_args['cros_host_ld'] = env['LD_host']
     gn_args['cros_host_nm'] = env['NM_host']
+    gn_args['cros_host_ar'] = env['AR_host']
     gn_args['cros_host_readelf'] = env['READELF_host']
+    gn_args['cros_v8_snapshot_cc'] = self._ModifyPathForGomaBuild(
+        env['CC_host'])
+    gn_args['cros_v8_snapshot_cxx'] = self._ModifyPathForGomaBuild(
+        env['CXX_host'])
+    gn_args['cros_v8_snapshot_ld'] = env['LD_host']
     gn_args['cros_v8_snapshot_nm'] = env['NM_host']
+    gn_args['cros_v8_snapshot_ar'] = env['AR_host']
     gn_args['cros_v8_snapshot_readelf'] = env['READELF_host']
     # No need to adjust CFLAGS and CXXFLAGS for GN since the only
     # adjustment made in _SetupTCEnvironment is for split debug which
