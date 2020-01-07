@@ -119,7 +119,7 @@ class LogManager {
   /**
    * Saves logs in the internal buffer.
    *
-   * @param {Logger.Record} logRecord The log entry.
+   * @param {!Logger.Record} logRecord The log entry.
    * @private
    */
   onNewLog_(logRecord) {
@@ -131,7 +131,7 @@ class LogManager {
   }
 
   /**
-   * @param {Logger.Record} logRecord The log entry.
+   * @param {!Logger.Record} logRecord The log entry.
    * @private
    */
   logToConsole_(logRecord) {
