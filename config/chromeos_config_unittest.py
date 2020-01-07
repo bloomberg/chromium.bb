@@ -644,6 +644,8 @@ class CBuildBotTest(ChromeosConfigTestBase):
         'zork-release',
         # See http://b/141387161.
         'veyron_rialto-release',
+        'mushu-release',
+        # See http://b/147462165.
     ))
     missing_tests = set()
     running_tests = set()
@@ -702,6 +704,10 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
       # Veyron_rialto doesn't have DUTs now. See http://b/141387161.
       if build_name.startswith(('veyron_rialto')):
+        continue
+
+      # Mushu does not have DUTs in lab See # http://b/147462165
+      if build_name.startswith(('mushu')):
         continue
 
       if (config.build_type == 'canary' and 'test' in config.images and

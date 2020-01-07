@@ -2724,6 +2724,13 @@ def ApplyCustomOverrides(site_config):
           'sign_types': ['recovery', 'factory', 'accessory_rwsig'],
       },
 
+      # Mushu does not have DUTs in lab See http://b/147462165
+      'mushu-release': {
+          'sign_types': ['recovery', 'factory'],
+          'hw_tests': [],
+          'hw_tests_override': []
+      },
+
       'jacuzzi-release': {
           'sign_types': ['recovery', 'factory'],
           # No hw tests for jacuzzi (crbug.com/1011171).
