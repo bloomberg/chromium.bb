@@ -74,9 +74,9 @@ message ArcVmStartupResponse {
 
 // Notification that the ARC VM is shutting down.
 // This message should also be sent if the startup process fails so any
-// allocated resources are propely freed.
+// allocated resources are properly freed.
 message ArcVmShutdownRequest {
-  // The CID of the ARC VM; must match the PID that was sent at
+  // The CID of the ARC VM; must match the CID that was sent at
   // startup.
   // Required.
   int32 cid = 1;
@@ -113,6 +113,35 @@ message TerminaVmShutdownRequest {
 
 // Intentionally empty response.
 message TerminaVmShutdownResponse {
+}
+
+// Notification that a Plugin VM is starting up.
+message PluginVmStartupRequest {
+  // The unique ID of the VM.
+  uint64 id = 1;
+
+  // The 1-based index of the desired subnet to allocate for use.
+  // Optional.
+  int32 subnet_index = 2;
+}
+
+// Information required by Concierge to continue the Plugin VM startup.
+message PluginVmStartupResponse {
+  // The TAP device to be used for the VM.
+  Device device = 1;
+};
+
+// Notification that the Plugin VM is shutting down.
+// This message must also be sent if the startup process fails so any
+// allocated resources, including the subnets, are properly freed.
+message PluginVmShutdownRequest {
+  // The unique ID of the Plugin VM; must match what was sent at startup.
+  // Required.
+  uint64 id = 1;
+}
+
+// Intentionally empty response.
+message PluginVmShutdownResponse {
 }
 
 
