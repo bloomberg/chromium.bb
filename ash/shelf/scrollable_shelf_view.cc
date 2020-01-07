@@ -443,8 +443,6 @@ ScrollableShelfView::~ScrollableShelfView() {
 }
 
 void ScrollableShelfView::Init() {
-  shelf_view_->Init();
-
   // Although there is no animation for ScrollableShelfView, a layer is still
   // needed. Otherwise, the child view without its own layer will be painted on
   // RootView and RootView is beneath |opaque_background_| in ShelfWidget. As a
@@ -479,6 +477,10 @@ void ScrollableShelfView::Init() {
   GetShelf()->tooltip()->set_shelf_tooltip_delegate(this);
 
   set_context_menu_controller(this);
+
+  // Initializes |shelf_view_| after scrollable shelf view's children are
+  // initialized.
+  shelf_view_->Init();
 }
 
 void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
@@ -1687,7 +1689,10 @@ void ScrollableShelfView::UpdateAvailableSpace() {
 
   // The hotseat uses |available_space_| to determine where to show its
   // background, so notify it when it is recalculated.
-  GetShelf()->shelf_widget()->hotseat_widget()->UpdateOpaqueBackground();
+  if (HotseatWidget::ShouldShowHotseatBackground()) {
+    GetShelf()->shelf_widget()->hotseat_widget()->SetOpaqueBackground(
+        GetHotseatBackgroundBounds());
+  }
 
   // Paddings are within the shelf view. It makes sure that |shelf_view_|'s
   // bounds are not changed by adding/removing the shelf icon under the same

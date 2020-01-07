@@ -100,14 +100,10 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
   // Updates the hotseat background.
   void UpdateOpaqueBackground();
 
+  void SetOpaqueBackground(const gfx::Rect& opaque_background_bounds);
+
   // Updates the hotseat background when tablet mode changes.
   void OnTabletModeChanged();
-
-  // Hides |opaque_background_| immediately or with animation.
-  void HideOpaqueBackground(bool animate);
-
-  // Shows |opaque_background_| immediately.
-  void ShowOpaqueBackground();
 
   // views::WidgetDelegateView:
   bool CanActivate() const override;
@@ -121,9 +117,6 @@ class HotseatWidget::DelegateView : public views::WidgetDelegateView,
   }
 
  private:
-  // Returns whether the hotseat background should be shown.
-  bool ShouldShowHotseatBackground() const;
-
   void SetParentLayer(ui::Layer* layer);
 
   FocusCycler* focus_cycler_ = nullptr;
@@ -159,10 +152,17 @@ void HotseatWidget::DelegateView::Init(
 }
 
 void HotseatWidget::DelegateView::UpdateOpaqueBackground() {
-  if (!ShouldShowHotseatBackground()) {
+  if (!HotseatWidget::ShouldShowHotseatBackground()) {
     opaque_background_.SetVisible(false);
     return;
   }
+
+  SetOpaqueBackground(scrollable_shelf_view_->GetHotseatBackgroundBounds());
+}
+
+void HotseatWidget::DelegateView::SetOpaqueBackground(
+    const gfx::Rect& background_bounds) {
+  DCHECK(HotseatWidget::ShouldShowHotseatBackground());
 
   opaque_background_.SetVisible(true);
   opaque_background_.SetColor(ShelfConfig::Get()->GetDefaultShelfColor());
@@ -172,8 +172,6 @@ void HotseatWidget::DelegateView::UpdateOpaqueBackground() {
   if (opaque_background_.rounded_corner_radii() != rounded_corners)
     opaque_background_.SetRoundedCornerRadius(rounded_corners);
 
-  gfx::Rect background_bounds =
-      scrollable_shelf_view_->GetHotseatBackgroundBounds();
   if (opaque_background_.bounds() != background_bounds)
     opaque_background_.SetBounds(background_bounds);
 
@@ -205,12 +203,6 @@ void HotseatWidget::DelegateView::OnWallpaperColorsChanged() {
   UpdateOpaqueBackground();
 }
 
-bool HotseatWidget::DelegateView::ShouldShowHotseatBackground() const {
-  return chromeos::switches::ShouldShowShelfHotseat() &&
-         Shell::Get()->tablet_mode_controller() &&
-         Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
 void HotseatWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
   layer->Add(&opaque_background_);
   ReorderLayers();
@@ -223,6 +215,12 @@ HotseatWidget::HotseatWidget()
 
 HotseatWidget::~HotseatWidget() {
   ShelfConfig::Get()->RemoveObserver(this);
+}
+
+bool HotseatWidget::ShouldShowHotseatBackground() {
+  return chromeos::switches::ShouldShowShelfHotseat() &&
+         Shell::Get()->tablet_mode_controller() &&
+         Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
 
 void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
@@ -331,8 +329,9 @@ float HotseatWidget::CalculateOpacity() {
                                               : target_opacity;
 }
 
-void HotseatWidget::UpdateOpaqueBackground() {
-  delegate_view_->UpdateOpaqueBackground();
+void HotseatWidget::SetOpaqueBackground(
+    const gfx::Rect& opaque_background_bounds) {
+  delegate_view_->SetOpaqueBackground(opaque_background_bounds);
 }
 
 void HotseatWidget::UpdateLayout(bool animate) {
