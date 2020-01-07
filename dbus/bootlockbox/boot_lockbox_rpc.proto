@@ -12,6 +12,7 @@ syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 package cryptohome;
+option go_package = "bootlockbox_proto";
 
 enum BootLockboxErrorCode {
   BOOTLOCKBOX_ERROR_NOT_SET = 0;

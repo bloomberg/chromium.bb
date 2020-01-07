@@ -11,6 +11,7 @@ group("all") {
     ":system_api-attestation-protos",
     ":system_api-authpolicy-protos",
     ":system_api-biod-protos",
+    ":system_api-bootlockbox-goprotos",
     ":system_api-bootlockbox-protos",
     ":system_api-chaps-protos",
     ":system_api-chunneld-protos",
@@ -349,6 +350,14 @@ proto_library("system_api-bootlockbox-protos") {
     "${proto_in_dir}/boot_lockbox_rpc.proto",
   ]
   standalone = true
+}
+
+goproto_library("system_api-bootlockbox-goprotos") {
+  proto_in_dir = "dbus/bootlockbox"
+  proto_out_dir = "go/src/chromiumos/system_api/bootlockbox_proto"
+  sources = [
+    "${proto_in_dir}/boot_lockbox_rpc.proto",
+  ]
 }
 
 proto_library("system_api-dlcservice-protos") {
