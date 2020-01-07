@@ -10,6 +10,7 @@
 #include "cast/streaming/environment.h"
 #include "cast/streaming/receiver.h"
 #include "cast/streaming/receiver_packet_router.h"
+#include "cast/streaming/session_config.h"
 #include "cast/streaming/ssrc.h"
 #include "platform/api/time.h"
 #include "platform/api/udp_socket.h"
@@ -19,13 +20,13 @@
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/task_runner.h"
 
-#if defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 #include "cast/standalone_receiver/sdl_audio_player.h"
 #include "cast/standalone_receiver/sdl_glue.h"
 #include "cast/standalone_receiver/sdl_video_player.h"
 #else
 #include "cast/standalone_receiver/dummy_player.h"
-#endif  // defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 
 namespace openscreen {
 namespace cast {
@@ -100,7 +101,7 @@ void RunStandaloneReceiver(TaskRunnerImpl* task_runner) {
   OSP_LOG_INFO << "Awaiting first Cast Streaming packet at "
                << env.GetBoundLocalEndpoint() << "...";
 
-#if defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 
   // Start the SDL event loop, using the task runner to poll/process events.
   const ScopedSDLSubSystem<SDL_INIT_AUDIO> sdl_audio_sub_system;
@@ -138,7 +139,7 @@ void RunStandaloneReceiver(TaskRunnerImpl* task_runner) {
   const DummyPlayer audio_player(&audio_receiver);
   const DummyPlayer video_player(&video_receiver);
 
-#endif  // defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 
   // Run the event loop until an exit is requested (e.g., the video player GUI
   // window is closed, a SIGTERM is intercepted, or whatever other appropriate
