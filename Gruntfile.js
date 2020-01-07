@@ -3,7 +3,10 @@ module.exports = function (grunt) {
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
 
-    clean: ['out/', 'out-wpt/'],
+    clean: {
+      constants: ['src/constants.ts'],
+      out: ['out/', 'out-wpt'],
+    },
 
     mkdir: {
       out: {
@@ -54,6 +57,16 @@ module.exports = function (grunt) {
     },
 
     copy: {
+      'webgpu-constants': {
+        files: [
+          {
+            expand: true,
+            cwd: 'node_modules/@webgpu/types/src',
+            src: 'constants.ts',
+            dest: 'src/',
+          },
+        ],
+      },
       glslang: {
         files: [
           {
@@ -109,11 +122,16 @@ module.exports = function (grunt) {
     helpMessageTasks.push({ name, desc });
   }
 
-  registerTaskAndAddToHelp('check', 'Check types and styles', ['ts:check', 'run:gts-check']);
+  registerTaskAndAddToHelp('check', 'Check types and styles', [
+    'copy:webgpu-constants',
+    'ts:check',
+    'run:gts-check',
+  ]);
   registerTaskAndAddToHelp('fix', 'Fix lint and formatting', ['run:gts-fix']);
   registerTaskAndAddToHelp('build', 'Build out/ (without type checking)', [
     'clean',
     'mkdir:out',
+    'copy:webgpu-constants',
     'copy:glslang',
     'run:build-out',
     'run:generate-version',
@@ -126,6 +144,7 @@ module.exports = function (grunt) {
   addExistingTaskToHelp('clean', 'Clean build products');
 
   registerTaskAndAddToHelp('pre', 'Run all presubmit checks', [
+    'copy:webgpu-constants',
     'ts:check',
     'build',
     'run:test',

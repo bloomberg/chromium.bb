@@ -6,6 +6,7 @@ module.exports = function (api) {
       '@babel/plugin-proposal-class-properties',
       '@babel/plugin-syntax-dynamic-import',
       '@babel/plugin-syntax-import-meta',
+      'const-enum',
       'macros',
       [
         'add-header-comment',
