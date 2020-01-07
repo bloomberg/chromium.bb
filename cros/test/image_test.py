@@ -705,6 +705,8 @@ class SymlinkTest(image_test_lib.ImageTestCase):
       # Used by `file` and libmagic.so when the package is in /usr/local.
       '/usr/share/misc/magic.mgc': {'/usr/local/share/misc/magic.mgc'},
       '/usr/share/portage': {'/usr/local/share/portage'},
+      # Needed for the ARC++/ARCVM dual build. For test images only.
+      '/opt/google/vms/android': {'/usr/local/vms/android'}
   }
 
   @classmethod
