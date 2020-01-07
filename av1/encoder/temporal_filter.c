@@ -36,126 +36,139 @@
 #include "aom_ports/system_state.h"
 #include "aom_scale/aom_scale.h"
 
-static unsigned int index_mult[14] = { 0,     0,     0,     0,     49152,
-                                       39322, 32768, 28087, 24576, 21846,
-                                       19661, 17874, 0,     15124 };
+// NOTE: All `tf` in this file means `temporal filtering`.
 
-static int64_t highbd_index_mult[14] = { 0U,          0U,          0U,
-                                         0U,          3221225472U, 2576980378U,
-                                         2147483648U, 1840700270U, 1610612736U,
-                                         1431655766U, 1288490189U, 1171354718U,
-                                         0U,          991146300U };
+// Magic numbers used to compute pixel-wise averaging weights for filtering.
+// Only supports 3x3 window for filtering, hence, there are totally 9 non-zero
+// numbers within the 14-element multiplier lookup table. 5 zeros should never
+// be visited.
+static const unsigned int index_mult[14] = { 0,     0,     0,     0,     49152,
+                                             39322, 32768, 28087, 24576, 21846,
+                                             19661, 17874, 0,     15124 };
+// Magic numbers (for high bit-depth).
+static const int64_t highbd_index_mult[14] = {
+  0U,          0U,          0U,          0U,          3221225472U,
+  2576980378U, 2147483648U, 1840700270U, 1610612736U, 1431655766U,
+  1288490189U, 1171354718U, 0U,          991146300U
+};
 
-static void temporal_filter_predictors_mb_c(YV12_BUFFER_CONFIG *ref_frame,
-                                            MACROBLOCKD *xd, int uv_block_width,
-                                            int uv_block_height, int mv_row,
-                                            int mv_col, uint8_t *pred,
-                                            struct scale_factors *scale, int x,
-                                            int y, int num_planes, MV *blk_mvs,
-                                            int use_32x32) {
+static INLINE int mod_index(int sum_dist, int index, int rounding, int strength,
+                            int filter_weight) {
+  assert(index >= 0 && index <= 13);
+  assert(index_mult[index] != 0);
+
+  int mod = (clamp(sum_dist, 0, UINT16_MAX) * index_mult[index]) >> 16;
+  mod += rounding;
+  mod >>= strength;
+
+  mod = AOMMIN(16, mod);
+
+  mod = 16 - mod;
+  mod *= filter_weight;
+
+  return mod;
+}
+
+static INLINE int highbd_mod_index(int64_t sum_dist, int index, int rounding,
+                                   int strength, int filter_weight) {
+  assert(index >= 0 && index <= 13);
+  assert(highbd_index_mult[index] != 0);
+
+  int mod =
+      (int)((AOMMIN(sum_dist, INT32_MAX) * highbd_index_mult[index]) >> 32);
+  mod += rounding;
+  mod >>= strength;
+
+  mod = AOMMIN(16, mod);
+
+  mod = 16 - mod;
+  mod *= filter_weight;
+
+  return mod;
+}
+
+// Builds predictors for blocks in temporal filtering.
+// Inputs:
+//   ref_frame: Pointer to the frame for filtering.
+//   mbd: Pointer to the block for filtering.
+//   block_size: Size of the block.
+//   mb_row: Row index of the block in the entire frame.
+//   mb_col: Column index of the block in the entire frame.
+//   scale: Scaling factor.
+//   num_planes: Number of planes in the frame.
+//   use_subblock: Whether to use four sub-blocks to replace the original block.
+//   subblock_mvs: The motion vectors for each sub-blocks. (row-major order).
+//   pred: Pointer to the predictors to build.
+// Returns:
+//   Nothing will be returned. But the content to which `pred` points will be
+//   modified.
+static void tf_build_predictors_mb_c(
+    const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
+    const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
+    const struct scale_factors *scale, const int num_planes,
+    const int use_subblock, const MV *subblock_mvs, uint8_t *pred) {
+  // Information of the entire block.
+  const int mb_height = block_size_high[block_size];  // Height.
+  const int mb_width = block_size_wide[block_size];   // Width.
+  const int mb_size = mb_height * mb_width;           // Number of pixels.
+  const int mb_y = mb_height * mb_row;                // Y-coord.
+  const int mb_x = mb_width * mb_col;                 // X-coord.
+  const int bit_depth = mbd->bd;                      // Bit depth.
+  const int is_high_bitdepth = is_cur_buf_hbd(mbd);   // Is high bit-depth?
+  const int is_intrabc = 0;                           // Is intra-copied?
+  const int mb_mv_row = mbd->mi[0]->mv[0].as_mv.row;  // Motion vector (y).
+  const int mb_mv_col = mbd->mi[0]->mv[0].as_mv.col;  // Motion vector (x).
+  const MV mb_mv = { (int16_t)mb_mv_row, (int16_t)mb_mv_col };
+
+  // Information of each sub-block (actually in use).
+  const int num_blocks = use_subblock ? 2 : 1;  // Num of blocks on each side.
+  const int block_height = mb_height >> (num_blocks - 1);  // Height.
+  const int block_width = mb_width >> (num_blocks - 1);    // Width.
+
+  // Default interpolation filters.
   const int_interpfilters interp_filters =
       av1_broadcast_interp_filter(MULTITAP_SHARP);
-  WarpTypesAllowed warp_types;
-  memset(&warp_types, 0, sizeof(WarpTypesAllowed));
 
   InterPredParams inter_pred_params;
-  struct buf_2d ref_buf_y = { NULL, ref_frame->y_buffer, ref_frame->y_width,
-                              ref_frame->y_height, ref_frame->y_stride };
+  struct buf_2d ref_buf = { NULL, NULL, 0, 0, 0 };
 
-  av1_init_inter_params(&inter_pred_params, BW, BH, y, x, 0, 0, xd->bd,
-                        is_cur_buf_hbd(xd), 0, scale, &ref_buf_y,
-                        interp_filters);
-  inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
-
-  if (use_32x32) {
-    assert(mv_row >= INT16_MIN && mv_row <= INT16_MAX && mv_col >= INT16_MIN &&
-           mv_col <= INT16_MAX);
-    const MV mv = { (int16_t)mv_row, (int16_t)mv_col };
-
-    av1_build_inter_predictor(&pred[0], BW, &mv, &inter_pred_params);
-
-    if (num_planes > 1) {
-      struct buf_2d ref_buf_uv = { NULL, ref_frame->u_buffer,
-                                   ref_frame->uv_width, ref_frame->uv_height,
-                                   ref_frame->uv_stride };
-
-      av1_init_inter_params(
-          &inter_pred_params, uv_block_width, uv_block_height,
-          y >> xd->plane[1].subsampling_y, x >> xd->plane[1].subsampling_x,
-          xd->plane[1].subsampling_x, xd->plane[1].subsampling_y, xd->bd,
-          is_cur_buf_hbd(xd), 0, scale, &ref_buf_uv, interp_filters);
-      inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
-      av1_build_inter_predictor(&pred[BLK_PELS], uv_block_width, &mv,
-                                &inter_pred_params);
-
-      ref_buf_uv.buf0 = ref_frame->v_buffer;
-      av1_init_inter_params(
-          &inter_pred_params, uv_block_width, uv_block_height,
-          y >> xd->plane[1].subsampling_y, x >> xd->plane[1].subsampling_x,
-          xd->plane[1].subsampling_x, xd->plane[1].subsampling_y, xd->bd,
-          is_cur_buf_hbd(xd), 0, scale, &ref_buf_uv, interp_filters);
-      inter_pred_params.conv_params = get_conv_params(0, 2, xd->bd);
-      av1_build_inter_predictor(&pred[(BLK_PELS << 1)], uv_block_width, &mv,
-                                &inter_pred_params);
+  // Handle Y-plane and UV-plane.
+  for (int plane = 0; plane < num_planes; ++plane) {
+    const int subsampling_y = mbd->plane[plane].subsampling_y;
+    const int subsampling_x = mbd->plane[plane].subsampling_x;
+    const int plane_y = mb_y >> subsampling_y;
+    const int plane_x = mb_x >> subsampling_x;
+    const int h = block_height >> subsampling_y;
+    const int w = block_width >> subsampling_x;
+    const int pred_stride = mb_width >> subsampling_x;
+    switch (plane) {
+      case 0: ref_buf.buf0 = ref_frame->y_buffer; break;
+      case 1: ref_buf.buf0 = ref_frame->u_buffer; break;
+      case 2: ref_buf.buf0 = ref_frame->v_buffer; break;
+      default: assert(0 && "Number of planes should be at most 3.");
     }
+    ref_buf.height = (plane == 0) ? ref_frame->y_height : ref_frame->uv_height;
+    ref_buf.width = (plane == 0) ? ref_frame->y_width : ref_frame->uv_width;
+    ref_buf.stride = (plane == 0) ? ref_frame->y_stride : ref_frame->uv_stride;
 
-    return;
-  }
+    // Handle entire block or sub-blocks if needed.
+    for (int i = 0; i < num_blocks; ++i) {
+      for (int j = 0; j < num_blocks; ++j) {
+        // Choose proper motion vector.
+        const MV mv = use_subblock ? subblock_mvs[i * num_blocks + j] : mb_mv;
+        assert(mv.row >= INT16_MIN && mv.row <= INT16_MAX &&
+               mv.col >= INT16_MIN && mv.col <= INT16_MAX);
 
-  // While use_32x32 = 0, construct the 32x32 predictor using 4 16x16
-  // predictors.
-  int i, j, k = 0, ys = (BH >> 1), xs = (BW >> 1);
-  // Y predictor
-  for (i = 0; i < BH; i += ys) {
-    for (j = 0; j < BW; j += xs) {
-      const MV mv = blk_mvs[k];
-      const int p_offset = i * BW + j;
+        const int y = plane_y + i * h;
+        const int x = plane_x + j * w;
 
-      av1_init_inter_params(&inter_pred_params, xs, ys, y + i, x + j, 0, 0,
-                            xd->bd, is_cur_buf_hbd(xd), 0, scale, &ref_buf_y,
-                            interp_filters);
-      inter_pred_params.conv_params = get_conv_params(0, 0, xd->bd);
-
-      av1_build_inter_predictor(&pred[p_offset], BW, &mv, &inter_pred_params);
-      k++;
-    }
-  }
-
-  // U and V predictors
-  if (num_planes > 1) {
-    ys = (uv_block_height >> 1);
-    xs = (uv_block_width >> 1);
-    k = 0;
-
-    for (i = 0; i < uv_block_height; i += ys) {
-      for (j = 0; j < uv_block_width; j += xs) {
-        const MV mv = blk_mvs[k];
-        const int p_offset = i * uv_block_width + j;
-
-        struct buf_2d ref_buf_uv = { NULL, ref_frame->u_buffer,
-                                     ref_frame->uv_width, ref_frame->uv_height,
-                                     ref_frame->uv_stride };
-
-        av1_init_inter_params(
-            &inter_pred_params, xs, ys, (y >> xd->plane[1].subsampling_y) + i,
-            (x >> xd->plane[1].subsampling_x) + j, xd->plane[1].subsampling_x,
-            xd->plane[1].subsampling_y, xd->bd, is_cur_buf_hbd(xd), 0, scale,
-            &ref_buf_uv, interp_filters);
-        inter_pred_params.conv_params = get_conv_params(0, 1, xd->bd);
-        av1_build_inter_predictor(&pred[BLK_PELS + p_offset], uv_block_width,
+        const int offset = i * h * pred_stride + j * w;
+        av1_init_inter_params(&inter_pred_params, w, h, y, x, subsampling_x,
+                              subsampling_y, bit_depth, is_high_bitdepth,
+                              is_intrabc, scale, &ref_buf, interp_filters);
+        inter_pred_params.conv_params = get_conv_params(0, plane, bit_depth);
+        av1_build_inter_predictor(&pred[mb_size * plane + offset], pred_stride,
                                   &mv, &inter_pred_params);
-
-        ref_buf_uv.buf0 = ref_frame->v_buffer;
-        av1_init_inter_params(
-            &inter_pred_params, xs, ys, (y >> xd->plane[1].subsampling_y) + i,
-            (x >> xd->plane[1].subsampling_x) + j, xd->plane[1].subsampling_x,
-            xd->plane[1].subsampling_y, xd->bd, is_cur_buf_hbd(xd), 0, scale,
-            &ref_buf_uv, interp_filters);
-
-        inter_pred_params.conv_params = get_conv_params(0, 2, xd->bd);
-        av1_build_inter_predictor(&pred[(BLK_PELS << 1) + p_offset],
-                                  uv_block_width, &mv, &inter_pred_params);
-        k++;
       }
     }
   }
@@ -196,41 +209,6 @@ static void highbd_apply_temporal_filter_self(
       ++k;
     }
   }
-}
-
-static INLINE int mod_index(int sum_dist, int index, int rounding, int strength,
-                            int filter_weight) {
-  assert(index >= 0 && index <= 13);
-  assert(index_mult[index] != 0);
-
-  int mod = (clamp(sum_dist, 0, UINT16_MAX) * index_mult[index]) >> 16;
-  mod += rounding;
-  mod >>= strength;
-
-  mod = AOMMIN(16, mod);
-
-  mod = 16 - mod;
-  mod *= filter_weight;
-
-  return mod;
-}
-
-static INLINE int highbd_mod_index(int64_t sum_dist, int index, int rounding,
-                                   int strength, int filter_weight) {
-  assert(index >= 0 && index <= 13);
-  assert(highbd_index_mult[index] != 0);
-
-  int mod =
-      (int)((AOMMIN(sum_dist, INT32_MAX) * highbd_index_mult[index]) >> 32);
-  mod += rounding;
-  mod >>= strength;
-
-  mod = AOMMIN(16, mod);
-
-  mod = 16 - mod;
-  mod *= filter_weight;
-
-  return mod;
 }
 
 static INLINE void calculate_squared_errors(const uint8_t *s, int s_stride,
@@ -1165,11 +1143,9 @@ static FRAME_DIFF temporal_filter_iterate_c(
 
         if (blk_fw[0] || blk_fw[1] || blk_fw[2] || blk_fw[3]) {
           // Construct the predictors
-          temporal_filter_predictors_mb_c(
-              frames[frame], mbd, mb_uv_width, mb_uv_height,
-              mbd->mi[0]->mv[0].as_mv.row, mbd->mi[0]->mv[0].as_mv.col,
-              predictor, ref_scale_factors, mb_col * BW, mb_row * BH,
-              num_planes, blk_mvs, use_32x32);
+          tf_build_predictors_mb_c(frames[frame], mbd, TF_BLOCK, mb_row, mb_col,
+                                   ref_scale_factors, num_planes, !(use_32x32),
+                                   blk_mvs, predictor);
 
           // Apply the filter (YUV)
           if (frame == alt_ref_index) {
