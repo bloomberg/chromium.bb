@@ -5262,10 +5262,6 @@ def CMDformat(parser, args):
     if sys.platform.startswith('win'):
       yapf_tool += '.bat'
 
-    # If we couldn't find a yapf file we'll default to the chromium style
-    # specified in depot_tools.
-    chromium_default_yapf_style = os.path.join(depot_tools_path,
-                                               YAPF_CONFIG_FILENAME)
     # Used for caching.
     yapf_configs = {}
     for f in python_diff_files:
@@ -5295,11 +5291,12 @@ def CMDformat(parser, args):
                                                 yapfignore_patterns)
 
     for f in filtered_py_files:
-      yapf_config = _FindYapfConfigFile(f, yapf_configs, top_dir)
-      if yapf_config is None:
-        yapf_config = chromium_default_yapf_style
+      yapf_style = _FindYapfConfigFile(f, yapf_configs, top_dir)
+      # Default to pep8 if not .style.yapf is found.
+      if not yapf_style:
+        yapf_style = 'pep8'
 
-      cmd = [yapf_tool, '--style', yapf_config, f]
+      cmd = [yapf_tool, '--style', yapf_style, f]
 
       has_formattable_lines = False
       if not opts.full:
