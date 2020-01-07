@@ -229,6 +229,48 @@ void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
   }
 }
 
+void PostFilter::ApplySuperResThreaded() {
+  const int num_threads = thread_pool_->num_threads() + 1;
+  // The number of rows4x4 that will be processed by each thread in the thread
+  // pool (other than the current thread).
+  const int thread_pool_rows4x4 = frame_header_.rows4x4 / num_threads;
+  // For the current thread, we round up to process all the remaining rows so
+  // that the current thread's job will potentially run the longest.
+  const int current_thread_rows4x4 =
+      frame_header_.rows4x4 - (thread_pool_rows4x4 * (num_threads - 1));
+  // The size of the line buffer required by each thread. In the multi-threaded
+  // case we are guaranteed to have a line buffer which can store |num_threads|
+  // rows at the same time.
+  const size_t line_buffer_size =
+      (MultiplyBy4(frame_header_.columns4x4) + MultiplyBy2(kSuperResBorder)) *
+      pixel_size_;
+  size_t line_buffer_offset = 0;
+  BlockingCounter pending_workers(num_threads - 1);
+  for (int i = 0, row4x4_start = 0; i < num_threads; ++i,
+           row4x4_start += thread_pool_rows4x4,
+           line_buffer_offset += line_buffer_size) {
+    std::array<ptrdiff_t, kMaxPlanes> plane_offsets;
+    for (int plane = 0; plane < planes_; ++plane) {
+      const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
+      plane_offsets[plane] = (MultiplyBy4(row4x4_start) >> subsampling_y) *
+                             source_buffer_->stride(plane);
+    }
+    if (i < num_threads - 1) {
+      thread_pool_->Schedule([this, thread_pool_rows4x4, plane_offsets,
+                              line_buffer_offset, &pending_workers]() {
+        ApplySuperRes(source_buffer_, thread_pool_rows4x4, subsampling_y_,
+                      plane_offsets, line_buffer_offset);
+        pending_workers.Decrement();
+      });
+    } else {
+      ApplySuperRes(source_buffer_, current_thread_rows4x4, subsampling_y_,
+                    plane_offsets, line_buffer_offset);
+    }
+  }
+  // Wait for the threadpool jobs to finish.
+  pending_workers.Wait();
+}
+
 bool PostFilter::ApplyFilteringThreaded() {
   if (DoDeblock() && !ApplyDeblockFilterThreaded()) return false;
   if (DoCdef() && DoRestoration()) {
@@ -238,10 +280,7 @@ bool PostFilter::ApplyFilteringThreaded() {
     }
   }
   if (DoCdef()) ApplyCdef();
-  if (DoSuperRes()) {
-    ApplySuperRes(source_buffer_, frame_header_.rows4x4, subsampling_y_,
-                  /*plane_offsets=*/{0, 0, 0});
-  }
+  if (DoSuperRes()) ApplySuperResThreaded();
   if (DoRestoration()) ApplyLoopRestoration();
   ExtendBordersForReferenceFrame();
   return true;
@@ -400,7 +439,7 @@ void PostFilter::SetupDeblockBuffer(int row4x4_start, int sb4x4) {
           row_offset_start * deblock_buffer_.stride(kPlaneU),
           row_offset_start * deblock_buffer_.stride(kPlaneV)};
       ApplySuperRes(&deblock_buffer_, /*rows4x4=*/1, /*chroma_subsampling_y=*/0,
-                    plane_offsets);
+                    plane_offsets, /*line_buffer_offset=*/0);
     }
     // Extend the left and right boundaries needed for loop restoration.
     for (int plane = 0; plane < planes_; ++plane) {
@@ -803,7 +842,8 @@ void PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4) {
     plane_offsets[plane] = cdef_offset + row_offset;
   }
   const int num_rows4x4 = std::min(sb4x4, frame_header_.rows4x4 - row4x4_start);
-  ApplySuperRes(source_buffer_, num_rows4x4, subsampling_y_, plane_offsets);
+  ApplySuperRes(source_buffer_, num_rows4x4, subsampling_y_, plane_offsets,
+                /*line_buffer_offset=*/0);
 }
 
 void PostFilter::ApplyCdefForOneSuperBlockRow(int row4x4_start, int sb4x4) {
@@ -846,9 +886,11 @@ void PostFilter::ApplyCdef() {
 
 void PostFilter::ApplySuperRes(
     YuvBuffer* const buffer, int rows4x4, int8_t chroma_subsampling_y,
-    const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets) {
-  uint8_t* const line_buffer_start =
-      superres_line_buffer_ + kSuperResBorder * pixel_size_;
+    const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets,
+    size_t line_buffer_offset) {
+  uint8_t* const line_buffer_start = superres_line_buffer_ +
+                                     line_buffer_offset +
+                                     kSuperResBorder * pixel_size_;
   for (int plane = kPlaneY; plane < planes_; ++plane) {
     const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
     const int8_t subsampling_y = (plane == kPlaneY) ? 0 : chroma_subsampling_y;

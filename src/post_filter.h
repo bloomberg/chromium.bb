@@ -418,9 +418,11 @@ class PostFilter {
                               int* inner_thresh, int* hev_thresh) const;
   // Applies super resolution for the |buffer| for 4*|rows4x4| rows starting
   // from |plane_offset[]| for each plane.
-  void ApplySuperRes(
-      YuvBuffer* input_buffer, int rows4x4, int8_t chroma_subsampling_y,
-      const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets);  // Section 7.16.
+  void ApplySuperRes(YuvBuffer* input_buffer, int rows4x4,
+                     int8_t chroma_subsampling_y,
+                     const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets,
+                     size_t line_buffer_offset);  // Section 7.16.
+  void ApplySuperResThreaded();
 
   // Applies deblock filtering for the superblock row starting at |row4x4| with
   // a height of 4*|sb4x4|.

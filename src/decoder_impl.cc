@@ -577,11 +577,17 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   }
 
   if (PostFilter::DoSuperRes(obu->frame_header(), settings_.post_filter_mask)) {
+    const int num_threads =
+        1 +
+        ((threading_strategy_.post_filter_thread_pool() == nullptr)
+             ? 0
+             : threading_strategy_.post_filter_thread_pool()->num_threads());
     const size_t superres_line_buffer_size =
-        (MultiplyBy4(obu->frame_header().columns4x4) +
-         MultiplyBy2(kSuperResBorder)) *
-        (obu->sequence_header().color_config.bitdepth == 8 ? sizeof(uint8_t)
-                                                           : sizeof(uint16_t));
+        num_threads * ((MultiplyBy4(obu->frame_header().columns4x4) +
+                        MultiplyBy2(kSuperResBorder)) *
+                       (obu->sequence_header().color_config.bitdepth == 8
+                            ? sizeof(uint8_t)
+                            : sizeof(uint16_t)));
     if (superres_line_buffer_size_ < superres_line_buffer_size) {
       superres_line_buffer_ =
           MakeAlignedUniquePtr<uint8_t>(16, superres_line_buffer_size);
