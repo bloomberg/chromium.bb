@@ -1025,23 +1025,25 @@ def _GetDLCInfo(device, pkg_path, from_dut):
     # On DUT, |pkg_path| is the directory which contains environment file.
     environment_path = os.path.join(pkg_path, _ENVIRONMENT_FILENAME)
     result = device.RunCommand(['test', '-f', environment_path],
-                               check=False)
+                               check=False, encoding=None)
     if result.returncode == 1:
       # The package is not installed on DUT yet. Skip extracting info.
       return None, None
-    result = device.RunCommand(['bzip2', '-d', '-c', environment_path])
+    result = device.RunCommand(['bzip2', '-d', '-c', environment_path],
+                               encoding=None)
     environment_content = result.output
   else:
     # On host, pkg_path is tbz2 file which contains environment file.
     # Extract the metadata of the package file.
     data = portage.xpak.tbz2(pkg_path).get_data()
     # Extract the environment metadata.
-    environment_content = bz2.decompress(data[_ENVIRONMENT_FILENAME])
+    environment_content = bz2.decompress(
+      data[_ENVIRONMENT_FILENAME.encode('utf-8')])
 
   with tempfile.NamedTemporaryFile() as f:
     # Dumps content into a file so we can use osutils.SourceEnvironment.
     path = os.path.realpath(f.name)
-    osutils.WriteFile(path, environment_content)
+    osutils.WriteFile(path, environment_content, mode='wb')
     content = osutils.SourceEnvironment(path, (_DLC_ID, _DLC_PACKAGE))
     return content.get(_DLC_ID), content.get(_DLC_PACKAGE)
 
