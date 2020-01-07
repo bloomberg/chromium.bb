@@ -53,6 +53,10 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
   // borders in the chroma planes.
   if ((left_border & 1) != 0 || (right_border & 1) != 0 ||
       (top_border & 1) != 0 || (bottom_border & 1) != 0) {
+    LIBGAV1_DLOG(ERROR,
+                 "Borders must be a multiple of 2: left_border = %d, "
+                 "right_border = %d, top_border = %d, bottom_border = %d.",
+                 left_border, right_border, top_border, bottom_border);
     return false;
   }
 
