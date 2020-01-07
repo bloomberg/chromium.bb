@@ -404,7 +404,7 @@
 <translation id="15662109988763471">Hautatutako inprimagailua ez dago erabilgarri edo ez da instalatu behar bezala. Egiaztatu inprimagailua edo hautatu beste bat.</translation>
 <translation id="1567387640189251553">Beste teklatu bat konektatu duzu pasahitza azkenekoz idatzi zenuenetik. Agian sakatzen ari zaren teklak erregistratzen ari da, pasahitzak lapurtzeko asmoz.</translation>
 <translation id="1567750922576943685">Zure identitatea egiaztatzen baduzu, babestuago izango duzu informazio pertsonala</translation>
-<translation id="1567993339577891801">JavaScript kontsola</translation>
+<translation id="1567993339577891801">JavaScript-en kontsola</translation>
 <translation id="1568323446248056064">Ireki pantailaren ezarpenak</translation>
 <translation id="1572139610531470719"><ph name="WINDOW_TITLE" /> (gonbidatua)</translation>
 <translation id="1572266655485775982">Gaitu Wi-Fi konexioa</translation>
@@ -595,7 +595,7 @@
 <translation id="1817871734039893258">Microsoft-en fitxategiak berreskuratzeko sistema</translation>
 <translation id="1818007989243628752">Ezabatu <ph name="USERNAME" /> erabiltzailearen pasahitza</translation>
 <translation id="1818913467757368489">Kargatzen ari da erregistroa.</translation>
-<translation id="1819721979226826163">Sakatu Aplikazioen jakinarazpenak &gt; Google Play zerbitzuak.</translation>
+<translation id="1819721979226826163">Sakatu Aplikazioen jakinarazpenak &gt; Google Play-ren zerbitzuak.</translation>
 <translation id="1820028137326691631">Idatzi administratzaileak emandako pasahitza</translation>
 <translation id="1822140782238030981">Chrome erabiltzen duzu dagoeneko? Hasi saioa</translation>
 <translation id="1826516787628120939">Egiaztatzen</translation>
@@ -4695,7 +4695,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="778330624322499012">Ezin izan da kargatu <ph name="PLUGIN_NAME" /></translation>
 <translation id="7784067724422331729">Fitxategia blokeatu da ordenagailuan dituzun segurtasun-ezarpenen ondorioz</translation>
 <translation id="7784796923038949829">Ezin dira irakurri edo aldatu webgunearen datuak</translation>
-<translation id="778480864305029524">Konexioaren partekatze bizkorra erabiltzeko, aktibatu Google Play zerbitzuen jakinarazpenak.</translation>
+<translation id="778480864305029524">Konexioaren partekatze bizkorra erabiltzeko, aktibatu Google Play-ren zerbitzuen jakinarazpenak.</translation>
 <translation id="7786207843293321886">Irten gonbidatu saiotik</translation>
 <translation id="7786889348652477777">Kar&amp;gatu berriro aplikazioa</translation>
 <translation id="7787308148023287649">Erakutsi beste pantaila batean</translation>
@@ -5761,7 +5761,7 @@ Horrek ez die eragiten beste gailu batzuetako aplikazioei edo edukiei.</translat
 <translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplikazioa}other{Aplikazioak}}</translation>
 <translation id="965211523698323809">Bidali eta jaso testu-mezuak <ph name="DEVICE_TYPE" /> gailua erabilita. <ph name="LINK_BEGIN" />Lortu informazio gehiago<ph name="LINK_END" /></translation>
 <translation id="967624055006145463">Gordetako datuak</translation>
-<translation id="968000525894980488">Aktibatu Google Play zerbitzuak.</translation>
+<translation id="968000525894980488">Aktibatu Google Play-ren zerbitzuak.</translation>
 <translation id="968037381421390582">It&amp;satsi eta bilatu "<ph name="SEARCH_TERMS" />"</translation>
 <translation id="968174221497644223">Aplikazioen cachea</translation>
 <translation id="969096075394517431">Aldatu hizkuntza</translation>
