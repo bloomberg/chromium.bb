@@ -28,7 +28,11 @@ template <int bitdepth, typename Pixel>
 void ComputeSuperRes(const void* source, const int upscaled_width,
                      const int initial_subpixel_x, const int step,
                      void* const dest) {
-  assert(step <= kSuperResScaleMask);
+  // If (original) upscaled_width is <= 9, the downscaled_width may be
+  // upscaled_width - 1 (i.e. 8, 9), and become the same (i.e. 4) when
+  // subsampled via RightShiftWithRounding. This leads to an edge case where
+  // |step| == 1 << 14.
+  assert(step <= kSuperResScaleMask || upscaled_width <= 4);
   const auto* src = static_cast<const Pixel*>(source);
   auto* dst = static_cast<Pixel*>(dest);
   src -= DivideBy2(kSuperResFilterTaps);
