@@ -921,14 +921,47 @@ static void apply_temporal_filter_chroma(
       bottom_weight, NULL);
 }
 
-void av1_apply_temporal_filter_sse4_1(
-    const uint8_t *y_src, int y_src_stride, const uint8_t *y_pre,
-    int y_pre_stride, const uint8_t *u_src, const uint8_t *v_src,
-    int uv_src_stride, const uint8_t *u_pre, const uint8_t *v_pre,
-    int uv_pre_stride, unsigned int block_width, unsigned int block_height,
-    int ss_x, int ss_y, int strength, const int *blk_fw, int use_whole_blk,
-    uint32_t *y_accum, uint16_t *y_count, uint32_t *u_accum, uint16_t *u_count,
-    uint32_t *v_accum, uint16_t *v_count) {
+void av1_apply_temporal_filter_yuv_sse4_1(
+    const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
+    const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
+    const int strength, const int use_subblock,
+    const int *subblock_filter_weights, const uint8_t *pred, uint32_t *accum,
+    uint16_t *count) {
+  const int use_whole_blk = !use_subblock;
+  const int *blk_fw = subblock_filter_weights;
+
+  // Block information (Y-plane).
+  const unsigned int block_height = block_size_high[block_size];
+  const unsigned int block_width = block_size_wide[block_size];
+  const int mb_pels = block_height * block_width;
+  const int y_src_stride = ref_frame->y_stride;
+  const int y_pre_stride = block_width;
+  const int mb_y_src_offset =
+      mb_row * block_height * ref_frame->y_stride + mb_col * block_width;
+
+  // Block information (UV-plane).
+  const int ss_y = mbd->plane[1].subsampling_y;
+  const int ss_x = mbd->plane[1].subsampling_x;
+  const unsigned int uv_height = block_height >> ss_y;
+  const unsigned int uv_width = block_width >> ss_x;
+  const int uv_src_stride = ref_frame->uv_stride;
+  const int uv_pre_stride = block_width >> ss_x;
+  const int mb_uv_src_offset =
+      mb_row * uv_height * ref_frame->uv_stride + mb_col * uv_width;
+
+  const uint8_t *y_src = ref_frame->y_buffer + mb_y_src_offset;
+  const uint8_t *u_src = ref_frame->u_buffer + mb_uv_src_offset;
+  const uint8_t *v_src = ref_frame->v_buffer + mb_uv_src_offset;
+  const uint8_t *y_pre = pred;
+  const uint8_t *u_pre = pred + mb_pels;
+  const uint8_t *v_pre = pred + mb_pels * 2;
+  uint32_t *y_accum = accum;
+  uint32_t *u_accum = accum + mb_pels;
+  uint32_t *v_accum = accum + mb_pels * 2;
+  uint16_t *y_count = count;
+  uint16_t *u_count = count + mb_pels;
+  uint16_t *v_count = count + mb_pels * 2;
+
   const unsigned int chroma_height = block_height >> ss_y,
                      chroma_width = block_width >> ss_x;
 

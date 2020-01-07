@@ -39,6 +39,10 @@ extern "C" {
 #define WINDOW_SIZE 25
 #define SCALE 1000
 
+// Window size for temporal filtering on YUV planes.
+// This is particually used for function `av1_apply_temporal_filter_yuv_c()`.
+static const int YUV_FILTER_WINDOW_LENGTH = 3;
+
 static INLINE BLOCK_SIZE dims_to_size(int w, int h) {
   if (w != h) return -1;
   switch (w) {

@@ -25,13 +25,10 @@ const int MAX_WIDTH = 32;
 const int MAX_HEIGHT = 32;
 
 typedef void (*YUVTemporalFilterFunc)(
-    const uint8_t *y_src, int y_src_stride, const uint8_t *y_pre,
-    int y_pre_stride, const uint8_t *u_src, const uint8_t *v_src,
-    int uv_src_stride, const uint8_t *u_pre, const uint8_t *v_pre,
-    int uv_pre_stride, unsigned int block_width, unsigned int block_height,
-    int ss_x, int ss_y, int strength, const int *blk_fw, int use_32x32,
-    uint32_t *y_accumulator, uint16_t *y_count, uint32_t *u_accumulator,
-    uint16_t *u_count, uint32_t *v_accumulator, uint16_t *v_count);
+    const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
+    const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
+    const int strength, const int use_subblock, const int *blk_fw,
+    const uint8_t *pred, uint32_t *accum, uint16_t *count);
 
 struct TemporalFilterWithBd {
   TemporalFilterWithBd(YUVTemporalFilterFunc func, int bitdepth)
@@ -407,11 +404,68 @@ void YUVTemporalFilterTest::ApplyTestFilter<uint8_t>(
     int ss_x, int ss_y, int strength, const int *blk_fw, int use_32x32,
     uint32_t *y_accum, uint16_t *y_count, uint32_t *u_accum, uint16_t *u_count,
     uint32_t *v_accum, uint16_t *v_count) {
-  ASM_REGISTER_STATE_CHECK(
-      filter_func_(y_src, y_src_stride, y_pre, y_pre_stride, u_src, v_src,
-                   uv_src_stride, u_pre, v_pre, uv_pre_stride, block_width,
-                   block_height, ss_x, ss_y, strength, blk_fw, use_32x32,
-                   y_accum, y_count, u_accum, u_count, v_accum, v_count));
+  (void)block_width;
+  (void)block_height;
+  (void)y_src_stride;
+  (void)uv_src_stride;
+
+  assert(block_width == MAX_WIDTH && MAX_WIDTH == 32);
+  assert(block_height == MAX_HEIGHT && MAX_HEIGHT == 32);
+  const BLOCK_SIZE block_size = BLOCK_32X32;
+  const int mb_pels = MAX_WIDTH * MAX_HEIGHT;
+  const int mb_row = 0;
+  const int mb_col = 0;
+  const int use_subblock = !(use_32x32);
+
+  YV12_BUFFER_CONFIG *ref_frame =
+      (YV12_BUFFER_CONFIG *)malloc(sizeof(YV12_BUFFER_CONFIG));
+  ref_frame->strides[0] = y_pre_stride;
+  ref_frame->strides[1] = uv_pre_stride;
+  const int alloc_size = MAX_MB_PLANE * mb_pels;
+  DECLARE_ALIGNED(16, uint8_t, src[alloc_size]);
+  ref_frame->buffer_alloc = src;
+  ref_frame->buffers[0] = ref_frame->buffer_alloc + 0 * mb_pels;
+  ref_frame->buffers[1] = ref_frame->buffer_alloc + 1 * mb_pels;
+  ref_frame->buffers[2] = ref_frame->buffer_alloc + 2 * mb_pels;
+
+  MACROBLOCKD *mbd = (MACROBLOCKD *)malloc(sizeof(MACROBLOCKD));
+  mbd->bd = bd_;
+  mbd->plane[0].subsampling_y = 0;
+  mbd->plane[0].subsampling_x = 0;
+  mbd->plane[1].subsampling_y = ss_y;
+  mbd->plane[1].subsampling_x = ss_x;
+  mbd->plane[2].subsampling_y = ss_y;
+  mbd->plane[2].subsampling_x = ss_x;
+
+  DECLARE_ALIGNED(16, uint8_t, pred[alloc_size]);
+  DECLARE_ALIGNED(16, uint32_t, accum[alloc_size]);
+  DECLARE_ALIGNED(16, uint16_t, count[alloc_size]);
+  memcpy(src + 0 * mb_pels, y_src, mb_pels * sizeof(uint8_t));
+  memcpy(src + 1 * mb_pels, u_src, mb_pels * sizeof(uint8_t));
+  memcpy(src + 2 * mb_pels, v_src, mb_pels * sizeof(uint8_t));
+  memcpy(pred + 0 * mb_pels, y_pre, mb_pels * sizeof(uint8_t));
+  memcpy(pred + 1 * mb_pels, u_pre, mb_pels * sizeof(uint8_t));
+  memcpy(pred + 2 * mb_pels, v_pre, mb_pels * sizeof(uint8_t));
+  memcpy(accum + 0 * mb_pels, y_accum, mb_pels * sizeof(uint32_t));
+  memcpy(accum + 1 * mb_pels, u_accum, mb_pels * sizeof(uint32_t));
+  memcpy(accum + 2 * mb_pels, v_accum, mb_pels * sizeof(uint32_t));
+  memcpy(count + 0 * mb_pels, y_count, mb_pels * sizeof(uint16_t));
+  memcpy(count + 1 * mb_pels, u_count, mb_pels * sizeof(uint16_t));
+  memcpy(count + 2 * mb_pels, v_count, mb_pels * sizeof(uint16_t));
+
+  ASM_REGISTER_STATE_CHECK(filter_func_(ref_frame, mbd, block_size, mb_row,
+                                        mb_col, strength, use_subblock, blk_fw,
+                                        pred, accum, count));
+
+  memcpy(y_accum, accum + 0 * mb_pels, mb_pels * sizeof(uint32_t));
+  memcpy(u_accum, accum + 1 * mb_pels, mb_pels * sizeof(uint32_t));
+  memcpy(v_accum, accum + 2 * mb_pels, mb_pels * sizeof(uint32_t));
+  memcpy(y_count, count + 0 * mb_pels, mb_pels * sizeof(uint16_t));
+  memcpy(u_count, count + 1 * mb_pels, mb_pels * sizeof(uint16_t));
+  memcpy(v_count, count + 2 * mb_pels, mb_pels * sizeof(uint16_t));
+
+  free(ref_frame);
+  free(mbd);
 }
 
 template <>
@@ -423,12 +477,69 @@ void YUVTemporalFilterTest::ApplyTestFilter<uint16_t>(
     int ss_x, int ss_y, int strength, const int *blk_fw, int use_32x32,
     uint32_t *y_accum, uint16_t *y_count, uint32_t *u_accum, uint16_t *u_count,
     uint32_t *v_accum, uint16_t *v_count) {
-  ASM_REGISTER_STATE_CHECK(filter_func_(
-      CONVERT_TO_BYTEPTR(y_src), y_src_stride, CONVERT_TO_BYTEPTR(y_pre),
-      y_pre_stride, CONVERT_TO_BYTEPTR(u_src), CONVERT_TO_BYTEPTR(v_src),
-      uv_src_stride, CONVERT_TO_BYTEPTR(u_pre), CONVERT_TO_BYTEPTR(v_pre),
-      uv_pre_stride, block_width, block_height, ss_x, ss_y, strength, blk_fw,
-      use_32x32, y_accum, y_count, u_accum, u_count, v_accum, v_count));
+  (void)block_width;
+  (void)block_height;
+  (void)y_src_stride;
+  (void)uv_src_stride;
+
+  assert(block_width == MAX_WIDTH && MAX_WIDTH == 32);
+  assert(block_height == MAX_HEIGHT && MAX_HEIGHT == 32);
+  const BLOCK_SIZE block_size = BLOCK_32X32;
+  const int mb_pels = MAX_WIDTH * MAX_HEIGHT;
+  const int mb_row = 0;
+  const int mb_col = 0;
+  const int use_subblock = !(use_32x32);
+
+  YV12_BUFFER_CONFIG *ref_frame =
+      (YV12_BUFFER_CONFIG *)malloc(sizeof(YV12_BUFFER_CONFIG));
+  ref_frame->strides[0] = y_pre_stride;
+  ref_frame->strides[1] = uv_pre_stride;
+  const int alloc_size = MAX_MB_PLANE * mb_pels;
+  DECLARE_ALIGNED(16, uint16_t, src16[alloc_size]);
+  ref_frame->buffer_alloc = CONVERT_TO_BYTEPTR(src16);
+  ref_frame->buffers[0] = ref_frame->buffer_alloc + 0 * mb_pels;
+  ref_frame->buffers[1] = ref_frame->buffer_alloc + 1 * mb_pels;
+  ref_frame->buffers[2] = ref_frame->buffer_alloc + 2 * mb_pels;
+
+  MACROBLOCKD *mbd = (MACROBLOCKD *)malloc(sizeof(MACROBLOCKD));
+  mbd->bd = bd_;
+  mbd->plane[0].subsampling_y = 0;
+  mbd->plane[0].subsampling_x = 0;
+  mbd->plane[1].subsampling_y = ss_y;
+  mbd->plane[1].subsampling_x = ss_x;
+  mbd->plane[2].subsampling_y = ss_y;
+  mbd->plane[2].subsampling_x = ss_x;
+
+  DECLARE_ALIGNED(16, uint16_t, pred16[alloc_size]);
+  DECLARE_ALIGNED(16, uint32_t, accum[alloc_size]);
+  DECLARE_ALIGNED(16, uint16_t, count[alloc_size]);
+  memcpy(src16 + 0 * mb_pels, y_src, mb_pels * sizeof(uint16_t));
+  memcpy(src16 + 1 * mb_pels, u_src, mb_pels * sizeof(uint16_t));
+  memcpy(src16 + 2 * mb_pels, v_src, mb_pels * sizeof(uint16_t));
+  memcpy(pred16 + 0 * mb_pels, y_pre, mb_pels * sizeof(uint16_t));
+  memcpy(pred16 + 1 * mb_pels, u_pre, mb_pels * sizeof(uint16_t));
+  memcpy(pred16 + 2 * mb_pels, v_pre, mb_pels * sizeof(uint16_t));
+  memcpy(accum + 0 * mb_pels, y_accum, mb_pels * sizeof(uint32_t));
+  memcpy(accum + 1 * mb_pels, u_accum, mb_pels * sizeof(uint32_t));
+  memcpy(accum + 2 * mb_pels, v_accum, mb_pels * sizeof(uint32_t));
+  memcpy(count + 0 * mb_pels, y_count, mb_pels * sizeof(uint16_t));
+  memcpy(count + 1 * mb_pels, u_count, mb_pels * sizeof(uint16_t));
+  memcpy(count + 2 * mb_pels, v_count, mb_pels * sizeof(uint16_t));
+  const uint8_t *pred = CONVERT_TO_BYTEPTR(pred16);
+
+  ASM_REGISTER_STATE_CHECK(filter_func_(ref_frame, mbd, block_size, mb_row,
+                                        mb_col, strength, use_subblock, blk_fw,
+                                        pred, accum, count));
+
+  memcpy(y_accum, accum + 0 * mb_pels, mb_pels * sizeof(uint32_t));
+  memcpy(u_accum, accum + 1 * mb_pels, mb_pels * sizeof(uint32_t));
+  memcpy(v_accum, accum + 2 * mb_pels, mb_pels * sizeof(uint32_t));
+  memcpy(y_count, count + 0 * mb_pels, mb_pels * sizeof(uint16_t));
+  memcpy(u_count, count + 1 * mb_pels, mb_pels * sizeof(uint16_t));
+  memcpy(v_count, count + 2 * mb_pels, mb_pels * sizeof(uint16_t));
+
+  free(ref_frame);
+  free(mbd);
 }
 
 template <typename PixelType>
@@ -710,17 +821,18 @@ TEST_P(YUVTemporalFilterTest, DISABLED_Speed) {
 INSTANTIATE_TEST_CASE_P(
     C, YUVTemporalFilterTest,
     ::testing::Values(
-        TemporalFilterWithBd(&av1_apply_temporal_filter_c, 8),
-        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_c, 10),
-        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_c, 12)));
+        TemporalFilterWithBd(&av1_apply_temporal_filter_yuv_c, 8),
+        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_yuv_c, 10),
+        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_yuv_c, 12)));
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
     SSE4_1, YUVTemporalFilterTest,
     ::testing::Values(
-        TemporalFilterWithBd(&av1_apply_temporal_filter_sse4_1, 8),
-        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_sse4_1, 10),
-        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_sse4_1, 12)));
+        TemporalFilterWithBd(&av1_apply_temporal_filter_yuv_sse4_1, 8),
+        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_yuv_sse4_1, 10),
+        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_yuv_sse4_1,
+                             12)));
 #endif  // HAVE_SSE4_1
 
 }  // namespace
