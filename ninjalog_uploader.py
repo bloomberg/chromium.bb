@@ -18,6 +18,7 @@ The log will be used to analyze user side build performance.
 import argparse
 import cStringIO
 import gzip
+import httplib2
 import json
 import logging
 import multiprocessing
@@ -27,11 +28,9 @@ import subprocess
 import sys
 import time
 
-
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
-import httplib2
 
 # These build configs affect build performance a lot.
 # TODO(tikuta): Add 'blink_symbol_level', 'closure_compile' and
