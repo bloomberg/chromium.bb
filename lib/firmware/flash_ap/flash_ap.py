@@ -217,6 +217,8 @@ def deploy(opts):
         'try again.' % opts.board)
 
   ip = os.getenv('IP')
+  flashrom = opts.flashrom
+  fast = opts.fast
   if ip is not None:
     logging.info('Attempting to flash via ssh.')
     # TODO(b/143241417): Can't use flashrom over ssh on wilco.
@@ -224,8 +226,8 @@ def deploy(opts):
         opts.flashrom):
       logging.warning('WARNING: flashing with flashrom over ssh on this device'
                       ' fails consistently, flashing with futility instead.')
-      opts.flashrom = False
-    if _ssh_flash(not opts.flashrom, opts.image, opts.verbose, ip, opts.fast):
+      flashrom = False
+    if _ssh_flash(not flashrom, opts.image, opts.verbose, ip, fast):
       logging.info('ssh flash successful. Exiting flash_ap')
       return 0
     logging.info('ssh failed, attempting to flash via servo connection.')
@@ -241,7 +243,11 @@ def deploy(opts):
   if module.is_fast_required(not opts.flashrom, servo_ver) and not opts.fast:
     logging.warning('WARNING: there is a known error with the board and servo '
                     'type being used, enabling --fast to bypass this problem.')
-    opts.fast = True
+    fast = True
+  if hasattr(module, '__use_flashrom__'):
+    # Futility needs VBoot to flash so boards without functioning VBoot
+    # can set this attribute to force the use of flashrom.
+    flashrom = True
   dut_on, dut_off, flashrom_cmd, futility_cmd = module.get_commands(
       servo_ver, serial_num)
   dut_ctrl_on = [dut_ctrl + x for x in dut_on]
@@ -249,13 +255,13 @@ def deploy(opts):
   flashrom_cmd += [opts.image]
   futility_cmd += [opts.image]
   futility_cmd += ['--force', '--wp=0']
-  if opts.fast:
+  if fast:
     futility_cmd += ['--fast']
     flashrom_cmd += ['-n']
   if opts.verbose:
     flashrom_cmd += ['-V']
     futility_cmd += ['-v']
-  if not opts.flashrom:
+  if not flashrom:
     if _flash(dut_ctrl_on, dut_ctrl_off, futility_cmd):
       logging.info('SUCCESS. Exiting flash_ap.')
     else:
