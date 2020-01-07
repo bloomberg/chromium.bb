@@ -4609,6 +4609,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Cleanup steps needed for both UI Refresh and stack-view style animations.
   UIView* webStateView = [self viewForWebState:webState];
   auto commonCompletion = ^{
+    webStateView.frame = self.contentArea.bounds;
+    newPage.userInteractionEnabled = YES;
     if (currentAnimationIdentifier != _NTPAnimationIdentifier) {
       // Prevent the completion block from being executed if a new animation has
       // started in between. |self.foregroundTabWasAddedCompletionBlock| isn't
@@ -4618,8 +4620,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       return;
     }
 
-    webStateView.frame = self.contentArea.bounds;
-    newPage.userInteractionEnabled = YES;
     self.inNewTabAnimation = NO;
     // Use the model's currentWebState here because it is possible that it can
     // be reset to a new value before the new Tab animation finished (e.g.
