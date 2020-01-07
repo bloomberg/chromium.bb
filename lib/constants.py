@@ -1316,8 +1316,6 @@ TOPOLOGY_DICT = {
         '104.154.79.237',
     '/statsd/host':
         '104.154.79.237',
-    '/swarming_proxy/host':
-        'chromeos-proxy.appspot.com',
 }
 
 # Percentage of child builders that need to complete to update LKGM
