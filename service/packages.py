@@ -460,13 +460,13 @@ def _generate_platform_c_files(replication_config, chroot):
 
   if not build_config_path:
     logging.info(
-        'No build_config.json found, will not generate platform C files.'
-        ' Replication config: %s', replication_config)
+        'No build_config.json found, will not generate platform C files. '
+        'Replication config: %s', replication_config)
     return []
 
   if len(build_config_path) > 1:
-    raise ValueError('Expected at most one build_config.json destination path.'
-                     ' Replication config: %s' % replication_config)
+    raise ValueError('Expected at most one build_config.json destination path. '
+                     'Replication config: %s' % replication_config)
 
   build_config_path = build_config_path[0]
 
@@ -526,7 +526,7 @@ def _get_private_overlay_package_root(ref, package):
 def replicate_private_config(_build_targets, refs, chroot):
   """Replicate a private cros_config change to the corresponding public config.
 
-    See uprev_versioned_package for args
+  See uprev_versioned_package for args
   """
   package = 'chromeos-base/chromeos-config-bsp'
 
@@ -579,6 +579,9 @@ def get_best_visible(atom, build_target=None):
     atom (str): The atom to look up.
     build_target (build_target_util.BuildTarget): The build target whose
         sysroot should be searched, or the SDK if not provided.
+
+  Returns:
+    portage_util.CPV|None: The best visible package.
   """
   assert atom
 
@@ -595,6 +598,9 @@ def has_prebuilt(atom, build_target=None, useflags=None):
         sysroot should be searched, or the SDK if not provided.
     useflags: Any additional USE flags that should be set. May be a string
         of properly formatted USE flags, or an iterable of individual flags.
+
+  Returns:
+    bool: True iff there is an available prebuilt, False otherwise.
   """
   assert atom
 
@@ -624,6 +630,9 @@ def determine_chrome_version(build_target):
 
   Args:
     build_target (build_target_util.BuildTarget): The board build target.
+
+  Returns:
+    str|None: The chrome version if available.
   """
   # TODO(crbug/1019770): Long term we should not need the try/catch here once
   # the builds function above only returns True for chrome when
@@ -645,20 +654,24 @@ def determine_android_package(board):
 
   Args:
     board: The board name this is specific to.
+
+  Returns:
+    str|None: The android package string if there is one.
   """
   try:
     packages = portage_util.GetPackageDependencies(board, 'virtual/target-os')
-    # We assume there is only one Android package in the depgraph.
-    for package in packages:
-      if package.startswith('chromeos-base/android-container-') or \
-         package.startswith('chromeos-base/android-vm-'):
-        return package
-    return None
   except cros_build_lib.RunCommandError as e:
     # Return None because a command (likely portage) failed when trying to
     # determine the package.
     logging.warning('Caught exception in determine_android_package: %s', e)
     return None
+
+  # We assume there is only one Android package in the depgraph.
+  for package in packages:
+    if package.startswith('chromeos-base/android-container-') or \
+        package.startswith('chromeos-base/android-vm-'):
+      return package
+  return None
 
 
 def determine_android_version(boards=None):
