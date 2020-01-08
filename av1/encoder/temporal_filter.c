@@ -169,7 +169,6 @@ static void apply_temporal_filter_self(const uint8_t *pred, int buf_stride,
                                        int use_new_temporal_mode) {
   const int modifier = use_new_temporal_mode ? SCALE : filter_weight * 16;
   unsigned int i, j, k = 0;
-  assert(filter_weight == 2);
 
   for (i = 0; i < block_height; i++) {
     for (j = 0; j < block_width; j++) {
@@ -188,7 +187,6 @@ static void highbd_apply_temporal_filter_self(
   const int modifier = use_new_temporal_mode ? SCALE : filter_weight * 16;
   const uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
   unsigned int i, j, k = 0;
-  assert(filter_weight == 2);
 
   for (i = 0; i < block_height; i++) {
     for (j = 0; j < block_width; j++) {
