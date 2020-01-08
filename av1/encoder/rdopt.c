@@ -9697,10 +9697,50 @@ static int64_t skip_mode_rd(RD_STATS *rd_stats, const AV1_COMP *const cpi,
   return 0;
 }
 
-static INLINE void get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
-                               int ref_idx, int ref_mv_idx,
-                               const MV_REFERENCE_FRAME *ref_frame,
-                               const MB_MODE_INFO_EXT *mbmi_ext) {
+// Check NEARESTMV, NEARMV, GLOBALMV ref mvs for duplicate and skip the relevant
+// mode
+static INLINE int check_repeat_ref_mv(const MB_MODE_INFO_EXT *mbmi_ext,
+                                      int ref_idx,
+                                      const MV_REFERENCE_FRAME *ref_frame,
+                                      PREDICTION_MODE single_mode) {
+  const uint8_t ref_frame_type = av1_ref_frame_type(ref_frame);
+  const int ref_mv_count = mbmi_ext->ref_mv_count[ref_frame_type];
+  assert(single_mode != NEWMV);
+  if (single_mode == NEARESTMV) {
+    return 0;
+  } else if (single_mode == NEARMV) {
+    // when ref_mv_count = 0, NEARESTMV and NEARMV are same as GLOBALMV
+    // when ref_mv_count = 1, NEARMV is same as GLOBALMV
+    if (ref_mv_count < 2) return 1;
+  } else if (single_mode == GLOBALMV) {
+    // when ref_mv_count == 0, GLOBALMV is same as NEARESTMV
+    if (ref_mv_count == 0) return 1;
+    // when ref_mv_count == 1, NEARMV is same as GLOBALMV
+    else if (ref_mv_count == 1)
+      return 0;
+
+    int stack_size = AOMMIN(USABLE_REF_MV_STACK_SIZE, ref_mv_count);
+    // Check GLOBALMV is matching with any mv in ref_mv_stack
+    for (int ref_mv_idx = 0; ref_mv_idx < stack_size; ref_mv_idx++) {
+      int_mv this_mv;
+
+      if (ref_idx == 0)
+        this_mv = mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
+      else
+        this_mv = mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
+
+      if (this_mv.as_int == mbmi_ext->global_mvs[ref_frame[ref_idx]].as_int)
+        return 1;
+    }
+  }
+  return 0;
+}
+
+static INLINE int get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
+                              int ref_idx, int ref_mv_idx,
+                              int skip_repeated_ref_mv,
+                              const MV_REFERENCE_FRAME *ref_frame,
+                              const MB_MODE_INFO_EXT *mbmi_ext) {
   const int is_comp_pred = ref_frame[1] > INTRA_FRAME;
   const PREDICTION_MODE single_mode =
       get_single_mode(this_mode, ref_idx, is_comp_pred);
@@ -9708,6 +9748,9 @@ static INLINE void get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
   if (single_mode == NEWMV) {
     this_mv->as_int = INVALID_MV;
   } else if (single_mode == GLOBALMV) {
+    if (skip_repeated_ref_mv &&
+        check_repeat_ref_mv(mbmi_ext, ref_idx, ref_frame, single_mode))
+      return 0;
     *this_mv = mbmi_ext->global_mvs[ref_frame[ref_idx]];
   } else {
     assert(single_mode == NEARMV || single_mode == NEARESTMV);
@@ -9723,22 +9766,30 @@ static INLINE void get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
             mbmi_ext->ref_mv_stack[ref_frame_type][ref_mv_offset].comp_mv;
       }
     } else {
+      if (skip_repeated_ref_mv &&
+          check_repeat_ref_mv(mbmi_ext, ref_idx, ref_frame, single_mode))
+        return 0;
       *this_mv = mbmi_ext->global_mvs[ref_frame[ref_idx]];
     }
   }
+  return 1;
 }
 
 // This function update the non-new mv for the current prediction mode
 static INLINE int build_cur_mv(int_mv *cur_mv, PREDICTION_MODE this_mode,
-                               const AV1_COMMON *cm, const MACROBLOCK *x) {
+                               const AV1_COMMON *cm, const MACROBLOCK *x,
+                               int skip_repeated_ref_mv) {
   const MACROBLOCKD *xd = &x->e_mbd;
   const MB_MODE_INFO *mbmi = xd->mi[0];
   const int is_comp_pred = has_second_ref(mbmi);
+
   int ret = 1;
   for (int i = 0; i < is_comp_pred + 1; ++i) {
     int_mv this_mv;
-    get_this_mv(&this_mv, this_mode, i, mbmi->ref_mv_idx, mbmi->ref_frame,
-                x->mbmi_ext);
+    this_mv.as_int = INVALID_MV;
+    ret = get_this_mv(&this_mv, this_mode, i, mbmi->ref_mv_idx,
+                      skip_repeated_ref_mv, mbmi->ref_frame, x->mbmi_ext);
+    if (!ret) return 0;
     const PREDICTION_MODE single_mode =
         get_single_mode(this_mode, i, is_comp_pred);
     if (single_mode == NEWMV) {
@@ -10338,7 +10389,7 @@ static int64_t simple_translation_pred_rd(
   mode_info[ref_mv_idx].drl_cost = drl_cost;
 
   int_mv cur_mv[2];
-  if (!build_cur_mv(cur_mv, mbmi->mode, cm, x)) {
+  if (!build_cur_mv(cur_mv, mbmi->mode, cm, x, 0)) {
     return INT64_MAX;
   }
   assert(have_nearmv_in_inter_mode(mbmi->mode));
@@ -10560,7 +10611,11 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
     int compmode_interinter_cost = 0;
 
     int_mv cur_mv[2];
-    if (!build_cur_mv(cur_mv, this_mode, cm, x)) {
+
+    // TODO(Cherma): Extend this speed feature to support compound mode
+    int skip_repeated_ref_mv =
+        is_comp_pred ? 0 : cpi->sf.inter_sf.skip_repeated_ref_mv;
+    if (!build_cur_mv(cur_mv, this_mode, cm, x, skip_repeated_ref_mv)) {
       continue;
     }
 
@@ -11202,7 +11257,7 @@ static AOM_INLINE void rd_pick_skip_mode(
   }
 
   assert(this_mode == NEAREST_NEARESTMV);
-  if (!build_cur_mv(mbmi->mv, this_mode, cm, x)) {
+  if (!build_cur_mv(mbmi->mv, this_mode, cm, x, 0)) {
     return;
   }
 
@@ -11606,9 +11661,9 @@ static AOM_INLINE void init_mode_skip_mask(mode_skip_mask_t *mask,
       mask->pred_modes[ALTREF_FRAME] = ~INTER_NEAREST_NEAR_ZERO;
       const MV_REFERENCE_FRAME tmp_ref_frames[2] = { ALTREF_FRAME, NONE_FRAME };
       int_mv near_mv, nearest_mv, global_mv;
-      get_this_mv(&nearest_mv, NEARESTMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
-      get_this_mv(&near_mv, NEARMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
-      get_this_mv(&global_mv, GLOBALMV, 0, 0, tmp_ref_frames, x->mbmi_ext);
+      get_this_mv(&nearest_mv, NEARESTMV, 0, 0, 0, tmp_ref_frames, x->mbmi_ext);
+      get_this_mv(&near_mv, NEARMV, 0, 0, 0, tmp_ref_frames, x->mbmi_ext);
+      get_this_mv(&global_mv, GLOBALMV, 0, 0, 0, tmp_ref_frames, x->mbmi_ext);
 
       if (near_mv.as_int != global_mv.as_int)
         mask->pred_modes[ALTREF_FRAME] |= (1 << NEARMV);
@@ -12555,8 +12610,9 @@ static int compound_skip_by_single_states(
     for (int ref_mv_idx = 0; ref_mv_idx < ref_set; ref_mv_idx++) {
       int_mv single_mv;
       int_mv comp_mv;
-      get_this_mv(&single_mv, mode[i], 0, ref_mv_idx, single_refs, x->mbmi_ext);
-      get_this_mv(&comp_mv, this_mode, i, ref_mv_idx, refs, x->mbmi_ext);
+      get_this_mv(&single_mv, mode[i], 0, ref_mv_idx, 0, single_refs,
+                  x->mbmi_ext);
+      get_this_mv(&comp_mv, this_mode, i, ref_mv_idx, 0, refs, x->mbmi_ext);
       if (single_mv.as_int != comp_mv.as_int) {
         ref_mv_match[i] = 0;
         break;
