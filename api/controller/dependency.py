@@ -43,8 +43,8 @@ def AugmentDepGraphProtoFromJsonMap(json_map, graph):
       if cpv.version:
         dep_package.version = cpv.version
 
-    package_CPV = '%s/%s-%s' % (
-        package_info.category, package_info.package_name, package_info.version)
+    package_CPV = '%s/%s-%s' % (package_info.category,
+                                package_info.package_name, package_info.version)
     for path in json_map['source_path_mapping'][package_CPV]:
       source_path = package_dep_info.dependency_source_paths.add()
       source_path.path = path
@@ -68,8 +68,7 @@ def GetBuildDependencyGraph(input_proto, output_proto, _config):
     _config (api_config.ApiConfig): The API call config.
   """
   board = input_proto.build_target.name
-  packages = [
-      controller_util.PackageInfoToCPV(x) for x in input_proto.packages]
+  packages = [controller_util.PackageInfoToCPV(x) for x in input_proto.packages]
 
   json_map, sdk_json_map = dependency.GetBuildDependency(board, packages)
   AugmentDepGraphProtoFromJsonMap(json_map, output_proto.dep_graph)
