@@ -15,6 +15,7 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import build_target_util
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib.uprev_lib import GitRef
 from chromite.service import packages
 
@@ -156,22 +157,33 @@ def _GetTargetVersionsResponse(_input_proto, output_proto, _config):
 def GetTargetVersions(input_proto, output_proto, _config):
   """Returns the target versions."""
   build_target = controller_util.ParseBuildTarget(input_proto.build_target)
+  # Android version.
   android_version = packages.determine_android_version([build_target])
+  logging.info('Found android version: %s', android_version)
   if android_version:
     output_proto.android_version = android_version
+  # Android branch version.
   android_branch_version = packages.determine_android_branch(build_target)
+  logging.info('Found android branch version: %s', android_branch_version)
   if android_branch_version:
     output_proto.android_branch_version = android_branch_version
+  # Android target version.
   android_target_version = packages.determine_android_target(build_target)
+  logging.info('Found android target version: %s', android_target_version)
   if android_target_version:
     output_proto.android_target_version = android_target_version
+
   # TODO(crbug/1019770): Investigate cases where builds_chrome is true but
   # chrome_version is None.
   builds_chrome = packages.builds(constants.CHROME_CP, build_target)
   if builds_chrome:
+    # Chrome version fetch.
     chrome_version = packages.determine_chrome_version(build_target)
+    logging.info('Found chrome version: %s', chrome_version)
     if chrome_version:
       output_proto.chrome_version = chrome_version
+
+  # The ChromeOS version info.
   output_proto.platform_version = packages.determine_platform_version()
   output_proto.milestone_version = packages.determine_milestone_version()
   output_proto.full_version = packages.determine_full_version()
