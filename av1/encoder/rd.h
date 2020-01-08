@@ -44,8 +44,13 @@ extern "C" {
 #define MV_COST_WEIGHT 108
 #define MV_COST_WEIGHT_SUB 120
 
-#define RD_THRESH_MAX_FACT 64
-#define RD_THRESH_INC 1
+// The fractional part of rd_thresh factor is stored with 5 bits. The maximum
+// factor that we allow is two, which is stored as 2 ** (5+1) = 64
+#define RD_THRESH_FAC_FRAC_BITS (5)
+#define RD_THRESH_FAC_FRAC_VAL (1 << (RD_THRESH_FAC_FRAC_BITS))
+#define RD_THRESH_MAX_FACT ((RD_THRESH_FAC_FRAC_VAL) << 1)
+#define RD_THRESH_LOG_DEC_FACTOR (4)
+#define RD_THRESH_INC (1)
 
 // Factor to weigh the rate for switchable interp filters.
 #define SWITCHABLE_INTERP_RATE_FACTOR 1
@@ -243,8 +248,16 @@ void av1_get_entropy_contexts(BLOCK_SIZE plane_bsize,
 void av1_set_rd_speed_thresholds(struct AV1_COMP *cpi);
 
 void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
-                               int (*fact)[MAX_MODES], int rd_thresh, int bsize,
-                               int best_mode_index);
+                               int (*fact)[MAX_MODES], int rd_thresh,
+                               BLOCK_SIZE bsize, THR_MODES best_mode_index);
+
+static INLINE void reset_thresh_freq_fact(MACROBLOCK *const x) {
+  for (int i = 0; i < BLOCK_SIZES_ALL; ++i) {
+    for (int j = 0; j < MAX_MODES; ++j) {
+      x->thresh_freq_fact[i][j] = RD_THRESH_FAC_FRAC_VAL;
+    }
+  }
+}
 
 static INLINE int rd_less_than_thresh(int64_t best_rd, int thresh,
                                       int thresh_fact) {

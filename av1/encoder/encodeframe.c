@@ -4255,15 +4255,6 @@ static AOM_INLINE void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x,
 }
 #endif
 
-static INLINE void reset_thresh_freq_fact(MACROBLOCK *const x) {
-  int i, j;
-  for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
-    for (j = 0; j < MAX_MODES; ++j) {
-      x->thresh_freq_fact[i][j] = 32;
-    }
-  }
-}
-
 static AOM_INLINE void encode_nonrd_sb(AV1_COMP *cpi, ThreadData *td,
                                        TileDataEnc *tile_data,
                                        PC_TREE *const pc_root, TOKENEXTRA **tp,
