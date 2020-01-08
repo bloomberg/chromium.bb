@@ -55,9 +55,7 @@ HOST_PACKAGES = (
     'dev-lang/go',
     'dev-libs/elfutils',
     'sys-devel/binutils',
-    'sys-devel/clang',
     'sys-devel/gcc',
-    'sys-devel/lld',
     'sys-devel/llvm',
     'sys-kernel/linux-headers',
     'sys-libs/glibc',
@@ -134,8 +132,6 @@ class Crossdev(object):
   # Packages that needs separate handling, in addition to what we have from
   # crossdev.
   MANUAL_PKGS = {
-      'clang': 'sys-devel',
-      'lld': 'sys-devel',
       'llvm': 'sys-devel',
       'libcxxabi': 'sys-libs',
       'libcxx': 'sys-libs',
