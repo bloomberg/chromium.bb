@@ -30,14 +30,17 @@ ErrorOr<DnsSdTxtRecord> CreateFromDnsTxt(const TxtRecordRdata& txt);
 
 bool IsPtrRecord(const MdnsRecord& record);
 
-// Checks that the instance, service, and domain ids in this MdnsRecord are
-// valid.
+// Checks that the instance, service, and domain ids in this instance are valid.
 bool HasValidDnsRecordAddress(const MdnsRecord& record);
+bool HasValidDnsRecordAddress(const DomainName& domain);
 
 //*** Conversions to DNS entities from DNS-SD Entities ***
 
+// Returns the Domain Name associated with this InstanceKey.
+DomainName GetDomainName(const InstanceKey& key);
+
 // Returns the query required to get all instance information about the service
-// instances described by the provided ServiceKey.
+// instances described by the provided InstanceKey.
 DnsQueryInfo GetInstanceQueryInfo(const InstanceKey& key);
 
 // Returns the query required to get all service information that matches the

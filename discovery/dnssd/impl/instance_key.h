@@ -14,6 +14,8 @@
 namespace openscreen {
 namespace discovery {
 
+class DnsSdInstanceRecord;
+class DomainName;
 class MdnsRecord;
 class ServiceKey;
 
@@ -24,6 +26,8 @@ class InstanceKey {
   // NOTE: The record provided must have valid instance, service, and domain
   // labels.
   explicit InstanceKey(const MdnsRecord& record);
+  explicit InstanceKey(const DomainName& domain);
+  explicit InstanceKey(const DnsSdInstanceRecord& record);
 
   // NOTE: The provided parameters must be valid instance,  service and domain
   // ids.
@@ -31,6 +35,7 @@ class InstanceKey {
               absl::string_view service,
               absl::string_view domain);
   InstanceKey(const InstanceKey& other);
+
   InstanceKey(InstanceKey&& other);
 
   InstanceKey& operator=(const InstanceKey& rhs);
@@ -44,7 +49,8 @@ class InstanceKey {
   bool IsInstanceOf(const ServiceKey& service_key) const;
 
  private:
-  static ErrorOr<InstanceKey> CreateFromRecord(const MdnsRecord& record);
+  static ErrorOr<InstanceKey> TryCreate(const MdnsRecord& record);
+  static ErrorOr<InstanceKey> TryCreate(const DomainName& domain);
 
   std::string instance_id_;
   std::string service_id_;
@@ -59,6 +65,7 @@ class InstanceKey {
   // friend declaration to avoid duplicating this code while still keeping the
   // factory private.
   friend bool HasValidDnsRecordAddress(const MdnsRecord& record);
+  friend bool HasValidDnsRecordAddress(const DomainName& domain);
 };
 
 template <typename H>

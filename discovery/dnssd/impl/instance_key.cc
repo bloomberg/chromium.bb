@@ -8,6 +8,7 @@
 #include "absl/strings/str_split.h"
 #include "discovery/dnssd/impl/conversion_layer.h"
 #include "discovery/dnssd/impl/service_key.h"
+#include "discovery/dnssd/public/dns_sd_instance_record.h"
 #include "discovery/mdns/mdns_records.h"
 #include "discovery/mdns/public/mdns_constants.h"
 
@@ -15,10 +16,21 @@ namespace openscreen {
 namespace discovery {
 
 InstanceKey::InstanceKey(const MdnsRecord& record) {
-  ErrorOr<InstanceKey> key = CreateFromRecord(record);
+  ErrorOr<InstanceKey> key = TryCreate(record);
   OSP_DCHECK(key.is_value());
   *this = std::move(key.value());
 }
+
+InstanceKey::InstanceKey(const DomainName& domain) {
+  ErrorOr<InstanceKey> key = TryCreate(domain);
+  OSP_DCHECK(key.is_value());
+  *this = std::move(key.value());
+}
+
+InstanceKey::InstanceKey(const DnsSdInstanceRecord& record)
+    : InstanceKey(record.instance_id(),
+                  record.service_id(),
+                  record.domain_id()) {}
 
 InstanceKey::InstanceKey(absl::string_view instance,
                          absl::string_view service,
@@ -40,12 +52,18 @@ bool InstanceKey::IsInstanceOf(const ServiceKey& service_key) const {
          domain_id_ == service_key.domain_id();
 }
 
-ErrorOr<InstanceKey> InstanceKey::CreateFromRecord(const MdnsRecord& record) {
+// static
+ErrorOr<InstanceKey> InstanceKey::TryCreate(const MdnsRecord& record) {
   const DomainName& names =
       IsPtrRecord(record)
           ? absl::get<PtrRecordRdata>(record.rdata()).ptr_domain()
           : record.name();
 
+  return TryCreate(names);
+}
+
+// static
+ErrorOr<InstanceKey> InstanceKey::TryCreate(const DomainName& names) {
   if (names.labels().size() < 4) {
     return Error::Code::kParameterInvalid;
   }

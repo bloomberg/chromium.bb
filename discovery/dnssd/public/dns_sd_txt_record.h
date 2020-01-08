@@ -57,15 +57,6 @@ class DnsSdTxtRecord {
   // quotes).
   std::vector<std::vector<uint8_t>> GetData() const;
 
-  inline bool operator==(const DnsSdTxtRecord& other) const {
-    return key_value_txt_ == other.key_value_txt_ &&
-           boolean_txt_ == other.boolean_txt_;
-  }
-
-  inline bool operator!=(const DnsSdTxtRecord& other) const {
-    return !(*this == other);
-  }
-
  private:
   struct CaseInsensitiveComparison {
     bool operator()(const std::string& lhs, const std::string& rhs) const;
@@ -87,7 +78,37 @@ class DnsSdTxtRecord {
   // NOTE: The same string name can only occur in one of key_value_txt_,
   // boolean_txt_.
   std::set<std::string, CaseInsensitiveComparison> boolean_txt_;
+
+  friend bool operator<(const DnsSdTxtRecord& lhs, const DnsSdTxtRecord& rhs);
 };
+
+inline bool operator<(const DnsSdTxtRecord& lhs, const DnsSdTxtRecord& rhs) {
+  if (lhs.boolean_txt_ != rhs.boolean_txt_) {
+    return lhs.boolean_txt_ < rhs.boolean_txt_;
+  }
+
+  return lhs.key_value_txt_ < rhs.key_value_txt_;
+}
+
+inline bool operator>(const DnsSdTxtRecord& lhs, const DnsSdTxtRecord& rhs) {
+  return rhs < lhs;
+}
+
+inline bool operator<=(const DnsSdTxtRecord& lhs, const DnsSdTxtRecord& rhs) {
+  return !(rhs > lhs);
+}
+
+inline bool operator>=(const DnsSdTxtRecord& lhs, const DnsSdTxtRecord& rhs) {
+  return !(rhs < lhs);
+}
+
+inline bool operator==(const DnsSdTxtRecord& lhs, const DnsSdTxtRecord& rhs) {
+  return lhs <= rhs && lhs >= rhs;
+}
+
+inline bool operator!=(const DnsSdTxtRecord& lhs, const DnsSdTxtRecord& rhs) {
+  return !(lhs == rhs);
+}
 
 }  // namespace discovery
 }  // namespace openscreen

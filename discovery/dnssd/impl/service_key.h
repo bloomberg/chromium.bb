@@ -13,6 +13,7 @@
 namespace openscreen {
 namespace discovery {
 
+class DomainName;
 class InstanceKey;
 class MdnsRecord;
 
@@ -23,6 +24,7 @@ class ServiceKey {
   // NOTE: The record provided must have valid service, domain, and instance
   // labels.
   explicit ServiceKey(const MdnsRecord& record);
+  explicit ServiceKey(const DomainName& domain);
 
   // NOTE: The provided service and domain labels must be valid.
   ServiceKey(absl::string_view service, absl::string_view domain);

@@ -22,6 +22,9 @@ namespace discovery {
 ServiceKey::ServiceKey(const MdnsRecord& record)
     : ServiceKey(InstanceKey(record)) {}
 
+ServiceKey::ServiceKey(const DomainName& domain)
+    : ServiceKey(InstanceKey(domain)) {}
+
 ServiceKey::ServiceKey(const InstanceKey& key)
     : ServiceKey(key.service_id(), key.domain_id()) {
   OSP_DCHECK(IsServiceValid(service_id_));

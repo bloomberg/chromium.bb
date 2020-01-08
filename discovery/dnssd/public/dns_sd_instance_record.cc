@@ -98,13 +98,6 @@ DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
   OSP_DCHECK(IsDomainValid(domain_id_));
 }
 
-bool DnsSdInstanceRecord::operator==(const DnsSdInstanceRecord& other) const {
-  return instance_id_ == other.instance_id_ &&
-         service_id_ == other.service_id_ && domain_id_ == other.domain_id_ &&
-         address_v4_ == other.address_v4_ && address_v6_ == other.address_v6_ &&
-         txt_ == other.txt_;
-}
-
 uint16_t DnsSdInstanceRecord::port() const {
   if (address_v4_) {
     return address_v4_.port;
@@ -193,6 +186,33 @@ bool IsDomainValid(const std::string& domain) {
   }
 
   return !HasControlCharacters(domain) && IsValidUtf8(domain);
+}
+
+bool operator<(const DnsSdInstanceRecord& lhs, const DnsSdInstanceRecord& rhs) {
+  int comp = lhs.instance_id_.compare(rhs.instance_id_);
+  if (comp != 0) {
+    return comp < 0;
+  }
+
+  comp = lhs.service_id_.compare(rhs.service_id_);
+  if (comp != 0) {
+    return comp < 0;
+  }
+
+  comp = lhs.domain_id_.compare(rhs.domain_id_);
+  if (comp != 0) {
+    return comp < 0;
+  }
+
+  if (lhs.address_v4_ != rhs.address_v4_) {
+    return IPEndpointComparator()(lhs.address_v4_, rhs.address_v4_);
+  }
+
+  if (lhs.address_v6_ != rhs.address_v6_) {
+    return IPEndpointComparator()(lhs.address_v6_, rhs.address_v6_);
+  }
+
+  return lhs.txt_ < rhs.txt_;
 }
 
 }  // namespace discovery
