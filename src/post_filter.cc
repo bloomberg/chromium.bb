@@ -904,18 +904,6 @@ void PostFilter::ApplySuperRes(
     const int plane_width =
         MultiplyBy4(frame_header_.columns4x4) >> subsampling_x;
     const int plane_height = MultiplyBy4(rows4x4) >> subsampling_y;
-    const int downscaled_width = RightShiftWithRounding(width_, subsampling_x);
-    const int upscaled_width =
-        RightShiftWithRounding(upscaled_width_, subsampling_x);
-    const int superres_width = downscaled_width << kSuperResScaleBits;
-    const int step = (superres_width + upscaled_width / 2) / upscaled_width;
-    const int error = step * upscaled_width - superres_width;
-    int initial_subpixel_x =
-        (-((upscaled_width - downscaled_width) << (kSuperResScaleBits - 1)) +
-         DivideBy2(upscaled_width)) /
-            upscaled_width +
-        (1 << (kSuperResExtraBits - 1)) - error / 2;
-    initial_subpixel_x &= kSuperResScaleMask;
     uint8_t* input = buffer->data(plane) + plane_offsets[plane];
     const uint32_t input_stride = buffer->stride(plane);
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -924,8 +912,10 @@ void PostFilter::ApplySuperRes(
         memcpy(line_buffer_start, input, plane_width * sizeof(uint16_t));
         ExtendLine<uint16_t>(line_buffer_start, plane_width, kSuperResBorder,
                              kSuperResBorder);
-        dsp_.super_res_row(line_buffer_start, upscaled_width,
-                           initial_subpixel_x, step, input);
+        dsp_.super_res_row(line_buffer_start,
+                           super_res_info_[plane].upscaled_width,
+                           super_res_info_[plane].initial_subpixel_x,
+                           super_res_info_[plane].step, input);
       }
       continue;
     }
@@ -934,8 +924,10 @@ void PostFilter::ApplySuperRes(
       memcpy(line_buffer_start, input, plane_width);
       ExtendLine<uint8_t>(line_buffer_start, plane_width, kSuperResBorder,
                           kSuperResBorder);
-      dsp_.super_res_row(line_buffer_start, upscaled_width, initial_subpixel_x,
-                         step, input);
+      dsp_.super_res_row(line_buffer_start,
+                         super_res_info_[plane].upscaled_width,
+                         super_res_info_[plane].initial_subpixel_x,
+                         super_res_info_[plane].step, input);
     }
   }
 }

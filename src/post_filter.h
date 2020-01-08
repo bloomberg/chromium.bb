@@ -112,6 +112,28 @@ class PostFilter {
     // lower-right corner now so that |source_buffer_| will be shifted back to
     // the original position after all post processing filtering is applied.
     ShiftSourceBuffer(/*to_upper_left=*/false);
+    if (DoSuperRes()) {
+      for (int plane = 0; plane < planes_; ++plane) {
+        const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+        const int downscaled_width =
+            RightShiftWithRounding(width_, subsampling_x);
+        const int upscaled_width =
+            RightShiftWithRounding(upscaled_width_, subsampling_x);
+        const int superres_width = downscaled_width << kSuperResScaleBits;
+        super_res_info_[plane].step =
+            (superres_width + upscaled_width / 2) / upscaled_width;
+        const int error =
+            super_res_info_[plane].step * upscaled_width - superres_width;
+        super_res_info_[plane].initial_subpixel_x =
+            ((-((upscaled_width - downscaled_width)
+                << (kSuperResScaleBits - 1)) +
+              DivideBy2(upscaled_width)) /
+                 upscaled_width +
+             (1 << (kSuperResExtraBits - 1)) - error / 2) &
+            kSuperResScaleMask;
+        super_res_info_[plane].upscaled_width = upscaled_width;
+      }
+    }
   }
 
   // non copyable/movable.
@@ -489,6 +511,12 @@ class PostFilter {
   // (based on plane and direction), reference_frame and mode_id.
   uint8_t deblock_filter_levels_[kMaxSegments][kFrameLfCount]
                                 [kNumReferenceFrameTypes][2];
+  // Stores the SuperRes info for the frame.
+  struct {
+    int upscaled_width;
+    int initial_subpixel_x;
+    int step;
+  } super_res_info_[kMaxPlanes];
   const Array2D<int16_t>& cdef_index_;
   const Array2D<TransformSize>& inter_transform_sizes_;
   // Pointer to the data buffer used for multi-threaded cdef or loop
