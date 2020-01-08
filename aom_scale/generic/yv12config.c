@@ -305,7 +305,7 @@ int aom_copy_metadata_to_frame_buffer(YV12_BUFFER_CONFIG *ybf,
   for (size_t i = 0; i < ybf->metadata->sz; i++) {
     ybf->metadata->metadata_array[i] = aom_img_metadata_alloc(
         arr->metadata_array[i]->type, arr->metadata_array[i]->payload,
-        arr->metadata_array[i]->sz);
+        arr->metadata_array[i]->sz, arr->metadata_array[i]->insert_flag);
     if (ybf->metadata->metadata_array[i] == NULL) {
       aom_img_metadata_array_free(ybf->metadata);
       ybf->metadata = NULL;

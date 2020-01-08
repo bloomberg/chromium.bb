@@ -559,26 +559,14 @@ static int get_last_nonzero_byte_index(const uint8_t *data, size_t sz) {
   return i;
 }
 
-// On success, returns the number of bytes read from 'data'. On failure, calls
-// aom_internal_error() and does not return.
-static size_t read_metadata_itut_t35(AV1Decoder *const pbi, const uint8_t *data,
-                                     size_t sz) {
+// Allocates metadata that was read and adds it to the decoders metadata array.
+static void alloc_read_metadata(AV1Decoder *const pbi,
+                                OBU_METADATA_TYPE metadata_type,
+                                const uint8_t *data, size_t sz,
+                                aom_metadata_insert_flags_t insert_flag) {
   AV1_COMMON *const cm = &pbi->common;
-  if (sz == 0) {
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "itu_t_t35_country_code is missing");
-  }
-  if (*data == 0xFF && sz < 2) {
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "itu_t_t35_country_code_extension_byte is missing");
-  }
-  int bytes_read = get_last_nonzero_byte_index(data, sz);
-  if (bytes_read < 0) {
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "No trailing bits found on metadata");
-  }
-  aom_metadata_t *metadata = aom_img_metadata_alloc(OBU_METADATA_TYPE_ITUT_T35,
-                                                    data, (size_t)bytes_read);
+  aom_metadata_t *metadata =
+      aom_img_metadata_alloc(metadata_type, data, sz, insert_flag);
   if (!metadata) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Error allocating metadata");
@@ -601,25 +589,78 @@ static size_t read_metadata_itut_t35(AV1Decoder *const pbi, const uint8_t *data,
     pbi->metadata->sz++;
   }
   pbi->metadata->metadata_array[pbi->metadata->sz - 1] = metadata;
+}
+
+// On success, returns the number of bytes read from 'data'. On failure, calls
+// aom_internal_error() and does not return.
+static size_t read_metadata_itut_t35(AV1Decoder *const pbi, const uint8_t *data,
+                                     size_t sz) {
+  const int kMinItuT35PayloadSize = 2;
+  AV1_COMMON *const cm = &pbi->common;
+  if (sz == 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "itu_t_t35_country_code is missing");
+  }
+  int bytes_read = get_last_nonzero_byte_index(data, sz);
+  if (bytes_read < 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "No trailing bits found on metadata");
+  }
+  if (*data == 0xFF && bytes_read < kMinItuT35PayloadSize) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "itu_t_t35_country_code_extension_byte is missing");
+  }
+  alloc_read_metadata(pbi, OBU_METADATA_TYPE_ITUT_T35, data, (size_t)bytes_read,
+                      AOM_MIF_ANY_FRAME);
   return (size_t)bytes_read;
 }
 
-static void read_metadata_hdr_cll(struct aom_read_bit_buffer *rb) {
-  aom_rb_read_literal(rb, 16);  // max_cll
-  aom_rb_read_literal(rb, 16);  // max_fall
+// On success, returns the number of bytes read from 'data'. On failure, calls
+// aom_internal_error() and does not return.
+static size_t read_metadata_hdr_cll(AV1Decoder *const pbi, const uint8_t *data,
+                                    size_t sz) {
+  const int kHdrCllPayloadSize = 4;
+  AV1_COMMON *const cm = &pbi->common;
+  if (sz == 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "HDR CLL metadata payload is missing");
+  }
+  int bytes_read = get_last_nonzero_byte_index(data, sz);
+  if (bytes_read < 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "No trailing bits found on metadata");
+  }
+  if (bytes_read != kHdrCllPayloadSize) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Incorrect HDR CLL metadata payload size");
+  }
+  alloc_read_metadata(pbi, OBU_METADATA_TYPE_HDR_CLL, data, (size_t)bytes_read,
+                      AOM_MIF_ANY_FRAME);
+  return (size_t)bytes_read;
 }
 
-static void read_metadata_hdr_mdcv(struct aom_read_bit_buffer *rb) {
-  for (int i = 0; i < 3; i++) {
-    aom_rb_read_literal(rb, 16);  // primary_chromaticity_x[ i ]
-    aom_rb_read_literal(rb, 16);  // primary_chromaticity_y[ i ]
+// On success, returns the number of bytes read from 'data'. On failure, calls
+// aom_internal_error() and does not return.
+static size_t read_metadata_hdr_mdcv(AV1Decoder *const pbi, const uint8_t *data,
+                                     size_t sz) {
+  const int kMdcvPayloadSize = 24;
+  AV1_COMMON *const cm = &pbi->common;
+  if (sz == 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "HDR MDCV metadata payload is missing");
   }
-
-  aom_rb_read_literal(rb, 16);  // white_point_chromaticity_x
-  aom_rb_read_literal(rb, 16);  // white_point_chromaticity_y
-
-  aom_rb_read_unsigned_literal(rb, 32);  // luminance_max
-  aom_rb_read_unsigned_literal(rb, 32);  // luminance_min
+  int bytes_read = get_last_nonzero_byte_index(data, sz);
+  if (bytes_read < 0) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "No trailing bits found on HDR MDCV metadata");
+  }
+  if (bytes_read != kMdcvPayloadSize) {
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Incorrect HDR MDCV metadata payload size");
+  }
+  alloc_read_metadata(pbi, OBU_METADATA_TYPE_HDR_MDCV, data, (size_t)bytes_read,
+                      AOM_MIF_ANY_FRAME);
+  return (size_t)bytes_read;
 }
 
 static void scalability_structure(struct aom_read_bit_buffer *rb) {
@@ -738,25 +779,36 @@ static size_t read_metadata(AV1Decoder *pbi, const uint8_t *data, size_t sz) {
     size_t bytes_read =
         type_length +
         read_metadata_itut_t35(pbi, data + type_length, sz - type_length);
-    // Ignore itu_t_t35_payload_bytes and check trailing bits. Section 6.7.2
-    // of the spec says:
-    //   itu_t_t35_payload_bytes shall be bytes containing data registered as
-    //   specified in Recommendation ITU-T T.35.
-    // Therefore itu_t_t35_payload_bytes is byte aligned and the first
+    // itu_t_t35_payload_bytes is byte aligned and the first
     // trailing byte should be 0x80.
     if (get_last_nonzero_byte(data + bytes_read, sz - bytes_read) != 0x80) {
       pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return 0;
     }
     return sz;
+  } else if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
+    size_t bytes_read =
+        type_length +
+        read_metadata_hdr_cll(pbi, data + type_length, sz - type_length);
+    if (get_last_nonzero_byte(data + bytes_read, sz - bytes_read) != 0x80) {
+      pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return 0;
+    }
+    return sz;
+  } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
+    size_t bytes_read =
+        type_length +
+        read_metadata_hdr_mdcv(pbi, data + type_length, sz - type_length);
+    if (get_last_nonzero_byte(data + bytes_read, sz - bytes_read) != 0x80) {
+      pbi->common.error.error_code = AOM_CODEC_CORRUPT_FRAME;
+      return 0;
+    }
+    return sz;
   }
+
   struct aom_read_bit_buffer rb;
   av1_init_read_bit_buffer(pbi, &rb, data + type_length, data + sz);
-  if (metadata_type == OBU_METADATA_TYPE_HDR_CLL) {
-    read_metadata_hdr_cll(&rb);
-  } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
-    read_metadata_hdr_mdcv(&rb);
-  } else if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
+  if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
     read_metadata_scalability(&rb);
   } else {
     assert(metadata_type == OBU_METADATA_TYPE_TIMECODE);

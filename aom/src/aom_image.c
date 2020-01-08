@@ -288,8 +288,9 @@ int aom_img_plane_height(const aom_image_t *img, int plane) {
     return img->d_h;
 }
 
-aom_metadata_t *aom_img_metadata_alloc(uint32_t type, const uint8_t *data,
-                                       size_t sz) {
+aom_metadata_t *aom_img_metadata_alloc(
+    uint32_t type, const uint8_t *data, size_t sz,
+    aom_metadata_insert_flags_t insert_flag) {
   if (!data || sz == 0) return NULL;
   aom_metadata_t *metadata = (aom_metadata_t *)malloc(sizeof(aom_metadata_t));
   if (!metadata) return NULL;
@@ -301,6 +302,7 @@ aom_metadata_t *aom_img_metadata_alloc(uint32_t type, const uint8_t *data,
   }
   memcpy(metadata->payload, data, sz);
   metadata->sz = sz;
+  metadata->insert_flag = insert_flag;
   return metadata;
 }
 
@@ -340,13 +342,14 @@ void aom_img_metadata_array_free(aom_metadata_array_t *arr) {
 }
 
 int aom_img_add_metadata(aom_image_t *img, uint32_t type, const uint8_t *data,
-                         size_t sz) {
+                         size_t sz, aom_metadata_insert_flags_t insert_flag) {
   if (!img) return -1;
   if (!img->metadata) {
     img->metadata = aom_img_metadata_array_alloc(0);
     if (!img->metadata) return -1;
   }
-  aom_metadata_t *metadata = aom_img_metadata_alloc(type, data, sz);
+  aom_metadata_t *metadata =
+      aom_img_metadata_alloc(type, data, sz, insert_flag);
   if (!metadata) goto fail;
   if (!img->metadata->metadata_array) {
     img->metadata->metadata_array =

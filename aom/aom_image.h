@@ -30,7 +30,7 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define AOM_IMAGE_ABI_VERSION (7) /**<\hideinitializer*/
+#define AOM_IMAGE_ABI_VERSION (8) /**<\hideinitializer*/
 
 #define AOM_IMG_FMT_PLANAR 0x100  /**< Image is a planar format. */
 #define AOM_IMG_FMT_UV_FLIP 0x200 /**< V plane precedes U in memory. */
@@ -137,14 +137,34 @@ typedef enum aom_chroma_sample_position {
   AOM_CSP_RESERVED = 3          /**< Reserved value */
 } aom_chroma_sample_position_t; /**< alias for enum aom_transfer_function */
 
+/*!\brief List of insert flags for Metadata
+ *
+ * These flags control how the library treats metadata during encode.
+ *
+ * While encoding, when metadata is added to an aom_image via
+ * aom_img_add_metadata(), the flag passed along with the metadata will
+ * determine where the metadata OBU will be placed in the encoded OBU stream.
+ * Metadata will be emitted into the output stream within the next temporal unit
+ * if it satisfies the specified insertion flag.
+ *
+ * During decoding, when the library encounters a metadata OBU, it is always
+ * flagged as AOM_MIF_ANY_FRAME and emitted with the next output aom_image.
+ */
+typedef enum aom_metadata_insert_flags {
+  AOM_MIF_NON_KEY_FRAME = 0, /**< Adds metadata if it's not keyframe */
+  AOM_MIF_KEY_FRAME = 1,     /**< Adds metadata only if it's a keyframe */
+  AOM_MIF_ANY_FRAME = 2      /**< Adds metadata to any type of frame */
+} aom_metadata_insert_flags_t;
+
 /*!\brief Array of aom_metadata structs for an image. */
 typedef struct aom_metadata_array aom_metadata_array_t;
 
 /*!\brief Metadata payload. */
 typedef struct aom_metadata {
-  uint32_t type;    /**< Metadata type */
-  uint8_t *payload; /**< Metadata payload data */
-  size_t sz;        /**< Metadata payload size */
+  uint32_t type;                           /**< Metadata type */
+  uint8_t *payload;                        /**< Metadata payload data */
+  size_t sz;                               /**< Metadata payload size */
+  aom_metadata_insert_flags_t insert_flag; /**< Metadata insertion flag */
 } aom_metadata_t;
 
 /**\brief Image Descriptor */
@@ -341,15 +361,16 @@ int aom_img_plane_height(const aom_image_t *img, int plane);
  *
  * Adds metadata to aom_image_t.
  * Function makes a copy of the provided data parameter.
- * Currently, only ITUT T35 metadata support is implemented.
+ * Metadata insertion point is controlled by insert_flag.
  *
- * \param[in]    img       Image descriptor
- * \param[in]    type      Metadata type
- * \param[in]    data      Metadata contents
- * \param[in]    sz        Metadata contents size
+ * \param[in]    img          Image descriptor
+ * \param[in]    type         Metadata type
+ * \param[in]    data         Metadata contents
+ * \param[in]    sz           Metadata contents size
+ * \param[in]    insert_flag  Metadata insert flag
  */
 int aom_img_add_metadata(aom_image_t *img, uint32_t type, const uint8_t *data,
-                         size_t sz);
+                         size_t sz, aom_metadata_insert_flags_t insert_flag);
 
 /*!\brief Return a metadata payload stored within the image metadata array.
  *
@@ -393,12 +414,14 @@ void aom_img_remove_metadata(aom_image_t *img);
  * payload data into the aom_metadata struct. A metadata payload buffer of size
  * sz is allocated and sz bytes are copied from data into the payload buffer.
  *
- * \param[in]    type      Metadata type
- * \param[in]    data      Metadata data pointer
- * \param[in]    sz        Metadata size
+ * \param[in]    type         Metadata type
+ * \param[in]    data         Metadata data pointer
+ * \param[in]    sz           Metadata size
+ * \param[in]    insert_flag  Metadata insert flag
  */
 aom_metadata_t *aom_img_metadata_alloc(uint32_t type, const uint8_t *data,
-                                       size_t sz);
+                                       size_t sz,
+                                       aom_metadata_insert_flags_t insert_flag);
 
 /*!\brief Free metadata struct.
  *
