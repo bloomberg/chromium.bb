@@ -1082,18 +1082,6 @@
       ]
     },
     {
-      "name": "palkia",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "puff",
       "configs": [
         {
@@ -3650,6 +3638,111 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 354,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "palkia",
+      "reference_board_name": "palkia",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "palkia",
+          "name": "akemi",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "dragonair",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "dratini",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "hatch",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "helios",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "helios_diskswap",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "jinlon",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "kindred",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "kled",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "kohaku",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "unprovisioned_dratini",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
+          "is_active": true
+        },
+        {
+          "board_name": "palkia",
+          "name": "unprovisioned_jinlon",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 427,
           "is_active": true
         }
       ]
