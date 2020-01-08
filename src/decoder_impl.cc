@@ -391,9 +391,11 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   const bool do_restoration =
       PostFilter::DoRestoration(obu->frame_header().loop_restoration,
                                 settings_.post_filter_mask, num_planes);
-  const int border = (do_cdef && do_restoration)
-                         ? kBorderPixelsCdefAndLoopRestoration
-                         : kBorderPixels;
+  int border = kBorderPixels;
+  // If CDEF or loop restoration is enabled, add extra border pixels to
+  // compensate for the buffer shift in the PostFilter constructor.
+  if (do_cdef) border += 2 * kCdefBorder;
+  if (do_restoration) border += 2 * kRestorationBorder;
   if (!AllocateCurrentFrame(obu->frame_header(), border, border, border,
                             border)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");

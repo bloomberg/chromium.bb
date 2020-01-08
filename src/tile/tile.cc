@@ -391,6 +391,19 @@ Tile::Tile(
   delta_lf_all_zero_ = true;
   YuvBuffer* const buffer = current_frame->buffer();
   for (int plane = 0; plane < PlaneCount(); ++plane) {
+    // Verify that the borders are big enough for Reconstruct(). max_tx_length
+    // is the maximum value of tx_width and tx_height for the plane.
+    const int max_tx_length = (plane == kPlaneY) ? 64 : 32;
+    static_cast<void>(max_tx_length);
+    // Reconstruct() may overwrite on the right. Since the right border of a
+    // row is followed in memory by the left border of the next row, the
+    // number of extra pixels to the right of a row is at least the sum of the
+    // left and right borders.
+    assert(buffer->left_border(plane) + buffer->right_border(plane) >=
+           max_tx_length - 1);
+    // Reconstruct() may overwrite on the bottom. We need an extra border row
+    // on the bottom because we need the left border of that row.
+    assert(buffer->bottom_border(plane) >= max_tx_length);
     buffer_[plane].Reset(
         buffer->aligned_height(plane) + buffer->bottom_border(plane),
         buffer->stride(plane), buffer->data(plane));

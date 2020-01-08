@@ -168,7 +168,7 @@ void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
   if (DoDeblock()) {
     ApplyDeblockFilterForOneSuperBlockRow(row4x4, sb4x4);
   }
-  // Cdef and subsequent filters lag by 1 superblock row relative to deblocking
+  // CDEF and subsequent filters lag by 1 superblock row relative to deblocking
   // (since deblocking the current superblock row could change the pixels in the
   // previous superblock row).
   const int previous_row4x4 = row4x4 - sb4x4;
@@ -204,27 +204,12 @@ void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
       // all the rows of the last superblock row.
       ApplyLoopRestorationForOneSuperBlockRow(row4x4 + sb4x4, 16);
     }
-    if (DoCdef() || DoRestoration()) {
-      // Adjust the frame buffer pointers after cdef/loop restoration was
-      // applied. For Cdef and Loop Restoration, we write the filtered output to
-      // the upper-left side of the original source_buffer_->data(). The new
-      // buffer pointer is still guaranteed to be within the original buffer's
-      // data region because of the borders. Negative shifts are used, to
-      // indicate shifting towards the upper-left corner. Shifts are in pixels.
-      for (int plane = kPlaneY; plane < planes_; ++plane) {
-        const bool shift_cdef = DoCdef();
-        const bool shift_loop_restoration =
-            DoRestoration() &&
-            loop_restoration_.type[plane] != kLoopRestorationTypeNone;
-        const int horizontal_shift = -source_buffer_->alignment() *
-                                     (static_cast<int>(shift_cdef) +
-                                      static_cast<int>(shift_loop_restoration));
-        const int vertical_shift =
-            (shift_cdef ? -kCdefBorder : 0) +
-            (shift_loop_restoration ? -kRestorationBorder : 0);
-        source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift);
-      }
-    }
+    // Adjust the frame buffer pointers after CDEF/loop restoration was
+    // applied. For CDEF and loop restoration, we write the filtered output to
+    // the upper-left side of the original source_buffer_->data(). The new
+    // buffer pointer is still guaranteed to be within the original buffer's
+    // data region because of the borders.
+    ShiftSourceBuffer(/*to_upper_left=*/true);
     ExtendBordersForReferenceFrame();
   }
 }
@@ -284,6 +269,28 @@ bool PostFilter::ApplyFilteringThreaded() {
   if (DoRestoration()) ApplyLoopRestoration();
   ExtendBordersForReferenceFrame();
   return true;
+}
+
+void PostFilter::ShiftSourceBuffer(const bool to_upper_left) {
+  if (!DoCdef() && !DoRestoration()) return;
+  // If |to_upper_left| is true, negative shifts are used to indicate shifting
+  // towards the upper-left corner. Otherwise, positive shifts are used to
+  // indicate shifting towards the lower-right corner. Shifts are in pixels.
+  for (int plane = kPlaneY; plane < planes_; ++plane) {
+    const bool shift_cdef = DoCdef();
+    const bool shift_loop_restoration =
+        DoRestoration() &&
+        loop_restoration_.type[plane] != kLoopRestorationTypeNone;
+    const int horizontal_shift = source_buffer_->alignment() *
+                                 (static_cast<int>(shift_cdef) +
+                                  static_cast<int>(shift_loop_restoration));
+    const int vertical_shift =
+        (shift_cdef ? kCdefBorder : 0) +
+        (shift_loop_restoration ? kRestorationBorder : 0);
+    source_buffer_->ShiftBuffer(
+        plane, to_upper_left ? -horizontal_shift : horizontal_shift,
+        to_upper_left ? -vertical_shift : vertical_shift);
+  }
 }
 
 void PostFilter::ExtendBordersForReferenceFrame() {

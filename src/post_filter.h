@@ -58,6 +58,11 @@ class PostFilter {
 
   // This class does not take ownership of the masks/restoration_info, but it
   // may change their values.
+  //
+  // IMPORTANT: The PostFilter constructor may shift |source_buffer|.
+  // Therefore the PostFilter constructor must be called after |source_buffer|
+  // has been allocated but before a reconstructed frame is stored into
+  // |source_buffer|.
   PostFilter(const ObuFrameHeader& frame_header,
              const ObuSequenceHeader& sequence_header,
              LoopFilterMask* const masks, const Array2D<int16_t>& cdef_index,
@@ -102,6 +107,11 @@ class PostFilter {
     if (DoDeblock()) {
       InitDeblockFilterParams();
     }
+    // |source_buffer_| will be shifted towards the upper-left corner after
+    // CDEF/loop restoration is applied. Shift |source_buffer_| towards the
+    // lower-right corner now so that |source_buffer_| will be shifted back to
+    // the original position after all post processing filtering is applied.
+    ShiftSourceBuffer(/*to_upper_left=*/false);
   }
 
   // non copyable/movable.
@@ -445,6 +455,11 @@ class PostFilter {
   // Applies loop restoration for the superblock row starting at |row4x4_start|
   // with a height of 4*|sb4x4|.
   void ApplyLoopRestorationForOneSuperBlockRow(int row4x4_start, int sb4x4);
+
+  // Shifts the frame buffer pointers of |source_buffer_| if CDEF or loop
+  // restoration is enabled. If |to_upper_left| is true, shifts towards the
+  // upper-left corner, otherwise shifts towards the lower-right corner.
+  void ShiftSourceBuffer(bool to_upper_left);
 
   // Extend frame boundary for inter frame convolution and referencing if the
   // frame will be saved as a reference frame.

@@ -134,11 +134,6 @@ class YuvBuffer {
   // Shifts the |plane| buffer horizontally by |horizontal_shift| pixels and
   // vertically by |vertical_shift| pixels. There must be enough border for the
   // shifts to be successful.
-  // TODO(chengchen):
-  // Warning: this implementation doesn't handle the byte_alignment requirement.
-  // For example, if the frame is required to be 4K-byte aligned, this method
-  // fails. Figure out alternative solutions if the feature of
-  // byte_alignment is required in practice.
   void ShiftBuffer(int plane, int horizontal_shift, int vertical_shift) {
     assert(ValidHorizontalShift(plane, horizontal_shift));
     assert(ValidVerticalShift(plane, vertical_shift));

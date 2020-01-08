@@ -74,16 +74,11 @@ enum {
   // is required to be a multiple of 32 by YuvBuffer::Realloc, so that
   // subsampled chroma borders are 16-aligned.
   kBorderPixelsFilmGrain = 32,
-  // If both cdef and loop restoration are being done, then we would need a
-  // border of 96 pixels instead of 64 since we would shift the buffer in both
-  // cdef and loop restoration.
-  kBorderPixelsCdefAndLoopRestoration = 96,
-  // Although the left, right, top, and bottom border sizes of a frame are
-  // kBorderPixels (or kBorderPixelsCdefAndLoopRestoration) initially, they may
-  // change if YuvBuffer::ShiftBuffer() is called. These constants are the
-  // minimum left, right, top, and bottom border sizes in pixels as an extension
-  // of the frame boundary. The minimum border sizes are derived from the
-  // following requirements:
+  // Although the left, right, top, and bottom border sizes of a frame are at
+  // least kBorderPixels initially, they may change if YuvBuffer::ShiftBuffer()
+  // is called. These constants are the minimum left, right, top, and bottom
+  // border sizes in pixels as an extension of the frame boundary. The minimum
+  // border sizes are derived from the following requirements:
   // - Warp_C() may read up to 13 pixels before or after a row.
   // - Warp_NEON() may read up to 13 pixels before a row. It may read up to 14
   //   pixels after a row, but the value of the last read pixel is not used.
