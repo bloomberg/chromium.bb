@@ -14,6 +14,10 @@ import os
 import shutil
 import subprocess
 import tempfile
+import threading
+import time
+
+from collections import deque
 
 from chromite.lib import chroot_util
 from chromite.lib import constants
@@ -334,35 +338,71 @@ class PaygenPayload(object):
     else:
       raise Error('Invalid image type %s' % tgt_image_type)
 
-  def _RunGeneratorCmd(self, cmd):
+  def _RunGeneratorCmd(self, cmd, squawk_wrap=False):
     """Wrapper for run in chroot.
 
     Run the given command inside the chroot. It will automatically log the
     command output. Note that the command's stdout and stderr are combined into
     a single string.
 
+    For context on why this is so complex see: crbug.com/1035799
+
     Args:
       cmd: Program and argument list in a list. ['delta_generator', '--help']
+      squawk_wrap: Optionally run the cros_build_lib command in a thread to
+                   avoid being killed by the ProcessSilentTimeout during quiet
+                   periods of delta_gen.
 
     Raises:
-      cros_build_lib.RunCommandError if the command exited with a nonzero code.
+      cros_build_lib.RunCommandError if the command exited without success.
     """
 
-    try:
-      # Run the command.
-      result = cros_build_lib.run(
-          cmd,
-          stdout=True,
-          enter_chroot=True,
-          stderr=subprocess.STDOUT)
-    except cros_build_lib.RunCommandError as e:
-      # Dump error output and re-raise the exception.
-      logging.error('Nonzero exit code (%d), dumping command output:\n%s',
-                    e.result.returncode, e.result.output)
-      raise
+    response_queue = deque()
 
-    self._StoreLog('Output of command: ' + result.cmdstr)
-    self._StoreLog(result.output.decode('utf-8', 'replace'))
+    # The later thread's start() function.
+    def _inner_run(cmd, response_queue):
+      try:
+        # Run the command.
+        result = cros_build_lib.run(
+            cmd,
+            stdout=True,
+            enter_chroot=True,
+            stderr=subprocess.STDOUT)
+        response_queue.append(result)
+      except cros_build_lib.RunCommandError as e:
+        response_queue.append(e)
+
+    if squawk_wrap:
+      inner_run_thread = threading.Thread(
+          target=_inner_run, name='delta_generator_run_wrapper',
+          args=(cmd, response_queue))
+      inner_run_thread.setDaemon(True)
+      inner_run_thread.start()
+      # Wait for the inner run thread to finish, waking up each minute.
+      while inner_run_thread.isAlive():
+        time.sleep(60)
+        logging.info('Placating ProcessSilentTimeout...')
+    else:
+      _inner_run(cmd, response_queue)
+
+    try:
+      result = response_queue.pop()
+      if isinstance(result, cros_build_lib.RunCommandError):
+        # Dump error output and re-raise the exception.
+        logging.error('Nonzero exit code (%d), dumping command output:\n%s',
+                      result.result.returncode, result.result.output)
+        raise result
+      elif isinstance(result, cros_build_lib.CommandResult):
+        self._StoreLog('Output of command: ' + result.cmdstr)
+        self._StoreLog(result.output.decode('utf-8', 'replace'))
+      else:
+        raise cros_build_lib.RunCommandError(
+            'return type from _inner_run unknown')
+    except IndexError:
+      raise cros_build_lib.RunCommandError(
+          'delta_generator_run_wrapper did not return a value')
+
+
 
   @staticmethod
   def _BuildArg(flag, dict_obj, key, default=None):
@@ -514,7 +554,8 @@ class PaygenPayload(object):
                     '--old_key', src_image, 'key',
                     default='test' if src_image.build.channel else '')]
 
-    self._RunGeneratorCmd(cmd)
+    # This can take a very long time with no output, so wrap the call.
+    self._RunGeneratorCmd(cmd, squawk_wrap=True)
 
   def _GenerateHashes(self):
     """Generate a payload hash and a metadata hash.

@@ -252,6 +252,21 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
                   osutils.ReadFile(os.path.join(self.tempdir, 'delta.log'),
                                    mode='rb'))
 
+    # Now run with squawk_wrap=true.
+    run_mock = self.PatchObject(cros_build_lib, 'run',
+                                return_value=mock_result)
+    gen._RunGeneratorCmd(expected_cmd, squawk_wrap=True)
+
+    run_mock.assert_called_once_with(
+        expected_cmd,
+        stdout=True,
+        enter_chroot=True,
+        stderr=subprocess.STDOUT)
+
+    self.assertIn(mock_result.output,
+                  osutils.ReadFile(os.path.join(self.tempdir, 'delta.log'),
+                                   mode='rb'))
+
   def testBuildArg(self):
     """Make sure the function semantics is satisfied."""
     gen = self._GetStdGenerator(work_dir='/work')
@@ -484,7 +499,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--new_build_channel=dev-channel',
            '--new_build_version=1620.0.0',
            '--new_key=mp-v3']
-    run_mock.assert_called_once_with(cmd)
+    run_mock.assert_called_once_with(cmd, squawk_wrap=True)
 
   def testGenerateUnsignedPayloadDelta(self):
     """Test _GenerateUnsignedPayload with delta payload."""
@@ -516,7 +531,7 @@ class PaygenPayloadLibBasicTest(PaygenPayloadLibTest):
            '--old_build_channel=dev-channel',
            '--old_build_version=1620.0.0',
            '--old_key=mp-v3']
-    run_mock.assert_called_once_with(cmd)
+    run_mock.assert_called_once_with(cmd, squawk_wrap=True)
 
   def testGenerateHashes(self):
     """Test _GenerateHashes."""
