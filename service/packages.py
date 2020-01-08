@@ -494,7 +494,7 @@ def _get_private_overlay_package_root(ref, package):
   """
   # There might be a cleaner way to map from package -> path within the source
   # tree. For now, just use string patterns.
-  private_overlay_ref_pattern = r'chromeos\/overlays\/overlay-([\w-]+)-private'
+  private_overlay_ref_pattern = r'/chromeos\/overlays\/overlay-([\w-]+)-private'
   match = re.match(private_overlay_ref_pattern, ref.path)
   if not match:
     raise ValueError('ref.path must match the pattern: %s. Actual ref: %s' %

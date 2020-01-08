@@ -260,7 +260,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
     """Basic replication test."""
     refs = [
         GitRef(
-            path='chromeos/overlays/overlay-coral-private',
+            path='/chromeos/overlays/overlay-coral-private',
             ref='master',
             revision='123')
     ]
@@ -321,7 +321,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
 
     refs = [
         GitRef(
-            path='chromeos/overlays/overlay-coral-private',
+            path='/chromeos/overlays/overlay-coral-private',
             ref='master',
             revision='123')
     ]
@@ -354,7 +354,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
 
     refs = [
         GitRef(
-            path='chromeos/overlays/overlay-coral-private',
+            path='/chromeos/overlays/overlay-coral-private',
             ref='master',
             revision='123')
     ]
@@ -370,7 +370,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
 
     refs = [
         GitRef(
-            path='chromeos/overlays/overlay-coral-private',
+            path='/chromeos/overlays/overlay-coral-private',
             ref='master',
             revision='123')
     ]
@@ -403,7 +403,7 @@ class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):
         self.replication_config_path):
       refs = [
           GitRef(
-              path='chromeos/overlays/overlay-coral-private',
+              path='/chromeos/overlays/overlay-coral-private',
               ref='master',
               revision='123')
       ]
