@@ -10,12 +10,14 @@
 
 #include <tuple>
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/win/win_util.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/auth_utils.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider.h"
 #include "chrome/credential_provider/gaiacp/gaia_credential_provider_i.h"
+#include "chrome/credential_provider/gaiacp/gcpw_strings.h"
 #include "chrome/credential_provider/gaiacp/mdm_utils.h"
 #include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/test/com_fakes.h"
@@ -440,10 +442,12 @@ INSTANTIATE_TEST_SUITE_P(
 // the token handle info from win_http_url_fetcher returns a valid json).
 // 3. bool - is internet available.
 // 4. bool - is active directory user.
+// 5. bool - is internet not available but validity expired.
 
 class GcpCredentialProviderWithGaiaUsersTest
     : public GcpCredentialProviderTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, bool, bool>> {
+      public ::testing::WithParamInterface<
+          std::tuple<bool, bool, bool, bool, bool>> {
  protected:
   void SetUp() override;
 };
@@ -461,6 +465,7 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   fake_internet_checker()->SetHasInternetConnection(
       has_internet ? FakeInternetAvailabilityChecker::kHicForceYes
                    : FakeInternetAvailabilityChecker::kHicForceNo);
+  const bool is_offline_validity_expired = std::get<4>(GetParam());
 
   CComBSTR sid;
   if (is_ad_user) {
@@ -477,6 +482,17 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
                         L"gaia-id", L"foo@gmail.com", &sid));
   }
 
+  ASSERT_EQ(S_OK,
+            SetUserProperty(
+                OLE2CW(sid),
+                base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis), L"0"));
+  if (is_offline_validity_expired) {
+    // Setting validity period to zero enforces gcpw login irrespective of
+    // whether internet is available or not.
+    ASSERT_EQ(S_OK, SetGlobalFlagForTesting(
+                        base::UTF8ToUTF16(kKeyValidityPeriodInDays), 0));
+  }
+
   if (!has_token_handle)
     ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kUserTokenHandle, L""));
 
@@ -489,7 +505,8 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
   bool should_reauth_user =
-      has_internet && (!has_token_handle || !valid_token_handle);
+      (!has_internet && is_offline_validity_expired) ||
+      (has_internet && (!has_token_handle || !valid_token_handle));
 
   // Check if there is a IReauthCredential depending on the state of the token
   // handle.
@@ -508,6 +525,7 @@ INSTANTIATE_TEST_SUITE_P(All,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 // Check that reauth credentials only exists when either user is an AD user or
@@ -519,9 +537,11 @@ INSTANTIATE_TEST_SUITE_P(All,
 // the token handle info from win_http_url_fetcher returns a valid json).
 // 3. bool - is the fake user an AD user.
 // 4. bool - is internet available.
+// 5. bool - is offline validity expired.
 class GcpCredentialProviderWithADUsersTest
     : public GcpCredentialProviderTest,
-      public ::testing::WithParamInterface<std::tuple<bool, bool, bool, bool>> {
+      public ::testing::WithParamInterface<
+          std::tuple<bool, bool, bool, bool, bool>> {
  protected:
   void SetUp() override;
 };
@@ -536,23 +556,11 @@ TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
   const bool valid_token_handle = std::get<1>(GetParam());
   const bool is_ad_user = std::get<2>(GetParam());
   const bool has_internet = std::get<3>(GetParam());
-
-  if (!has_user_id && !is_ad_user) {
-    // This is not a valid test scenario as the token handle wouldn't
-    // exist when user id mapping is not available in the registry.
-    return;
-  }
+  const bool is_offline_validity_expired = std::get<4>(GetParam());
 
   fake_internet_checker()->SetHasInternetConnection(
       has_internet ? FakeInternetAvailabilityChecker::kHicForceYes
                    : FakeInternetAvailabilityChecker::kHicForceNo);
-
-  CComBSTR local_user_sid;
-  // Always create local user to make sure that the co-existence scenarios
-  // work fine.
-  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
-                      L"username-local", L"password", L"full name", L"comment",
-                      L"gaia-id", L"foolocal@gmail.com", &local_user_sid));
 
   CComBSTR sid;
   DWORD error;
@@ -573,8 +581,18 @@ TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
     base::string16 test_user_id(L"12345");
     ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kUserId, test_user_id));
     // Set token handle to a non-empty value in registry.
-    ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kUserTokenHandle,
+    ASSERT_EQ(S_OK, SetUserProperty(OLE2CW(sid), kUserTokenHandle,
                                     L"non-empty-token-handle"));
+    ASSERT_EQ(S_OK, SetUserProperty(
+                        OLE2CW(sid),
+                        base::UTF8ToUTF16(kKeyLastSuccessfulOnlineLoginMillis),
+                        L"0"));
+    if (is_offline_validity_expired) {
+      // Setting validity period to zero enforces gcpw login irrespective of
+      // whether internet is available or not.
+      ASSERT_EQ(S_OK, SetGlobalFlagForTesting(
+                          base::UTF8ToUTF16(kKeyValidityPeriodInDays), 0));
+    }
   }
 
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -586,31 +604,17 @@ TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
   ASSERT_EQ(S_OK, InitializeProviderWithCredentials(&count, &provider));
 
   bool should_reauth_user =
-      has_internet && ((!has_user_id && is_ad_user) || !valid_token_handle);
+      (!has_internet && is_offline_validity_expired && has_user_id) ||
+      (has_internet &&
+       ((!has_user_id && is_ad_user) || (has_user_id && !valid_token_handle)));
 
-  // Check if there is a IReauthCredential depending on the state of the token
-  // handle.
-  if (valid_token_handle) {
-    ASSERT_EQ(should_reauth_user ? 2u : 1u, count);
-  } else {
-    // When token handle is invalid. Then we expect two reauth credentials
-    // (i.e 1 for local user and 1 for AD/Local user) and one anonymous
-    // credential if should_reauth_user is true.
-    ASSERT_EQ(should_reauth_user ? 3u : 1u, count);
-  }
+  // We expect one reauth credential for AD/Local user
+  // and one anonymous credential.
+  ASSERT_EQ(should_reauth_user ? 2u : 1u, count);
 
   if (should_reauth_user) {
     Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
     ASSERT_EQ(S_OK, provider->GetCredentialAt(1, &cred));
-    Microsoft::WRL::ComPtr<IReauthCredential> reauth;
-    EXPECT_EQ(S_OK, cred.As(&reauth));
-  }
-
-  // When there are two reauth credentials, validate that the second one
-  // is also a reauth credential.
-  if (should_reauth_user && !valid_token_handle) {
-    Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
-    ASSERT_EQ(S_OK, provider->GetCredentialAt(2, &cred));
     Microsoft::WRL::ComPtr<IReauthCredential> reauth;
     EXPECT_EQ(S_OK, cred.As(&reauth));
   }
@@ -619,6 +623,7 @@ TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpCredentialProviderWithADUsersTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool(),
                                             ::testing::Bool()));
