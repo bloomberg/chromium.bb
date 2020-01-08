@@ -272,22 +272,22 @@ constexpr bool IsDirectionalMode(PredictionMode mode) {
 
 // 5.9.3.
 //
-// |a| and |b| are order hints, treated as unsigned |order_hint_bits|-bit
-// integers.
-// order_hint_range equals (1 << order_hint_bits) >> 1.
+// |a| and |b| are order hints, treated as unsigned order_hint_bits-bit
+// integers. |order_hint_range| equals (1 << order_hint_bits) >> 1.
 //
-// If order_hint_range is zero, a and b are both zeros, and the result is zero.
-// If order_hint_range is not zero, returns the signed difference a - b using
-// "modular arithmetic". More precisely, the signed difference a - b is treated
-// as a signed |order_hint_bits|-bit integer and cast to an int. The returned
-// difference is between -order_hint_range and order_hint_range - 1 (inclusive).
+// If |order_hint_range| is zero, |a| and |b| are both zeros, and the result is
+// zero. If |order_hint_range| is not zero, returns the signed difference |a| -
+// |b| using "modular arithmetic". More precisely, the signed difference |a| -
+// |b| is treated as a signed order_hint_bits-bit integer and cast to an int.
+// The returned difference is between -|order_hint_range| and |order_hint_range|
+// - 1 (inclusive).
 //
-// NOTE: |a| and |b| are the |order_hint_bits| least significant bits of the
+// NOTE: |a| and |b| are the order_hint_bits least significant bits of the
 // actual values. This function returns the signed difference between the
 // actual values. The returned difference is correct as long as the actual
-// values are not more than order_hint_range - 1 apart.
+// values are not more than |order_hint_range| - 1 apart.
 //
-// Example: Suppose |order_hint_bits| is 4 and order_hint_range is 8. Then |a|
+// Example: Suppose order_hint_bits is 4 and |order_hint_range| is 8. Then |a|
 // and |b| are in the range [0, 15], and the actual values for |a| and |b| must
 // not be more than 7 apart. (If the actual values for |a| and |b| are exactly 8
 // apart, this function cannot tell whether the actual value for |a| is before
