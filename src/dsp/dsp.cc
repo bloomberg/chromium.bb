@@ -88,6 +88,7 @@ void DspInit() {
       InverseTransformInit_SSE4_1();
       LoopFilterInit_SSE4_1();
       LoopRestorationInit_SSE4_1();
+      MaskBlendInit_SSE4_1();
       ObmcInit_SSE4_1();
     }
 #endif  // LIBGAV1_ENABLE_SSE4_1

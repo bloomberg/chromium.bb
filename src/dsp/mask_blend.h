@@ -25,6 +25,15 @@
 // ARM:
 #include "src/dsp/arm/mask_blend_neon.h"
 
+// x86:
+// Note includes should be sorted in logical order avx2/avx/sse4, etc.
+// The order of includes is important as each tests for a superior version
+// before setting the base.
+// clang-format off
+// SSE4_1
+#include "src/dsp/x86/mask_blend_sse4.h"
+// clang-format on
+
 // IWYU pragma: end_exports
 
 namespace libgav1 {

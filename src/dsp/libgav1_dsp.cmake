@@ -116,6 +116,8 @@ list(APPEND libgav1_dsp_sources_sse4
             "${libgav1_source}/dsp/x86/loop_filter_sse4.h"
             "${libgav1_source}/dsp/x86/loop_restoration_sse4.cc"
             "${libgav1_source}/dsp/x86/loop_restoration_sse4.h"
+            "${libgav1_source}/dsp/x86/mask_blend_sse4.cc"
+            "${libgav1_source}/dsp/x86/mask_blend_sse4.h"
             "${libgav1_source}/dsp/x86/obmc_sse4.cc"
             "${libgav1_source}/dsp/x86/obmc_sse4.h"
             "${libgav1_source}/dsp/x86/transpose_sse4.h")
