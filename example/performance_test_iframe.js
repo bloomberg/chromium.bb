@@ -13,22 +13,13 @@ function perfTestNotifyAbort() {
   parent.postMessage({'command': 'notifyAbort'}, '*');
 }
 
-function getConfigForPerformanceTest(connectionType, dataType, async,
+function getConfigForPerformanceTest(dataType, async,
                                      verifyData, numIterations,
                                      numWarmUpIterations) {
-  var prefixUrl;
-  if (connectionType === 'WebSocket') {
-    prefixUrl = 'ws://' + location.host + '/benchmark_helper';
-  } else {
-    // XHR or fetch
-    prefixUrl = 'http://' + location.host + '/073be001e10950692ccbf3a2ad21c245';
-  }
 
   return {
-    prefixUrl: prefixUrl,
+    prefixUrl: 'ws://' + location.host + '/benchmark_helper',
     printSize: true,
-    numXHRs: 1,
-    numFetches: 1,
     numSockets: 1,
     // + 1 is for a warmup iteration by the Telemetry framework.
     numIterations: numIterations + numWarmUpIterations + 1,
@@ -52,14 +43,14 @@ onmessage = function(message) {
   var action;
   if (message.data.command === 'start') {
     data = message.data;
-    initWorker(data.connectionType, 'http://' + location.host);
+    initWorker('http://' + location.host);
     action = data.benchmarkName;
   } else {
     action = 'stop';
   }
 
-  var config = getConfigForPerformanceTest(data.connectionType, data.dataType,
-                                           data.async, data.verifyData,
+  var config = getConfigForPerformanceTest(data.dataType, data.async,
+                                           data.verifyData,
                                            data.numIterations,
                                            data.numWarmUpIterations);
   doAction(config, data.isWorker, action);

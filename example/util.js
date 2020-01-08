@@ -287,12 +287,8 @@ function stop(config) {
 
 var worker;
 
-function initWorker(connectionType, origin) {
-  var scriptPath =
-    connectionType === 'WebSocket' ? '/benchmark.js' :
-    connectionType === 'XHR' ? '/xhr_benchmark.js' :
-    '/fetch_benchmark.js'; // connectionType === 'fetch'
-  worker = new Worker(origin + scriptPath);
+function initWorker(origin) {
+  worker = new Worker(origin + '/benchmark.js');
 }
 
 function doAction(config, isWindowToWorker, action) {

@@ -180,7 +180,6 @@ from mod_pywebsocket import handshake
 from mod_pywebsocket import http_header_util
 from mod_pywebsocket import memorizingfile
 from mod_pywebsocket import util
-from mod_pywebsocket.xhr_benchmark_handler import XHRBenchmarkHandler
 
 
 _DEFAULT_LOG_MAX_BYTES = 1024 * 256
@@ -724,34 +723,6 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
                 self.end_headers()
                 self._logger.info('Request basic authentication')
                 return False
-
-        # Special paths for XMLHttpRequest benchmark
-        xhr_benchmark_helper_prefix = '/073be001e10950692ccbf3a2ad21c245'
-        parsed_path = urlparse.urlsplit(self.path)
-        if parsed_path.path == (xhr_benchmark_helper_prefix + '_send'):
-            xhr_benchmark_handler = XHRBenchmarkHandler(
-                self.headers, self.rfile, self.wfile)
-            xhr_benchmark_handler.do_send()
-            return False
-        if parsed_path.path == (xhr_benchmark_helper_prefix + '_receive'):
-            xhr_benchmark_handler = XHRBenchmarkHandler(
-                self.headers, self.rfile, self.wfile)
-            xhr_benchmark_handler.do_receive_and_parse()
-            return False
-        if parsed_path.path == (xhr_benchmark_helper_prefix +
-                                '_receive_getnocache'):
-            xhr_benchmark_handler = XHRBenchmarkHandler(
-                self.headers, self.rfile, self.wfile)
-            xhr_benchmark_handler.do_receive(
-                int(parsed_path.query), False, False)
-            return False
-        if parsed_path.path == (xhr_benchmark_helper_prefix +
-                                '_receive_getcache'):
-            xhr_benchmark_handler = XHRBenchmarkHandler(
-                self.headers, self.rfile, self.wfile)
-            xhr_benchmark_handler.do_receive(
-                int(parsed_path.query), False, True)
-            return False
 
         host, port, resource = http_header_util.parse_uri(self.path)
         if resource is None:
