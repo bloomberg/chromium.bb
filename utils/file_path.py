@@ -1152,7 +1152,13 @@ def make_tree_deleteable(root):
           err = e
     else:
       for dirname in dirnames:
-        p = os.path.join(dirpath, dirname)
+        try:
+          p = os.path.join(dirpath, dirname)
+        except UnicodeDecodeError:
+          logging.error('failed to join "%s" with %s and "%s" with %s',
+                        map(ord, dirpath), type(dirpath), map(ord, dirname),
+                        type(dirname))
+          raise
         e = set_read_only_swallow(p, False)
         if e:
           sudo_failed = try_sudo(p)
