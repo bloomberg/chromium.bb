@@ -1140,8 +1140,6 @@ def create_option_parser():
       action='store_true',
       help='Use go isolated instead of python implementation')
   parser.add_option(
-      '--go-cache-dir', help='Cache directory used for go isolated client')
-  parser.add_option(
       '--json',
       help='dump output metadata to json file. When used, run_isolated returns '
            'non-zero only on internal failure')
@@ -1429,8 +1427,6 @@ def main(args):
   cipd.validate_cipd_options(parser, options)
   if options.use_go_isolated and not options.cipd_enabled:
     parser.error('--cipd-enabled should be set if --use-go-isolated is set.')
-  if options.use_go_isolated and not options.go_cache_dir:
-    parser.error('--go-cache-dir should be set if --use-go-isolated is set.')
 
   install_packages_fn = noop_install_packages
   if options.cipd_enabled:
@@ -1510,7 +1506,7 @@ def main(args):
       switch_to_account=options.switch_to_account,
       install_packages_fn=install_packages_fn,
       use_go_isolated=bool(options.use_go_isolated),
-      go_cache_dir=options.go_cache_dir,
+      go_cache_dir=options.cache,
       env=options.env,
       env_prefix=options.env_prefix,
       lower_priority=bool(options.lower_priority),
