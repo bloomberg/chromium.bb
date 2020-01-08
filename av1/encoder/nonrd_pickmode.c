@@ -1595,6 +1595,15 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 #if COLLECT_PICK_MODE_STAT
   ms_stat.num_blocks[bsize]++;
 #endif
+  init_mbmi(mi, DC_PRED, NONE_FRAME, NONE_FRAME, cm);
+  mi->tx_size =
+      AOMMIN(AOMMIN(max_txsize_lookup[bsize],
+                    tx_mode_to_biggest_tx_size[x->tx_mode_search_type]),
+             TX_16X16);
+  memset(mi->inter_tx_size, mi->tx_size, sizeof(mi->inter_tx_size));
+  memset(xd->tx_type_map, DCT_DCT,
+         sizeof(xd->tx_type_map[0]) * ctx->num_4x4_blk);
+  av1_zero(x->blk_skip);
 
   for (int idx = 0; idx < num_inter_modes; ++idx) {
     int rate_mv = 0;
@@ -1618,16 +1627,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     aom_usec_timer_start(&ms_stat.timer1);
     ms_stat.num_searches[bsize][this_mode]++;
 #endif
-    init_mbmi(mi, this_mode, ref_frame, NONE_FRAME, cm);
-
-    mi->tx_size =
-        AOMMIN(AOMMIN(max_txsize_lookup[bsize],
-                      tx_mode_to_biggest_tx_size[x->tx_mode_search_type]),
-               TX_16X16);
-    memset(mi->inter_tx_size, mi->tx_size, sizeof(mi->inter_tx_size));
-    memset(xd->tx_type_map, DCT_DCT,
-           sizeof(xd->tx_type_map[0]) * ctx->num_4x4_blk);
-    av1_zero(x->blk_skip);
+    mi->mode = this_mode;
+    mi->ref_frame[0] = ref_frame;
 
     if (ref_frame > usable_ref_frame) continue;
     if (skip_ref_find_pred[ref_frame]) continue;
