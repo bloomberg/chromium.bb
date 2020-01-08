@@ -199,30 +199,6 @@ class Handshaker(object):
 
             accepted_extensions = []
 
-            # We need to take into account of mux extension here.
-            # If mux extension exists:
-            # - Remove processors of extensions for logical channel,
-            #   which are processors located before the mux processor
-            # - Pass extension requests for logical channel to mux processor
-            # - Attach the mux processor to the request. It will be referred
-            #   by dispatcher to see whether the dispatcher should use mux
-            #   handler or not.
-            mux_index = -1
-            for i, processor in enumerate(processors):
-                if processor.name() == common.MUX_EXTENSION:
-                    mux_index = i
-                    break
-            if mux_index >= 0:
-                logical_channel_extensions = []
-                for processor in processors[:mux_index]:
-                    logical_channel_extensions.append(processor.request())
-                    processor.set_active(False)
-                self._request.mux_processor = processors[mux_index]
-                self._request.mux_processor.set_extensions(
-                    logical_channel_extensions)
-                processors = filter(lambda processor: processor.is_active(),
-                                    processors)
-
             stream_options = StreamOptions()
 
             for index, processor in enumerate(processors):

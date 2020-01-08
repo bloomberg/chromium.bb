@@ -49,7 +49,6 @@ import unittest
 import set_sys_path  # Update sys.path to locate mod_pywebsocket module.
 
 from test import client_for_testing
-from test import mux_client_for_testing
 
 
 # Special message that tells the echo server to start closing handshake
@@ -123,40 +122,6 @@ def _unmasked_frame_check_procedure(client):
     client.assert_receive_close(client_for_testing.STATUS_PROTOCOL_ERROR, '')
 
     client.assert_connection_closed()
-
-
-def _mux_echo_check_procedure(mux_client):
-    mux_client.connect()
-    mux_client.send_flow_control(1, 1024)
-
-    logical_channel_options = client_for_testing.ClientOptions()
-    logical_channel_options.server_host = 'localhost'
-    logical_channel_options.server_port = 80
-    logical_channel_options.origin = 'http://localhost'
-    logical_channel_options.resource = '/echo'
-    mux_client.add_channel(2, logical_channel_options)
-    mux_client.send_flow_control(2, 1024)
-
-    mux_client.send_message(2, 'test')
-    mux_client.assert_receive(2, 'test')
-
-    mux_client.add_channel(3, logical_channel_options)
-    mux_client.send_flow_control(3, 1024)
-
-    mux_client.send_message(2, 'hello')
-    mux_client.send_message(3, 'world')
-    mux_client.assert_receive(2, 'hello')
-    mux_client.assert_receive(3, 'world')
-
-    # Don't send close message on channel id 1 so that server-initiated
-    # closing handshake won't occur.
-    mux_client.send_close(2)
-    mux_client.send_close(3)
-    mux_client.assert_receive_close(2)
-    mux_client.assert_receive_close(3)
-
-    mux_client.send_physical_connection_close()
-    mux_client.assert_physical_connection_receive_close()
 
 
 class EndToEndTestBase(unittest.TestCase):
@@ -308,19 +273,6 @@ class EndToEndHyBiTest(EndToEndTestBase):
                 self.assertEqual(status, e.status)
             except Exception, e:
                 self.fail('Catch unexpected exception')
-            finally:
-                client.close_socket()
-        finally:
-            self._kill_process(server.pid)
-
-    def _run_mux_test(self, test_function):
-        server = self._run_server()
-        try:
-            time.sleep(_SERVER_WARMUP_IN_SEC)
-
-            client = mux_client_for_testing.MuxClient(self._options)
-            try:
-                test_function(client)
             finally:
                 client.close_socket()
         finally:
@@ -564,9 +516,6 @@ class EndToEndHyBiTest(EndToEndTestBase):
         self._options.resource = '/close'
         self._run_close_with_code_and_reason_test(
             _echo_check_procedure_with_code_and_reason, None, '')
-
-    def test_mux_echo(self):
-        self._run_mux_test(_mux_echo_check_procedure)
 
     def test_close_on_protocol_error(self):
         """Tests that the server sends a close frame with protocol error status

@@ -93,8 +93,6 @@ STATUS_TLS_HANDSHAKE = 1015
 
 # Extension tokens
 _DEFLATE_FRAME_EXTENSION = 'deflate-frame'
-# TODO(bashi): Update after mux implementation finished.
-_MUX_EXTENSION = 'mux_DO_NOT_USE'
 _PERMESSAGE_DEFLATE_EXTENSION = 'permessage-deflate'
 
 def _method_line(resource):
@@ -433,15 +431,10 @@ class WebSocketHandshake(object):
         # extensions we request, parse them and store parameters. They will be
         # used later by each extension.
         deflate_frame_accepted = False
-        mux_accepted = False
         for extension in accepted_extensions:
             if extension.name() == _DEFLATE_FRAME_EXTENSION:
                 if self._options.use_deflate_frame:
                     deflate_frame_accepted = True
-                    continue
-            if extension.name() == _MUX_EXTENSION:
-                if self._options.use_mux:
-                    mux_accepted = True
                     continue
             if extension.name() == _PERMESSAGE_DEFLATE_EXTENSION:
                 checker = self._options.check_permessage_deflate
@@ -458,9 +451,6 @@ class WebSocketHandshake(object):
             not deflate_frame_accepted):
             raise Exception('%s extension not accepted' %
                             _DEFLATE_FRAME_EXTENSION)
-
-        if self._options.use_mux and not mux_accepted:
-            raise Exception('%s extension not accepted' % _MUX_EXTENSION)
 
 
 class WebSocketHybi00Handshake(object):
@@ -975,16 +965,10 @@ class ClientOptions(object):
         self.extensions = []
         # Enable deflate-application-data.
         self.use_deflate_frame = False
-        # Enable mux
-        self.use_mux = False
 
     def enable_deflate_frame(self):
         self.use_deflate_frame = True
         self.extensions.append(_DEFLATE_FRAME_EXTENSION)
-
-    def enable_mux(self):
-        self.use_mux = True
-        self.extensions.append(_MUX_EXTENSION)
 
 
 def connect_socket_with_retry(host, port, timeout, use_tls,
