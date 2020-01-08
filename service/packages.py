@@ -90,6 +90,7 @@ class GeneratedCrosConfigFilesError(Error):
            (expected_files, found_files))
     super(GeneratedCrosConfigFilesError, self).__init__(msg)
 
+
 UprevVersionedPackageModifications = collections.namedtuple(
     'UprevVersionedPackageModifications', ('new_version', 'files'))
 
@@ -155,14 +156,20 @@ def uprevs_versioned_package(package):
   return register
 
 
-def uprev_android(tracking_branch, android_package, android_build_branch,
-                  chroot, build_targets=None, android_version=None,
+def uprev_android(tracking_branch,
+                  android_package,
+                  android_build_branch,
+                  chroot,
+                  build_targets=None,
+                  android_version=None,
                   android_gts_build_branch=None):
   """Returns the portage atom for the revved Android ebuild - see man emerge."""
-  command = ['cros_mark_android_as_stable',
-             '--tracking_branch=%s' % tracking_branch,
-             '--android_package=%s' % android_package,
-             '--android_build_branch=%s' % android_build_branch]
+  command = [
+      'cros_mark_android_as_stable',
+      '--tracking_branch=%s' % tracking_branch,
+      '--android_package=%s' % android_package,
+      '--android_build_branch=%s' % android_build_branch,
+  ]
   if build_targets:
     command.append('--boards=%s' % ':'.join(bt.name for bt in build_targets))
   if android_version:
@@ -170,9 +177,11 @@ def uprev_android(tracking_branch, android_package, android_build_branch,
   if android_gts_build_branch:
     command.append('--android_gts_build_branch=%s' % android_gts_build_branch)
 
-  result = cros_build_lib.run(command, stdout=True,
-                              enter_chroot=True,
-                              chroot_args=chroot.get_enter_args())
+  result = cros_build_lib.run(
+      command,
+      stdout=True,
+      enter_chroot=True,
+      chroot_args=chroot.get_enter_args())
 
   android_atom = _parse_android_atom(result)
   if not android_atom:
@@ -182,11 +191,10 @@ def uprev_android(tracking_branch, android_package, android_build_branch,
   for target in build_targets or []:
     # Sanity check: We should always be able to merge the version of
     # Android we just unmasked.
-    command = ['emerge-%s' % target.name, '-p', '--quiet',
-               '=%s' % android_atom]
+    command = ['emerge-%s' % target.name, '-p', '--quiet', '=%s' % android_atom]
     try:
-      cros_build_lib.run(command, enter_chroot=True,
-                         chroot_args=chroot.get_enter_args())
+      cros_build_lib.run(
+          command, enter_chroot=True, chroot_args=chroot.get_enter_args())
     except cros_build_lib.RunCommandError:
       logging.error(
           'Cannot emerge-%s =%s\nIs Android pinned to an older '
@@ -214,7 +222,9 @@ def _parse_android_atom(result):
   return android_atom
 
 
-def uprev_build_targets(build_targets, overlay_type, chroot=None,
+def uprev_build_targets(build_targets,
+                        overlay_type,
+                        chroot=None,
                         output_dir=None):
   """Uprev the set provided build targets, or all if not specified.
 
@@ -235,8 +245,11 @@ def uprev_build_targets(build_targets, overlay_type, chroot=None,
   else:
     overlays = portage_util.FindOverlays(overlay_type)
 
-  return uprev_overlays(overlays, build_targets=build_targets, chroot=chroot,
-                        output_dir=output_dir)
+  return uprev_overlays(
+      overlays,
+      build_targets=build_targets,
+      chroot=chroot,
+      output_dir=output_dir)
 
 
 def uprev_overlays(overlays, build_targets=None, chroot=None, output_dir=None):
@@ -258,10 +271,12 @@ def uprev_overlays(overlays, build_targets=None, chroot=None, output_dir=None):
 
   manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
 
-  uprev_manager = uprev_lib.UprevOverlayManager(overlays, manifest,
-                                                build_targets=build_targets,
-                                                chroot=chroot,
-                                                output_dir=output_dir)
+  uprev_manager = uprev_lib.UprevOverlayManager(
+      overlays,
+      manifest,
+      build_targets=build_targets,
+      chroot=chroot,
+      output_dir=output_dir)
   uprev_manager.uprev()
 
   return uprev_manager.modified_ebuilds
@@ -528,8 +543,8 @@ def replicate_private_config(_build_targets, refs, chroot):
         osutils.ReadFile(replication_config_path),
         replication_config_pb2.ReplicationConfig())
   except IOError:
-    raise ValueError('Expected ReplicationConfig missing at %s' %
-                     replication_config_path)
+    raise ValueError(
+        'Expected ReplicationConfig missing at %s' % replication_config_path)
 
   replication_lib.Replicate(replication_config)
 
@@ -614,9 +629,8 @@ def determine_chrome_version(build_target):
   # the builds function above only returns True for chrome when
   # determine_chrome_version will succeed.
   try:
-    cpv = portage_util.PortageqBestVisible(constants.CHROME_CP,
-                                           build_target.name,
-                                           cwd=constants.SOURCE_ROOT)
+    cpv = portage_util.PortageqBestVisible(
+        constants.CHROME_CP, build_target.name, cwd=constants.SOURCE_ROOT)
   except cros_build_lib.RunCommandError as e:
     # Return None because portage failed when trying to determine the chrome
     # version.
@@ -677,10 +691,10 @@ def determine_android_version(boards=None):
     if not version:
       version = cpv.version_no_rev
     elif version != cpv.version_no_rev:
-      raise NoAndroidVersionError(
-          'Different Android versions (%s vs %s) for %s' %
-          (version, cpv.version_no_rev, boards))
+      raise NoAndroidVersionError('Different Android versions (%s vs %s) for %s'
+                                  % (version, cpv.version_no_rev, boards))
   return version
+
 
 def determine_android_branch(board):
   """Returns the Android branch in use by the active container ebuild."""
@@ -736,6 +750,7 @@ def determine_milestone_version():
   # Milestone version is something like '79'.
   version = manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
   return version.chrome_branch
+
 
 def determine_full_version():
   """Returns the full version from the source root."""
