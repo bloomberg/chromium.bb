@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_CHANNEL_TEST_MOCK_SOCKET_ERROR_HANDLER_H_
-#define CAST_COMMON_CHANNEL_TEST_MOCK_SOCKET_ERROR_HANDLER_H_
+#ifndef CAST_COMMON_CHANNEL_TESTING_MOCK_SOCKET_ERROR_HANDLER_H_
+#define CAST_COMMON_CHANNEL_TESTING_MOCK_SOCKET_ERROR_HANDLER_H_
 
 #include "cast/common/channel/virtual_connection_router.h"
 #include "gmock/gmock.h"
@@ -22,4 +22,4 @@ class MockSocketErrorHandler
 }  // namespace cast
 }  // namespace openscreen
 
-#endif  // CAST_COMMON_CHANNEL_TEST_MOCK_SOCKET_ERROR_HANDLER_H_
+#endif  // CAST_COMMON_CHANNEL_TESTING_MOCK_SOCKET_ERROR_HANDLER_H_

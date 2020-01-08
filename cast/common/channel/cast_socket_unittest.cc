@@ -6,7 +6,7 @@
 
 #include "cast/common/channel/message_framer.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
-#include "cast/common/channel/test/fake_cast_socket.h"
+#include "cast/common/channel/testing/fake_cast_socket.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 

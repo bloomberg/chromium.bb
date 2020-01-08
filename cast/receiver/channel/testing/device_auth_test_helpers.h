@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "absl/strings/string_view.h"
-#include "cast/common/certificate/test_helpers.h"
+#include "cast/common/certificate/testing/test_helpers.h"
 #include "cast/receiver/channel/device_auth_namespace_handler.h"
 
 namespace openscreen {

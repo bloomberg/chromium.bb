@@ -9,7 +9,7 @@
 #include "cast/common/certificate/cast_cert_validator.h"
 #include "cast/common/certificate/cast_crl.h"
 #include "cast/common/certificate/proto/test_suite.pb.h"
-#include "cast/common/certificate/test_helpers.h"
+#include "cast/common/certificate/testing/test_helpers.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "gtest/gtest.h"
 #include "platform/api/time.h"

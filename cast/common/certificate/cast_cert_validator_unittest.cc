@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "cast/common/certificate/cast_cert_validator_internal.h"
-#include "cast/common/certificate/test_helpers.h"
+#include "cast/common/certificate/testing/test_helpers.h"
 #include "gtest/gtest.h"
 #include "openssl/pem.h"
 

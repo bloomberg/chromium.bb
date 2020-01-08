@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_CERTIFICATE_TEST_HELPERS_H_
-#define CAST_COMMON_CERTIFICATE_TEST_HELPERS_H_
+#ifndef CAST_COMMON_CERTIFICATE_TESTING_TEST_HELPERS_H_
+#define CAST_COMMON_CERTIFICATE_TESTING_TEST_HELPERS_H_
 
 #include <openssl/evp.h>
 
@@ -41,4 +41,4 @@ std::unique_ptr<TrustStore> CreateTrustStoreFromPemFile(
 }  // namespace cast
 }  // namespace openscreen
 
-#endif  // CAST_COMMON_CERTIFICATE_TEST_HELPERS_H_
+#endif  // CAST_COMMON_CERTIFICATE_TESTING_TEST_HELPERS_H_

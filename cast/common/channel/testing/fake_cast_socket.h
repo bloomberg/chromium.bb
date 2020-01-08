@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_CHANNEL_TEST_FAKE_CAST_SOCKET_H_
-#define CAST_COMMON_CHANNEL_TEST_FAKE_CAST_SOCKET_H_
+#ifndef CAST_COMMON_CHANNEL_TESTING_FAKE_CAST_SOCKET_H_
+#define CAST_COMMON_CHANNEL_TESTING_FAKE_CAST_SOCKET_H_
 
 #include <memory>
 
@@ -95,4 +95,4 @@ struct FakeCastSocketPair {
 }  // namespace cast
 }  // namespace openscreen
 
-#endif  // CAST_COMMON_CHANNEL_TEST_FAKE_CAST_SOCKET_H_
+#endif  // CAST_COMMON_CHANNEL_TESTING_FAKE_CAST_SOCKET_H_

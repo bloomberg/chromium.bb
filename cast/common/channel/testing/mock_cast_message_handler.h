@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAST_COMMON_CHANNEL_TEST_MOCK_CAST_MESSAGE_HANDLER_H_
-#define CAST_COMMON_CHANNEL_TEST_MOCK_CAST_MESSAGE_HANDLER_H_
+#ifndef CAST_COMMON_CHANNEL_TESTING_MOCK_CAST_MESSAGE_HANDLER_H_
+#define CAST_COMMON_CHANNEL_TESTING_MOCK_CAST_MESSAGE_HANDLER_H_
 
 #include "cast/common/channel/cast_message_handler.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
@@ -25,4 +25,4 @@ class MockCastMessageHandler final : public CastMessageHandler {
 }  // namespace cast
 }  // namespace openscreen
 
-#endif  // CAST_COMMON_CHANNEL_TEST_MOCK_CAST_MESSAGE_HANDLER_H_
+#endif  // CAST_COMMON_CHANNEL_TESTING_MOCK_CAST_MESSAGE_HANDLER_H_

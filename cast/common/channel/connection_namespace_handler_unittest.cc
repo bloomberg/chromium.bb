@@ -6,8 +6,8 @@
 
 #include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/message_util.h"
-#include "cast/common/channel/test/fake_cast_socket.h"
-#include "cast/common/channel/test/mock_socket_error_handler.h"
+#include "cast/common/channel/testing/fake_cast_socket.h"
+#include "cast/common/channel/testing/mock_socket_error_handler.h"
 #include "cast/common/channel/virtual_connection.h"
 #include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"

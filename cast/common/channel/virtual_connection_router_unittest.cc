@@ -6,9 +6,9 @@
 
 #include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
-#include "cast/common/channel/test/fake_cast_socket.h"
-#include "cast/common/channel/test/mock_cast_message_handler.h"
-#include "cast/common/channel/test/mock_socket_error_handler.h"
+#include "cast/common/channel/testing/fake_cast_socket.h"
+#include "cast/common/channel/testing/mock_cast_message_handler.h"
+#include "cast/common/channel/testing/mock_socket_error_handler.h"
 #include "cast/common/channel/virtual_connection_manager.h"
 #include "gtest/gtest.h"
 
