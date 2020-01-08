@@ -12,6 +12,7 @@ prodcertstatus 1>/dev/null 2>/dev/null || prodaccess
 when="last3days"
 string_data=""
 limit=30
+field_limit=80
 verbose=0
 only_stdout=0
 
@@ -25,10 +26,10 @@ Usage:  $0 -s|--string <search_string> [-w|-when} <when_string>
 
      search_string : What to search for in build_cmd logs.
      when_string   : Which dremel table, such as last7days, last1days, etc.
-                     Default is last3days.
+                     (default=last3days)
      limit_string  : Limits numbers of rows to this value (default=30).
      field_limit   : Show <field_limit> characters of stdout starting with
-                     <search_string>
+                     <search_string> (default=80).
      only_stdout   : Show only stdout and date, not buildId, stepName, etc.
      verbose       : Show dremel query before executing it.
 HELP_USAGE
