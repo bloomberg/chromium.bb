@@ -1063,7 +1063,7 @@ mr.ProviderManager = class extends mr.Module {
   provideSinks(providerName, sinks) {
     const provider = this.getProviderByName(providerName);
     if (!provider) {
-      this.logger_.error(
+      this.logger_.info(
           `provideSinks: Provider not found for providerName ${providerName}`);
       return;
     }
