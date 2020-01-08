@@ -243,6 +243,7 @@ class Goma(object):
       result['GOMA_DUMP_STATS_FILE'] = self._stats_file
     if self._counterz_file:
       result['GOMA_DUMP_COUNTERZ_FILE'] = self._counterz_file
+      result['GOMA_ENABLE_COUNTERZ'] = 'true'
 
     return result
 
@@ -271,6 +272,7 @@ class Goma(object):
       result['GOMA_DUMP_STATS_FILE'] = self._chroot_stats_file
     if self._chroot_counterz_file:
       result['GOMA_DUMP_COUNTERZ_FILE'] = self._chroot_counterz_file
+      result['GOMA_ENABLE_COUNTERZ'] = 'true'
 
     return result
 
