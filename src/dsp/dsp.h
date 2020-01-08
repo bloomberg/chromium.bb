@@ -746,6 +746,8 @@ using BlendNoiseWithImageChromaFunc = void (*)(
 using BlendNoiseWithImageChromaFuncs =
     BlendNoiseWithImageChromaFunc[/*chroma_scaling_from_luma*/ 2];
 
+//------------------------------------------------------------------------------
+
 struct FilmGrainFuncs {
   FilmGrainSynthesisFunc synthesis;
   LumaAutoRegressionFuncs luma_auto_regression;
@@ -756,7 +758,6 @@ struct FilmGrainFuncs {
   BlendNoiseWithImageLumaFunc blend_noise_luma;
   BlendNoiseWithImageChromaFuncs blend_noise_chroma;
 };
-//------------------------------------------------------------------------------
 
 struct Dsp {
   IntraPredictorFuncs intra_predictors;
