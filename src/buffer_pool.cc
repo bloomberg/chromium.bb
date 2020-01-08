@@ -45,12 +45,11 @@ RefCountedBuffer::~RefCountedBuffer() = default;
 bool RefCountedBuffer::Realloc(int bitdepth, bool is_monochrome, int width,
                                int height, int subsampling_x, int subsampling_y,
                                int left_border, int right_border,
-                               int top_border, int bottom_border,
-                               int byte_alignment) {
+                               int top_border, int bottom_border) {
   return yuv_buffer_.Realloc(bitdepth, is_monochrome, width, height,
                              subsampling_x, subsampling_y, left_border,
                              right_border, top_border, bottom_border,
-                             byte_alignment, pool_->get_frame_buffer_,
+                             pool_->get_frame_buffer_,
                              pool_->callback_private_data_, &raw_frame_buffer_);
 }
 

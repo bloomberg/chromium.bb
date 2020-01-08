@@ -56,17 +56,12 @@ class RefCountedBuffer {
   // * |left_border|, |right_border|, |top_border|, and |bottom_border| are
   //   the sizes (in pixels) of the borders on the left, right, top, and
   //   bottom sides, respectively.
-  // * |byte_alignment| specifies the additional alignment requirement of the
-  //   data buffers of the Y, U, and V planes. If |byte_alignment| is 0, there
-  //   is no additional alignment requirement. Otherwise, |byte_alignment|
-  //   must be a power of 2 and greater than or equal to 16.
-  //   NOTE: The strides are a multiple of 16. Therefore only the first row in
-  //   each plane is aligned to |byte_alignment|. Subsequent rows are only
-  //   16-byte aligned.
+  //
+  // NOTE: The strides are a multiple of 16. Since the first row in each plane
+  // is 16-byte aligned, subsequent rows are also 16-byte aligned.
   bool Realloc(int bitdepth, bool is_monochrome, int width, int height,
                int subsampling_x, int subsampling_y, int left_border,
-               int right_border, int top_border, int bottom_border,
-               int byte_alignment);
+               int right_border, int top_border, int bottom_border);
 
   YuvBuffer* buffer() { return &yuv_buffer_; }
 

@@ -14,7 +14,6 @@
 
 #include "src/yuv_buffer.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <new>
@@ -45,7 +44,7 @@ uint8_t* AlignAddr(uint8_t* const addr, const size_t align) {
 bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
                         int8_t subsampling_x, int8_t subsampling_y,
                         int left_border, int right_border, int top_border,
-                        int bottom_border, int byte_alignment,
+                        int bottom_border,
                         GetFrameBufferCallback get_frame_buffer,
                         void* private_data, FrameBuffer* frame_buffer) {
   // Only support allocating buffers that have borders that are a multiple of
@@ -60,15 +59,10 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
     return false;
   }
 
-  assert(byte_alignment == 0 || byte_alignment >= 16);
-  const int byte_align = (byte_alignment == 0) ? 1 : byte_alignment;
-  // byte_align must be a power of 2.
-  assert((byte_align & (byte_align - 1)) == 0);
-  // Every row in the plane buffers needs to be 16-byte aligned. In addition,
-  // the plane buffers need to be |byte_align|-byte aligned. Since the strides
-  // are multiples of 16 bytes, it suffices to just align the plane buffers to
-  // the larger of 16 and |byte_align|.
-  const int plane_align = std::max(16, byte_align);
+  // Every row in the plane buffers needs to be 16-byte aligned. Since the
+  // strides are multiples of 16 bytes, it suffices to just make the plane
+  // buffers 16-byte aligned.
+  const int plane_align = 16;
 
   // aligned_width and aligned_height are width and height padded to a
   // multiple of 8 pixels.

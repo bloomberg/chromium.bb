@@ -239,8 +239,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
                   displayable_frame->buffer()->subsampling_x(),
                   displayable_frame->buffer()->subsampling_y(),
                   kBorderPixelsFilmGrain, kBorderPixelsFilmGrain,
-                  kBorderPixelsFilmGrain, kBorderPixelsFilmGrain,
-                  /*byte_alignment=*/0)) {
+                  kBorderPixelsFilmGrain, kBorderPixelsFilmGrain)) {
             LIBGAV1_DLOG(ERROR, "film_grain_frame->Realloc() failed.");
             return kLibgav1StatusOutOfMemory;
           }
@@ -301,7 +300,7 @@ bool DecoderImpl::AllocateCurrentFrame(const ObuFrameHeader& frame_header,
       color_config.bitdepth, color_config.is_monochrome,
       frame_header.upscaled_width, frame_header.height,
       color_config.subsampling_x, color_config.subsampling_y, left_border,
-      right_border, top_border, bottom_border, /*byte_alignment=*/0);
+      right_border, top_border, bottom_border);
 }
 
 StatusCode DecoderImpl::CopyFrameToOutputBuffer(
@@ -573,7 +572,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
             obu->frame_header().upscaled_width, num_deblock_units,
             obu->sequence_header().color_config.subsampling_x,
             /*subsampling_y=*/0, kBorderPixels, kBorderPixels, kBorderPixels,
-            kBorderPixels, /*byte_alignment=*/0, nullptr, nullptr, nullptr)) {
+            kBorderPixels, nullptr, nullptr, nullptr)) {
       return kLibgav1StatusOutOfMemory;
     }
   }

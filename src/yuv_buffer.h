@@ -38,17 +38,13 @@ class YuvBuffer {
   //   the sizes (in pixels) of the borders on the left, right, top, and
   //   bottom sides, respectively. The four border sizes must all be a
   //   multiple of 2.
-  // * |byte_alignment| specifies the additional alignment requirement of the
-  //   data buffers of the Y, U, and V planes. If |byte_alignment| is 0, there
-  //   is no additional alignment requirement. Otherwise, |byte_alignment|
-  //   must be a power of 2 and greater than or equal to 16.
-  //   NOTE: The strides are a multiple of 16. Therefore only the first row in
-  //   each plane is aligned to |byte_alignment|. Subsequent rows are only
-  //   16-byte aligned.
   // * If |get_frame_buffer| is not null, it is invoked to allocate the memory.
   //   If |get_frame_buffer| is null, YuvBuffer allocates the memory directly
   //   and ignores the |private_data| and |frame_buffer| parameters, which
   //   should be null.
+  //
+  // NOTE: The strides are a multiple of 16. Since the first row in each plane
+  // is 16-byte aligned, subsequent rows are also 16-byte aligned.
   //
   // Example: bitdepth=8 width=20 height=6 left/right/top/bottom_border=2. The
   // diagram below shows how Realloc() allocates the data buffer for the Y
@@ -90,16 +86,15 @@ class YuvBuffer {
   //
   // Finally, Realloc() aligns the first byte of frame data, which is the '0'
   // pixel/byte in the upper left corner of the frame, to the default (16-byte)
-  // alignment boundary and also the |byte_alignment| boundary, if
-  // |byte_alignment| is nonzero.
+  // alignment boundary.
   //
   // TODO(wtc): Add a check for width and height limits to defend against
   // invalid bitstreams.
   bool Realloc(int bitdepth, bool is_monochrome, int width, int height,
                int8_t subsampling_x, int8_t subsampling_y, int left_border,
                int right_border, int top_border, int bottom_border,
-               int byte_alignment, GetFrameBufferCallback get_frame_buffer,
-               void* private_data, FrameBuffer* frame_buffer);
+               GetFrameBufferCallback get_frame_buffer, void* private_data,
+               FrameBuffer* frame_buffer);
 
   int bitdepth() const { return bitdepth_; }
 
@@ -143,6 +138,8 @@ class YuvBuffer {
     bottom_border_[plane] -= vertical_shift;
     const int pixel_size =
         static_cast<int>((bitdepth_ == 8) ? sizeof(uint8_t) : sizeof(uint16_t));
+    // The 16-byte alignment of buffer_[plane] must be preserved.
+    assert((horizontal_shift * pixel_size) % 16 == 0);
     buffer_[plane] +=
         vertical_shift * stride_[plane] + horizontal_shift * pixel_size;
   }
