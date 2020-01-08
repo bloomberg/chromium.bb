@@ -257,20 +257,31 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithDefaultPreferences) {
   EXPECT_CALL(client, OnNegotiated(&session, _))
       .WillOnce([](ReceiverSession* session,
                    ReceiverSession::ConfiguredReceivers cr) {
-        EXPECT_TRUE(cr.audio_receiver());
-        EXPECT_TRUE(cr.audio_session_config());
-        EXPECT_EQ(cr.audio_session_config().value().sender_ssrc, 19088747u);
-        EXPECT_EQ(cr.audio_session_config().value().receiver_ssrc, 19088748u);
-        EXPECT_EQ(cr.audio_session_config().value().channels, 2);
-        EXPECT_EQ(cr.audio_session_config().value().rtp_timebase, 48000);
+        EXPECT_TRUE(cr.audio);
+        EXPECT_EQ(cr.audio.value().receiver_config.sender_ssrc, 19088747u);
+        EXPECT_EQ(cr.audio.value().receiver_config.receiver_ssrc, 19088748u);
+        EXPECT_EQ(cr.audio.value().receiver_config.channels, 2);
+        EXPECT_EQ(cr.audio.value().receiver_config.rtp_timebase, 48000);
 
-        EXPECT_TRUE(cr.video_receiver());
-        EXPECT_TRUE(cr.video_session_config());
+        // We should have chosen opus
+        EXPECT_EQ(cr.audio.value().selected_stream.stream.index, 1337);
+        EXPECT_EQ(cr.audio.value().selected_stream.stream.type,
+                  Stream::Type::kAudioSource);
+        EXPECT_EQ(cr.audio.value().selected_stream.stream.codec_name, "opus");
+        EXPECT_EQ(cr.audio.value().selected_stream.stream.channels, 2);
+
+        EXPECT_TRUE(cr.video);
+        EXPECT_EQ(cr.video.value().receiver_config.sender_ssrc, 19088745u);
+        EXPECT_EQ(cr.video.value().receiver_config.receiver_ssrc, 19088746u);
+        EXPECT_EQ(cr.video.value().receiver_config.channels, 1);
+        EXPECT_EQ(cr.video.value().receiver_config.rtp_timebase, 90000);
+
         // We should have chosen vp8
-        EXPECT_EQ(cr.video_session_config().value().sender_ssrc, 19088745u);
-        EXPECT_EQ(cr.video_session_config().value().receiver_ssrc, 19088746u);
-        EXPECT_EQ(cr.video_session_config().value().channels, 1);
-        EXPECT_EQ(cr.video_session_config().value().rtp_timebase, 90000);
+        EXPECT_EQ(cr.video.value().selected_stream.stream.index, 31338);
+        EXPECT_EQ(cr.video.value().selected_stream.stream.type,
+                  Stream::Type::kVideoSource);
+        EXPECT_EQ(cr.video.value().selected_stream.stream.codec_name, "vp8");
+        EXPECT_EQ(cr.video.value().selected_stream.stream.channels, 1);
       });
   EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(1);
 
@@ -319,20 +330,18 @@ TEST_F(ReceiverSessionTest, CanNegotiateWithCustomCodecPreferences) {
   EXPECT_CALL(client, OnNegotiated(&session, _))
       .WillOnce([](ReceiverSession* session,
                    ReceiverSession::ConfiguredReceivers cr) {
-        EXPECT_TRUE(cr.audio_receiver());
-        EXPECT_TRUE(cr.audio_session_config());
-        EXPECT_EQ(cr.audio_session_config().value().sender_ssrc, 19088747u);
-        EXPECT_EQ(cr.audio_session_config().value().receiver_ssrc, 19088748u);
-        EXPECT_EQ(cr.audio_session_config().value().channels, 2);
-        EXPECT_EQ(cr.audio_session_config().value().rtp_timebase, 48000);
+        EXPECT_TRUE(cr.audio);
+        EXPECT_EQ(cr.audio.value().receiver_config.sender_ssrc, 19088747u);
+        EXPECT_EQ(cr.audio.value().receiver_config.receiver_ssrc, 19088748u);
+        EXPECT_EQ(cr.audio.value().receiver_config.channels, 2);
+        EXPECT_EQ(cr.audio.value().receiver_config.rtp_timebase, 48000);
 
-        EXPECT_TRUE(cr.video_receiver());
-        EXPECT_TRUE(cr.video_session_config());
+        EXPECT_TRUE(cr.video);
         // We should have chosen vp9
-        EXPECT_EQ(cr.video_session_config().value().sender_ssrc, 19088743u);
-        EXPECT_EQ(cr.video_session_config().value().receiver_ssrc, 19088744u);
-        EXPECT_EQ(cr.video_session_config().value().channels, 1);
-        EXPECT_EQ(cr.video_session_config().value().rtp_timebase, 90000);
+        EXPECT_EQ(cr.video.value().receiver_config.sender_ssrc, 19088743u);
+        EXPECT_EQ(cr.video.value().receiver_config.receiver_ssrc, 19088744u);
+        EXPECT_EQ(cr.video.value().receiver_config.channels, 1);
+        EXPECT_EQ(cr.video.value().receiver_config.rtp_timebase, 90000);
       });
   EXPECT_CALL(client, OnReceiversDestroyed(&session)).Times(1);
   raw_port->ReceiveMessage(kValidOfferMessage);

@@ -77,22 +77,6 @@ const Stream* SelectStream(const std::vector<Codec>& preferred_codecs,
 
 }  // namespace
 
-ReceiverSession::ConfiguredReceivers::ConfiguredReceivers(
-    Receiver* audio_receiver,
-    absl::optional<SessionConfig> audio_receiver_config,
-    Receiver* video_receiver,
-    absl::optional<SessionConfig> video_receiver_config)
-    : audio_receiver_(audio_receiver),
-      audio_receiver_config_(std::move(audio_receiver_config)),
-      video_receiver_(video_receiver),
-      video_receiver_config_(std::move(video_receiver_config)) {}
-
-ConfiguredReceivers::ConfiguredReceivers(ConfiguredReceivers&&) noexcept =
-    default;
-ConfiguredReceivers& ConfiguredReceivers::operator=(
-    ConfiguredReceivers&&) noexcept = default;
-ConfiguredReceivers::~ConfiguredReceivers() = default;
-
 Preferences::Preferences() = default;
 Preferences::Preferences(std::vector<VideoCodec> video_codecs,
                          std::vector<AudioCodec> audio_codecs)
@@ -231,23 +215,25 @@ ErrorOr<ConfiguredReceivers> ReceiverSession::TrySpawningReceivers(
 
   ResetReceivers();
 
-  absl::optional<SessionConfig> audio_config;
+  absl::optional<ConfiguredReceiver<AudioStream>> audio_receiver;
+  absl::optional<ConfiguredReceiver<VideoStream>> video_receiver;
+
   if (audio) {
     auto audio_pair = ConstructReceiver(audio->stream);
-    audio_config = std::move(audio_pair.first);
     current_audio_receiver_ = std::move(audio_pair.second);
+    audio_receiver.emplace(ConfiguredReceiver<AudioStream>{
+        current_audio_receiver_.get(), std::move(audio_pair.first), *audio});
   }
 
-  absl::optional<SessionConfig> video_config;
   if (video) {
     auto video_pair = ConstructReceiver(video->stream);
-    video_config = std::move(video_pair.first);
     current_video_receiver_ = std::move(video_pair.second);
+    video_receiver.emplace(ConfiguredReceiver<VideoStream>{
+        current_video_receiver_.get(), std::move(video_pair.first), *video});
   }
 
-  return ConfiguredReceivers{
-      current_audio_receiver_.get(), std::move(audio_config),
-      current_video_receiver_.get(), std::move(video_config)};
+  return ConfiguredReceivers{std::move(audio_receiver),
+                             std::move(video_receiver)};
 }
 
 void ReceiverSession::ResetReceivers() {

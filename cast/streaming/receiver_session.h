@@ -27,10 +27,19 @@ class VirtualConnection;
 
 class ReceiverSession final : public MessagePort::Client {
  public:
+  // A small helper struct that contains all of the information necessary for
+  // a configured receiver, including a receiver, its session config, and the
+  // stream selected from the OFFER message to instantiate the receiver.
+  template <typename T>
+  struct ConfiguredReceiver {
+    Receiver* receiver;
+    const SessionConfig receiver_config;
+    const T selected_stream;
+  };
+
   // Upon successful negotiation, a set of configured receivers is constructed
   // for handling audio and video. Note that either receiver may be null.
-  class ConfiguredReceivers {
-   public:
+  struct ConfiguredReceivers {
     // In practice, we may have 0, 1, or 2 receivers configured, depending
     // on if the device supports audio and video, and if we were able to
     // successfully negotiate a receiver configuration.
@@ -39,33 +48,11 @@ class ReceiverSession final : public MessagePort::Client {
     // to be valid until the OnReceiversDestroyed event is fired, at which
     // point they become invalid and need to replaced by the results of
     // the ensuing OnNegotiated call.
-    ConfiguredReceivers(
-        Receiver* audio_receiver,
-        const absl::optional<SessionConfig> audio_receiver_config,
-        Receiver* video_receiver,
-        const absl::optional<SessionConfig> video_receiver_config);
-    ConfiguredReceivers(const ConfiguredReceivers&) = delete;
-    ConfiguredReceivers(ConfiguredReceivers&&) noexcept;
-    ConfiguredReceivers& operator=(const ConfiguredReceivers&) = delete;
-    ConfiguredReceivers& operator=(ConfiguredReceivers&&) noexcept;
-    ~ConfiguredReceivers();
 
     // If the receiver is audio- or video-only, either of the receivers
     // may be nullptr. However, in the majority of cases they will be populated.
-    Receiver* audio_receiver() const { return audio_receiver_; }
-    const absl::optional<SessionConfig>& audio_session_config() const {
-      return audio_receiver_config_;
-    }
-    Receiver* video_receiver() const { return video_receiver_; }
-    const absl::optional<SessionConfig>& video_session_config() const {
-      return video_receiver_config_;
-    }
-
-   private:
-    Receiver* audio_receiver_;
-    absl::optional<SessionConfig> audio_receiver_config_;
-    Receiver* video_receiver_;
-    absl::optional<SessionConfig> video_receiver_config_;
+    absl::optional<ConfiguredReceiver<AudioStream>> audio;
+    absl::optional<ConfiguredReceiver<VideoStream>> video;
   };
 
   // The embedder should provide a client for handling connections.
@@ -90,7 +77,6 @@ class ReceiverSession final : public MessagePort::Client {
 
   // Note: embedders are required to implement the following
   // codecs to be Cast V2 compliant: H264, VP8, AAC, Opus.
-  // TODO(jophba): add additional fields for preferences.
   struct Preferences {
     Preferences();
     Preferences(std::vector<VideoCodec> video_codecs,
