@@ -20,6 +20,9 @@ from six.moves import builtins
 from chromite.lib import androidbuild
 from chromite.lib import cros_test_lib
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
+
 TESTDATA_PATH = os.path.join(os.path.dirname(__file__), 'testdata')
 
 

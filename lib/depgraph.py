@@ -12,8 +12,19 @@ import os
 import sys
 import time
 
+from chromite.lib import cros_test_lib
+
+pytestmark = [cros_test_lib.pytestmark_inside_only,
+              cros_test_lib.pytestmark_requires_portage]
+
+try:
+  import pytest  # pylint: disable=import-error
+  pytest.importorskip('_emerge')
+except ImportError:
+  pass
+
 # These aren't available outside the SDK.
-# pylint: disable=import-error
+# pylint: disable=import-error,wrong-import-order,wrong-import-position
 from _emerge.actions import adjust_configs
 from _emerge.actions import load_emerge_config
 from _emerge.create_depgraph_params import create_depgraph_params
@@ -25,8 +36,10 @@ from portage._global_updates import _global_updates
 import portage
 # pylint: enable=import-error
 
+# pylint: disable=ungrouped-imports
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_event
+# pylint: enable=wrong-import-order,wrong-import-position,ungrouped-imports
 
 
 class DepGraphGenerator(object):

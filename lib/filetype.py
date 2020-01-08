@@ -30,10 +30,15 @@ import re
 import stat
 import sys
 
-import magic  # pylint: disable=import-error
 import six
 
 from chromite.lib import parseelf
+
+try:
+  import pytest  # pylint: disable=import-error
+  magic = pytest.importorskip('magic')
+except ImportError:
+  import magic  # pylint: disable=import-error
 
 
 # The buffer size we would use to read files from the disk.

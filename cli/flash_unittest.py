@@ -286,6 +286,7 @@ class UsbImagerOperationTest(cros_test_lib.RunCommandTestCase):
   def setUp(self):
     self.PatchObject(flash.UsbImagerOperation, '__init__', return_value=None)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testUsbImagerOperationCalled(self):
     """Test that flash.UsbImagerOperation is called when log level <= NOTICE."""
     expected_cmd = ['dd', 'if=foo', 'of=bar', 'bs=4M', 'iflag=fullblock',

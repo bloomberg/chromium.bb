@@ -165,6 +165,7 @@ class ProfileTest(cros_test_lib.TempDirTestCase):
     # lstrip leading / to prevent it returning the path without the tempdir.
     return os.path.join(self.tempdir, path.lstrip(os.sep))
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testChooseProfile(self):
     """ChooseProfile tests: verify profiles are properly chosen."""
     b1_parent_path = self._TempdirPath(os.path.join(self.board1_make_profile,
@@ -189,6 +190,7 @@ class ProfileTest(cros_test_lib.TempDirTestCase):
       cros_choose_profile.ChooseProfile(self.board1, profile)
       self.assertEqual(parent, osutils.ReadFile(b1_parent_path))
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testGetProfile(self):
     """Test each profile parameter type behaves as expected when fetched."""
     # pylint: disable=protected-access

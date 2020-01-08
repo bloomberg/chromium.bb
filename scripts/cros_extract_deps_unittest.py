@@ -10,6 +10,8 @@ from __future__ import print_function
 from chromite.lib import cros_test_lib
 from chromite.scripts import cros_extract_deps
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 class FlattenDepTreeTest(cros_test_lib.TestCase):
   """Tests for cros_extract_deps.FlattenDepTree."""

@@ -17,6 +17,7 @@ from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import metadata_lib
 
+
 class BuildbucketClientTest(cros_test_lib.MockTestCase):
   """Tests for BuildbucketClient."""
 

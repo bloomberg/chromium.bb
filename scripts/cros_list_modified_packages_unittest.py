@@ -13,6 +13,9 @@ from chromite.lib import cros_test_lib
 from chromite.lib import sysroot_lib
 from chromite.scripts import cros_list_modified_packages
 
+pytestmark = [cros_test_lib.pytestmark_inside_only,
+              cros_test_lib.pytestmark_requires_sudo]
+
 
 class ListModifiedWorkonPackagesTest(cros_test_lib.MockTestCase):
   """Test for cros_list_modified_packages.ListModifiedWorkonPackages."""

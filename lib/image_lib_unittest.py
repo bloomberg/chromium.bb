@@ -121,6 +121,7 @@ class LoopbackPartitionsMock(image_lib.LoopbackPartitions):
     pass
 
 
+@cros_test_lib.pytestmark_requires_sudo
 class LoopbackPartitionsTest(cros_test_lib.MockTempDirTestCase):
   """Test the loopback partitions class"""
 

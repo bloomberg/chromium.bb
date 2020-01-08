@@ -19,6 +19,8 @@ from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib.xbuddy import xbuddy
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 # pylint: disable=protected-access
 # pylint: disable=no-value-for-parameter

@@ -23,6 +23,8 @@ from chromite.lib import partial_mock
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_chrome_as_stable
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 unstable_data = 'KEYWORDS=~x86 ~arm'
 stable_data = 'KEYWORDS=x86 arm'

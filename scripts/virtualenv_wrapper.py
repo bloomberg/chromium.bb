@@ -12,7 +12,11 @@ import os
 import subprocess
 import sys
 
-import wrapper
+try:
+  import pytest  # pylint: disable=import-error
+  wrapper = pytest.importorskip('wrapper', reason='File must be run in venv')
+except ImportError:
+  import wrapper
 
 _CHROMITE_DIR = os.path.realpath(
     os.path.join(os.path.abspath(__file__), '..', '..'))

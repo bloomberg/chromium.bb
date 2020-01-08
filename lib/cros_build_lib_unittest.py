@@ -28,6 +28,8 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import signals as cros_signals
 
+pytestmark = cros_test_lib.pytestmark_legacy_slow
+
 
 class RunCommandErrorStrTest(cros_test_lib.TestCase):
   """Test that RunCommandError __str__ works as expected."""

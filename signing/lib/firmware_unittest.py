@@ -498,6 +498,7 @@ class TestWriteSignerNotes(cros_test_lib.RunCommandTempDirTestCase):
   def setUp(self):
     keys_unittest.MockVbutilKey(self.rc)
 
+  @cros_test_lib.pytestmark_passes_when_run_alone
   def testSingleKey(self):
     """Test function's output with fixed sha1sum."""
     recovery_key = keys.KeyPair('recovery_key', self.tempdir)
@@ -517,6 +518,7 @@ class TestWriteSignerNotes(cros_test_lib.RunCommandTempDirTestCase):
     self.assertListEqual(expected_output,
                          version_signer.getvalue().splitlines())
 
+  @cros_test_lib.pytestmark_passes_when_run_alone
   def testLoemKeys(self):
     """Test function's output with multiple loem keys."""
     recovery_key = keys.KeyPair('recovery_key', self.tempdir)

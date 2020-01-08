@@ -19,6 +19,8 @@ from chromite.lib import partial_mock
 from chromite.lib import cros_test
 from chromite.utils import outcap
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 

@@ -64,7 +64,7 @@ class GceTest(cros_test_lib.MockTempDirTestCase):
 
   @cros_test_lib.NetworkTest()
   def testRetryOnServerErrorHttpRequest(self):
-    """Tests that 500 erros are retried."""
+    """Tests that 500 errors are retried."""
 
     # Fake http sequence that does not return 200 until the third trial.
     mock_http = HttpMockSequence([

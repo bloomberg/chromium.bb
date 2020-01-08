@@ -24,6 +24,7 @@ from chromite.lib import alerts
 from chromite.lib import cidb
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import fake_cidb
 from chromite.lib import failure_message_lib_unittest
@@ -34,6 +35,8 @@ from chromite.lib import results_lib
 from chromite.lib import retry_stats
 from chromite.lib import toolchain
 from chromite.lib.buildstore import FakeBuildStore
+
+pytestmark = cros_test_lib.pytestmark_passes_when_run_alone
 
 # pylint: disable=protected-access
 # pylint: disable=too-many-ancestors

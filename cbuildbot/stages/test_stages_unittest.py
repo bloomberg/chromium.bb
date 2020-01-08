@@ -30,6 +30,9 @@ from chromite.lib import timeout_util
 from chromite.lib.buildstore import FakeBuildStore
 from chromite.scripts import cbuildbot
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
+
 # pylint: disable=too-many-ancestors,protected-access
 
 

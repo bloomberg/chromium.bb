@@ -13,6 +13,9 @@ from chromite.lib import cros_test_lib
 from chromite.lib import parallel
 from chromite.lib import sudo
 
+pytestmark = [cros_test_lib.pytestmark_inside_only,
+              cros_test_lib.pytestmark_legacy_slow]
+
 
 class TestCreateGroups(cros_test_lib.TestCase):
   """Unittests for creating groups."""

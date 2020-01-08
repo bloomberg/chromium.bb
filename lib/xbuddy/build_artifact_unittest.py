@@ -25,6 +25,8 @@ from chromite.lib.xbuddy import build_artifact
 from chromite.lib.xbuddy import devserver_constants
 from chromite.lib.xbuddy import downloader
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 _VERSION = 'R80-12653.0.0-rc1'
 _BUILDER = 'amd64-generic-full'

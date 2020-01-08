@@ -275,6 +275,7 @@ class GenerateCoverageReportTest(cros_test_lib.RunCommandTestCase):
 class RunSysrootCommandTest(cros_test_lib.RunCommandTestCase):
   """Tests RunSysrootCommand."""
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testRunSysrootCommand(self):
     """Tests RunSysrootCommand creates a proper command to run in sysroot."""
     command = ['./fuzz', '-rss_limit_mb=4096']

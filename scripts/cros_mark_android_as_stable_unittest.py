@@ -25,6 +25,8 @@ from chromite.lib import partial_mock
 from chromite.lib import portage_util
 from chromite.scripts import cros_mark_android_as_stable
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
   """Tests for cros_mark_android_as_stable."""

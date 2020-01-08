@@ -17,6 +17,7 @@ from chromite.utils import metrics
 class MetricsTest(cros_test_lib.TestCase):
   """Test the utils/Metrics library."""
 
+  @cros_test_lib.pytestmark_passes_when_run_alone
   def testEndToEnd(self):
     """Test the normal usage pattern, end-to-end."""
     # We should start in a clean, unmeasured state.

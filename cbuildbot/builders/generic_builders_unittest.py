@@ -22,6 +22,7 @@ from chromite.lib import results_lib
 class BuilderTest(cros_test_lib.MockTestCase):
   """Test cases for Builder."""
 
+  @cros_test_lib.pytestmark_passes_when_run_alone
   def test_RunParallelStages(self):
     """test _RunParallelStages."""
     fake_db = fake_cidb.FakeCIDBConnection()

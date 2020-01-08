@@ -15,6 +15,8 @@ from chromite.cli.cros import lint
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 # pylint: disable=protected-access
 

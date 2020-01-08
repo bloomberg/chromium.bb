@@ -26,6 +26,12 @@ import os
 import re
 import sys
 
+try:
+  import pytest  # pylint: disable=import-error
+  pytest.importorskip('pylint')
+except ImportError:
+  pass
+
 import pylint.checkers
 from pylint.config import ConfigurationMixIn
 import pylint.interfaces

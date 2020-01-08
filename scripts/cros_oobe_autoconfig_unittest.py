@@ -19,6 +19,9 @@ from chromite.lib import image_lib
 from chromite.lib import osutils
 from chromite.scripts import cros_oobe_autoconfig
 
+pytestmark = [cros_test_lib.pytestmark_inside_only,
+              cros_test_lib.pytestmark_skip('https://crbug.com/1000761')]
+
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 

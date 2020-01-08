@@ -26,6 +26,8 @@ from chromite.lib import portage_util
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import cros_portage_upgrade as cpu
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 

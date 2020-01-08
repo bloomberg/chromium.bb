@@ -30,6 +30,8 @@ from chromite.lib.paygen import utils
 
 from chromite.scripts import build_dlc
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 # We access a lot of protected members during testing.
 # pylint: disable=protected-access

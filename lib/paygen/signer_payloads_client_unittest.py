@@ -25,6 +25,8 @@ from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import signer_payloads_client
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 # pylint: disable=protected-access
 

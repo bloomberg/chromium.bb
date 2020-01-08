@@ -36,6 +36,47 @@ from chromite.lib import timeout_util
 from chromite.utils import outcap
 
 
+# Define custom pytestmarks, allowing us to run/skip tests by category.
+# Our Pytest marks are documented in chromite/pytest.ini.
+# For more about marks, see https://docs.pytest.org/en/latest/mark.html
+# Because Pytest is not always present outside the chroot, we must wrap
+# our mark definitions in a try/except block.
+# TODO(crbug.com/1058422): Once pytest is available in all runtime envs,
+# add pytestmarks directly in test files.
+try:
+  import pytest  # pylint: disable=import-error
+  pytestmark_config_skew_test = pytest.mark.config_skew_test
+  pytestmark_inside_only = pytest.mark.inside_only
+  pytestmark_legacy_slow = pytest.mark.legacy_slow
+  pytestmark_mock_error = pytest.mark.mock_error
+  pytestmark_network_test = pytest.mark.network_test
+  pytestmark_output_test = pytest.mark.output_test
+  pytestmark_passes_when_run_alone = pytest.mark.passes_when_run_alone
+  pytestmark_redirected_stdin_error = pytest.mark.redirected_stdin_error
+  pytestmark_requires_portage = pytest.mark.requires_portage
+  pytestmark_requires_sudo = pytest.mark.requires_sudo
+  pytestmark_sigterm = pytest.mark.sigterm
+  pytestmark_skip = pytest.mark.skip
+  pytestmark_skipif = pytest.mark.skipif
+except (ImportError, AttributeError):
+  # If Pytest is not present, or too old to allow pytest.mark,
+  # define custom pytestmarks as null functions for test files to use.
+  null_decorator = lambda obj: obj
+  pytestmark_config_skew_test = null_decorator
+  pytestmark_inside_only = null_decorator
+  pytestmark_legacy_slow = null_decorator
+  pytestmark_mock_error = null_decorator
+  pytestmark_network_test = null_decorator
+  pytestmark_output_test = null_decorator
+  pytestmark_passes_when_run_alone = null_decorator
+  pytestmark_redirected_stdin_error = null_decorator
+  pytestmark_requires_portage = null_decorator
+  pytestmark_requires_sudo = null_decorator
+  pytestmark_sigterm = null_decorator
+  pytestmark_skip = null_decorator
+  pytestmark_skipif = lambda condition, reason=None: None
+
+
 Directory = collections.namedtuple('Directory', ['name', 'contents'])
 
 
@@ -55,6 +96,7 @@ def NetworkTest(reason='Skipping network test (re-run w/--network)'):
   """Decorator for unit tests. Skip the test if --network is not specified."""
   def Decorator(test_item):
     @functools.wraps(test_item)
+    @pytestmark_network_test
     def NetworkWrapper(*args, **kwargs):
       if not GlobalTestConfig.RUN_NETWORK_TESTS:
         GlobalTestConfig.NETWORK_TESTS_SKIPPED += 1
@@ -77,6 +119,7 @@ def ConfigSkewTest(reason=''):
   """Decorator for unit tests. Skip test if --config_skew is not specified."""
   def Decorator(test_item):
     @functools.wraps(test_item)
+    @pytestmark_config_skew_test
     def ConfigSkewWrapper(*args, **kwargs):
       if not GlobalTestConfig.RUN_CONFIG_SKEW_TESTS:
         GlobalTestConfig.CONFIG_SKEW_TESTS_SKIPPED += 1
@@ -762,6 +805,7 @@ class LoggingTestCase(TestCase):
     return self.AssertLogsMatch(log_capturer, re.escape(msg), inverted=inverted)
 
 
+@pytestmark_output_test
 class OutputTestCase(TestCase):
   """Base class for cros unit tests with utility methods."""
 

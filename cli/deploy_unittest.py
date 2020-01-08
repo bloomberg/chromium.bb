@@ -18,11 +18,13 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
 from chromite.lib import remote_access
-try:
-  import portage
-except ImportError:
-  if cros_build_lib.IsInsideChroot():
-    raise
+
+pytestmark = [cros_test_lib.pytestmark_inside_only,
+              cros_test_lib.pytestmark_requires_portage]
+
+
+if cros_build_lib.IsInsideChroot():
+  import portage  # pylint: disable=import-error
 
 
 # pylint: disable=protected-access

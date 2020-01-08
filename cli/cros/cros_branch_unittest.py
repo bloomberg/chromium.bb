@@ -37,6 +37,8 @@ from chromite.lib import partial_mock
 from chromite.lib import repo_manifest
 from chromite.lib import repo_util
 
+pytestmark = cros_test_lib.pytestmark_legacy_slow
+
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 

@@ -46,6 +46,7 @@ class FindDebugDirMock(partial_mock.PartialMock):
 # pylint: disable=bad-docstring-quotes
 @mock.patch('chromite.scripts.cros_generate_breakpad_symbols.'
             'GenerateBreakpadSymbol')
+@cros_test_lib.pytestmark_requires_sudo
 class GenerateSymbolsTest(cros_test_lib.MockTempDirTestCase):
   """Test GenerateBreakpadSymbols."""
 
@@ -280,6 +281,7 @@ class GenerateSymbolTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(self.rc.call_count, 1)
     self.assertExists(self.sym_file)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testNormalSudo(self):
     """Normal run where ELF is readable only by root"""
     with mock.patch.object(os, 'access') as mock_access:

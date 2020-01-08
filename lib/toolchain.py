@@ -12,12 +12,15 @@ import subprocess
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import toolchain_list
 from chromite.utils import key_value_store
+
+pytestmark = cros_test_lib.pytestmark_requires_portage
 
 if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.

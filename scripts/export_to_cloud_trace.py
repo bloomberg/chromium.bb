@@ -18,12 +18,17 @@ import google.protobuf.internal.well_known_types as types
 from oauth2client.client import GoogleCredentials
 
 from infra_libs import ts_mon
-import inotify_simple  # pylint: disable=import-error
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as log
 from chromite.lib import metrics
 from chromite.lib import ts_mon_config
+
+try:
+  import pytest  # pylint: disable=import-error
+  inotify_simple = pytest.importorskip('inotify_simple')
+except ImportError:
+  import inotify_simple
 
 
 BATCH_PATIENCE = 10 * 60

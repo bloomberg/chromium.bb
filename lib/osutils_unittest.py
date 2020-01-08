@@ -76,6 +76,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertEqual(osutils.WriteFile(filename, data, mode='wb'), None)
     self.assertEqual(osutils.ReadFile(filename, mode='rb'), b''.join(data))
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testSudoWrite(self):
     """Verify that we can write a file as sudo."""
     with osutils.TempDir(sudo_rm=True) as tempdir:
@@ -90,6 +91,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
         self.assertEqual('test', osutils.ReadFile(filename))
         self.assertEqual(0, os.stat(filename).st_uid)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testSudoWriteAppend(self):
     """Verify that we can write a file as sudo when appending."""
     with osutils.TempDir(sudo_rm=True) as tempdir:
@@ -105,6 +107,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     with self.assertRaises(IOError):
       osutils.ReadFile(filename)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testSafeSymlink(self):
     """Test that we can create symlinks."""
     with osutils.TempDir(sudo_rm=True) as tempdir:
@@ -136,6 +139,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
       osutils.SafeSymlink(file_b, root_link, sudo=True)
       self.assertEqual('b', osutils.ReadFile(root_link))
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testSafeUnlink(self):
     """Test unlinking files work (existing or not)."""
     def f(dirname, sudo=False):
@@ -164,6 +168,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertFalse(osutils.SafeMakedirs(path))
     self.assertExists(path)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testSafeMakedirsMode(self):
     """Test that mode is honored."""
     path = os.path.join(self.tempdir, 'a', 'b', 'c', 'd', 'e')
@@ -185,6 +190,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
       print('ls output of /foo:\n{{{%s}}}' % (ret.stdout,), file=sys.stderr)
     self.assertRaises(OSError, osutils.SafeMakedirs, '')
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testSafeMakedirsSudo(self):
     """Test creating directory trees work as root (existing or not)."""
     self.ExpectRootOwnedFiles()
@@ -195,6 +201,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertExists(path)
     self.assertEqual(os.stat(path).st_uid, 0)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testSafeMakedirsNoSudoRootOwnedDirs(self):
     """Test that we can recover some root owned directories."""
     self.ExpectRootOwnedFiles()
@@ -230,6 +237,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     osutils.RmDir(path)
     self.assertNotExists(path)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testRmDirSudo(self):
     """Test that removing dirs via sudo works."""
     subpath = os.path.join(self.tempdir, 'a')
@@ -256,6 +264,7 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertExists(path)
     self.assertEqual(os.path.getsize(path), 0)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testChown(self):
     """Test chown."""
     # Helpers to get the user and group name of the given path's owner.
@@ -366,6 +375,7 @@ class TestEmptyDir(cros_test_lib.TempDirTestCase):
     self.assertNotExists(self.subdir)
     self.assertNotExists(self.topfile)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testEmptyWithRootOwnedContents(self):
     """Test handling of root owned sub directories."""
     # Root owned contents.
@@ -558,6 +568,7 @@ class TempDirTests(cros_test_lib.TestCase):
     self.assertLess(tempdir_before, tempdir_inside)
 
 
+@cros_test_lib.pytestmark_requires_sudo
 class MountTests(cros_test_lib.TestCase):
   """Unittests for osutils mounting and umounting helpers."""
 

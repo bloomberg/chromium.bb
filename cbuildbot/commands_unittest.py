@@ -38,6 +38,8 @@ from chromite.scripts import pushimage
 
 from chromite.service import artifacts as artifacts_service
 
+pytestmark = cros_test_lib.pytestmark_requires_sudo
+
 
 class RunBuildScriptTest(cros_test_lib.RunCommandTempDirTestCase):
   """Test RunBuildScript in a variety of cases."""

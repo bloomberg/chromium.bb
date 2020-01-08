@@ -9,10 +9,14 @@ from __future__ import print_function
 
 import io
 
-from gcloud import datastore  # pylint: disable=import-error
-
 from chromite.lib import cros_test_lib
 from chromite.scripts import export_to_gcloud
+
+try:
+  import pytest  # pylint: disable=import-error
+  datastore = pytest.importorskip('gcloud.datastore')
+except ImportError:
+  from gcloud import datastore
 
 
 class GetEntitiesTest(cros_test_lib.TestCase):

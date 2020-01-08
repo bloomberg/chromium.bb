@@ -523,6 +523,7 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
     self.assertEqual([artifact], self.obj.Bundle())
     self.copy2.assert_called_once_with(mock.ANY, artifact)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testBundleUnverifiedLlvmPgoFile(self):
     self.SetUpBundle('UnverifiedLlvmPgoFile')
     llvm_version = '10.0_pre377782_p20200113-r14'

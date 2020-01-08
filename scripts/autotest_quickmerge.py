@@ -20,13 +20,15 @@ from collections import namedtuple
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
 
+pytestmark = cros_test_lib.pytestmark_requires_portage
+
 if cros_build_lib.IsInsideChroot():
-  # Only import portage after we've checked that we're inside the chroot.
   # pylint: disable=import-error
   import portage
 

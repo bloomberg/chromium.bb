@@ -16,6 +16,8 @@ from chromite.lib import cros_test_lib
 from chromite.lib import dev_server_wrapper
 from chromite.lib import partial_mock
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 # pylint: disable=protected-access
 class TestXbuddyHelpers(cros_test_lib.MockTempDirTestCase):

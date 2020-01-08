@@ -16,6 +16,7 @@ from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import mainlib
 
 
+@cros_test_lib.pytestmark_mock_error
 class TestTimedCallback(cros_test_lib.TestCase):
   """Tests for _TimedCallback."""
 

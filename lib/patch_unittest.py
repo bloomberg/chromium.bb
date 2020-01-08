@@ -25,6 +25,8 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 
+pytestmark = cros_test_lib.pytestmark_legacy_slow
+
 
 _GetNumber = functools.partial(next, itertools.count())
 

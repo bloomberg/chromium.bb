@@ -411,6 +411,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     self.assertNotExists(self.distfiles)
     self.assertExists(self.previous_build_state)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testBuildrootBranchChange(self):
     """Test CleanBuildRoot with a change in branches."""
     old_build_state = build_summary.BuildSummary(
@@ -567,6 +568,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     self.assertExists(self.distfiles)
     self.assertExists(self.previous_build_state)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testBuildrootDistfilesCacheExpired(self):
     """Test CleanBuildRoot when the distfiles cache is too old."""
     old_build_state = build_summary.BuildSummary(
@@ -596,6 +598,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     self.assertNotExists(self.distfiles)
     self.assertExists(self.previous_build_state)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testRootOwnedCache(self):
     """Test CleanBuildRoot with no history."""
     seed_distfiles_ts = time.time() - 60
@@ -766,6 +769,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     with mock.patch.object(cros_sdk_lib, 'CleanupChrootMount'):
       cbuildbot_launch.CleanupChroot(self.buildroot)
 
+  @cros_test_lib.pytestmark_requires_sudo
   def testCleanupChrootTimeout(self):
     """Check timeouts in CleanupChroot."""
     osutils.SafeMakedirs(self.chroot)

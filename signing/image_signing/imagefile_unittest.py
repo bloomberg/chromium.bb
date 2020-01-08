@@ -28,6 +28,8 @@ from chromite.signing.lib import keys
 from chromite.signing.image_signing import imagefile
 from chromite.utils import key_value_store
 
+pytestmark = cros_test_lib.pytestmark_requires_sudo
+
 
 # pylint: disable=protected-access
 

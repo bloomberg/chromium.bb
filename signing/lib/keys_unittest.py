@@ -288,6 +288,7 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     CreateDummyKeyblock(k1)
     self.assertTrue(k1.KeyblockExists())
 
+  @cros_test_lib.pytestmark_passes_when_run_alone
   def testGetSha1sumEmpty(self):
     """Test GetSha1sum with bad cmd output."""
     k1 = keys.KeyPair('key1', self.tempdir)
@@ -295,6 +296,7 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     with self.assertRaises(keys.SignerKeyError):
       k1.GetSHA1sum()
 
+  @cros_test_lib.pytestmark_passes_when_run_alone
   def testGetSha1sumMockCmd(self):
     """Test GetSha1sum with mock cmd output."""
     MockVbutilKey(self.rc)

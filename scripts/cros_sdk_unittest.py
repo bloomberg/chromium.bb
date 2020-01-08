@@ -20,6 +20,8 @@ from chromite.lib import retry_util
 from chromite.lib import sudo
 from chromite.scripts import cros_sdk
 
+pytestmark = cros_test_lib.pytestmark_legacy_slow
+
 
 # This long decorator triggers a false positive in the docstring test.
 # https://github.com/PyCQA/pylint/issues/3077

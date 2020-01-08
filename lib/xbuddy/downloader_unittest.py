@@ -20,6 +20,8 @@ from chromite.lib import osutils
 from chromite.lib.xbuddy import build_artifact
 from chromite.lib.xbuddy import downloader
 
+pytestmark = cros_test_lib.pytestmark_inside_only
+
 
 # pylint: disable=protected-access,no-value-for-parameter
 class DownloaderTest(cros_test_lib.TestCase):

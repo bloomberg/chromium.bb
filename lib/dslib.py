@@ -9,11 +9,16 @@ from __future__ import print_function
 
 import json
 
-from gcloud import datastore  # pylint: disable=import-error
-import gcloud  # pylint: disable=import-error
-
 from chromite.lib import cros_logging as logging
 from chromite.lib import iter_utils
+
+try:
+  import pytest  # pylint: disable=import-error
+  datastore = pytest.importorskip('gcloud.datastore')
+  gcloud = pytest.importorskip('gcloud')
+except ImportError:
+  from gcloud import datastore  # pylint: disable=import-error
+  import gcloud  # pylint: disable=import-error
 
 
 _BATCH_CHUNK_SIZE = 500
