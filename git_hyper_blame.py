@@ -95,12 +95,12 @@ def parse_blame(blameoutput):
     yield BlameLine(commit, context, lineno_then, lineno_now, False)
 
 
-def print_table(table, align=None, out=sys.stdout):
+def print_table(outbuf, table, align):
   """Print a 2D rectangular array, aligning columns with spaces.
 
   Args:
-    align: Optional string of 'l' and 'r', designating whether each column is
-           left- or right-aligned. Defaults to left aligned.
+    align: string of 'l' and 'r', designating whether each column is left- or
+           right-aligned.
   """
   if len(table) == 0:
     return
@@ -112,9 +112,6 @@ def print_table(table, align=None, out=sys.stdout):
     else:
       colwidths = [max(colwidths[i], len(x)) for i, x in enumerate(row)]
 
-  if align is None:  # pragma: no cover
-    align = 'l' * len(colwidths)
-
   for row in table:
     cells = []
     for i, cell in enumerate(row):
@@ -124,16 +121,15 @@ def print_table(table, align=None, out=sys.stdout):
       elif i < len(row) - 1:
         # Do not pad the final column if left-aligned.
         cell += padding
-      cell = cell.encode('utf-8', 'replace')
-      cells.append(cell)
+      cells.append(cell.encode('utf-8', 'replace'))
     try:
-      out.write(b' '.join(cells) + b'\n')
+      outbuf.write(b' '.join(cells) + b'\n')
     except IOError:  # pragma: no cover
       # Can happen on Windows if the pipe is closed early.
       pass
 
 
-def pretty_print(parsedblame, show_filenames=False, out=sys.stdout):
+def pretty_print(outbuf, parsedblame, show_filenames=False):
   """Pretty-prints the output of parse_blame."""
   table = []
   for line in parsedblame:
@@ -147,7 +143,7 @@ def pretty_print(parsedblame, show_filenames=False, out=sys.stdout):
     if show_filenames:
       row.insert(1, line.commit.filename)
     table.append(row)
-  print_table(table, align='llllrl' if show_filenames else 'lllrl', out=out)
+  print_table(outbuf, table, align='llllrl' if show_filenames else 'lllrl')
 
 
 def get_parsed_blame(filename, revision='HEAD'):
@@ -259,8 +255,7 @@ def approx_lineno_across_revs(filename, newfilename, revision, newrevision,
   return lineno + cumulative_offset
 
 
-def hyper_blame(ignored, filename, revision='HEAD', out=sys.stdout,
-                err=sys.stderr):
+def hyper_blame(outbuf, ignored, filename, revision):
   # Map from commit to parsed blame from that commit.
   blame_from = {}
 
@@ -275,7 +270,7 @@ def hyper_blame(ignored, filename, revision='HEAD', out=sys.stdout,
   try:
     parsed = cache_blame_from(filename, git_common.hash_one(revision))
   except subprocess2.CalledProcessError as e:
-    err.write(e.stderr.decode())
+    sys.stderr.write(e.stderr.decode())
     return e.returncode
 
   new_parsed = []
@@ -325,7 +320,7 @@ def hyper_blame(ignored, filename, revision='HEAD', out=sys.stdout,
 
     new_parsed.append(line)
 
-  pretty_print(new_parsed, show_filenames=show_filenames, out=out)
+  pretty_print(outbuf, new_parsed, show_filenames=show_filenames)
 
   return 0
 
@@ -337,14 +332,13 @@ def parse_ignore_file(ignore_file):
       yield line
 
 
-def main(args, stdout=sys.stdout, stderr=sys.stderr):
+def main(args, outbuf):
   parser = argparse.ArgumentParser(
       prog='git hyper-blame',
       description='git blame with support for ignoring certain commits.')
   parser.add_argument('-i', metavar='REVISION', action='append', dest='ignored',
                       default=[], help='a revision to ignore')
-  parser.add_argument('--ignore-file', metavar='FILE',
-                      type=argparse.FileType('r'), dest='ignore_file',
+  parser.add_argument('--ignore-file', metavar='FILE', dest='ignore_file',
                       help='a file containing a list of revisions to ignore')
   parser.add_argument('--no-default-ignores', dest='no_default_ignores',
                       action='store_true',
@@ -357,7 +351,7 @@ def main(args, stdout=sys.stdout, stderr=sys.stderr):
   try:
     repo_root = git_common.repo_root()
   except subprocess2.CalledProcessError as e:
-    stderr.write(e.stderr.decode())
+    sys.stderr.write(e.stderr.decode())
     return e.returncode
 
   # Make filename relative to the repository root, and cd to the root dir (so
@@ -375,7 +369,8 @@ def main(args, stdout=sys.stdout, stderr=sys.stderr):
       ignored_list.extend(parse_ignore_file(ignore_file))
 
   if args.ignore_file:
-    ignored_list.extend(parse_ignore_file(args.ignore_file))
+    with open(args.ignore_file) as ignore_file:
+      ignored_list.extend(parse_ignore_file(ignore_file))
 
   ignored = set()
   for c in ignored_list:
@@ -383,12 +378,12 @@ def main(args, stdout=sys.stdout, stderr=sys.stderr):
       ignored.add(git_common.hash_one(c))
     except subprocess2.CalledProcessError as e:
       # Custom warning string (the message from git-rev-parse is inappropriate).
-      stderr.write('warning: unknown revision \'%s\'.\n' % c)
+      sys.stderr.write('warning: unknown revision \'%s\'.\n' % c)
 
-  return hyper_blame(ignored, filename, args.revision, out=stdout, err=stderr)
+  return hyper_blame(outbuf, ignored, filename, args.revision)
 
 
 if __name__ == '__main__':  # pragma: no cover
   setup_color.init()
   with git_common.less() as less_input:
-    sys.exit(main(sys.argv[1:], stdout=less_input))
+    sys.exit(main(sys.argv[1:], less_input))

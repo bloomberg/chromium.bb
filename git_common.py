@@ -683,6 +683,8 @@ def less():  # pragma: no cover
 
   Automatically checks if sys.stdout is a non-TTY stream. If so, it avoids
   running less and just yields sys.stdout.
+
+  The returned PIPE is opened on binary mode.
   """
   if not setup_color.IS_TTY:
     # On Python 3, sys.stdout doesn't accept bytes, and sys.stdout.buffer must
