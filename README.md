@@ -1,9 +1,14 @@
 
 # pywebsocket3 #
 
-The pywebsocket project aims to provide a [WebSocket](https://tools.ietf.org/html/rfc6455) standalone server and a WebSocket extension for [Apache HTTP Server](https://httpd.apache.org/), mod\_pywebsocket.
+The pywebsocket project aims to provide a [WebSocket](https://tools.ietf.org/html/rfc6455) standalone server.
 
 pywebsocket is intended for **testing** or **experimental** purposes.
+
+Run this to read the general document:
+```
+$ pydoc mod_pywebsocket
+```
 
 Please see [Wiki](../../wiki) for more details.
 
@@ -23,10 +28,6 @@ $ python setup.py install --user
 ```
 # LAUNCH #
 
-To use pywebsocket as Apache module, run this to read the document:
-```
-$ pydoc mod_pywebsocket
-```
 To use pywebsocket as standalone server, run this to read the document:
 ```
 $ pydoc mod_pywebsocket.standalone

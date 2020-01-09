@@ -28,61 +28,23 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-"""WebSocket extension for Apache HTTP Server.
+""" A WebSocket API for Standalone WebSocket Server
 
-mod_pywebsocket is a WebSocket extension for Apache HTTP Server
-intended for testing or experimental purposes. mod_python is required.
-
+mod_pywebsocket is an API that provides WebSocket functionalities with
+a standalone WebSocket server. It is intended for testing or
+experimental purposes.
 
 Installation
 ============
+1. Follow standalone server documentation to start running the
+standalone server. It can be read by running the following command:
 
-0. Prepare an Apache HTTP Server for which mod_python is enabled.
+    $ pydoc mod_pywebsocket.standalone
 
-1. Specify the following Apache HTTP Server directives to suit your
-   configuration.
-
-   If mod_pywebsocket is not in the Python path, specify the following.
-   <websock_lib> is the directory where mod_pywebsocket is installed.
-
-       PythonPath "sys.path+['<websock_lib>']"
-
-   Always specify the following. <websock_handlers> is the directory where
-   user-written WebSocket handlers are placed.
-
-       PythonOption mod_pywebsocket.handler_root <websock_handlers>
-       PythonHeaderParserHandler mod_pywebsocket.headerparserhandler
-
-   To limit the search for WebSocket handlers to a directory <scan_dir>
-   under <websock_handlers>, configure as follows:
-
-       PythonOption mod_pywebsocket.handler_scan <scan_dir>
-
-   <scan_dir> is useful in saving scan time when <websock_handlers>
-   contains many non-WebSocket handler files.
-
-   If you want to allow handlers whose canonical path is not under the root
-   directory (i.e. symbolic link is in root directory but its target is not),
-   configure as follows:
-
-       PythonOption mod_pywebsocket.allow_handlers_outside_root_dir On
-
-   Example snippet of httpd.conf:
-   (mod_pywebsocket is in /websock_lib, WebSocket handlers are in
-   /websock_handlers, port is 80 for ws, 443 for wss.)
-
-       <IfModule python_module>
-         PythonPath "sys.path+['/websock_lib']"
-         PythonOption mod_pywebsocket.handler_root /websock_handlers
-         PythonHeaderParserHandler mod_pywebsocket.headerparserhandler
-       </IfModule>
-
-2. Tune Apache parameters for serving WebSocket. We'd like to note that at
-   least TimeOut directive from core features and RequestReadTimeout
-   directive from mod_reqtimeout should be modified not to kill connections
-   in only a few seconds of idle time.
-
-3. Verify installation. You can use example/console.html to poke the server.
+2. Once the standalone server is launched verify it by accessing
+http://localhost[:port]/console.html. Include the port number when
+specified on launch. If everything is working correctly, you
+will see a simple echo console.
 
 
 Writing WebSocket handlers
@@ -189,8 +151,8 @@ use in web_socket_passive_closing_handshake.
 Threading
 ---------
 
-A WebSocket handler must be thread-safe if the server (Apache or
-standalone.py) is configured to use threads.
+A WebSocket handler must be thread-safe. The standalone
+server uses threads by default.
 
 
 Configuring WebSocket Extension Processors

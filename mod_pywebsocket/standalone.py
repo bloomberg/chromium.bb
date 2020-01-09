@@ -32,7 +32,7 @@
 
 """Standalone WebSocket server.
 
-Use this file to launch pywebsocket without Apache HTTP Server.
+Use this file to launch pywebsocket as a standalone server.
 
 
 BASIC USAGE

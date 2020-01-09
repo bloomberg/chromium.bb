@@ -30,10 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-"""End-to-end tests for pywebsocket. Tests standalone.py by default. You
-can also test mod_pywebsocket hosted on an Apache server by setting
-_use_external_server to True and modifying _external_server_port to point to
-the port on which the Apache server is running.
+"""End-to-end tests for pywebsocket. Tests standalone.py.
 """
 
 
@@ -55,12 +52,6 @@ from test import client_for_testing
 _GOODBYE_MESSAGE = 'Goodbye'
 
 _SERVER_WARMUP_IN_SEC = 0.2
-
-# If you want to use external server to run end to end tests, set following
-# parameters correctly.
-_use_external_server = False
-_external_server_port = 0
-
 
 # Test body functions
 def _echo_check_procedure(client):
@@ -148,13 +139,7 @@ class EndToEndTestBase(unittest.TestCase):
         self._options.origin = 'http://localhost'
         self._options.resource = '/echo'
 
-        # TODO(toyoshim): Eliminate launching a standalone server on using
-        # external server.
-
-        if _use_external_server:
-            self._options.server_port = _external_server_port
-        else:
-            self._options.server_port = self.test_port
+        self._options.server_port = self.test_port
 
     # TODO(tyoshino): Use tearDown to kill the server.
 

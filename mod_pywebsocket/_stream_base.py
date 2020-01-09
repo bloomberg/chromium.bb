@@ -96,7 +96,7 @@ class StreamBase(object):
         """Construct an instance.
 
         Args:
-            request: mod_python request.
+            request: request object.
         """
 
         self._logger = util.get_class_logger(self)

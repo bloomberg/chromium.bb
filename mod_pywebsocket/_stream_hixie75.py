@@ -133,7 +133,6 @@ class StreamHixie75(StreamBase):
         while True:
             # Read 1 byte.
             # mp_conn.read will block if no bytes are available.
-            # Timeout is controlled by TimeOut directive of Apache.
             frame_type_str = self.receive_bytes(1)
             frame_type = ord(frame_type_str)
             if (frame_type & 0x80) == 0x80:

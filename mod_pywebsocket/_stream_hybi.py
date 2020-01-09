@@ -746,7 +746,6 @@ class Stream(StreamBase):
 
         while True:
             # mp_conn.read will block if no bytes are available.
-            # Timeout is controlled by TimeOut directive of Apache.
 
             frame = self._receive_frame_as_frame_object()
 

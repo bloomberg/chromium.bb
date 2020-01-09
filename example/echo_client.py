@@ -819,8 +819,6 @@ class ClientHandshakeProcessorHybi00(ClientHandshakeBase):
 
 class ClientConnection(object):
     """A wrapper for socket object to provide the mp_conn interface.
-    mod_pywebsocket library is designed to be working on Apache mod_python's
-    mp_conn object.
     """
 
     def __init__(self, socket):
