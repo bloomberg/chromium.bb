@@ -24,6 +24,8 @@ from chromite.scripts import cros_set_lsb_release
 DLC_META_DIR = 'opt/google/dlc/'
 DLC_IMAGE_DIR = 'build/rootfs/dlc/'
 LSB_RELEASE = 'etc/lsb-release'
+DLC_IMAGE = 'dlc.img'
+IMAGELOADER_JSON = 'imageloader.json'
 
 # This file has major and minor version numbers that the update_engine client
 # supports. These values are needed for generating a delta/full payload.
@@ -56,6 +58,19 @@ def HashFile(file_path):
     for b in iter(lambda: f.read(2048), b''):
       sha256.update(b)
   return sha256.hexdigest()
+
+
+def GetValueInJsonFile(json_path, key, default_value=None):
+  """Reads file containing JSON and returns value or default_value for key.
+
+  Args:
+    json_path: (str) File containing JSON.
+    key: (str) The desired key to lookup.
+    default_value: (default:None) The default value returned in case of missing
+      key.
+  """
+  with open(json_path) as fd:
+    return json.load(fd).get(key, default_value)
 
 
 class DlcGenerator(object):
@@ -109,9 +124,9 @@ class DlcGenerator(object):
     osutils.SafeMakedirs(self.image_dir)
 
     # Create path for all final artifacts.
-    self.dest_image = os.path.join(self.image_dir, 'dlc.img')
+    self.dest_image = os.path.join(self.image_dir, DLC_IMAGE)
     self.dest_table = os.path.join(self.meta_dir, 'table')
-    self.dest_imageloader_json = os.path.join(self.meta_dir, 'imageloader.json')
+    self.dest_imageloader_json = os.path.join(self.meta_dir, IMAGELOADER_JSON)
 
     # Log out the member variable values initially set.
     logging.debug('Initial internal values of DlcGenerator: %s',
@@ -336,7 +351,35 @@ class DlcGenerator(object):
     self.GenerateVerity()
 
 
-def CopyAllDlcs(sysroot, install_root_dir):
+def IsDlcPreloadingAllowed(dlc_id, dlc_meta_dir):
+  """Validates that DLC and it's packages all were built with DLC_PRELOAD=true.
+
+  Args:
+    dlc_id: (str) DLC ID.
+    dlc_meta_dir: (str) the rooth path where DLC metadata resides.
+  """
+
+  dlc_id_meta_dir = os.path.join(dlc_meta_dir, dlc_id)
+  if not os.path.exists(dlc_id_meta_dir):
+    logging.error('DLC Metadata directory (%s) does not exist for preloading ' \
+                  'check, will not preload', dlc_id_meta_dir)
+    return False
+
+  packages = os.listdir(dlc_id_meta_dir)
+  if not packages:
+    logging.error('DLC ID Metadata directory (%s) does not have any ' \
+                  'packages, will not preload.', dlc_id_meta_dir)
+    return False
+
+  return all([
+      GetValueInJsonFile(
+          json_path=os.path.join(dlc_id_meta_dir, package, IMAGELOADER_JSON),
+          key='preload-allowed',
+          default_value=False) for package in packages
+  ])
+
+
+def CopyAllDlcs(sysroot, install_root_dir, preload):
   """Copies all DLC image files into the images directory.
 
   Copies the DLC image files in the given build directory into the given DLC
@@ -347,24 +390,43 @@ def CopyAllDlcs(sysroot, install_root_dir):
     sysroot: Path to directory containing DLC images, e.g /build/<board>.
     install_root_dir: Path to DLC output directory, e.g.
       src/build/images/<board>/<version>.
+    preload: When true, only copies DLC(s) if built with DLC_PRELOAD=true.
   """
-  build_dir = os.path.join(sysroot, DLC_IMAGE_DIR)
+  dlc_meta_dir = os.path.join(sysroot, DLC_META_DIR)
+  dlc_image_dir = os.path.join(sysroot, DLC_IMAGE_DIR)
 
-  if not os.path.exists(build_dir):
-    logging.info('DLC build directory (%s) does not exist, ignoring.',
-                 build_dir)
+  if not os.path.exists(dlc_image_dir):
+    logging.info('DLC Image directory (%s) does not exist, ignoring.',
+                 dlc_image_dir)
     return
 
-  if not os.listdir(build_dir):
+  dlc_ids = os.listdir(dlc_image_dir)
+  if not dlc_ids:
     logging.info('There are no DLC(s) to copy to output, ignoring.')
     return
 
-  logging.info('Detected the following DLCs: %s',
-               ', '.join(os.listdir(build_dir)))
-  logging.info('Copying all DLC images from %s to %s.', build_dir,
-               install_root_dir)
+  logging.info('Detected the following DLCs: %s', ', '.join(dlc_ids))
+
+  if preload:
+    logging.info(
+        'Will only copy DLC images built with preloading from %s to '
+        '%s.', dlc_image_dir, install_root_dir)
+    dlc_ids = [
+        dlc_id for dlc_id in dlc_ids
+        if IsDlcPreloadingAllowed(dlc_id, dlc_meta_dir)
+    ]
+    logging.info('Actual DLC(s) to be copied: %s', ', '.join(dlc_ids))
+
+  else:
+    logging.info('Copying all DLC images from %s to %s.', dlc_image_dir,
+                 install_root_dir)
   osutils.SafeMakedirs(install_root_dir)
-  osutils.CopyDirContents(build_dir, install_root_dir)
+
+  for dlc_id in dlc_ids:
+    source_dlc_dir = os.path.join(dlc_image_dir, dlc_id)
+    install_dlc_dir = os.path.join(install_root_dir, dlc_id)
+    osutils.SafeMakedirs(install_dlc_dir)
+    osutils.CopyDirContents(source_dlc_dir, install_dlc_dir)
 
   logging.info('Done copying the DLCs to their destination.')
 
@@ -495,4 +557,7 @@ def main(argv):
         preload=opts.preload)
     dlc_generator.GenerateDLC()
   else:
-    CopyAllDlcs(opts.sysroot, opts.install_root_dir)
+    CopyAllDlcs(
+        sysroot=opts.sysroot,
+        install_root_dir=opts.install_root_dir,
+        preload=opts.preload)

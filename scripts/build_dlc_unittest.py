@@ -215,16 +215,60 @@ class FinalizeDlcsTest(cros_test_lib.MockTempDirTestCase):
     """Tests CopyAllDlcs to make sure all DLCs are copied correctly"""
     sysroot = os.path.join(self.tempdir, 'sysroot')
     osutils.WriteFile(
-        os.path.join(sysroot, _IMAGE_DIR, _ID, 'dlc.img'),
+        os.path.join(sysroot, _IMAGE_DIR, _ID, build_dlc.DLC_IMAGE),
         'content',
         makedirs=True)
     output = os.path.join(self.tempdir, 'output')
-    build_dlc.CopyAllDlcs(sysroot, output)
-    self.assertExists(os.path.join(output, _ID, 'dlc.img'))
+    build_dlc.CopyAllDlcs(sysroot, output, False)
+    self.assertExists(os.path.join(output, _ID, build_dlc.DLC_IMAGE))
 
   def testCopyAllDlcsNoDlc(self):
     copy_contents_mock = self.PatchObject(osutils, 'CopyDirContents')
     sysroot = os.path.join(self.tempdir, 'sysroot')
     output = os.path.join(self.tempdir, 'output')
-    build_dlc.CopyAllDlcs(sysroot, output)
+    build_dlc.CopyAllDlcs(sysroot, output, False)
     copy_contents_mock.assert_not_called()
+
+  def testCopyAllDlcsWithPreloadAllowed(self):
+    package_nums = 2
+    preload_allowed_json = '{"preload-allowed": true}'
+    sysroot = os.path.join(self.tempdir, 'sysroot')
+    for package_num in range(package_nums):
+      osutils.WriteFile(
+          os.path.join(sysroot, _IMAGE_DIR, _ID, _PACKAGE + str(package_num),
+                       build_dlc.DLC_IMAGE),
+          'image content',
+          makedirs=True)
+      osutils.WriteFile(
+          os.path.join(sysroot, _META_DIR, _ID, _PACKAGE + str(package_num),
+                       build_dlc.IMAGELOADER_JSON),
+          preload_allowed_json,
+          makedirs=True)
+    output = os.path.join(self.tempdir, 'output')
+    build_dlc.CopyAllDlcs(sysroot, output, preload=True)
+    for package_num in range(package_nums):
+      self.assertExists(
+          os.path.join(output, _ID, _PACKAGE + str(package_num),
+                       build_dlc.DLC_IMAGE))
+
+  def testCopyAllDlcsWithPreloadNotAllowed(self):
+    package_nums = 2
+    preload_not_allowed_json = '{"preload-allowed": false}'
+    sysroot = os.path.join(self.tempdir, 'sysroot')
+    for package_num in range(package_nums):
+      osutils.WriteFile(
+          os.path.join(sysroot, _IMAGE_DIR, _ID, _PACKAGE + str(package_num),
+                       build_dlc.DLC_IMAGE),
+          'image content',
+          makedirs=True)
+      osutils.WriteFile(
+          os.path.join(sysroot, _META_DIR, _ID, _PACKAGE + str(package_num),
+                       build_dlc.IMAGELOADER_JSON),
+          preload_not_allowed_json,
+          makedirs=True)
+    output = os.path.join(self.tempdir, 'output')
+    build_dlc.CopyAllDlcs(sysroot, output, preload=True)
+    for package_num in range(package_nums):
+      self.assertNotExists(
+          os.path.join(output, _ID, _PACKAGE + str(package_num),
+                       build_dlc.DLC_IMAGE))
