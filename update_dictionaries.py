@@ -16,20 +16,20 @@ def main():
   if not os.getcwd().endswith("hunspell_dictionaries"):
     print "Please run this file from the hunspell_dictionaries directory"
   dictionaries = (
-      ("https://sourceforge.net/projects/wordlist/files/speller/2017.01.22/"
-       "hunspell-en_US-2017.01.22.zip",
+      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
+       "hunspell-en_US-2019.10.06.zip",
        "en_US.zip"),
-      ("https://sourceforge.net/projects/wordlist/files/speller/2017.01.22/"
-       "hunspell-en_CA-2017.01.22.zip",
+      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
+       "hunspell-en_CA-2019.10.06.zip",
        "en_CA.zip"),
-      ("https://sourceforge.net/projects/wordlist/files/speller/2017.01.22/"
-       "hunspell-en_GB-ise-2017.01.22.zip",
+      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
+       "hunspell-en_GB-ise-2019.10.06.zip",
        "en_GB.zip"),
-      ("https://sourceforge.net/projects/wordlist/files/speller/2017.01.22/"
-       "hunspell-en_AU-2017.01.22.zip",
+      ("https://sourceforge.net/projects/wordlist/files/speller/2019.10.06/"
+       "hunspell-en_AU-2019.10.06.zip",
        "en_AU.zip"),
-      ("http://downloads.sourceforge.net/lilak/"
-       "lilak_fa-IR_2-1.zip",
+      ("https://github.com/b00f/lilak/releases/latest/download/"
+       "fa-IR.zip",
        "fa_IR.zip")
   )
   for pair in dictionaries:
@@ -40,6 +40,8 @@ def main():
     ZipFile(file_name).extractall()
     for name in glob.glob("*en_GB-ise*"):
       os.rename(name, name.replace("-ise", ""))
+    for name in glob.glob("*fa-IR.*"):
+      os.rename(name, name.replace("-", "_"))
     os.remove(file_name)
   return 0
 
