@@ -389,7 +389,7 @@
 <translation id="5464696796438641524">لوحة المفاتيح البولندية</translation>
 <translation id="5465122519792752163">‏لوحة مفاتيح اللغة النيبالية (InScript)</translation>
 <translation id="5469868506864199649">الإيطالية</translation>
-<translation id="5494920125229734069">تحديد الكل</translation>
+<translation id="5494920125229734069">اختيار الكل</translation>
 <translation id="5500122897333236901">الأيسلندية</translation>
 <translation id="5508696409934741614">نقاط</translation>
 <translation id="5522908512596376669">تم تغيير قائمة الملفات إلى عرض القائمة.</translation>
@@ -590,7 +590,7 @@
 <translation id="7825423931463735974">‏لوحة المفاتيح التاميلية (Tamil99)</translation>
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> تيرابايت</translation>
 <translation id="7839804798877833423">سيؤدي جلب هذه الملفات إلى استخدام حوالي <ph name="FILE_SIZE" /> من بيانات الجوال.</translation>
-<translation id="7846076177841592234">إلغاء التحديد</translation>
+<translation id="7846076177841592234">إلغاء الاختيار</translation>
 <translation id="7853966320808728790">‏BÉPO الفرنسية</translation>
 <translation id="7864662577698025113">إضافة خدمة جديدة</translation>
 <translation id="7873831373602885875">يتعذَّر الحفظ في <ph name="FOLDER_NAME" />. وسيتم حفظ جميع التعديلات في <ph name="DOWNLOADS_FOLDER" /> في مجلَّد "التنزيلات".</translation>
@@ -673,7 +673,7 @@
 <translation id="8722421161699219904">لوحة المفاتيح الأمريكية الدولية</translation>
 <translation id="872537912056138402">الكرواتية</translation>
 <translation id="874420130893181774">‏أسلوب إدخال Pinyin التقليدي</translation>
-<translation id="8775404590947523323">يتم حفظ التعديلات تلقائيًا.<ph name="BREAKS" />للاحتفاظ بنسخة من الصورة الأصلية، يجب إلغاء تحديد "استبدال الملف الأصلي"</translation>
+<translation id="8775404590947523323">يتم حفظ التعديلات تلقائيًا.<ph name="BREAKS" />للاحتفاظ بنسخة من الصورة الأصلية، يجب إلغاء اختيار "استبدال الملف الأصلي"</translation>
 <translation id="8803496343472038847">لوحة المفاتيح الصوتية الروسية</translation>
 <translation id="8808686172382650546">قط</translation>
 <translation id="8810671769985673465">تعذّر الضغط، العناصر الموجودة هي: "<ph name="FILE_NAME" />"</translation>
