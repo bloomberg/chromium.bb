@@ -1023,7 +1023,6 @@ inline void ConvolveKernelHorizontal2Tap(const uint8_t* src,
           VQTbl1U8(src_vals, src_indices),
           VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(1)))};
 
-      // TODO(johannkoenig): Use SumOnePassTaps for all Kernel functions.
       vst1q_s16(intermediate,
                 vrshrq_n_s16(SumOnePassTaps</*filter_index=*/3>(src, taps),
                              kInterRoundBitsHorizontal - 1));
@@ -1050,8 +1049,8 @@ inline void ConvolveKernelHorizontal2Tap(const uint8_t* src,
     // For each x, a lane of tapsK has
     // kSubPixelFilters[filter_index][filter_id][k], where filter_id depends
     // on x.
-    const uint8x8_t taps0 = VQTbl1U8(filter_taps0, filter_indices);
-    const uint8x8_t taps1 = VQTbl1U8(filter_taps1, filter_indices);
+    const uint8x8_t taps[2] = {VQTbl1U8(filter_taps0, filter_indices),
+                               VQTbl1U8(filter_taps1, filter_indices)};
     int y = 0;
     do {
       // Load a pool of samples to select from using stepped indices.
@@ -1060,16 +1059,13 @@ inline void ConvolveKernelHorizontal2Tap(const uint8_t* src,
           vmovn_u16(vshrq_n_u16(subpel_index_offsets, kScaleSubPixelBits));
 
       // For each x, a lane of srcK contains src_x[k].
-      const uint8x8_t src0 = vtbl3_u8(src_vals, src_indices);
-      const uint8x8_t src1 =
-          vtbl3_u8(src_vals, vadd_u8(src_indices, vdup_n_u8(1)));
+      const uint8x8_t src[2] = {
+          vtbl3_u8(src_vals, src_indices),
+          vtbl3_u8(src_vals, vadd_u8(src_indices, vdup_n_u8(1)))};
 
-      const uint16x8_t product0 = vmull_u8(taps0, src0);
-      // product0 + product1
-      const uint16x8_t result = vmlal_u8(product0, taps1, src1);
-
-      vst1q_s16(intermediate_x, vreinterpretq_s16_u16(vrshrq_n_u16(
-                                    result, kInterRoundBitsHorizontal - 1)));
+      vst1q_s16(intermediate_x,
+                vrshrq_n_s16(SumOnePassTaps</*filter_index=*/3>(src, taps),
+                             kInterRoundBitsHorizontal - 1));
       src_x += src_stride;
       intermediate_x += kIntermediateStride;
     } while (++y < intermediate_height);
@@ -1115,10 +1111,10 @@ void ConvolveKernelHorizontalPositive4Tap(
       vshrn_n_u16(subpel_index_offsets, kFilterIndexShift), filter_index_mask);
   // Note that filter_id depends on x.
   // For each x, tapsK has kSubPixelFilters[filter_index][filter_id][k].
-  const uint8x8_t taps0 = VQTbl1U8(filter_taps0, filter_indices);
-  const uint8x8_t taps1 = VQTbl1U8(filter_taps1, filter_indices);
-  const uint8x8_t taps2 = VQTbl1U8(filter_taps2, filter_indices);
-  const uint8x8_t taps3 = VQTbl1U8(filter_taps3, filter_indices);
+  const uint8x8_t taps[4] = {VQTbl1U8(filter_taps0, filter_indices),
+                             VQTbl1U8(filter_taps1, filter_indices),
+                             VQTbl1U8(filter_taps2, filter_indices),
+                             VQTbl1U8(filter_taps3, filter_indices)};
 
   const uint8x8_t src_indices =
       vmovn_u16(vshrq_n_u16(subpel_index_offsets, kScaleSubPixelBits));
@@ -1130,22 +1126,15 @@ void ConvolveKernelHorizontalPositive4Tap(
     // For each x, srcK contains src_x[k] where k=1.
     // Whereas taps come from different arrays, src pixels are drawn from the
     // same contiguous line.
-    const uint8x8_t src0 = VQTbl1U8(src_vals, src_indices);
-    const uint8x8_t src1 =
-        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(1)));
-    const uint8x8_t src2 =
-        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(2)));
-    const uint8x8_t src3 =
-        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(3)));
+    const uint8x8_t src[4] = {
+        VQTbl1U8(src_vals, src_indices),
+        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(1))),
+        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(2))),
+        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(3)))};
 
-    uint16x8_t sum = vmull_u8(taps0, src0);
-    sum = vmlal_u8(sum, taps1, src1);
-    sum = vmlal_u8(sum, taps2, src2);
-    sum = vmlal_u8(sum, taps3, src3);
-
-    vst1_s16(intermediate,
-             vreinterpret_s16_u16(vrshr_n_u16(vget_low_u16(sum),
-                                              kInterRoundBitsHorizontal - 1)));
+    vst1q_s16(intermediate,
+              vrshrq_n_s16(SumOnePassTaps</*filter_index=*/5>(src, taps),
+                           kInterRoundBitsHorizontal - 1));
 
     src_x += src_stride;
     intermediate += kIntermediateStride;
@@ -1189,10 +1178,10 @@ inline void ConvolveKernelHorizontalSigned4Tap(
       vshrn_n_u16(subpel_index_offsets, kFilterIndexShift), filter_index_mask);
   // Note that filter_id depends on x.
   // For each x, tapsK has kSubPixelFilters[filter_index][filter_id][k].
-  const uint8x8_t taps0 = VQTbl1U8(filter_taps0, filter_indices);
-  const uint8x8_t taps1 = VQTbl1U8(filter_taps1, filter_indices);
-  const uint8x8_t taps2 = VQTbl1U8(filter_taps2, filter_indices);
-  const uint8x8_t taps3 = VQTbl1U8(filter_taps3, filter_indices);
+  const uint8x8_t taps[4] = {VQTbl1U8(filter_taps0, filter_indices),
+                             VQTbl1U8(filter_taps1, filter_indices),
+                             VQTbl1U8(filter_taps2, filter_indices),
+                             VQTbl1U8(filter_taps3, filter_indices)};
   int y = 0;
   do {
     // Load a pool of samples to select from using stepped indices.
@@ -1203,21 +1192,15 @@ inline void ConvolveKernelHorizontalSigned4Tap(
     // For each x, srcK contains src_x[k] where k=1.
     // Whereas taps come from different arrays, src pixels are drawn from the
     // same contiguous line.
-    const uint8x8_t src0 = VQTbl1U8(src_vals, src_indices);
-    const uint8x8_t src1 =
-        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(1)));
-    const uint8x8_t src2 =
-        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(2)));
-    const uint8x8_t src3 =
-        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(3)));
+    const uint8x8_t src[4] = {
+        VQTbl1U8(src_vals, src_indices),
+        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(1))),
+        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(2))),
+        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(3)))};
 
-    uint16x8_t sum = vmull_u8(taps1, src1);
-    sum = vmlsl_u8(sum, taps0, src0);
-    sum = vmlal_u8(sum, taps2, src2);
-    sum = vmlsl_u8(sum, taps3, src3);
-
-    vst1_s16(intermediate, vrshr_n_s16(vreinterpret_s16_u16(vget_low_u16(sum)),
-                                       kInterRoundBitsHorizontal - 1));
+    vst1q_s16(intermediate,
+              vrshrq_n_s16(SumOnePassTaps</*filter_index=*/4>(src, taps),
+                           kInterRoundBitsHorizontal - 1));
     src_x += src_stride;
     intermediate += kIntermediateStride;
   } while (++y < intermediate_height);
@@ -1290,16 +1273,14 @@ inline void ConvolveKernelHorizontalSigned6Tap(
       // Load a pool of samples to select from using stepped indices.
       const uint8x8x3_t src_vals = LoadSrcVals<grade_x>(src_x);
 
-      // tap signs : + - + + - +
-      uint16x8_t sum = vmull_u8(taps[0], vtbl3_u8(src_vals, src_lookup[0]));
-      sum = vmlsl_u8(sum, taps[1], vtbl3_u8(src_vals, src_lookup[1]));
-      sum = vmlal_u8(sum, taps[2], vtbl3_u8(src_vals, src_lookup[2]));
-      sum = vmlal_u8(sum, taps[3], vtbl3_u8(src_vals, src_lookup[3]));
-      sum = vmlsl_u8(sum, taps[4], vtbl3_u8(src_vals, src_lookup[4]));
-      sum = vmlal_u8(sum, taps[5], vtbl3_u8(src_vals, src_lookup[5]));
+      const uint8x8_t src[6] = {
+          vtbl3_u8(src_vals, src_lookup[0]), vtbl3_u8(src_vals, src_lookup[1]),
+          vtbl3_u8(src_vals, src_lookup[2]), vtbl3_u8(src_vals, src_lookup[3]),
+          vtbl3_u8(src_vals, src_lookup[4]), vtbl3_u8(src_vals, src_lookup[5])};
 
-      vst1q_s16(intermediate_x, vrshrq_n_s16(vreinterpretq_s16_u16(sum),
-                                             kInterRoundBitsHorizontal - 1));
+      vst1q_s16(intermediate_x,
+                vrshrq_n_s16(SumOnePassTaps</*filter_index=*/0>(src, taps),
+                             kInterRoundBitsHorizontal - 1));
       src_x += src_stride;
       intermediate_x += kIntermediateStride;
     } while (++y < intermediate_height);
@@ -1475,18 +1456,15 @@ inline void ConvolveKernelHorizontalSigned8Tap(
       // Load a pool of samples to select from using stepped indices.
       const uint8x8x3_t src_vals = LoadSrcVals<grade_x>(src_x);
 
-      // tap signs : - + - + + - + -
-      uint16x8_t sum = vmull_u8(taps[1], vtbl3_u8(src_vals, src_lookup[1]));
-      sum = vmlsl_u8(sum, taps[0], vtbl3_u8(src_vals, src_lookup[0]));
-      sum = vmlsl_u8(sum, taps[2], vtbl3_u8(src_vals, src_lookup[2]));
-      sum = vmlal_u8(sum, taps[3], vtbl3_u8(src_vals, src_lookup[3]));
-      sum = vmlal_u8(sum, taps[4], vtbl3_u8(src_vals, src_lookup[4]));
-      sum = vmlsl_u8(sum, taps[5], vtbl3_u8(src_vals, src_lookup[5]));
-      sum = vmlal_u8(sum, taps[6], vtbl3_u8(src_vals, src_lookup[6]));
-      sum = vmlsl_u8(sum, taps[7], vtbl3_u8(src_vals, src_lookup[7]));
+      const uint8x8_t src[8] = {
+          vtbl3_u8(src_vals, src_lookup[0]), vtbl3_u8(src_vals, src_lookup[1]),
+          vtbl3_u8(src_vals, src_lookup[2]), vtbl3_u8(src_vals, src_lookup[3]),
+          vtbl3_u8(src_vals, src_lookup[4]), vtbl3_u8(src_vals, src_lookup[5]),
+          vtbl3_u8(src_vals, src_lookup[6]), vtbl3_u8(src_vals, src_lookup[7])};
 
-      vst1q_s16(intermediate_x, vrshrq_n_s16(vreinterpretq_s16_u16(sum),
-                                             kInterRoundBitsHorizontal - 1));
+      vst1q_s16(intermediate_x,
+                vrshrq_n_s16(SumOnePassTaps</*filter_index=*/2>(src, taps),
+                             kInterRoundBitsHorizontal - 1));
       src_x += src_stride;
       intermediate_x += kIntermediateStride;
     } while (++y < intermediate_height);
