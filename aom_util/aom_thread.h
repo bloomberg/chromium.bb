@@ -35,7 +35,7 @@ typedef HANDLE pthread_t;
 typedef CRITICAL_SECTION pthread_mutex_t;
 
 #if _WIN32_WINNT < 0x0600
-#error Windows Vista / Server 2008 or greater is required.
+#error _WIN32_WINNT must target Windows Vista / Server 2008 or newer.
 #endif
 typedef CONDITION_VARIABLE pthread_cond_t;
 
