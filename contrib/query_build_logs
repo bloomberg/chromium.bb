@@ -11,6 +11,7 @@ prodcertstatus 1>/dev/null 2>/dev/null || prodaccess
 
 when="last3days"
 string_data=""
+count_data=""
 limit=30
 field_limit=80
 verbose=0
@@ -19,10 +20,14 @@ only_stdout=0
 print_usage() {
   cat  <<HELP_USAGE
 
-Usage:  $0 -s|--string <search_string> [-w|-when} <when_string>
-
+Usage:  $0 -c|--count <search_string> OR -s|--string <search_string>
+     [-w|-when] <when_string>
      [-l|--limit] <limit_string> [--field_limit <field_limit>]
      [-v|--verbose] [--usage|-u|--help|-h]
+
+     If -c is specified, count the occurrences of the search string.
+     If -s is specified, display the matching occurences based on the other
+       arguments (-l, --field_limit, etc).
 
      search_string : What to search for in build_cmd logs.
      when_string   : Which dremel table, such as last7days, last1days, etc.
@@ -40,6 +45,10 @@ while (( "$#" )); do
   case "$1" in
     -s|--string)
       string_data=$2
+      shift 2
+      ;;
+    -c|--count)
+      count_data=$2
       shift 2
       ;;
     -w|--when)
@@ -72,6 +81,25 @@ while (( "$#" )); do
       shift
   esac
 done
+
+if [ ${string_data} ] && [ ${count_data} ]; then
+  echo "Specifying both -s and -c is not allowed."
+  print_usage
+fi
+
+# If a count was requested, build and execute the query. This code path is
+# separate because it is much simpler than search queries.
+if [ ${count_data} ]; then
+  query="SELECT count(stdout) AS Count FROM
+  chromeos_ci_eng.analysis_event_log.${when}
+  WHERE stdout LIKE \"%${count_data}%\";"
+  if [ "${verbose}" -eq 1 ]; then
+    echo "QUERY: ${query}"
+    echo "Executing..."
+  fi
+  echo "${query}" | dremel --min_completion_ratio 1
+  exit 0
+fi
 
 if [ -z "${string_data}" ]
 then
