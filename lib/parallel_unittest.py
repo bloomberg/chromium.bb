@@ -535,9 +535,8 @@ class TestConstants(cros_test_lib.TestCase):
     # Enforce that the default timeout is less than 9000, the default timeout
     # set in build/scripts/master/factory/chromeos_factory.py:ChromiteFactory
     # in the Chrome buildbot source code.
-    # TODO(crbug.com/1035799): Testing increase for paygen issue.
     self.assertLess(
-        parallel._BackgroundTask.SILENT_TIMEOUT, 28801,
+        parallel._BackgroundTask.SILENT_TIMEOUT, 9000,
         'Do not increase this timeout. Instead, print regular progress '
         'updates, so that buildbot (and cbuildbot) will will know that your '
         'program has not hung.')

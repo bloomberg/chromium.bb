@@ -137,8 +137,7 @@ class _BackgroundTask(multiprocessing.Process):
   # eventually catch hanging processes, and print the remainder of our output.
   # Do not increase this. Instead, adjust your program to print regular progress
   # updates, so that cbuildbot (and buildbot) can know that it has not hung.
-  # TODO(crbug.com/1035799): Testing increase because of parallel builders.
-  SILENT_TIMEOUT = 60 * 480
+  SILENT_TIMEOUT = 60 * 145
 
   # The amount by which we reduce the SILENT_TIMEOUT every time we launch
   # a subprocess. This helps ensure that children get a chance to enforce the
