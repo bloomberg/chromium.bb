@@ -29,7 +29,6 @@ namespace {
 
 constexpr int kMvBorder = 128;
 constexpr int kProjectionMvClamp = 16383;
-constexpr int kProjectionMvMaxVerticalOffset = 0;
 constexpr int kProjectionMvMaxHorizontalOffset = 8;
 
 // Entry at index i is computed as:
@@ -38,42 +37,39 @@ constexpr int kWarpValidThreshold[kMaxBlockSizes] = {
     16, 16, 16, 16, 16, 16, 32, 16, 16,  16,  32,
     64, 32, 32, 32, 64, 64, 64, 64, 112, 112, 112};
 
-// Applies the sign of |sign_value| to |value| (and does so without a branch).
-int16_t ApplySign(int16_t value, int16_t sign_value) {
-  static_assert(sizeof(int16_t) == 2, "");
-  // The next three lines are the branch free equivalent of:
-  // return (sign_value > 0) ? value : -value;
-  const int16_t a = sign_value >> 15;
-  const int16_t b = value ^ a;
-  return b - a;
-}
-
 // 7.10.2.10.
 void LowerMvPrecision(const Tile::Block& block, int16_t* const mv) {
   assert(mv != nullptr);
   if (block.tile.frame_header().allow_high_precision_mv) return;
-  for (int i = 0; i < 2; ++i) {
-    if (block.tile.frame_header().force_integer_mv != 0) {
-      mv[i] = ApplySign(MultiplyBy8(DivideBy8(std::abs(mv[i]) + 3)), mv[i]);
-    } else {
+  if (block.tile.frame_header().force_integer_mv != 0) {
+    for (int i = 0; i < 2; ++i) {
+      const int value = MultiplyBy8(DivideBy8(std::abs(mv[i]) + 3));
+      // The next two lines are the branch free equivalent of:
+      // mv[i] = (mv[i] > 0) ? value : -value;
+      const int a = mv[i] >> 15;
+      mv[i] = (value ^ a) - a;
+    }
+  } else {
+    for (int i = 0; i < 2; ++i) {
       if ((mv[i] & 1) != 0) {
         // The next line is equivalent to:
         // if (mv[i] > 0) { --mv[i]; } else { ++mv[i]; }
-        mv[i] += ApplySign(-1, mv[i]);
+        mv[i] -= 2 * (mv[i] >> 15) + 1;
       }
     }
   }
 }
 
-constexpr int16_t kDivisionLookup[32] = {
+constexpr int16_t kDivisionLookup[kMaxFrameDistance + 1] = {
     0,    16384, 8192, 5461, 4096, 3276, 2730, 2340, 2048, 1820, 1638,
     1489, 1365,  1260, 1170, 1092, 1024, 963,  910,  862,  819,  780,
     744,  712,   682,  655,  630,  606,  585,  564,  546,  528};
 
 // 7.9.3.
-void GetMvProjection(const MotionVector& mv, int numerator, int denominator,
-                     MotionVector* const projection_mv) {
-  denominator = std::min(denominator, static_cast<int>(kMaxFrameDistance));
+void GetMvProjection(const MotionVector& mv, int numerator,
+                     const int denominator, MotionVector* const projection_mv) {
+  assert(denominator > 0);
+  assert(denominator <= kMaxFrameDistance);
   numerator = Clip3(numerator, -kMaxFrameDistance, kMaxFrameDistance);
   for (int i = 0; i < 2; ++i) {
     projection_mv->mv[i] =
@@ -84,10 +80,12 @@ void GetMvProjection(const MotionVector& mv, int numerator, int denominator,
 }
 
 // 7.9.3. (without the clamp for numerator and denominator).
-void GetMvProjectionNoClamp(const MotionVector& mv, int numerator,
-                            int denominator,
+void GetMvProjectionNoClamp(const MotionVector& mv, const int numerator,
+                            const int denominator,
                             MotionVector* const projection_mv) {
+  // Allow numerator and denominator to be 0 to simplify branch conditions.
   assert(std::abs(numerator) <= kMaxFrameDistance);
+  assert(denominator >= 0);
   assert(denominator <= kMaxFrameDistance);
   for (int i = 0; i < 2; ++i) {
     projection_mv->mv[i] =
@@ -331,21 +329,22 @@ void AddTemporalReferenceMvCandidate(
   }
   const BlockParameters& bp = *block.bp;
   const MotionVector& temporal_mv = motion_field.mv[y8][x8];
-  const int temporal_reference_offset = motion_field.reference_offset[y8][x8];
   if (temporal_mv.mv[0] == kInvalidMvValue) return;
+  const int temporal_reference_offset = motion_field.reference_offset[y8][x8];
+  assert(temporal_reference_offset > 0);
+  assert(temporal_reference_offset <= kMaxFrameDistance);
   if (is_compound) {
     MotionVector candidate_mv[2] = {};
-    for (int i = 0; i < 2 && temporal_reference_offset != 0; ++i) {
+    for (int i = 0; i < 2; ++i) {
       const int reference_offset = GetRelativeDistance(
           block.tile.frame_header().order_hint,
           block.tile.current_frame().order_hint(bp.reference_frame[i]),
           block.tile.sequence_header().order_hint_range);
-      if (reference_offset == 0) {
-        continue;
+      if (reference_offset != 0) {
+        GetMvProjection(temporal_mv, reference_offset,
+                        temporal_reference_offset, &candidate_mv[i]);
+        LowerMvPrecision(block, candidate_mv[i].mv);
       }
-      GetMvProjection(temporal_mv, reference_offset, temporal_reference_offset,
-                      &candidate_mv[i]);
-      LowerMvPrecision(block, candidate_mv[i].mv);
     }
     if (zero_mv_context != nullptr && delta_row == 0 && delta_column == 0) {
       *zero_mv_context = static_cast<int>(
@@ -371,16 +370,14 @@ void AddTemporalReferenceMvCandidate(
   }
   assert(!is_compound);
   MotionVector candidate_mv = {};
-  if (temporal_reference_offset != 0) {
-    const int reference_offset = GetRelativeDistance(
-        block.tile.frame_header().order_hint,
-        block.tile.current_frame().order_hint(bp.reference_frame[0]),
-        block.tile.sequence_header().order_hint_range);
-    if (reference_offset != 0) {
-      GetMvProjection(temporal_mv, reference_offset, temporal_reference_offset,
-                      &candidate_mv);
-      LowerMvPrecision(block, candidate_mv.mv);
-    }
+  const int reference_offset = GetRelativeDistance(
+      block.tile.frame_header().order_hint,
+      block.tile.current_frame().order_hint(bp.reference_frame[0]),
+      block.tile.sequence_header().order_hint_range);
+  if (reference_offset != 0) {
+    GetMvProjection(temporal_mv, reference_offset, temporal_reference_offset,
+                    &candidate_mv);
+    LowerMvPrecision(block, candidate_mv.mv);
   }
   if (zero_mv_context != nullptr && delta_row == 0 && delta_column == 0) {
     *zero_mv_context = static_cast<int>(
@@ -681,39 +678,25 @@ bool CompareCandidateMotionVectors(const CandidateMotionVector& lhs,
   return lhs.weight > rhs.weight;
 }
 
-// Part of 7.9.4.
-bool Project(int value, int16_t delta, int dst_sign, int max_value,
-             int max_offset, int* const projected_value) {
-  const int base_value = value & ~7;
-  const int16_t offset = (delta >= 0) ? DivideBy64(delta) : -DivideBy64(-delta);
-  value += ApplySign(offset, dst_sign);
-  if (value < 0 || value >= max_value || value < base_value - max_offset ||
-      value >= base_value + 8 + max_offset) {
-    return false;
-  }
-  *projected_value = value;
-  return true;
-}
-
 // 7.9.4.
-bool GetBlockPosition(int x8, int y8, int dst_sign, int rows4x4, int columns4x4,
-                      const MotionVector& projection_mv, int* const position_y8,
-                      int* const position_x8) {
-  return Project(y8, projection_mv.mv[0], dst_sign, DivideBy2(rows4x4),
-                 kProjectionMvMaxVerticalOffset, position_y8) &&
-         Project(x8, projection_mv.mv[1], dst_sign, DivideBy2(columns4x4),
-                 kProjectionMvMaxHorizontalOffset, position_x8);
+int Project(const int value, const int16_t delta, const int dst_sign) {
+  // Add 63 to negative delta so that it shifts towards zero.
+  const int16_t delta_sign = (delta >= 0) ? delta : (delta + 63);
+  const int offset = DivideBy64(delta_sign);
+  // The next line is the branch free equivalent of:
+  // return (dst_sign == 0) ? (value + offset) : (value - offset);
+  return value + (offset ^ dst_sign) - dst_sign;
 }
 
 // 7.9.2.
 bool MotionFieldProjection(
-    ReferenceFrameType source, int dst_sign,
-    const unsigned int order_hint_range, const ObuFrameHeader& frame_header,
-    const RefCountedBuffer& current_frame,
+    const ObuFrameHeader& frame_header, const RefCountedBuffer& current_frame,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    TemporalMotionField* const motion_field, int y8_start, int y8_end,
-    int x8_start, int x8_end) {
+    ReferenceFrameType source, const unsigned int order_hint_range,
+    const int reference_to_current_with_sign, const int dst_sign,
+    const int y8_start, const int y8_end, const int x8_start, const int x8_end,
+    TemporalMotionField* const motion_field) {
   const int source_index =
       frame_header.reference_frame_index[source - kReferenceFrameLast];
   auto* const source_frame = reference_frames[source_index].get();
@@ -723,66 +706,74 @@ bool MotionFieldProjection(
       IsIntraFrame(source_frame->frame_type())) {
     return false;
   }
-  const int reference_to_current_with_sign =
-      GetRelativeDistance(current_frame.order_hint(source),
-                          frame_header.order_hint, order_hint_range) *
-      dst_sign;
-  if (std::abs(reference_to_current_with_sign) > kMaxFrameDistance) return true;
-  // Index 0 of these two arrays are never used.
-  int reference_offsets[kNumReferenceFrameTypes];
-  bool skip_reference[kNumReferenceFrameTypes];
-  for (int source_reference_type = kReferenceFrameLast;
-       source_reference_type <= kNumInterReferenceFrameTypes;
-       ++source_reference_type) {
-    const int reference_offset = GetRelativeDistance(
-        current_frame.order_hint(source),
-        source_frame->order_hint(
-            static_cast<ReferenceFrameType>(source_reference_type)),
-        order_hint_range);
-    skip_reference[source_reference_type] =
-        std::abs(reference_offset) > kMaxFrameDistance || reference_offset <= 0;
-    reference_offsets[source_reference_type] = reference_offset;
-  }
+  assert(reference_to_current_with_sign >= -kMaxFrameDistance);
+  if (reference_to_current_with_sign > kMaxFrameDistance) return true;
+  const ReferenceFrameType* source_reference_type =
+      source_frame->motion_field_reference_frame(y8_start, 0);
+  const MotionVector* mv = source_frame->motion_field_mv(y8_start, 0);
+  const ptrdiff_t stride = motion_field->mv.columns();
   // The column range has to be offset by kProjectionMvMaxHorizontalOffset since
   // coordinates in that range could end up being position_x8 because of
   // projection.
   const int adjusted_x8_start =
       std::max(x8_start - kProjectionMvMaxHorizontalOffset, 0);
-  const int adjusted_x8_end =
-      std::min(x8_end + kProjectionMvMaxHorizontalOffset,
-               DivideBy2(frame_header.columns4x4));
-  for (int y8 = y8_start; y8 < y8_end; ++y8) {
-    for (int x8 = adjusted_x8_start; x8 < adjusted_x8_end; ++x8) {
-      const ReferenceFrameType source_reference =
-          *source_frame->motion_field_reference_frame(y8, x8);
-      if (source_reference <= kReferenceFrameIntra ||
-          skip_reference[source_reference]) {
-        continue;
-      }
-      const int reference_offset = reference_offsets[source_reference];
-      const MotionVector& mv = *source_frame->motion_field_mv(y8, x8);
-      MotionVector projection_mv = {};
-      if (reference_to_current_with_sign != 0 && reference_offset != 0) {
-        GetMvProjectionNoClamp(mv, reference_to_current_with_sign,
-                               reference_offset, &projection_mv);
-      }
-      int position_y8;
-      int position_x8;
-      if (!GetBlockPosition(x8, y8, dst_sign, frame_header.rows4x4,
-                            frame_header.columns4x4, projection_mv,
-                            &position_y8, &position_x8) ||
-          position_x8 < x8_start || position_x8 >= x8_end) {
-        // Do not update the motion vector if the block position is not valid or
-        // if position_x8 is outside the current range of x8_start and x8_end.
-        // Note that position_y8 will always be within the range of y8_start and
-        // y8_end.
-        continue;
-      }
-      (motion_field->mv)[position_y8][position_x8] = mv;
-      (motion_field->reference_offset)[position_y8][position_x8] =
-          reference_offset;
-    }
+  const int adjusted_x8_end = std::min(
+      x8_end + kProjectionMvMaxHorizontalOffset, static_cast<int>(stride));
+  int8_t* dst_reference_offset = motion_field->reference_offset[y8_start];
+  MotionVector* dst_mv = motion_field->mv[y8_start];
+  int8_t reference_offsets[kNumReferenceFrameTypes];
+  bool skip_reference[kNumReferenceFrameTypes];
+  assert((y8_start & 7) == 0);
+
+  // Initialize skip_reference[kReferenceFrameIntra] to simplify branch
+  // conditions in projection.
+  skip_reference[kReferenceFrameIntra] = true;
+  for (int reference_type = kReferenceFrameLast;
+       reference_type <= kNumInterReferenceFrameTypes; ++reference_type) {
+    const int reference_offset = GetRelativeDistance(
+        current_frame.order_hint(source),
+        source_frame->order_hint(
+            static_cast<ReferenceFrameType>(reference_type)),
+        order_hint_range);
+    skip_reference[reference_type] =
+        reference_offset > kMaxFrameDistance || reference_offset <= 0;
+    reference_offsets[reference_type] = reference_offset;
   }
+
+  int y8 = y8_start;
+  do {
+    const int y8_floor = (y8 & ~7) - y8;
+    const int y8_ceiling = std::min(y8_end - y8, y8_floor + 8);
+    int x8 = adjusted_x8_start;
+    do {
+      if (skip_reference[source_reference_type[x8]]) continue;
+      const int reference_offset = reference_offsets[source_reference_type[x8]];
+      MotionVector projection_mv;
+      // reference_to_current_with_sign could be 0.
+      GetMvProjectionNoClamp(mv[x8], reference_to_current_with_sign,
+                             reference_offset, &projection_mv);
+      // Do not update the motion vector if the block position is not valid or
+      // if position_x8 is outside the current range of x8_start and x8_end.
+      // Note that position_y8 will always be within the range of y8_start and
+      // y8_end.
+      const int position_y8 = Project(0, projection_mv.mv[0], dst_sign);
+      if (position_y8 < y8_floor || position_y8 >= y8_ceiling) continue;
+      const int x8_base = x8 & ~7;
+      const int x8_floor =
+          std::max(x8_start, x8_base - kProjectionMvMaxHorizontalOffset);
+      const int x8_ceiling =
+          std::min(x8_end, x8_base + 8 + kProjectionMvMaxHorizontalOffset);
+      const int position_x8 = Project(x8, projection_mv.mv[1], dst_sign);
+      if (position_x8 < x8_floor || position_x8 >= x8_ceiling) continue;
+      dst_mv[position_y8 * stride + position_x8] = mv[x8];
+      dst_reference_offset[position_y8 * stride + position_x8] =
+          reference_offset;
+    } while (++x8 < adjusted_x8_end);
+    source_reference_type += stride;
+    mv += stride;
+    dst_reference_offset += stride;
+    dst_mv += stride;
+  } while (++y8 < y8_end);
   return true;
 }
 
@@ -930,44 +921,68 @@ void SetupMotionField(
   const int y8_end = DivideBy2(std::min(row4x4_end, frame_header.rows4x4));
   const int x8_start = DivideBy2(column4x4_start);
   const int x8_end =
-      std::min(DivideBy2(column4x4_end), DivideBy2(frame_header.columns4x4));
-  const int current_gold_order_hint =
-      current_frame.order_hint(kReferenceFrameGolden);
-  const int last_index = frame_header.reference_frame_index[0];
+      DivideBy2(std::min(column4x4_end, frame_header.columns4x4));
+  const int8_t* const reference_frame_index =
+      frame_header.reference_frame_index;
+  const int last_index = reference_frame_index[0];
   const int last_alternate_order_hint =
       reference_frames[last_index]->order_hint(kReferenceFrameAlternate);
+  const int current_gold_order_hint =
+      current_frame.order_hint(kReferenceFrameGolden);
   if (last_alternate_order_hint != current_gold_order_hint) {
-    MotionFieldProjection(kReferenceFrameLast, -1, order_hint_range,
-                          frame_header, current_frame, reference_frames,
-                          motion_field, y8_start, y8_end, x8_start, x8_end);
+    const int reference_offset_last =
+        -GetRelativeDistance(current_frame.order_hint(kReferenceFrameLast),
+                             frame_header.order_hint, order_hint_range);
+    if (std::abs(reference_offset_last) <= kMaxFrameDistance) {
+      MotionFieldProjection(frame_header, current_frame, reference_frames,
+                            kReferenceFrameLast, order_hint_range,
+                            reference_offset_last, -1, y8_start, y8_end,
+                            x8_start, x8_end, motion_field);
+    }
   }
   int ref_stamp = 1;
-  if (GetRelativeDistance(current_frame.order_hint(kReferenceFrameBackward),
-                          frame_header.order_hint, order_hint_range) > 0 &&
-      MotionFieldProjection(kReferenceFrameBackward, 1, order_hint_range,
-                            frame_header, current_frame, reference_frames,
-                            motion_field, y8_start, y8_end, x8_start, x8_end)) {
+  const int reference_offset_backward =
+      GetRelativeDistance(current_frame.order_hint(kReferenceFrameBackward),
+                          frame_header.order_hint, order_hint_range);
+  if (reference_offset_backward > 0 &&
+      MotionFieldProjection(frame_header, current_frame, reference_frames,
+                            kReferenceFrameBackward, order_hint_range,
+                            reference_offset_backward, 0, y8_start, y8_end,
+                            x8_start, x8_end, motion_field)) {
     --ref_stamp;
   }
-  if (GetRelativeDistance(current_frame.order_hint(kReferenceFrameAlternate2),
-                          frame_header.order_hint, order_hint_range) > 0 &&
-      MotionFieldProjection(kReferenceFrameAlternate2, 1, order_hint_range,
-                            frame_header, current_frame, reference_frames,
-                            motion_field, y8_start, y8_end, x8_start, x8_end)) {
-    --ref_stamp;
-  }
-  if (ref_stamp >= 0 &&
-      GetRelativeDistance(current_frame.order_hint(kReferenceFrameAlternate),
-                          frame_header.order_hint, order_hint_range) > 0 &&
-      MotionFieldProjection(kReferenceFrameAlternate, 1, order_hint_range,
-                            frame_header, current_frame, reference_frames,
-                            motion_field, y8_start, y8_end, x8_start, x8_end)) {
+  const int reference_offset_alternate2 =
+      GetRelativeDistance(current_frame.order_hint(kReferenceFrameAlternate2),
+                          frame_header.order_hint, order_hint_range);
+  if (reference_offset_alternate2 > 0 &&
+      MotionFieldProjection(frame_header, current_frame, reference_frames,
+                            kReferenceFrameAlternate2, order_hint_range,
+                            reference_offset_alternate2, 0, y8_start, y8_end,
+                            x8_start, x8_end, motion_field)) {
     --ref_stamp;
   }
   if (ref_stamp >= 0) {
-    MotionFieldProjection(kReferenceFrameLast2, -1, order_hint_range,
-                          frame_header, current_frame, reference_frames,
-                          motion_field, y8_start, y8_end, x8_start, x8_end);
+    const int reference_offset_alternate =
+        GetRelativeDistance(current_frame.order_hint(kReferenceFrameAlternate),
+                            frame_header.order_hint, order_hint_range);
+    if (reference_offset_alternate > 0 &&
+        MotionFieldProjection(frame_header, current_frame, reference_frames,
+                              kReferenceFrameAlternate, order_hint_range,
+                              reference_offset_alternate, 0, y8_start, y8_end,
+                              x8_start, x8_end, motion_field)) {
+      --ref_stamp;
+    }
+  }
+  if (ref_stamp >= 0) {
+    const int reference_offset_last2 =
+        -GetRelativeDistance(current_frame.order_hint(kReferenceFrameLast2),
+                             frame_header.order_hint, order_hint_range);
+    if (std::abs(reference_offset_last2) <= kMaxFrameDistance) {
+      MotionFieldProjection(frame_header, current_frame, reference_frames,
+                            kReferenceFrameLast2, order_hint_range,
+                            reference_offset_last2, -1, y8_start, y8_end,
+                            x8_start, x8_end, motion_field);
+    }
   }
 }
 

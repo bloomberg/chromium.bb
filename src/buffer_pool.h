@@ -123,9 +123,18 @@ class RefCountedBuffer {
     return &motion_field_reference_frame_[row][column];
   }
 
+  const ReferenceFrameType* motion_field_reference_frame(int row,
+                                                         int column) const {
+    return &motion_field_reference_frame_[row][column];
+  }
+
   // Entry at |row|, |column| corresponds to
   // MfMvs[row * 2 + 1][column * 2 + 1] in the spec.
   MotionVector* motion_field_mv(int row, int column) {
+    return &motion_field_mv_[row][column];
+  }
+
+  const MotionVector* motion_field_mv(int row, int column) const {
     return &motion_field_mv_[row][column];
   }
 
@@ -197,7 +206,6 @@ class RefCountedBuffer {
       kChromaSamplePositionUnknown;
   bool showable_frame_ = false;
 
-  // Note: order_hint_[0] (for kReferenceFrameIntra) is not used.
   std::array<uint8_t, kNumReferenceFrameTypes> order_hint_ = {};
 
   int32_t upscaled_width_ = 0;

@@ -2412,7 +2412,9 @@ void Tile::StoreMotionFieldMvsIntoCurrentFrame(const Block& block) {
   // The largest reference MV component that can be saved.
   constexpr int kRefMvsLimit = (1 << 12) - 1;
   const BlockParameters& bp = *block.bp;
-  ReferenceFrameType reference_frame_to_store = kReferenceFrameNone;
+  // Set to kReferenceFrameIntra instead of kReferenceFrameNone to simplify
+  // branch conditions in projection.
+  ReferenceFrameType reference_frame_to_store = kReferenceFrameIntra;
   MotionVector mv_to_store = {};
   for (int i = 1; i >= 0; --i) {
     if (bp.reference_frame[i] > kReferenceFrameIntra &&
