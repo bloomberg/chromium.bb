@@ -109,10 +109,12 @@ optimizations to disable lower level ones. See `src/dsp/loop_filter.h` for an
 example.
 
 Each function receives a new define which can be checked in platform specific
-headers. The format is: `LIBGAV1_<Dsp-table>_[sub-table-index1][...-indexN]`,
-e.g., `LIBGAV1_Dsp8bpp_TransformSize4x4_IntraPredictorDc`. The Dsp-table name is
-of the form `Dsp<bitdepth>bpp` e.g. `Dsp10bpp` for bitdepth == 10 (bpp stands
-for bits per pixel). The indices correspond to enum values used as lookups with
+headers. The format is: `LIBGAV1_<Dsp-table>_FunctionName` or
+`LIBGAV1_<Dsp-table>_[sub-table-index1][...-indexN]`, e.g.,
+`LIBGAV1_Dsp8bpp_AverageBlend`,
+`LIBGAV1_Dsp8bpp_TransformSize4x4_IntraPredictorDc`. The Dsp-table name is of
+the form `Dsp<bitdepth>bpp` e.g. `Dsp10bpp` for bitdepth == 10 (bpp stands for
+bits per pixel). The indices correspond to enum values used as lookups with
 leading 'k' removed. Platform specific headers then should first check if the
 symbol is defined and if not set the value to the corresponding
 `LIBGAV1_CPU_<arch>` value from `src/utils/cpu.h`.
