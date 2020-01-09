@@ -38,6 +38,7 @@ CYCLIC_REFRESH *av1_cyclic_refresh_alloc(int mi_rows, int mi_cols) {
   assert(MAXQ <= 255);
   memset(cr->last_coded_q_map, MAXQ, last_coded_q_map_size);
   cr->avg_frame_low_motion = 0.0;
+  cr->gld_fixed_slot = 0;
   return cr;
 }
 
@@ -343,6 +344,7 @@ void av1_cyclic_refresh_update_parameters(AV1_COMP *const cpi) {
   cr->apply_cyclic_refresh = 1;
   if (frame_is_intra_only(cm) || is_lossless_requested(&cpi->oxcf) ||
       cpi->svc.temporal_layer_id > 0 ||
+      (cr->gld_fixed_slot && cpi->refresh_golden_frame) ||
       rc->avg_frame_qindex[INTER_FRAME] < qp_thresh ||
       (rc->frames_since_key > 20 &&
        rc->avg_frame_qindex[INTER_FRAME] > qp_max_thresh) ||

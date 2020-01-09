@@ -67,6 +67,7 @@ struct CYCLIC_REFRESH {
   int apply_cyclic_refresh;
   int cnt_zeromv;
   double avg_frame_low_motion;
+  int gld_fixed_slot;
 };
 
 struct AV1_COMP;

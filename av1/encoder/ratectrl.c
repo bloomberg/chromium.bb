@@ -1919,6 +1919,7 @@ static void set_reference_structure_one_pass_rt(AV1_COMP *cpi) {
     cpi->ext_refresh_golden_frame = 1;
     cpi->svc.refresh[gld_idx] = 1;
   }
+  cpi->cyclic_refresh->gld_fixed_slot = gld_fixed_slot;
 }
 
 #define DEFAULT_KF_BOOST_RT 2300
