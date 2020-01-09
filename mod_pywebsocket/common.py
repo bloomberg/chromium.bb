@@ -83,7 +83,6 @@ SEC_WEBSOCKET_EXTENSIONS_HEADER = 'Sec-WebSocket-Extensions'
 # Extensions
 DEFLATE_FRAME_EXTENSION = 'deflate-frame'
 PERMESSAGE_DEFLATE_EXTENSION = 'permessage-deflate'
-X_WEBKIT_DEFLATE_FRAME_EXTENSION = 'x-webkit-deflate-frame'
 
 # Status codes
 # Code STATUS_NO_STATUS_RECEIVED, STATUS_ABNORMAL_CLOSURE, and

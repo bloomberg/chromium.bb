@@ -80,11 +80,6 @@ class DeflateFrameExtensionProcessorParsingTest(unittest.TestCase):
         self.assertIsInstance(processor,
                               extensions.DeflateFrameExtensionProcessor)
 
-        processor = extensions.get_extension_processor(
-                common.ExtensionParameter('x-webkit-deflate-frame'))
-        self.assertIsInstance(processor,
-                              extensions.DeflateFrameExtensionProcessor)
-
     def test_minimal_offer(self):
         processor = extensions.DeflateFrameExtensionProcessor(
             common.ExtensionParameter('perframe-deflate'))

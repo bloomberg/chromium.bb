@@ -322,11 +322,6 @@ _available_processors[common.DEFLATE_FRAME_EXTENSION] = (
     DeflateFrameExtensionProcessor)
 _compression_extension_names.append(common.DEFLATE_FRAME_EXTENSION)
 
-_available_processors[common.X_WEBKIT_DEFLATE_FRAME_EXTENSION] = (
-    DeflateFrameExtensionProcessor)
-_compression_extension_names.append(common.X_WEBKIT_DEFLATE_FRAME_EXTENSION)
-
-
 class PerMessageDeflateExtensionProcessor(ExtensionProcessorInterface):
     """permessage-deflate extension processor.
 
