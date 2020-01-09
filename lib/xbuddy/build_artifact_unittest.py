@@ -354,7 +354,7 @@ class BuildArtifactTest(cros_test_lib.MockTestCase):
     self.assertFalse(os.path.getsize(
         os.path.join(self.work_dir, artifact.marker_name)))
 
-    wait_mock.assert_called_with('autotest.tar', False, 1)
+    wait_mock.assert_called_with('autotest.tar', False, None, 1)
     fetch_mock.assert_called_with('autotest.tar', install_dir + '/')
     update_name_mock.assert_called()
     extract_mock.assert_called()

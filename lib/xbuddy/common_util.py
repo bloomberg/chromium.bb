@@ -19,6 +19,7 @@ import threading
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib.xbuddy import cherrypy_log_util
 
@@ -388,3 +389,23 @@ def IsRunningOnMoblab():
   except IOError:
     # File doesn't exist.
     return False
+
+def IsAnonymousCaller(error):
+  """Checks if we're an anonymous caller.
+
+  Check if |error| is a GSCommandError due to a lack of credentials.
+
+  Args:
+    error: Exception raised.
+
+  Returns:
+    True if we're an anonymous caller.
+  """
+  if not isinstance(error, gs.GSCommandError):
+    return False
+
+  anon_msg = ('ServiceException: 401 Anonymous caller does not have '
+              'storage.objects.get access to')
+  is_anon = error.stderr.find(anon_msg) != -1
+  _Log('IsAnonymousCaller? %s', is_anon)
+  return is_anon

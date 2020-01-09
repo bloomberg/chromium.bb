@@ -462,7 +462,10 @@ class XBuddy(build_util.BuildObject):
         version = self._ctx.LS(
             '%s/%s' % (devserver_constants.GS_IMAGE_DIR, build_id))
         return build_id
-      except gs.GSContextException:
+      except gs.GSContextException as e:
+        if common_util.IsAnonymousCaller(e):
+          _Log('Anonymous caller cannot list chromeos image archive')
+          return build_id_as_is
         continue
 
     raise XBuddyException('Could not find remote build_id for %s %s' % (
