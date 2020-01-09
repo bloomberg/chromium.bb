@@ -10771,6 +10771,26 @@
         "hw_tests_override": null,
         "luci_builder": "Try"
     },
+    "excelsior-factory-excelsior-12812.B-factorybranch": {
+        "_template": "factorybranch",
+        "boards": [
+            "excelsior"
+        ],
+        "workspace_branch": "factory-excelsior-12812.B"
+    },
+    "excelsior-factory-excelsior-12812.B-factorybranch-tryjob": {
+        "_template": "factorybranch",
+        "boards": [
+            "excelsior"
+        ],
+        "debug": true,
+        "display_label": "tryjob",
+        "hw_tests_override": null,
+        "luci_builder": "Try",
+        "push_image": false,
+        "suite_scheduling": false,
+        "workspace_branch": "factory-excelsior-12812.B"
+    },
     "excelsior-full": {
         "_template": "full",
         "boards": [
@@ -11214,6 +11234,28 @@
             "eve-factory-eve-9667.B-factorybranch-tryjob"
         ],
         "workspace_branch": "factory-eve-9667.B"
+    },
+    "factory-excelsior-12812.B-buildspec": {
+        "_template": "buildspec",
+        "build_timeout": 43200,
+        "display_label": "factory",
+        "schedule": "with 168h interval",
+        "slave_configs": [
+            "excelsior-factory-excelsior-12812.B-factorybranch"
+        ],
+        "workspace_branch": "factory-excelsior-12812.B"
+    },
+    "factory-excelsior-12812.B-buildspec-tryjob": {
+        "_template": "buildspec",
+        "build_timeout": 43200,
+        "debug": true,
+        "debug_cidb": true,
+        "display_label": "tryjob",
+        "luci_builder": "Try",
+        "slave_configs": [
+            "excelsior-factory-excelsior-12812.B-factorybranch-tryjob"
+        ],
+        "workspace_branch": "factory-excelsior-12812.B"
     },
     "factory-fizz-10167.B-buildspec": {
         "_template": "buildspec",

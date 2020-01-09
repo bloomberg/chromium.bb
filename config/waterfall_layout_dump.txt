@@ -16,6 +16,8 @@
     coral-factory-coral-10122.B-factorybranch
   factory-eve-9667.B-buildspec
     eve-factory-eve-9667.B-factorybranch
+  factory-excelsior-12812.B-buildspec
+    excelsior-factory-excelsior-12812.B-factorybranch
   factory-fizz-10167.B-buildspec
     fizz-accelerator-factory-fizz-10167.B-factorybranch
     fizz-factory-fizz-10167.B-factorybranch
@@ -828,6 +830,7 @@
   eve-userdebug-llvm-toolchain-tryjob
   eve-userdebug-release-tryjob
   eve-userdebug-unittest-stress
+  excelsior-factory-excelsior-12812.B-factorybranch-tryjob
   excelsior-full-tryjob
   excelsior-llvm-next-toolchain-tryjob
   excelsior-llvm-toolchain-tryjob
@@ -858,6 +861,8 @@
     coral-factory-coral-10122.B-factorybranch-tryjob
   factory-eve-9667.B-buildspec-tryjob
     eve-factory-eve-9667.B-factorybranch-tryjob
+  factory-excelsior-12812.B-buildspec-tryjob
+    excelsior-factory-excelsior-12812.B-factorybranch-tryjob
   factory-fizz-10167.B-buildspec-tryjob
     fizz-accelerator-factory-fizz-10167.B-factorybranch-tryjob
     fizz-factory-fizz-10167.B-factorybranch-tryjob

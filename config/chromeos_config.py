@@ -2144,6 +2144,7 @@ def FactoryBuilders(site_config, _boards_dict, _ge_build_config):
       (WEEKLY, 'factory-mistral-12361.B', ['mistral']),
       (WEEKLY, 'factory-kukui-12587.B', ['kukui', 'jacuzzi']),
       (WEEKLY, 'factory-hatch-12692.B', ['hatch']),
+      (WEEKLY, 'factory-excelsior-12812.B', ['excelsior']),
       # This is intended to create master branch tryjobs, NOT for production
       # builds. Update the associated list of boards as needed.
       (None, 'master', ['atlas', 'octopus', 'rammus', 'coral', 'eve',
