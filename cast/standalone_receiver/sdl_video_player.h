@@ -12,7 +12,7 @@ namespace cast {
 
 // Consumes frames from a Receiver, decodes them, and renders them to a
 // SDL_Renderer.
-class SDLVideoPlayer : public SDLPlayerBase {
+class SDLVideoPlayer final : public SDLPlayerBase {
  public:
   // |error_callback| is run only if a fatal error occurs, at which point the
   // player has halted and set |error_status()|.

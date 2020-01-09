@@ -15,7 +15,7 @@ class SomeClass {
   virtual int GetValue() const { return 42; }
 };
 
-struct SomeSubclass : public SomeClass {
+struct SomeSubclass final : public SomeClass {
  public:
   ~SomeSubclass() final = default;
   int GetValue() const override { return 999; }

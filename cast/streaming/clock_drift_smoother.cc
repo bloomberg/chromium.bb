@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "util/logging.h"
+#include "util/saturate_cast.h"
 
 namespace openscreen {
 namespace cast {
@@ -26,13 +27,8 @@ ClockDriftSmoother::~ClockDriftSmoother() = default;
 
 Clock::duration ClockDriftSmoother::Current() const {
   OSP_DCHECK(last_update_time_ != kNullTime);
-  const double rounded_estimate = std::round(estimated_tick_offset_);
-  if (rounded_estimate < Clock::duration::min().count()) {
-    return Clock::duration::min();
-  } else if (rounded_estimate > Clock::duration::max().count()) {
-    return Clock::duration::max();
-  }
-  return Clock::duration(static_cast<Clock::duration::rep>(rounded_estimate));
+  return Clock::duration(
+      rounded_saturate_cast<Clock::duration::rep>(estimated_tick_offset_));
 }
 
 void ClockDriftSmoother::Reset(Clock::time_point now,

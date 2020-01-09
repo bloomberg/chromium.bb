@@ -12,7 +12,7 @@ namespace cast {
 
 // Consumes frames from a Receiver, decodes them, and renders them to an
 // internally-owned SDL audio device.
-class SDLAudioPlayer : public SDLPlayerBase {
+class SDLAudioPlayer final : public SDLPlayerBase {
  public:
   // |error_callback| is run only if a fatal error occurs, at which point the
   // player has halted and set |error_status()|.

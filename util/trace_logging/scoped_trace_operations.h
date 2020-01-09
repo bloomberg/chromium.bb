@@ -173,7 +173,7 @@ class AsynchronousTraceLogger : public TraceLoggerBase {
 
 // Inserts a fake element into the ScopedTraceOperation stack to set
 // the current TraceId Hierarchy manually.
-class TraceIdSetter : public ScopedTraceOperation {
+class TraceIdSetter final : public ScopedTraceOperation {
  public:
   explicit TraceIdSetter(TraceIdHierarchy ids)
       : ScopedTraceOperation(ids.current, ids.parent, ids.root) {}
