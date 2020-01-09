@@ -382,21 +382,13 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
 
 // Process 16 bit inputs and output 32 bits.
 template <int num_taps>
-inline uint32x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
-                                     const int16x8_t taps) {
-  // In order to get the rollover correct with the lengthening instruction we
-  // need to treat these as signed so that they sign extend properly.
+inline int32x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
+                                    const int16x8_t taps) {
   const int16x4_t taps_lo = vget_low_s16(taps);
   const int16x4_t taps_hi = vget_high_s16(taps);
-  // An offset to guarantee the sum is non negative. Captures 28 * -4590 =
-  // 128520 (worst case negative value from horizontal pass). It should be
-  // possible to use 1 << 17 (131072) instead of 1 << 18 but there probably
-  // isn't any benefit.
-  // |offset_bits| = bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal - 1
-  // == 18
-  int32x4_t sum = vdupq_n_s32(1 << 18);
+  int32x4_t sum;
   if (num_taps == 8) {
-    sum = vmlal_lane_s16(sum, src[0], taps_lo, 0);
+    sum = vmull_lane_s16(src[0], taps_lo, 0);
     sum = vmlal_lane_s16(sum, src[1], taps_lo, 1);
     sum = vmlal_lane_s16(sum, src[2], taps_lo, 2);
     sum = vmlal_lane_s16(sum, src[3], taps_lo, 3);
@@ -405,25 +397,23 @@ inline uint32x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
     sum = vmlal_lane_s16(sum, src[6], taps_hi, 2);
     sum = vmlal_lane_s16(sum, src[7], taps_hi, 3);
   } else if (num_taps == 6) {
-    sum = vmlal_lane_s16(sum, src[0], taps_lo, 1);
+    sum = vmull_lane_s16(src[0], taps_lo, 1);
     sum = vmlal_lane_s16(sum, src[1], taps_lo, 2);
     sum = vmlal_lane_s16(sum, src[2], taps_lo, 3);
     sum = vmlal_lane_s16(sum, src[3], taps_hi, 0);
     sum = vmlal_lane_s16(sum, src[4], taps_hi, 1);
     sum = vmlal_lane_s16(sum, src[5], taps_hi, 2);
   } else if (num_taps == 4) {
-    sum = vmlal_lane_s16(sum, src[0], taps_lo, 2);
+    sum = vmull_lane_s16(src[0], taps_lo, 2);
     sum = vmlal_lane_s16(sum, src[1], taps_lo, 3);
     sum = vmlal_lane_s16(sum, src[2], taps_hi, 0);
     sum = vmlal_lane_s16(sum, src[3], taps_hi, 1);
   } else if (num_taps == 2) {
-    sum = vmlal_lane_s16(sum, src[0], taps_lo, 3);
+    sum = vmull_lane_s16(src[0], taps_lo, 3);
     sum = vmlal_lane_s16(sum, src[1], taps_hi, 0);
   }
 
-  // This is guaranteed to be positive. Convert it for the final shift.
-  const uint32x4_t return_val = vreinterpretq_u32_s32(sum);
-  return return_val;
+  return sum;
 }
 
 template <int num_taps, bool is_compound>
@@ -977,14 +967,15 @@ inline uint8x8x3_t LoadSrcVals(const uint8_t* src_x) {
   return ret;
 }
 
-// Positive indicates that the outputs can be used with vmlal_u8.
+// Pre-transpose the 2 tap filters in |kAbsHalfSubPixelFilters|[3]
 inline uint8x16_t GetPositive2TapFilter(const int tap_index) {
   assert(tap_index < 2);
-  alignas(16) static constexpr uint8_t kSubPixel2TapFilterColumns[2][16] = {
-      {128, 120, 112, 104, 96, 88, 80, 72, 64, 56, 48, 40, 32, 24, 16, 8},
-      {0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88, 96, 104, 112, 120}};
+  alignas(
+      16) static constexpr uint8_t kAbsHalfSubPixel2TapFilterColumns[2][16] = {
+      {64, 60, 56, 52, 48, 44, 40, 36, 32, 28, 24, 20, 16, 12, 8, 4},
+      {0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60}};
 
-  return vld1q_u8(kSubPixel2TapFilterColumns[tap_index]);
+  return vld1q_u8(kAbsHalfSubPixel2TapFilterColumns[tap_index]);
 }
 
 template <int grade_x>
@@ -1000,7 +991,6 @@ inline void ConvolveKernelHorizontal2Tap(const uint8_t* src,
   const int step_x8 = step_x << 3;
   const uint8x16_t filter_taps0 = GetPositive2TapFilter(0);
   const uint8x16_t filter_taps1 = GetPositive2TapFilter(1);
-  const uint16x8_t sum = vdupq_n_u16(1 << (kBitdepth8 + kFilterBits - 1));
   const uint16x8_t index_steps = vmulq_n_u16(
       vmovl_u8(vcreate_u8(0x0706050403020100)), static_cast<uint16_t>(step_x));
   const uint8x8_t filter_index_mask = vdup_n_u8(kSubPixelMask);
@@ -1019,8 +1009,8 @@ inline void ConvolveKernelHorizontal2Tap(const uint8_t* src,
     // For each x, a lane of tapsK has
     // kSubPixelFilters[filter_index][filter_id][k], where filter_id depends
     // on x.
-    const uint8x8_t taps0 = VQTbl1U8(filter_taps0, filter_indices);
-    const uint8x8_t taps1 = VQTbl1U8(filter_taps1, filter_indices);
+    const uint8x8_t taps[2] = {VQTbl1U8(filter_taps0, filter_indices),
+                               VQTbl1U8(filter_taps1, filter_indices)};
     int y = 0;
     do {
       // Load a pool of samples to select from using stepped indices.
@@ -1029,16 +1019,14 @@ inline void ConvolveKernelHorizontal2Tap(const uint8_t* src,
           vmovn_u16(vshrq_n_u16(subpel_index_offsets, kScaleSubPixelBits));
 
       // For each x, a lane of srcK contains src_x[k].
-      const uint8x8_t src0 = VQTbl1U8(src_vals, src_indices);
-      const uint8x8_t src1 =
-          VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(1)));
+      const uint8x8_t src[2] = {
+          VQTbl1U8(src_vals, src_indices),
+          VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(1)))};
 
-      const uint16x8_t product0 = vmlal_u8(sum, taps0, src0);
-      // product0 + product1
-      const uint16x8_t result = vmlal_u8(product0, taps1, src1);
-
-      vst1q_s16(intermediate, vreinterpretq_s16_u16(vrshrq_n_u16(
-                                  result, kInterRoundBitsHorizontal)));
+      // TODO(johannkoenig): Use SumOnePassTaps for all Kernel functions.
+      vst1q_s16(intermediate,
+                vrshrq_n_s16(SumOnePassTaps</*filter_index=*/3>(src, taps),
+                             kInterRoundBitsHorizontal - 1));
       src_x += src_stride;
       intermediate += kIntermediateStride;
     } while (++y < intermediate_height);
@@ -1076,12 +1064,12 @@ inline void ConvolveKernelHorizontal2Tap(const uint8_t* src,
       const uint8x8_t src1 =
           vtbl3_u8(src_vals, vadd_u8(src_indices, vdup_n_u8(1)));
 
-      const uint16x8_t product0 = vmlal_u8(sum, taps0, src0);
+      const uint16x8_t product0 = vmull_u8(taps0, src0);
       // product0 + product1
       const uint16x8_t result = vmlal_u8(product0, taps1, src1);
 
       vst1q_s16(intermediate_x, vreinterpretq_s16_u16(vrshrq_n_u16(
-                                    result, kInterRoundBitsHorizontal)));
+                                    result, kInterRoundBitsHorizontal - 1)));
       src_x += src_stride;
       intermediate_x += kIntermediateStride;
     } while (++y < intermediate_height);
@@ -1090,15 +1078,15 @@ inline void ConvolveKernelHorizontal2Tap(const uint8_t* src,
   } while (x < width);
 }
 
-// Positive indicates that the outputs can be used with vmlal_u8.
+// Pre-transpose the 4 tap filters in |kAbsHalfSubPixelFilters|[5].
 inline uint8x16_t GetPositive4TapFilter(const int tap_index) {
   assert(tap_index < 4);
   alignas(
       16) static constexpr uint8_t kSubPixel4TapPositiveFilterColumns[4][16] = {
-      {0, 30, 26, 22, 20, 18, 16, 14, 12, 12, 10, 8, 6, 4, 4, 2},
-      {128, 62, 62, 62, 60, 58, 56, 54, 52, 48, 46, 44, 42, 40, 36, 34},
-      {0, 34, 36, 40, 42, 44, 46, 48, 52, 54, 56, 58, 60, 62, 62, 62},
-      {0, 2, 4, 4, 6, 8, 10, 12, 12, 14, 16, 18, 20, 22, 26, 30}};
+      {0, 15, 13, 11, 10, 9, 8, 7, 6, 6, 5, 4, 3, 2, 2, 1},
+      {64, 31, 31, 31, 30, 29, 28, 27, 26, 24, 23, 22, 21, 20, 18, 17},
+      {0, 17, 18, 20, 21, 22, 23, 24, 26, 27, 28, 29, 30, 31, 31, 31},
+      {0, 1, 2, 2, 3, 4, 5, 6, 6, 7, 8, 9, 10, 11, 13, 15}};
 
   return vld1q_u8(kSubPixel4TapPositiveFilterColumns[tap_index]);
 }
@@ -1117,7 +1105,6 @@ void ConvolveKernelHorizontalPositive4Tap(
   const uint16x8_t index_steps = vmulq_n_u16(
       vmovl_u8(vcreate_u8(0x0706050403020100)), static_cast<uint16_t>(step_x));
   const int p = subpixel_x;
-  const uint16x8_t base = vdupq_n_u16(1 << (kBitdepth8 + kFilterBits - 1));
   // First filter is special, just a 128 tap on the center.
   const uint8_t* src_x =
       &src[(p >> kScaleSubPixelBits) - ref_x + kernel_offset];
@@ -1151,34 +1138,31 @@ void ConvolveKernelHorizontalPositive4Tap(
     const uint8x8_t src3 =
         VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(3)));
 
-    uint16x8_t sum = vmlal_u8(base, taps0, src0);
+    uint16x8_t sum = vmull_u8(taps0, src0);
     sum = vmlal_u8(sum, taps1, src1);
     sum = vmlal_u8(sum, taps2, src2);
     sum = vmlal_u8(sum, taps3, src3);
 
     vst1_s16(intermediate,
-             vreinterpret_s16_u16(vrshr_n_u16(vget_low_u16(sum), 3)));
+             vreinterpret_s16_u16(vrshr_n_u16(vget_low_u16(sum),
+                                              kInterRoundBitsHorizontal - 1)));
 
     src_x += src_stride;
     intermediate += kIntermediateStride;
   } while (++y < intermediate_height);
 }
 
-// Signed indicates that some of the outputs should be used with vmlsl_u8
-// instead of vmlal_u8.
+// Pre-transpose the 4 tap filters in |kAbsHalfSubPixelFilters|[4].
 inline uint8x16_t GetSigned4TapFilter(const int tap_index) {
   assert(tap_index < 4);
-  // The first and fourth taps of each filter are negative. However
-  // 128 does not fit in an 8-bit signed integer. Thus we use subtraction to
-  // keep everything unsigned.
-  alignas(
-      16) static constexpr uint8_t kSubPixel4TapSignedFilterColumns[4][16] = {
-      {0, 4, 8, 10, 12, 12, 14, 12, 12, 10, 10, 10, 8, 6, 4, 2},
-      {128, 126, 122, 116, 110, 102, 94, 84, 76, 66, 58, 48, 38, 28, 18, 8},
-      {0, 8, 18, 28, 38, 48, 58, 66, 76, 84, 94, 102, 110, 116, 122, 126},
-      {0, 2, 4, 6, 8, 10, 10, 10, 12, 12, 14, 12, 12, 10, 8, 4}};
+  alignas(16) static constexpr uint8_t
+      kAbsHalfSubPixel4TapSignedFilterColumns[4][16] = {
+          {0, 2, 4, 5, 6, 6, 7, 6, 6, 5, 5, 5, 4, 3, 2, 1},
+          {64, 63, 61, 58, 55, 51, 47, 42, 38, 33, 29, 24, 19, 14, 9, 4},
+          {0, 4, 9, 14, 19, 24, 29, 33, 38, 42, 47, 51, 55, 58, 61, 63},
+          {0, 1, 2, 3, 4, 5, 5, 5, 6, 6, 7, 6, 6, 5, 4, 2}};
 
-  return vld1q_u8(kSubPixel4TapSignedFilterColumns[tap_index]);
+  return vld1q_u8(kAbsHalfSubPixel4TapSignedFilterColumns[tap_index]);
 }
 
 // This filter is only possible when width <= 4.
@@ -1195,7 +1179,6 @@ inline void ConvolveKernelHorizontalSigned4Tap(
   const uint16x8_t index_steps = vmulq_n_u16(vmovl_u8(vcreate_u8(0x03020100)),
                                              static_cast<uint16_t>(step_x));
 
-  const uint16x8_t base = vdupq_n_u16(1 << (kBitdepth8 + kFilterBits - 1));
   const int p = subpixel_x;
   const uint8_t* src_x =
       &src[(p >> kScaleSubPixelBits) - ref_x + kernel_offset];
@@ -1228,36 +1211,31 @@ inline void ConvolveKernelHorizontalSigned4Tap(
     const uint8x8_t src3 =
         VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(3)));
 
-    // Offsetting by base permits a guaranteed positive.
-    uint16x8_t sum = vmlsl_u8(base, taps0, src0);
-    sum = vmlal_u8(sum, taps1, src1);
+    uint16x8_t sum = vmull_u8(taps1, src1);
+    sum = vmlsl_u8(sum, taps0, src0);
     sum = vmlal_u8(sum, taps2, src2);
     sum = vmlsl_u8(sum, taps3, src3);
 
-    vst1_s16(intermediate,
-             vreinterpret_s16_u16(vrshr_n_u16(vget_low_u16(sum), 3)));
+    vst1_s16(intermediate, vrshr_n_s16(vreinterpret_s16_u16(vget_low_u16(sum)),
+                                       kInterRoundBitsHorizontal - 1));
     src_x += src_stride;
     intermediate += kIntermediateStride;
   } while (++y < intermediate_height);
 }
 
-// Signed indicates that some of the outputs should be used with vmlsl_u8
-// instead of vmlal_u8.
+// Pre-transpose the 6 tap filters in |kAbsHalfSubPixelFilters|[0].
 inline uint8x16_t GetSigned6TapFilter(const int tap_index) {
   assert(tap_index < 6);
-  // The second and fourth taps of each filter are negative. However
-  // 128 does not fit in an 8-bit signed integer. Thus we use subtraction to
-  // keep everything unsigned.
-  alignas(
-      16) static constexpr uint8_t kSubPixel6TapSignedFilterColumns[6][16] = {
-      {0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0},
-      {0, 6, 10, 12, 14, 14, 16, 14, 14, 12, 12, 12, 10, 8, 4, 2},
-      {128, 126, 122, 116, 110, 102, 94, 84, 76, 66, 58, 48, 38, 28, 18, 8},
-      {0, 8, 18, 28, 38, 48, 58, 66, 76, 84, 94, 102, 110, 116, 122, 126},
-      {0, 2, 4, 8, 10, 12, 12, 12, 14, 14, 16, 14, 14, 12, 10, 6},
-      {0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2}};
+  alignas(16) static constexpr uint8_t
+      kAbsHalfSubPixel6TapSignedFilterColumns[6][16] = {
+          {0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0},
+          {0, 3, 5, 6, 7, 7, 8, 7, 7, 6, 6, 6, 5, 4, 2, 1},
+          {64, 63, 61, 58, 55, 51, 47, 42, 38, 33, 29, 24, 19, 14, 9, 4},
+          {0, 4, 9, 14, 19, 24, 29, 33, 38, 42, 47, 51, 55, 58, 61, 63},
+          {0, 1, 2, 4, 5, 6, 6, 6, 7, 7, 8, 7, 7, 6, 5, 3},
+          {0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
-  return vld1q_u8(kSubPixel6TapSignedFilterColumns[tap_index]);
+  return vld1q_u8(kAbsHalfSubPixel6TapSignedFilterColumns[tap_index]);
 }
 
 // This filter is only possible when width >= 8.
@@ -1309,20 +1287,19 @@ inline void ConvolveKernelHorizontalSigned6Tap(
     }
     int y = 0;
     do {
-      uint16x8_t sum = vdupq_n_u16(1 << (kBitdepth8 + kFilterBits - 1));
       // Load a pool of samples to select from using stepped indices.
       const uint8x8x3_t src_vals = LoadSrcVals<grade_x>(src_x);
 
       // tap signs : + - + + - +
-      sum = vmlal_u8(sum, taps[0], vtbl3_u8(src_vals, src_lookup[0]));
+      uint16x8_t sum = vmull_u8(taps[0], vtbl3_u8(src_vals, src_lookup[0]));
       sum = vmlsl_u8(sum, taps[1], vtbl3_u8(src_vals, src_lookup[1]));
       sum = vmlal_u8(sum, taps[2], vtbl3_u8(src_vals, src_lookup[2]));
       sum = vmlal_u8(sum, taps[3], vtbl3_u8(src_vals, src_lookup[3]));
       sum = vmlsl_u8(sum, taps[4], vtbl3_u8(src_vals, src_lookup[4]));
       sum = vmlal_u8(sum, taps[5], vtbl3_u8(src_vals, src_lookup[5]));
 
-      vst1q_s16(intermediate_x, vreinterpretq_s16_u16(vrshrq_n_u16(
-                                    sum, kInterRoundBitsHorizontal)));
+      vst1q_s16(intermediate_x, vrshrq_n_s16(vreinterpretq_s16_u16(sum),
+                                             kInterRoundBitsHorizontal - 1));
       src_x += src_stride;
       intermediate_x += kIntermediateStride;
     } while (++y < intermediate_height);
@@ -1331,29 +1308,29 @@ inline void ConvolveKernelHorizontalSigned6Tap(
   } while (x < width);
 }
 
-// Positive indicates that the outputs can be used with vmlal_u8. Filter 1 has
-// its tap columns divided between positive and mixed treatment.
+// Pre-transpose the 6 tap filters in |kAbsHalfSubPixelFilters|[1]. This filter
+// has mixed positive and negative outer taps which are handled in
+// GetMixed6TapFilter().
 inline uint8x16_t GetPositive6TapFilter(const int tap_index) {
   assert(tap_index < 6);
-  alignas(
-      16) static constexpr uint8_t kSubPixel6TapPositiveFilterColumns[4][16] = {
-      {0, 28, 26, 22, 20, 18, 16, 16, 14, 12, 10, 8, 6, 4, 4, 2},
-      {128, 62, 62, 62, 60, 58, 56, 54, 52, 48, 46, 44, 42, 40, 36, 34},
-      {0, 34, 36, 40, 42, 44, 46, 48, 52, 54, 56, 58, 60, 62, 62, 62},
-      {0, 2, 4, 4, 6, 8, 10, 12, 14, 16, 16, 18, 20, 22, 26, 28}};
+  alignas(16) static constexpr uint8_t
+      kAbsHalfSubPixel6TapPositiveFilterColumns[4][16] = {
+          {0, 14, 13, 11, 10, 9, 8, 8, 7, 6, 5, 4, 3, 2, 2, 1},
+          {64, 31, 31, 31, 30, 29, 28, 27, 26, 24, 23, 22, 21, 20, 18, 17},
+          {0, 17, 18, 20, 21, 22, 23, 24, 26, 27, 28, 29, 30, 31, 31, 31},
+          {0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 9, 10, 11, 13, 14}};
 
-  return vld1q_u8(kSubPixel6TapPositiveFilterColumns[tap_index]);
+  return vld1q_u8(kAbsHalfSubPixel6TapPositiveFilterColumns[tap_index]);
 }
 
-// Mixed indicates that each column has both positive and negative values, so
-// outputs should be used with vmlal_s8.
 inline int8x16_t GetMixed6TapFilter(const int tap_index) {
   assert(tap_index < 2);
-  alignas(16) static constexpr int8_t kSubPixel6TapMixedFilterColumns[2][16] = {
-      {0, 2, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 0, 0},
-      {0, 0, 0, 0, 0, 0, 0, 0, -2, -2, 0, 0, 0, 0, 0, 2}};
+  alignas(
+      16) static constexpr int8_t kHalfSubPixel6TapMixedFilterColumns[2][16] = {
+      {0, 1, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0},
+      {0, 0, 0, 0, 0, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 1}};
 
-  return vld1q_s8(kSubPixel6TapMixedFilterColumns[tap_index]);
+  return vld1q_s8(kHalfSubPixel6TapMixedFilterColumns[tap_index]);
 }
 
 // This filter is only possible when width >= 8.
@@ -1410,22 +1387,21 @@ inline void ConvolveKernelHorizontalMixed6Tap(
 
     int y = 0;
     do {
-      int16x8_t base = vdupq_n_s16(1 << (kBitdepth8 + kFilterBits - 1));
       // Load a pool of samples to select from using stepped indices.
       const uint8x8x3_t src_vals = LoadSrcVals<grade_x>(src_x);
 
-      base = vmlaq_s16(base, mixed_taps[0],
-                       ZeroExtend(vtbl3_u8(src_vals, src_lookup[0])));
-      base = vmlaq_s16(base, mixed_taps[1],
-                       ZeroExtend(vtbl3_u8(src_vals, src_lookup[5])));
-      uint16x8_t sum = vreinterpretq_u16_s16(base);
+      int16x8_t sum_mixed = vmulq_s16(
+          mixed_taps[0], ZeroExtend(vtbl3_u8(src_vals, src_lookup[0])));
+      sum_mixed = vmlaq_s16(sum_mixed, mixed_taps[1],
+                            ZeroExtend(vtbl3_u8(src_vals, src_lookup[5])));
+      uint16x8_t sum = vreinterpretq_u16_s16(sum_mixed);
       sum = vmlal_u8(sum, taps[0], vtbl3_u8(src_vals, src_lookup[1]));
       sum = vmlal_u8(sum, taps[1], vtbl3_u8(src_vals, src_lookup[2]));
       sum = vmlal_u8(sum, taps[2], vtbl3_u8(src_vals, src_lookup[3]));
       sum = vmlal_u8(sum, taps[3], vtbl3_u8(src_vals, src_lookup[4]));
 
-      vst1q_s16(intermediate_x, vreinterpretq_s16_u16(vrshrq_n_u16(
-                                    sum, kInterRoundBitsHorizontal)));
+      vst1q_s16(intermediate_x, vrshrq_n_s16(vreinterpretq_s16_u16(sum),
+                                             kInterRoundBitsHorizontal - 1));
       src_x += src_stride;
       intermediate_x += kIntermediateStride;
     } while (++y < intermediate_height);
@@ -1434,23 +1410,21 @@ inline void ConvolveKernelHorizontalMixed6Tap(
   } while (x < width);
 }
 
+// Pre-transpose the 8 tap filters in |kAbsHalfSubPixelFilters|[2].
 inline uint8x16_t GetSigned8TapFilter(const int tap_index) {
   assert(tap_index < 8);
-  // The first and fourth taps of each filter are negative. However
-  // 128 does not fit in an 8-bit signed integer. Thus we use subtraction to
-  // keep everything unsigned.
-  alignas(
-      16) static constexpr uint8_t kSubPixel8TapSignedFilterColumns[8][16] = {
-      {0, 2, 2, 2, 4, 4, 4, 4, 4, 2, 2, 2, 2, 2, 2, 0},
-      {0, 2, 6, 8, 10, 10, 10, 10, 12, 10, 8, 8, 6, 6, 4, 2},
-      {0, 6, 12, 18, 22, 22, 24, 24, 24, 22, 20, 18, 14, 10, 6, 2},
-      {128, 126, 124, 120, 116, 108, 100, 90, 80, 70, 60, 48, 38, 26, 16, 8},
-      {0, 8, 16, 26, 38, 48, 60, 70, 80, 90, 100, 108, 116, 120, 124, 126},
-      {0, 2, 6, 10, 14, 18, 20, 22, 24, 24, 24, 22, 22, 18, 12, 6},
-      {0, 2, 4, 6, 6, 8, 8, 10, 12, 10, 10, 10, 10, 8, 6, 2},
-      {0, 0, 2, 2, 2, 2, 2, 2, 4, 4, 4, 4, 4, 2, 2, 2}};
+  alignas(16) static constexpr uint8_t
+      kAbsHalfSubPixel8TapSignedFilterColumns[8][16] = {
+          {0, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 0},
+          {0, 1, 3, 4, 5, 5, 5, 5, 6, 5, 4, 4, 3, 3, 2, 1},
+          {0, 3, 6, 9, 11, 11, 12, 12, 12, 11, 10, 9, 7, 5, 3, 1},
+          {64, 63, 62, 60, 58, 54, 50, 45, 40, 35, 30, 24, 19, 13, 8, 4},
+          {0, 4, 8, 13, 19, 24, 30, 35, 40, 45, 50, 54, 58, 60, 62, 63},
+          {0, 1, 3, 5, 7, 9, 10, 11, 12, 12, 12, 11, 11, 9, 6, 3},
+          {0, 1, 2, 3, 3, 4, 4, 5, 6, 5, 5, 5, 5, 4, 3, 1},
+          {0, 0, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1}};
 
-  return vld1q_u8(kSubPixel8TapSignedFilterColumns[tap_index]);
+  return vld1q_u8(kAbsHalfSubPixel8TapSignedFilterColumns[tap_index]);
 }
 
 // This filter is only possible when width >= 8.
@@ -1498,13 +1472,12 @@ inline void ConvolveKernelHorizontalSigned8Tap(
 
     int y = 0;
     do {
-      uint16x8_t sum = vdupq_n_u16(1 << (kBitdepth8 + kFilterBits - 1));
       // Load a pool of samples to select from using stepped indices.
       const uint8x8x3_t src_vals = LoadSrcVals<grade_x>(src_x);
 
       // tap signs : - + - + + - + -
+      uint16x8_t sum = vmull_u8(taps[1], vtbl3_u8(src_vals, src_lookup[1]));
       sum = vmlsl_u8(sum, taps[0], vtbl3_u8(src_vals, src_lookup[0]));
-      sum = vmlal_u8(sum, taps[1], vtbl3_u8(src_vals, src_lookup[1]));
       sum = vmlsl_u8(sum, taps[2], vtbl3_u8(src_vals, src_lookup[2]));
       sum = vmlal_u8(sum, taps[3], vtbl3_u8(src_vals, src_lookup[3]));
       sum = vmlal_u8(sum, taps[4], vtbl3_u8(src_vals, src_lookup[4]));
@@ -1512,8 +1485,8 @@ inline void ConvolveKernelHorizontalSigned8Tap(
       sum = vmlal_u8(sum, taps[6], vtbl3_u8(src_vals, src_lookup[6]));
       sum = vmlsl_u8(sum, taps[7], vtbl3_u8(src_vals, src_lookup[7]));
 
-      vst1q_s16(intermediate_x, vreinterpretq_s16_u16(vrshrq_n_u16(
-                                    sum, kInterRoundBitsHorizontal)));
+      vst1q_s16(intermediate_x, vrshrq_n_s16(vreinterpretq_s16_u16(sum),
+                                             kInterRoundBitsHorizontal - 1));
       src_x += src_stride;
       intermediate_x += kIntermediateStride;
     } while (++y < intermediate_height);
@@ -1530,8 +1503,11 @@ void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
                               const int height, void* dest,
                               const ptrdiff_t dest_stride) {
   const int32x4_t v_inter_round_bits = vdupq_n_s32(-(inter_round_bits - 1));
-  const uint16x4_t single_round_offset =
-      vdup_n_u16((1 << kBitdepth8) + (1 << (kBitdepth8 - 1)));
+  // TODO(johannkoenig): Move this calculation to SumHorizontalTaps4. Then
+  // remove this offset. Also needs to be removed from Blend functions.
+  const int16x4_t compound_round_offset =
+      vdup_n_s16(((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3))) >>
+                 (inter_round_bits - kFilterBits));
   constexpr ptrdiff_t src_stride = kIntermediateStride;
   constexpr int kernel_offset = (8 - num_taps) / 2;
   src += src_stride * kernel_offset;
@@ -1551,20 +1527,22 @@ void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
     int filter_id = (p >> 6) & kSubPixelMask;
     int16x8_t filter =
         vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
-    uint32x4_t sums = Sum2DVerticalTaps4<num_taps>(s, filter);
-    uint16x4_t result = vmovn_u32(vrshlq_u32(sums, v_inter_round_bits));
+    int32x4_t sums = Sum2DVerticalTaps4<num_taps>(s, filter);
+    int16x4_t shifted = vmovn_s32(vqrshlq_s32(sums, v_inter_round_bits));
     if (is_compound) {
+      const uint16x4_t result =
+          vreinterpret_u16_s16(vadd_s16(shifted, compound_round_offset));
       if (width == 2) {
         Store2<0>(dest16_y, result);
       } else {
         vst1_u16(dest16_y, result);
       }
     } else {
-      result = vqsub_u16(result, single_round_offset);
+      const uint8x8_t result = vqmovun_s16(vcombine_s16(shifted, shifted));
       if (width == 2) {
-        Store2<0>(dest_y, vqmovn_u16(vcombine_u16(result, result)));
+        Store2<0>(dest_y, result);
       } else {
-        StoreLo4(dest_y, vqmovn_u16(vcombine_u16(result, result)));
+        StoreLo4(dest_y, result);
       }
     }
     p += step_y;
@@ -1583,19 +1561,21 @@ void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
     filter_id = (p >> 6) & kSubPixelMask;
     filter = vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
     sums = Sum2DVerticalTaps4<num_taps>(&s[p_diff], filter);
-    result = vmovn_u32(vrshlq_u32(sums, v_inter_round_bits));
+    shifted = vmovn_s32(vqrshlq_s32(sums, v_inter_round_bits));
     if (is_compound) {
+      const uint16x4_t result =
+          vreinterpret_u16_s16(vadd_s16(shifted, compound_round_offset));
       if (width == 2) {
         Store2<0>(dest16_y, result);
       } else {
         vst1_u16(dest16_y, result);
       }
     } else {
-      result = vqsub_u16(result, single_round_offset);
+      const uint8x8_t result = vqmovun_s16(vcombine_s16(shifted, shifted));
       if (width == 2) {
-        Store2<0>(dest_y, vqmovn_u16(vcombine_u16(result, result)));
+        Store2<0>(dest_y, result);
       } else {
-        StoreLo4(dest_y, vqmovn_u16(vcombine_u16(result, result)));
+        StoreLo4(dest_y, result);
       }
     }
     p += step_y;
@@ -1615,10 +1595,7 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
                                   const int filter_index, const int step_y,
                                   const int height, void* dest,
                                   const ptrdiff_t dest_stride) {
-  const int32x4_t v_inter_round_bits = vdupq_n_s32(-(inter_round_bits - 1));
   constexpr ptrdiff_t src_stride = kIntermediateStride;
-  const uint16x8_t single_round_offset =
-      vdupq_n_u16((1 << kBitdepth8) + (1 << (kBitdepth8 - 1)));
   constexpr int kernel_offset = (8 - num_taps) / 2;
   src += src_stride * kernel_offset;
   // A possible improvement is to use arithmetic to decide how many times to
@@ -1645,15 +1622,12 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
       int filter_id = (p >> 6) & kSubPixelMask;
       int16x8_t filter =
           vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
-      uint32x4x2_t sums = Sum2DVerticalTaps<num_taps>(s, filter);
-      uint16x8_t result =
-          vcombine_u16(vmovn_u32(vrshlq_u32(sums.val[0], v_inter_round_bits)),
-                       vmovn_u32(vrshlq_u32(sums.val[1], v_inter_round_bits)));
+      int16x8_t sum = SimpleSum2DVerticalTaps<num_taps, is_compound>(
+          s, filter, inter_round_bits);
       if (is_compound) {
-        vst1q_u16(dest16_y, result);
+        vst1q_u16(dest16_y, vreinterpretq_u16_s16(sum));
       } else {
-        result = vqsubq_u16(result, single_round_offset);
-        vst1_u8(dest_y, vqmovn_u16(result));
+        vst1_u8(dest_y, vqmovun_s16(sum));
       }
       p += step_y;
       const int p_diff =
@@ -1670,15 +1644,12 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
 
       filter_id = (p >> 6) & kSubPixelMask;
       filter = vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
-      sums = Sum2DVerticalTaps<num_taps>(&s[p_diff], filter);
-      result =
-          vcombine_u16(vmovn_u32(vrshlq_u32(sums.val[0], v_inter_round_bits)),
-                       vmovn_u32(vrshlq_u32(sums.val[1], v_inter_round_bits)));
+      sum = SimpleSum2DVerticalTaps<num_taps, is_compound>(&s[p_diff], filter,
+                                                           inter_round_bits);
       if (is_compound) {
-        vst1q_u16(dest16_y, result);
+        vst1q_u16(dest16_y, vreinterpretq_u16_s16(sum));
       } else {
-        result = vqsubq_u16(result, single_round_offset);
-        vst1_u8(dest_y, vqmovn_u16(result));
+        vst1_u8(dest_y, vqmovun_s16(sum));
       }
       p += step_y;
       src_y = src_x + (p >> kScaleSubPixelBits) * src_stride;
@@ -2578,6 +2549,8 @@ void ConvolveCompoundCopy_NEON(
   const auto* src = static_cast<const uint8_t*>(reference);
   const ptrdiff_t src_stride = reference_stride;
   auto* dest = static_cast<uint16_t*>(prediction);
+  // TODO(johannkoenig): Remove this offset. Also needs to be removed from Blend
+  // functions.
   const int compound_round_offset = (1 << kBitdepth8) + (1 << (kBitdepth8 - 1));
   const uint16x8_t v_compound_round_offset = vdupq_n_u16(compound_round_offset);
   const int final_shift = kInterRoundBitsVertical - inter_round_bits_vertical;
