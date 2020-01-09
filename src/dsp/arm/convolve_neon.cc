@@ -56,7 +56,7 @@ int16x8_t SumOnePassTaps(const uint8x8_t* const src,
     sum = vmlal_u8(sum, src[2], taps[2]);
     sum = vmlal_u8(sum, src[3], taps[3]);
     sum = vmlsl_u8(sum, src[4], taps[4]);
-    return vreinterpretq_s16_u16(vmlal_u8(sum, src[5], taps[5]));
+    sum = vmlal_u8(sum, src[5], taps[5]);
   } else if (filter_index == 1 && negative_outside_taps) {
     // 6 taps. - + + + + -
     // Set a base we can subtract from.
@@ -65,7 +65,7 @@ int16x8_t SumOnePassTaps(const uint8x8_t* const src,
     sum = vmlal_u8(sum, src[2], taps[2]);
     sum = vmlal_u8(sum, src[3], taps[3]);
     sum = vmlal_u8(sum, src[4], taps[4]);
-    return vreinterpretq_s16_u16(vmlsl_u8(sum, src[5], taps[5]));
+    sum = vmlsl_u8(sum, src[5], taps[5]);
   } else if (filter_index == 1) {
     // 6 taps. All are positive.
     sum = vmull_u8(src[0], taps[0]);
@@ -83,7 +83,7 @@ int16x8_t SumOnePassTaps(const uint8x8_t* const src,
     sum = vmlal_u8(sum, src[4], taps[4]);
     sum = vmlsl_u8(sum, src[5], taps[5]);
     sum = vmlal_u8(sum, src[6], taps[6]);
-    return vreinterpretq_s16_u16(vmlsl_u8(sum, src[7], taps[7]));
+    sum = vmlsl_u8(sum, src[7], taps[7]);
   } else if (filter_index == 3) {
     // 2 taps. All are positive.
     sum = vmull_u8(src[0], taps[0]);
@@ -93,7 +93,7 @@ int16x8_t SumOnePassTaps(const uint8x8_t* const src,
     sum = vmull_u8(src[1], taps[1]);
     sum = vmlsl_u8(sum, src[0], taps[0]);
     sum = vmlal_u8(sum, src[2], taps[2]);
-    return vreinterpretq_s16_u16(vmlsl_u8(sum, src[3], taps[3]));
+    sum = vmlsl_u8(sum, src[3], taps[3]);
   } else if (filter_index == 5) {
     // 4 taps. All are positive.
     sum = vmull_u8(src[0], taps[0]);
