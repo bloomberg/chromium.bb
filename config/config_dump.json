@@ -9477,6 +9477,7 @@
         "boards": [
             "endeavour"
         ],
+        "important": false,
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -22439,6 +22440,7 @@
             "edgar-release",
             "elm-kernelnext-release",
             "elm-release",
+            "endeavour-release",
             "enguarde-release",
             "eve-arcnext-release",
             "eve-arcvm-mesa-virgl-next-release",
@@ -22622,6 +22624,7 @@
             "edgar-release-tryjob",
             "elm-kernelnext-release-tryjob",
             "elm-release-tryjob",
+            "endeavour-release-tryjob",
             "enguarde-release-tryjob",
             "eve-arcnext-release-tryjob",
             "eve-arcvm-mesa-virgl-next-release-tryjob",
