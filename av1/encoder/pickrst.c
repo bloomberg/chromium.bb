@@ -69,24 +69,23 @@ typedef uint64_t (*var_part_extractor_type)(const YV12_BUFFER_CONFIG *a,
 
 #if CONFIG_AV1_HIGHBITDEPTH
 #define NUM_EXTRACTORS (3 * (1 + 1))
+#else
+#define NUM_EXTRACTORS 3
+#endif
 static const sse_part_extractor_type sse_part_extractors[NUM_EXTRACTORS] = {
   aom_get_y_sse_part,        aom_get_u_sse_part,
-  aom_get_v_sse_part,        aom_highbd_get_y_sse_part,
-  aom_highbd_get_u_sse_part, aom_highbd_get_v_sse_part,
+  aom_get_v_sse_part,
+#if CONFIG_AV1_HIGHBITDEPTH
+  aom_highbd_get_y_sse_part, aom_highbd_get_u_sse_part,
+  aom_highbd_get_v_sse_part,
+#endif
 };
 static const var_part_extractor_type var_part_extractors[NUM_EXTRACTORS] = {
   aom_get_y_var,        aom_get_u_var,        aom_get_v_var,
+#if CONFIG_AV1_HIGHBITDEPTH
   aom_highbd_get_y_var, aom_highbd_get_u_var, aom_highbd_get_v_var,
-};
-#else
-#define NUM_EXTRACTORS 3
-static const sse_part_extractor_type sse_part_extractors[NUM_EXTRACTORS] = {
-  aom_get_y_sse_part, aom_get_u_sse_part, aom_get_v_sse_part
-};
-static const var_part_extractor_type var_part_extractors[NUM_EXTRACTORS] = {
-  aom_get_y_var, aom_get_u_var, aom_get_v_var
-};
 #endif
+};
 
 static int64_t sse_restoration_unit(const RestorationTileLimits *limits,
                                     const YV12_BUFFER_CONFIG *src,
