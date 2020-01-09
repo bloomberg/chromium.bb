@@ -47,7 +47,7 @@ if [[ $MINGW != 0 && $DEPOT_TOOLS_BOOTSTRAP_PYTHON3 != 0 ]]; then
     bootstrap_python3
   fi
   PYTHON3_BIN_RELDIR="$base_dir/$(cat $base_dir/python3_bin_reldir.txt | xargs echo)"
-  PATH="$PYTHON3_BIN_RELDIR":"$PYTHON3_BIN_RELDIR/Scripts":"$PATH"
+  exec "$base_dir/.cipd_bin/vpython3" -vpython-interpreter  "$PYTHON3_BIN_RELDIR/bin/python3" "$@"
+else
+	exec "$base_dir/.cipd_bin/vpython3" "$@"
 fi
-
-exec "$base_dir/.cipd_bin/vpython3" "$@"
