@@ -55,6 +55,15 @@ void av1_free_txb_buf(AV1_COMP *cpi);
 int av1_cost_coeffs_txb(const MACROBLOCK *x, const int plane, const int block,
                         const TX_SIZE tx_size, const TX_TYPE tx_type,
                         const TXB_CTX *const txb_ctx, int reduced_tx_set_used);
+int av1_cost_coeffs_txb_laplacian(const MACROBLOCK *x, const int plane,
+                                  const int block, const TX_SIZE tx_size,
+                                  const TX_TYPE tx_type,
+                                  const TXB_CTX *const txb_ctx,
+                                  const int reduced_tx_set_used,
+                                  const int adjust_eob);
+int av1_cost_coeffs_txb_estimate(const MACROBLOCK *x, const int plane,
+                                 const int block, const TX_SIZE tx_size,
+                                 const TX_TYPE tx_type);
 void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *const x,
                           aom_writer *w, int blk_row, int blk_col, int plane,
                           int block, TX_SIZE tx_size);

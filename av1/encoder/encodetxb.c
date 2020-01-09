@@ -725,6 +725,36 @@ static int get_tx_type_cost(const MACROBLOCK *x, const MACROBLOCKD *xd,
   return 0;
 }
 
+static INLINE void update_coeff_eob_fast(int *eob, int shift,
+                                         const int16_t *dequant_ptr,
+                                         const int16_t *scan,
+                                         const tran_low_t *coeff_ptr,
+                                         tran_low_t *qcoeff_ptr,
+                                         tran_low_t *dqcoeff_ptr) {
+  // TODO(sarahparker) make this work for aomqm
+  int eob_out = *eob;
+  int zbin[2] = { dequant_ptr[0] + ROUND_POWER_OF_TWO(dequant_ptr[0] * 70, 7),
+                  dequant_ptr[1] + ROUND_POWER_OF_TWO(dequant_ptr[1] * 70, 7) };
+
+  for (int i = *eob - 1; i >= 0; i--) {
+    const int rc = scan[i];
+    const int qcoeff = qcoeff_ptr[rc];
+    const int coeff = coeff_ptr[rc];
+    const int coeff_sign = (coeff >> 31);
+    int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
+
+    if (((abs_coeff << (1 + shift)) < zbin[rc != 0]) || (qcoeff == 0)) {
+      eob_out--;
+      qcoeff_ptr[rc] = 0;
+      dqcoeff_ptr[rc] = 0;
+    } else {
+      break;
+    }
+  }
+
+  *eob = eob_out;
+}
+
 static AOM_FORCE_INLINE int warehouse_efficients_txb(
     const MACROBLOCK *x, const int plane, const int block,
     const TX_SIZE tx_size, const TXB_CTX *const txb_ctx,
@@ -821,6 +851,71 @@ static AOM_FORCE_INLINE int warehouse_efficients_txb(
   return cost;
 }
 
+static AOM_FORCE_INLINE int warehouse_efficients_txb_laplacian(
+    const MACROBLOCK *x, const int plane, const int block,
+    const TX_SIZE tx_size, const TXB_CTX *const txb_ctx, const int eob,
+    const PLANE_TYPE plane_type, const LV_MAP_COEFF_COST *const coeff_costs,
+    const MACROBLOCKD *const xd, const TX_TYPE tx_type, const TX_CLASS tx_class,
+    int reduced_tx_set_used) {
+  const int txb_skip_ctx = txb_ctx->txb_skip_ctx;
+
+  const int eob_multi_size = txsize_log2_minus4[tx_size];
+  const LV_MAP_EOB_COST *const eob_costs =
+      &x->eob_costs[eob_multi_size][plane_type];
+  int cost = coeff_costs->txb_skip_cost[txb_skip_ctx][0];
+
+  cost += get_tx_type_cost(x, xd, plane, tx_size, tx_type, reduced_tx_set_used);
+
+  cost += get_eob_cost(eob, eob_costs, coeff_costs, tx_class);
+
+  cost += av1_cost_coeffs_txb_estimate(x, plane, block, tx_size, tx_type);
+  return cost;
+}
+
+// Look up table of individual cost of coefficient by its quantization level.
+// determined based on Laplacian distribution conditioned on estimated context
+static const int costLUT[15] = { -1143, 53,   545,  825,  1031,
+                                 1209,  1393, 1577, 1763, 1947,
+                                 2132,  2317, 2501, 2686, 2871 };
+static const int const_term = (1 << AV1_PROB_COST_SHIFT);
+static const int loge_par = ((14427 << AV1_PROB_COST_SHIFT) + 5000) / 10000;
+int av1_cost_coeffs_txb_estimate(const MACROBLOCK *x, const int plane,
+                                 const int block, const TX_SIZE tx_size,
+                                 const TX_TYPE tx_type) {
+  assert(plane == 0);
+
+  int cost = 0;
+  const struct macroblock_plane *p = &x->plane[plane];
+  const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
+  const int16_t *scan = scan_order->scan;
+  tran_low_t *qcoeff = p->qcoeff + BLOCK_OFFSET(block);
+
+  int eob = p->eobs[block];
+
+  // coeffs
+  int c = eob - 1;
+  // eob
+  {
+    const int pos = scan[c];
+    const tran_low_t v = abs(qcoeff[pos]) - 1;
+    cost += (v << (AV1_PROB_COST_SHIFT + 2));
+  }
+  // other coeffs
+  for (c = eob - 2; c >= 0; c--) {
+    const int pos = scan[c];
+    const tran_low_t v = abs(qcoeff[pos]);
+    const int idx = AOMMIN(v, 14);
+
+    cost += costLUT[idx];
+  }
+
+  // const_term does not contain DC, and log(e) does not contain eob, so both
+  // (eob-1)
+  cost += (const_term + loge_par) * (eob - 1);
+
+  return cost;
+}
+
 int av1_cost_coeffs_txb(const MACROBLOCK *x, const int plane, const int block,
                         const TX_SIZE tx_size, const TX_TYPE tx_type,
                         const TXB_CTX *const txb_ctx, int reduced_tx_set_used) {
@@ -840,6 +935,44 @@ int av1_cost_coeffs_txb(const MACROBLOCK *x, const int plane, const int block,
   return warehouse_efficients_txb(x, plane, block, tx_size, txb_ctx, p, eob,
                                   plane_type, coeff_costs, xd, tx_type,
                                   tx_class, reduced_tx_set_used);
+}
+
+INLINE int av1_cost_coeffs_txb_laplacian(const MACROBLOCK *x, const int plane,
+                                         const int block, const TX_SIZE tx_size,
+                                         const TX_TYPE tx_type,
+                                         const TXB_CTX *const txb_ctx,
+                                         const int reduced_tx_set_used,
+                                         const int adjust_eob) {
+  const struct macroblock_plane *p = &x->plane[plane];
+  int eob = p->eobs[block];
+
+  if (adjust_eob) {
+    const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
+    const int16_t *scan = scan_order->scan;
+    tran_low_t *tcoeff = p->coeff + BLOCK_OFFSET(block);
+    tran_low_t *qcoeff = p->qcoeff + BLOCK_OFFSET(block);
+    const MACROBLOCKD *xd = &x->e_mbd;
+    const struct macroblockd_plane *const pd = &xd->plane[plane];
+    tran_low_t *dqcoeff = pd->dqcoeff + BLOCK_OFFSET(block);
+    update_coeff_eob_fast(&eob, av1_get_tx_scale(tx_size), p->dequant_QTX, scan,
+                          tcoeff, qcoeff, dqcoeff);
+    p->eobs[block] = eob;
+  }
+
+  const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  const LV_MAP_COEFF_COST *const coeff_costs =
+      &x->coeff_costs[txs_ctx][plane_type];
+  if (eob == 0) {
+    return coeff_costs->txb_skip_cost[txb_ctx->txb_skip_ctx][1];
+  }
+
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const TX_CLASS tx_class = tx_type_to_class[tx_type];
+
+  return warehouse_efficients_txb_laplacian(
+      x, plane, block, tx_size, txb_ctx, eob, plane_type, coeff_costs, xd,
+      tx_type, tx_class, reduced_tx_set_used);
 }
 
 static int optimize_txb(TxbInfo *txb_info, const LV_MAP_COEFF_COST *txb_costs,
@@ -1472,36 +1605,6 @@ static AOM_FORCE_INLINE void update_coeff_simple(
       *accu_rate += rate;
     }
   }
-}
-
-static INLINE void update_coeff_eob_fast(int *eob, int shift,
-                                         const int16_t *dequant_ptr,
-                                         const int16_t *scan,
-                                         const tran_low_t *coeff_ptr,
-                                         tran_low_t *qcoeff_ptr,
-                                         tran_low_t *dqcoeff_ptr) {
-  // TODO(sarahparker) make this work for aomqm
-  int eob_out = *eob;
-  int zbin[2] = { dequant_ptr[0] + ROUND_POWER_OF_TWO(dequant_ptr[0] * 70, 7),
-                  dequant_ptr[1] + ROUND_POWER_OF_TWO(dequant_ptr[1] * 70, 7) };
-
-  for (int i = *eob - 1; i >= 0; i--) {
-    const int rc = scan[i];
-    const int qcoeff = qcoeff_ptr[rc];
-    const int coeff = coeff_ptr[rc];
-    const int coeff_sign = (coeff >> 31);
-    int64_t abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
-
-    if (((abs_coeff << (1 + shift)) < zbin[rc != 0]) || (qcoeff == 0)) {
-      eob_out--;
-      qcoeff_ptr[rc] = 0;
-      dqcoeff_ptr[rc] = 0;
-    } else {
-      break;
-    }
-  }
-
-  *eob = eob_out;
 }
 
 static AOM_FORCE_INLINE void update_coeff_eob(
