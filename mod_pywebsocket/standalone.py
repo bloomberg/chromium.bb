@@ -771,9 +771,7 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
             try:
                 handshake.do_handshake(
                     request,
-                    self._options.dispatcher,
-                    allowDraft75=self._options.allow_draft75,
-                    strict=self._options.strict)
+                    self._options.dispatcher)
             except handshake.VersionException, e:
                 self._logger.info('Handshake failed for version error: %s', e)
                 self.send_response(common.HTTP_STATUS_BAD_REQUEST)
@@ -983,11 +981,6 @@ def _build_option_parser():
     parser.add_option('--log-count', '--log_count', dest='log_count',
                       type='int', default=_DEFAULT_LOG_BACKUP_COUNT,
                       help='Log backup count')
-    parser.add_option('--allow-draft75', dest='allow_draft75',
-                      action='store_true', default=False,
-                      help='Obsolete option. Ignored.')
-    parser.add_option('--strict', dest='strict', action='store_true',
-                      default=False, help='Obsolete option. Ignored.')
     parser.add_option('-q', '--queue', dest='request_queue_size', type='int',
                       default=_DEFAULT_REQUEST_QUEUE_SIZE,
                       help='request queue size')
@@ -1066,12 +1059,6 @@ def _main(args=None):
     os.chdir(options.document_root)
 
     _configure_logging(options)
-
-    if options.allow_draft75:
-        logging.warning('--allow_draft75 option is obsolete.')
-
-    if options.strict:
-        logging.warning('--strict option is obsolete.')
 
     # TODO(tyoshino): Clean up initialization of CGI related values. Move some
     # of code here to WebSocketRequestHandler class if it's better.

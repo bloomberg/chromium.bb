@@ -68,8 +68,8 @@ where:
     request: mod_python request.
 
 web_socket_do_extra_handshake is called during the handshake after the
-headers are successfully parsed and WebSocket properties (ws_location,
-ws_origin, and ws_resource) are added to request. A handler
+headers are successfully parsed and WebSocket properties (ws_origin,
+and ws_resource) are added to request. A handler
 can reject the request by raising an exception.
 
 A request object has the following properties that you can use during the
@@ -77,11 +77,10 @@ extra handshake (web_socket_do_extra_handshake):
 - ws_resource
 - ws_origin
 - ws_version
-- ws_location (HyBi 00 only)
-- ws_extensions (HyBi 06 and later)
-- ws_deflate (HyBi 06 and later)
+- ws_extensions
+- ws_deflate
 - ws_protocol
-- ws_requested_protocols (HyBi 06 and later)
+- ws_requested_protocols
 
 The last two are a bit tricky. See the next subsection.
 
@@ -89,20 +88,10 @@ The last two are a bit tricky. See the next subsection.
 Subprotocol Negotiation
 -----------------------
 
-For HyBi 06 and later, ws_protocol is always set to None when
+ws_protocol is always set to None when
 web_socket_do_extra_handshake is called. If ws_requested_protocols is not
 None, you must choose one subprotocol from this list and set it to
 ws_protocol.
-
-For HyBi 00, when web_socket_do_extra_handshake is called,
-ws_protocol is set to the value given by the client in
-Sec-WebSocket-Protocol header or None if
-such header was not found in the opening handshake request. Finish extra
-handshake with ws_protocol untouched to accept the request subprotocol.
-Then, Sec-WebSocket-Protocol header will be sent to
-the client in response with the same value as requested. Raise an exception
-in web_socket_do_extra_handshake to reject the requested subprotocol.
-
 
 Data Transfer
 -------------

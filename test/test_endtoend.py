@@ -592,31 +592,6 @@ class EndToEndHyBiTest(EndToEndTestBase):
         options.version = 99
         self._run_http_fallback_test(options, 400)
 
-
-class EndToEndHyBi00Test(EndToEndTestBase):
-    def setUp(self):
-        EndToEndTestBase.setUp(self)
-
-    def _run_test(self, test_function):
-        server = self._run_server()
-        try:
-            time.sleep(_SERVER_WARMUP_IN_SEC)
-
-            client = client_for_testing.create_client_hybi00(self._options)
-            try:
-                test_function(client)
-            finally:
-                client.close_socket()
-        finally:
-            self._kill_process(server.pid)
-
-    def test_echo(self):
-        self._run_test(_echo_check_procedure)
-
-    def test_echo_server_close(self):
-        self._run_test(_echo_check_procedure_with_goodbye)
-
-
 class EndToEndTestWithEchoClient(EndToEndTestBase):
     def setUp(self):
         EndToEndTestBase.setUp(self)

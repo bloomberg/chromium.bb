@@ -48,7 +48,6 @@ from mod_pywebsocket.extensions import PerMessageDeflateExtensionProcessor
 from mod_pywebsocket import msgutil
 from mod_pywebsocket.stream import InvalidUTF8Exception
 from mod_pywebsocket.stream import Stream
-from mod_pywebsocket.stream import StreamHixie75
 from mod_pywebsocket.stream import StreamOptions
 from mod_pywebsocket import util
 from test import mock
@@ -126,19 +125,6 @@ def _create_blocking_request():
     stream_options = StreamOptions()
     req.ws_stream = Stream(req, stream_options)
     return req
-
-
-def _create_request_hixie75(read_data=''):
-    req = mock.MockRequest(connection=mock.MockConn(read_data))
-    req.ws_stream = StreamHixie75(req)
-    return req
-
-
-def _create_blocking_request_hixie75():
-    req = mock.MockRequest(connection=mock.MockBlockingConn())
-    req.ws_stream = StreamHixie75(req)
-    return req
-
 
 class BasicMessageTest(unittest.TestCase):
     """Basic tests for Stream."""
@@ -1190,45 +1176,6 @@ class PerMessageDeflateTest(unittest.TestCase):
         self.assertEqual(None, msgutil.receive_message(request))
 
 
-class MessageTestHixie75(unittest.TestCase):
-    """Tests for draft-hixie-thewebsocketprotocol-76 stream class."""
-
-    def test_send_message(self):
-        request = _create_request_hixie75()
-        msgutil.send_message(request, 'Hello')
-        self.assertEqual('\x00Hello\xff', request.connection.written_data())
-
-    def test_send_message_unicode(self):
-        request = _create_request_hixie75()
-        msgutil.send_message(request, u'\u65e5')
-        # U+65e5 is encoded as e6,97,a5 in UTF-8
-        self.assertEqual('\x00\xe6\x97\xa5\xff',
-                         request.connection.written_data())
-
-    def test_receive_message(self):
-        request = _create_request_hixie75('\x00Hello\xff\x00World!\xff')
-        self.assertEqual('Hello', msgutil.receive_message(request))
-        self.assertEqual('World!', msgutil.receive_message(request))
-
-    def test_receive_message_unicode(self):
-        request = _create_request_hixie75('\x00\xe6\x9c\xac\xff')
-        # U+672c is encoded as e6,9c,ac in UTF-8
-        self.assertEqual(u'\u672c', msgutil.receive_message(request))
-
-    def test_receive_message_erroneous_unicode(self):
-        # \x80 and \x81 are invalid as UTF-8.
-        request = _create_request_hixie75('\x00\x80\x81\xff')
-        # Invalid characters should be replaced with
-        # U+fffd REPLACEMENT CHARACTER
-        self.assertEqual(u'\ufffd\ufffd', msgutil.receive_message(request))
-
-    def test_receive_message_discard(self):
-        request = _create_request_hixie75('\x80\x06IGNORE\x00Hello\xff'
-                                          '\x01DISREGARD\xff\x00World!\xff')
-        self.assertEqual('Hello', msgutil.receive_message(request))
-        self.assertEqual('World!', msgutil.receive_message(request))
-
-
 class MessageReceiverTest(unittest.TestCase):
     """Tests the Stream class using MessageReceiver."""
 
@@ -1251,31 +1198,6 @@ class MessageReceiverTest(unittest.TestCase):
         receiver = msgutil.MessageReceiver(request, onmessage_handler)
 
         request.connection.put_bytes('\x81\x86' + _mask_hybi('Hello!'))
-        self.assertEqual('Hello!', onmessage_queue.get())
-
-
-class MessageReceiverHixie75Test(unittest.TestCase):
-    """Tests the StreamHixie75 class using MessageReceiver."""
-
-    def test_queue(self):
-        request = _create_blocking_request_hixie75()
-        receiver = msgutil.MessageReceiver(request)
-
-        self.assertEqual(None, receiver.receive_nowait())
-
-        request.connection.put_bytes('\x00Hello!\xff')
-        self.assertEqual('Hello!', receiver.receive())
-
-    def test_onmessage(self):
-        onmessage_queue = Queue.Queue()
-
-        def onmessage_handler(message):
-            onmessage_queue.put(message)
-
-        request = _create_blocking_request_hixie75()
-        receiver = msgutil.MessageReceiver(request, onmessage_handler)
-
-        request.connection.put_bytes('\x00Hello!\xff')
         self.assertEqual('Hello!', onmessage_queue.get())
 
 
@@ -1307,37 +1229,6 @@ class MessageSenderTest(unittest.TestCase):
         sender.send_nowait('World')
         self.assertEqual('\x81\x05Hello', send_queue.get())
         self.assertEqual('\x81\x05World', send_queue.get())
-
-
-class MessageSenderHixie75Test(unittest.TestCase):
-    """Tests the StreamHixie75 class using MessageSender."""
-
-    def test_send(self):
-        request = _create_blocking_request_hixie75()
-        sender = msgutil.MessageSender(request)
-
-        sender.send('World')
-        self.assertEqual('\x00World\xff', request.connection.written_data())
-
-    def test_send_nowait(self):
-        # Use a queue to check the bytes written by MessageSender.
-        # request.connection.written_data() cannot be used here because
-        # MessageSender runs in a separate thread.
-        send_queue = Queue.Queue()
-
-        def write(bytes):
-            send_queue.put(bytes)
-
-        request = _create_blocking_request_hixie75()
-        request.connection.write = write
-
-        sender = msgutil.MessageSender(request)
-
-        sender.send_nowait('Hello')
-        sender.send_nowait('World')
-        self.assertEqual('\x00Hello\xff', send_queue.get())
-        self.assertEqual('\x00World\xff', send_queue.get())
-
 
 if __name__ == '__main__':
     unittest.main()

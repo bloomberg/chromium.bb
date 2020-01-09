@@ -170,36 +170,36 @@ class DispatcherTest(unittest.TestCase):
     def test_transfer_data(self):
         dispatcher = dispatch.Dispatcher(_TEST_HANDLERS_DIR, None)
 
-        request = mock.MockRequest(connection=mock.MockConn('\xff\x00'))
+        request = mock.MockRequest(connection=mock.MockConn('\x88\x02\x03\xe8'))
         request.ws_resource = '/origin_check'
         request.ws_protocol = 'p1'
         dispatcher.transfer_data(request)
         self.assertEqual('origin_check_wsh.py is called for /origin_check, p1'
-                         '\xff\x00',
+                         '\x88\x02\x03\xe8',
                          request.connection.written_data())
 
-        request = mock.MockRequest(connection=mock.MockConn('\xff\x00'))
+        request = mock.MockRequest(connection=mock.MockConn('\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
         self.assertEqual('sub/plain_wsh.py is called for /sub/plain, None'
-                         '\xff\x00',
+                         '\x88\x02\x03\xe8',
                          request.connection.written_data())
 
-        request = mock.MockRequest(connection=mock.MockConn('\xff\x00'))
+        request = mock.MockRequest(connection=mock.MockConn('\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain?'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
         self.assertEqual('sub/plain_wsh.py is called for /sub/plain?, None'
-                         '\xff\x00',
+                         '\x88\x02\x03\xe8',
                          request.connection.written_data())
 
-        request = mock.MockRequest(connection=mock.MockConn('\xff\x00'))
+        request = mock.MockRequest(connection=mock.MockConn('\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain?q=v'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
         self.assertEqual('sub/plain_wsh.py is called for /sub/plain?q=v, None'
-                         '\xff\x00',
+                         '\x88\x02\x03\xe8',
                          request.connection.written_data())
 
     def test_transfer_data_no_handler(self):
