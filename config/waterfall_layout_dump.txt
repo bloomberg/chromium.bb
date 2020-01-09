@@ -1123,12 +1123,6 @@
   grunt-pi-android-pfq-tryjob
   grunt-release-tryjob
   grunt-unittest-stress
-  guado-accelerator-full-tryjob
-  guado-accelerator-llvm-next-toolchain-tryjob
-  guado-accelerator-llvm-toolchain-tryjob
-  guado-accelerator-payloads-tryjob
-  guado-accelerator-release-tryjob
-  guado-accelerator-unittest-stress
   guado-cfm-full-tryjob
   guado-cfm-llvm-next-toolchain-tryjob
   guado-cfm-llvm-toolchain-tryjob

@@ -119,7 +119,6 @@ x86_internal_release_boards = frozenset([
     'gnawty',
     'grunt',
     'guado',
-    'guado-accelerator',
     'guado_labstation',
     'hatch',
     'hatch-diskswap',
@@ -194,7 +193,6 @@ brillo_boards = frozenset([
 
 accelerator_boards = frozenset([
     'fizz-accelerator',
-    'guado-accelerator',
 ])
 
 beaglebone_boards = frozenset([
