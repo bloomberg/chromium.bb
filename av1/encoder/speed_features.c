@@ -368,6 +368,8 @@ static void set_good_speed_features_framesize_independent(
     sf->lpf_sf.cdef_pick_method = CDEF_FAST_SEARCH;
     sf->lpf_sf.dual_sgr_penalty_level = 1;
     sf->lpf_sf.enable_sgr_ep_pruning = 1;
+
+    sf->tpl_sf.skip_repeated_mv_level = 1;
   }
 
   if (speed >= 2) {
@@ -461,8 +463,6 @@ static void set_good_speed_features_framesize_independent(
         cm->allow_screen_content_tools ? 0 : 2;
     sf->lpf_sf.reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
     sf->hl_sf.second_alt_ref_filtering = 0;
-
-    sf->tpl_sf.skip_repeated_mv_level = 1;
   }
 
   if (speed >= 4) {
