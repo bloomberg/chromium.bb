@@ -28,12 +28,9 @@ group("gn_all") {
     "third_party/boringssl",
     "third_party/jsoncpp",
     "third_party/tinycbor",
+    "tools/cddl($host_toolchain)",
     "util",
   ]
-
-  if (current_toolchain == host_toolchain) {
-    deps += [ "tools/cddl" ]
-  }
 
   if (use_mdns_responder) {
     deps += [ "osp/impl/discovery/mdns:mdns_demo" ]
@@ -53,12 +50,12 @@ group("gn_all") {
 
   if (!build_with_chromium) {
     deps += [
-      "third_party/protobuf:protoc",
+      "third_party/protobuf:protoc($host_toolchain)",
       "third_party/zlib",
     ]
 
     if (is_posix) {
-      deps += [ "cast/test:make_crl_tests" ]
+      deps += [ "cast/test:make_crl_tests($host_toolchain)" ]
     }
 
     # TODO(crbug.com/openscreen/86): Build for Mac too once the mac buildbot

@@ -38,6 +38,31 @@ config("compiler_defaults") {
   }
 }
 
+config("compiler_cpu_abi") {
+  cflags = []
+  ldflags = []
+
+  if (current_cpu == "x64") {
+    # These are explicitly specified in case of cross-compiling.
+    cflags += [ "-m64" ]
+    ldflags += [ "-m64" ]
+  } else if (current_cpu == "x86") {
+    cflags += [ "-m32" ]
+    ldflags += [ "-m32" ]
+  } else if (current_cpu == "arm") {
+    cflags += [
+      "--target=arm-linux-gnueabihf",
+      "-march=$arm_arch",
+      "-mfloat-abi=$arm_float_abi",
+      "-mtune=$arm_tune",
+    ]
+    ldflags += [ "--target=arm-linux-gnueabihf" ]
+  } else if (current_cpu == "arm64") {
+    cflags += [ "--target=aarch64-linux-gnu" ]
+    ldflags += [ "--target=aarch64-linux-gnu" ]
+  }
+}
+
 config("no_exceptions") {
   # -fno-exceptions causes the compiler to choose the implementation of the STL
   # that uses abort() calls instead of throws, as well as issue compile errors
@@ -191,18 +216,6 @@ config("sysroot_runtime_libraries") {
     ldflags = flags
     cflags = flags
 
-    if (current_cpu == "arm") {
-      cflags += [
-        "--target=arm-linux-gnueabihf",
-        "-march=$arm_arch",
-        "-mfloat-abi=$arm_float_abi",
-        "-mtune=$arm_tune",
-      ]
-      ldflags += [ "--target=arm-linux-gnueabihf" ]
-    } else if (current_cpu == "arm64") {
-      cflags += [ "--target=aarch64-linux-gnu" ]
-      ldflags += [ "--target=aarch64-linux-gnu" ]
-    }
     ld_paths = exec_script("//build/scripts/sysroot_ld_path.py",
                            [ sysroot_path ],
                            "list lines")
