@@ -21,6 +21,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
@@ -156,12 +157,20 @@ def _flash(dut_cmd_on, dut_cmd_off, flash_cmd):
   try:
     for cmd in dut_cmd_on:
       subprocess.run(cmd, check=True)
+    # Need to wait for SPI chip power to stabilize (for some designs)
+    time.sleep(1)
     subprocess.run(flash_cmd, check=True)
-    for cmd in dut_cmd_off:
-      subprocess.run(cmd, check=True)
   except subprocess.CalledProcessError as e:
     logging.error('Flashing failed with output:\n%s', e.output)
     return False
+  finally:
+    # Run the dut off commands to clean up state if possible.
+    try:
+      for cmd in dut_cmd_off:
+        subprocess.run(cmd, check=True)
+    except subprocess.CalledProcessError as e:
+      logging.error('Dut cmd off failed with output:\n%s', e.output)
+      return False
   return True
 
 
@@ -198,7 +207,7 @@ def _get_servo_info(dut_control):
     sn_ctl = 'servo_micro_serialname'
   elif servo_version == 'servo_v4_with_ccd_cr50':
     sn_ctl = 'ccd_serialname'
-  elif servo_version not in ('servo_v2', 'ccd_cr50', 'servo_micro'):
+  elif servo_version not in ('servo_v2', 'ccd_cr50', 'servo_micro', 'c2d2'):
     raise ValueError('Servo version: %s not recognized' % servo_version,
                      'verify connection and port number')
   serial_out = subprocess.check_output(dut_control + [sn_ctl], encoding='utf-8')
