@@ -67,8 +67,8 @@ constexpr int16_t kDivisionLookup[kMaxFrameDistance + 1] = {
     744,  712,   682,  655,  630,  606,  585,  564,  546,  528};
 
 // 7.9.3.
-void GetMvProjection(const MotionVector& mv, int numerator,
-                     const int denominator, MotionVector* const projection_mv) {
+void GetMvProjection(const MotionVector& mv, int numerator, int denominator,
+                     MotionVector* const projection_mv) {
   assert(denominator > 0);
   assert(denominator <= kMaxFrameDistance);
   numerator = Clip3(numerator, -kMaxFrameDistance, kMaxFrameDistance);
@@ -81,10 +81,12 @@ void GetMvProjection(const MotionVector& mv, int numerator,
 }
 
 // 7.9.3. (without the clamp for numerator and denominator).
-void GetMvProjectionNoClamp(const MotionVector& mv, const int numerator,
-                            const int denominator,
+void GetMvProjectionNoClamp(const MotionVector& mv, int numerator,
+                            int denominator,
                             MotionVector* const projection_mv) {
-  // Allow numerator and denominator to be 0 to simplify branch conditions.
+  // Allow numerator and denominator to be 0 so that this function can be called
+  // unconditionally. When either numerator or denominator is 0, |projection_mv|
+  // will be 0, and this is what we want.
   assert(std::abs(numerator) <= kMaxFrameDistance);
   assert(denominator >= 0);
   assert(denominator <= kMaxFrameDistance);
@@ -680,23 +682,26 @@ bool CompareCandidateMotionVectors(const CandidateMotionVector& lhs,
 }
 
 // 7.9.4.
-constexpr int Project(const int value, const int delta, const int dst_sign) {
+constexpr int Project(int value, int delta, int dst_sign) {
   return value + ApplySign(delta / 64, dst_sign);
 }
 
 // 7.9.2.
+// In the spec, |dst_sign| is either 1 or -1. Here we set |dst_sign| to either 0
+// or -1 so that it can be XORed and subtracted directly in ApplySign() and
+// corresponding SIMD implementations.
 bool MotionFieldProjection(
     const ObuFrameHeader& frame_header, const RefCountedBuffer& current_frame,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    ReferenceFrameType source, const unsigned int order_hint_range,
-    const int reference_to_current_with_sign, const int dst_sign,
-    const int y8_start, const int y8_end, const int x8_start, const int x8_end,
-    TemporalMotionField* const motion_field) {
+    ReferenceFrameType source, unsigned int order_hint_range,
+    int reference_to_current_with_sign, int dst_sign, int y8_start, int y8_end,
+    int x8_start, int x8_end, TemporalMotionField* const motion_field) {
   const int source_index =
       frame_header.reference_frame_index[source - kReferenceFrameLast];
   auto* const source_frame = reference_frames[source_index].get();
   assert(source_frame != nullptr);
+  assert(dst_sign == 0 || dst_sign == -1);
   if (source_frame->rows4x4() != frame_header.rows4x4 ||
       source_frame->columns4x4() != frame_header.columns4x4 ||
       IsIntraFrame(source_frame->frame_type())) {
@@ -908,8 +913,8 @@ void SetupMotionField(
     const ObuFrameHeader& frame_header, const RefCountedBuffer& current_frame,
     const std::array<RefCountedBufferPtr, kNumReferenceFrameTypes>&
         reference_frames,
-    const unsigned int order_hint_range, const int row4x4_start,
-    const int row4x4_end, const int column4x4_start, const int column4x4_end,
+    unsigned int order_hint_range, int row4x4_start, int row4x4_end,
+    int column4x4_start, int column4x4_end,
     TemporalMotionField* const motion_field) {
   assert(frame_header.use_ref_frame_mvs);
   assert(order_hint_range != 0);
