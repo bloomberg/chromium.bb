@@ -969,48 +969,68 @@ void Vertical14_NEON(void* const dest, const ptrdiff_t stride,
                      const int outer_thresh, const int inner_thresh,
                      const int hev_thresh) {
   auto* dst = static_cast<uint8_t*>(dest);
-  // Move |dst| to the left side of the filter window.
-  dst -= 7;
+  dst -= 8;
+  // input
+  // p7 p6 p5 p4 p3 p2 p1 p0  q0 q1 q2 q3 q4 q5 q6 q7
+  const uint8x16_t x0 = vld1q_u8(dst);
+  dst += stride;
+  const uint8x16_t x1 = vld1q_u8(dst);
+  dst += stride;
+  const uint8x16_t x2 = vld1q_u8(dst);
+  dst += stride;
+  const uint8x16_t x3 = vld1q_u8(dst);
+  dst -= (stride * 3);
 
-  // The filter only need 14 bytes. Over read 2 bytes.
-  const uint8x16_t input_0 = vld1q_u8(dst);
-  const uint8x16_t input_1 = vld1q_u8(dst + stride);
-  const uint8x16_t input_2 = vld1q_u8(dst + 2 * stride);
-  const uint8x16_t input_3 = vld1q_u8(dst + 3 * stride);
+  // re-order input
+#if defined(__aarch64__)
+  const uint8x8_t index_qp3toqp0 = vcreate_u8(0x0b0a090804050607);
+  const uint8x8_t index_qp7toqp4 = vcreate_u8(0x0f0e0d0c00010203);
+  const uint8x16_t index_qp7toqp0 = vcombine_u8(index_qp3toqp0, index_qp7toqp4);
 
-  // Transpose 16x4. Just like an 8x4 transpose but with Q registers.
+  uint8x16_t input_0 = vqtbl1q_u8(x0, index_qp7toqp0);
+  uint8x16_t input_1 = vqtbl1q_u8(x1, index_qp7toqp0);
+  uint8x16_t input_2 = vqtbl1q_u8(x2, index_qp7toqp0);
+  uint8x16_t input_3 = vqtbl1q_u8(x3, index_qp7toqp0);
+#else
+  const uint8x8_t index_qp3toqp0 = vcreate_u8(0x0b0a090804050607);
+  const uint8x8_t index_qp7toqp4 = vcreate_u8(0x0f0e0d0c00010203);
+
+  const uint8x8_t x0_qp3qp0 = VQTbl1U8(x0, index_qp3toqp0);
+  const uint8x8_t x1_qp3qp0 = VQTbl1U8(x1, index_qp3toqp0);
+  const uint8x8_t x2_qp3qp0 = VQTbl1U8(x2, index_qp3toqp0);
+  const uint8x8_t x3_qp3qp0 = VQTbl1U8(x3, index_qp3toqp0);
+
+  const uint8x8_t x0_qp7qp4 = VQTbl1U8(x0, index_qp7toqp4);
+  const uint8x8_t x1_qp7qp4 = VQTbl1U8(x1, index_qp7toqp4);
+  const uint8x8_t x2_qp7qp4 = VQTbl1U8(x2, index_qp7toqp4);
+  const uint8x8_t x3_qp7qp4 = VQTbl1U8(x3, index_qp7toqp4);
+
+  const uint8x16_t input_0 = vcombine_u8(x0_qp3qp0, x0_qp7qp4);
+  const uint8x16_t input_1 = vcombine_u8(x1_qp3qp0, x1_qp7qp4);
+  const uint8x16_t input_2 = vcombine_u8(x2_qp3qp0, x2_qp7qp4);
+  const uint8x16_t input_3 = vcombine_u8(x3_qp3qp0, x3_qp7qp4);
+#endif
+  // input after re-order
+  // p0 p1 p2 p3 q0 q1 q2 q3  p4 p5 p6 p7 q4 q5 q6 q7
+
   const uint8x16x2_t in01 = vtrnq_u8(input_0, input_1);
   const uint8x16x2_t in23 = vtrnq_u8(input_2, input_3);
-
   const uint16x8x2_t in02 = vtrnq_u16(vreinterpretq_u16_u8(in01.val[0]),
                                       vreinterpretq_u16_u8(in23.val[0]));
   const uint16x8x2_t in13 = vtrnq_u16(vreinterpretq_u16_u8(in01.val[1]),
                                       vreinterpretq_u16_u8(in23.val[1]));
 
-  // This a very verbose way of renaming the registers.
-  const uint8x8_t p6p2 = vget_low_u8(vreinterpretq_u8_u16(in02.val[0]));
-  const uint8x8_t q1q5 = vget_high_u8(vreinterpretq_u8_u16(in02.val[0]));
+  const uint8x8_t p0q0 = vget_low_u8(vreinterpretq_u8_u16(in02.val[0]));
+  const uint8x8_t p1q1 = vget_low_u8(vreinterpretq_u8_u16(in13.val[0]));
 
-  const uint8x8_t p4p0 = vget_low_u8(vreinterpretq_u8_u16(in02.val[1]));
-  const uint8x8_t q3x0 = vget_high_u8(vreinterpretq_u8_u16(in02.val[1]));
+  const uint8x8_t p2q2 = vget_low_u8(vreinterpretq_u8_u16(in02.val[1]));
+  const uint8x8_t p3q3 = vget_low_u8(vreinterpretq_u8_u16(in13.val[1]));
 
-  const uint8x8_t p5p1 = vget_low_u8(vreinterpretq_u8_u16(in13.val[0]));
-  const uint8x8_t q2q6 = vget_high_u8(vreinterpretq_u8_u16(in13.val[0]));
+  const uint8x8_t p4q4 = vget_high_u8(vreinterpretq_u8_u16(in02.val[0]));
+  const uint8x8_t p5q5 = vget_high_u8(vreinterpretq_u8_u16(in13.val[0]));
 
-  const uint8x8_t p3q0 = vget_low_u8(vreinterpretq_u8_u16(in13.val[1]));
-  const uint8x8_t q4x1 = vget_high_u8(vreinterpretq_u8_u16(in13.val[1]));
-
-  const uint8x8x2_t p6q6xp2q2 = Interleave32(p6p2, Transpose32(q2q6));
-  const uint8x8_t p6q6 = p6q6xp2q2.val[0];
-  const uint8x8_t p2q2 = p6q6xp2q2.val[1];
-
-  const uint8x8x2_t p5q5xp1q1 = Interleave32(p5p1, Transpose32(q1q5));
-  const uint8x8_t p5q5 = p5q5xp1q1.val[0];
-  const uint8x8_t p1q1 = p5q5xp1q1.val[1];
-
-  const uint8x8_t p4q4 = InterleaveLow32(p4p0, q4x1);
-  const uint8x8_t p3q3 = InterleaveLow32(p3q0, q3x0);
-  const uint8x8_t p0q0 = InterleaveHigh32(p4p0, p3q0);
+  const uint8x8_t p6q6 = vget_high_u8(vreinterpretq_u8_u16(in02.val[1]));
+  const uint8x8_t p7q7 = vget_high_u8(vreinterpretq_u8_u16(in13.val[1]));
 
   uint8x8_t needs_filter8_mask, is_flat4_mask, hev_mask;
   Filter8Masks(p3q3, p2q2, p1q1, p0q0, hev_thresh, outer_thresh, inner_thresh,
@@ -1039,28 +1059,30 @@ void Vertical14_NEON(void* const dest, const ptrdiff_t stride,
   is_flat_outer4_mask =
       InterleaveLow32(is_flat_outer4_mask, is_flat_outer4_mask);
 
-  uint8x8_t f_p1q1;
-  uint8x8_t f_p0q0;
+  uint8x8_t f_p0q0, f_p1q1;
   const uint8x8x2_t q0p1xp0q1 = Interleave32(Transpose32(p0q0), p1q1);
   Filter4(q0p1xp0q1.val[0], q0p1xp0q1.val[1], hev_mask, &f_p1q1, &f_p0q0);
   // Reset the outer values if only a Hev() mask was required.
   f_p1q1 = vbsl_u8(hev_mask, p1q1, f_p1q1);
 
-  // Input is 14 taps but output is only 12. Move |dst| from p6 to p5.
-  dst += 1;
-
   uint8x8_t p1q1_output, p0q0_output;
+  uint8x8_t p5q5_output, p4q4_output, p3q3_output, p2q2_output;
+
 #if defined(__aarch64__)
   if (vaddv_u8(is_flat4_mask) == 0) {
     // Filter8() and Filter14() do not apply.
     p1q1_output = p1q1;
     p0q0_output = p0q0;
+
+    p5q5_output = p5q5;
+    p4q4_output = p4q4;
+    p3q3_output = p3q3;
+    p2q2_output = p2q2;
   } else {
 #endif  // defined(__aarch64__)
     uint8x8_t f8_p2q2, f8_p1q1, f8_p0q0;
     Filter8(p3q3, p2q2, p1q1, p0q0, &f8_p2q2, &f8_p1q1, &f8_p0q0);
 
-    uint8x8_t p5q5_output, p4q4_output, p3q3_output, p2q2_output;
 #if defined(__aarch64__)
     if (vaddv_u8(is_flat_outer4_mask) == 0) {
       // Filter14() does not apply.
@@ -1086,27 +1108,6 @@ void Vertical14_NEON(void* const dest, const ptrdiff_t stride,
     }
 #endif  // defined(__aarch64__)
     p2q2_output = vbsl_u8(is_flat4_mask, p2q2_output, p2q2);
-
-    // Transpose and write the Filter14/Filter8 exclusive values.
-    const uint8x8x2_t p5q2xq5p2_output =
-        Interleave32(p5q5_output, Transpose32(p2q2_output));
-    uint8x8_t p5q2_output = p5q2xq5p2_output.val[0];
-    uint8x8_t p2q5_output = Transpose32(p5q2xq5p2_output.val[1]);
-    const uint8x8x2_t p4q3xq4p3_output =
-        Interleave32(p4q4_output, Transpose32(p3q3_output));
-    uint8x8_t p4q3_output = p4q3xq4p3_output.val[0];
-    uint8x8_t p3q4_output = Transpose32(p4q3xq4p3_output.val[1]);
-
-    Transpose8x4(&p5q2_output, &p4q3_output, &p3q4_output, &p2q5_output);
-
-    StoreLo4(dst, p5q2_output);
-    StoreHi4((dst + 8), p5q2_output);
-    StoreLo4(dst + stride, p4q3_output);
-    StoreHi4((dst + 8) + stride, p4q3_output);
-    StoreLo4(dst + 2 * stride, p3q4_output);
-    StoreHi4((dst + 8) + 2 * stride, p3q4_output);
-    StoreLo4(dst + 3 * stride, p2q5_output);
-    StoreHi4((dst + 8) + 3 * stride, p2q5_output);
 #if defined(__aarch64__)
   }
 #endif  // defined(__aarch64__)
@@ -1116,19 +1117,56 @@ void Vertical14_NEON(void* const dest, const ptrdiff_t stride,
   p0q0_output = vbsl_u8(is_flat4_mask, p0q0_output, f_p0q0);
   p0q0_output = vbsl_u8(needs_filter8_mask, p0q0_output, p0q0);
 
-  // Transpose the middle (p1-q1) 4x4 block and write it out.
-  const uint8x8x2_t p1p0xq1q0 = Interleave32(p1q1_output, p0q0_output);
-  uint8x8_t output_0 = p1p0xq1q0.val[0];
-  uint8x8_t output_1 = Transpose32(p1p0xq1q0.val[1]);
+  const uint8x16_t p0q0_p4q4 = vcombine_u8(p0q0_output, p4q4_output);
+  const uint8x16_t p2q2_p6q6 = vcombine_u8(p2q2_output, p6q6);
+  const uint8x16_t p1q1_p5q5 = vcombine_u8(p1q1_output, p5q5_output);
+  const uint8x16_t p3q3_p7q7 = vcombine_u8(p3q3_output, p7q7);
 
-  Transpose4x4(&output_0, &output_1);
+  const uint16x8x2_t out02 = vtrnq_u16(vreinterpretq_u16_u8(p0q0_p4q4),
+                                       vreinterpretq_u16_u8(p2q2_p6q6));
+  const uint16x8x2_t out13 = vtrnq_u16(vreinterpretq_u16_u8(p1q1_p5q5),
+                                       vreinterpretq_u16_u8(p3q3_p7q7));
+  const uint8x16x2_t out01 = vtrnq_u8(vreinterpretq_u8_u16(out02.val[0]),
+                                      vreinterpretq_u8_u16(out13.val[0]));
+  const uint8x16x2_t out23 = vtrnq_u8(vreinterpretq_u8_u16(out02.val[1]),
+                                      vreinterpretq_u8_u16(out13.val[1]));
 
-  // Move |dst| from p5 to p1.
-  dst += 4;
-  StoreLo4(dst, output_0);
-  StoreLo4(dst + stride, output_1);
-  StoreHi4(dst + 2 * stride, output_0);
-  StoreHi4(dst + 3 * stride, output_1);
+#if defined(__aarch64__)
+  const uint8x8_t index_p7top0 = vcreate_u8(0x0001020308090a0b);
+  const uint8x8_t index_q7toq0 = vcreate_u8(0x0f0e0d0c07060504);
+  const uint8x16_t index_p7toq7 = vcombine_u8(index_p7top0, index_q7toq0);
+
+  const uint8x16_t output_0 = vqtbl1q_u8(out01.val[0], index_p7toq7);
+  const uint8x16_t output_1 = vqtbl1q_u8(out01.val[1], index_p7toq7);
+  const uint8x16_t output_2 = vqtbl1q_u8(out23.val[0], index_p7toq7);
+  const uint8x16_t output_3 = vqtbl1q_u8(out23.val[1], index_p7toq7);
+#else
+  const uint8x8_t index_p7top0 = vcreate_u8(0x0001020308090a0b);
+  const uint8x8_t index_q7toq0 = vcreate_u8(0x0f0e0d0c07060504);
+
+  const uint8x8_t x0_p7p0 = VQTbl1U8(out01.val[0], index_p7top0);
+  const uint8x8_t x1_p7p0 = VQTbl1U8(out01.val[1], index_p7top0);
+  const uint8x8_t x2_p7p0 = VQTbl1U8(out23.val[0], index_p7top0);
+  const uint8x8_t x3_p7p0 = VQTbl1U8(out23.val[1], index_p7top0);
+
+  const uint8x8_t x0_q7q0 = VQTbl1U8(out01.val[0], index_q7toq0);
+  const uint8x8_t x1_q7q0 = VQTbl1U8(out01.val[1], index_q7toq0);
+  const uint8x8_t x2_q7q0 = VQTbl1U8(out23.val[0], index_q7toq0);
+  const uint8x8_t x3_q7q0 = VQTbl1U8(out23.val[1], index_q7toq0);
+
+  const uint8x16_t output_0 = vcombine_u8(x0_p7p0, x0_q7q0);
+  const uint8x16_t output_1 = vcombine_u8(x1_p7p0, x1_q7q0);
+  const uint8x16_t output_2 = vcombine_u8(x2_p7p0, x2_q7q0);
+  const uint8x16_t output_3 = vcombine_u8(x3_p7p0, x3_q7q0);
+#endif
+
+  vst1q_u8(dst, output_0);
+  dst += stride;
+  vst1q_u8(dst, output_1);
+  dst += stride;
+  vst1q_u8(dst, output_2);
+  dst += stride;
+  vst1q_u8(dst, output_3);
 }
 
 void Init8bpp() {
