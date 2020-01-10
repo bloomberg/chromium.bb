@@ -17,6 +17,7 @@
 #ifndef LIBGAV1_SRC_UTILS_ARRAY_2D_H_
 #define LIBGAV1_SRC_UTILS_ARRAY_2D_H_
 
+#include <cassert>
 #include <cstddef>
 #include <cstring>
 #include <memory>
@@ -55,8 +56,9 @@ class Array2DView {
 
  private:
   const T* GetRow(int row) const {
+    assert(row < rows_);
     const ptrdiff_t offset = static_cast<ptrdiff_t>(row) * columns_;
-    return (row < rows_) ? data_ + offset : nullptr;
+    return data_ + offset;
   }
 
   int rows_ = 0;
