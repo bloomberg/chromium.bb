@@ -982,10 +982,14 @@ void FilmGrain<bitdepth>::ConstructNoiseImage(
 
   // If there is a partial stripe, copy any rows beyond the overlap rows.
   const int remaining_height = plane_height - y;
-  const GrainType* noise_stripe = (*noise_stripes)[luma_num];
-  for (int i = stripe_start_offset; i < remaining_height; ++i) {
-    memcpy((*noise_image)[y + i], noise_stripe + i * plane_width,
-           plane_width * sizeof(noise_stripe[0]));
+  if (remaining_height > stripe_start_offset) {
+    assert(luma_num < noise_stripes->rows());
+    const GrainType* noise_stripe = (*noise_stripes)[luma_num];
+    int i = stripe_start_offset;
+    do {
+      memcpy((*noise_image)[y + i], noise_stripe + i * plane_width,
+             plane_width * sizeof(noise_stripe[0]));
+    } while (++i < remaining_height);
   }
 }
 
