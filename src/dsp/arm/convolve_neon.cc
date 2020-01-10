@@ -2145,6 +2145,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       src += src_stride;
       srcs[1] = vext_u8(srcs[0], srcs[2], 2);
 
+      // This uses srcs[0]..srcs[1].
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
@@ -2202,6 +2203,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       src += src_stride;
       srcs[3] = vext_u8(srcs[0], srcs[4], 6);
 
+      // This uses srcs[0]..srcs[3].
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
@@ -2250,15 +2252,15 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
     src += src_stride;
     srcs[0] = Load2<3>(src, srcs[0]);
     src += src_stride;
-    srcs[4] = Load2<0>(src, srcs[1]);
+    srcs[4] = Load2<0>(src, srcs[4]);
     src += src_stride;
     srcs[1] = vext_u8(srcs[0], srcs[4], 2);
-    srcs[4] = Load2<1>(src, srcs[4]);
-    src += src_stride;
-    srcs[2] = vext_u8(srcs[0], srcs[4], 4);
 
     int y = 0;
     do {
+      srcs[4] = Load2<1>(src, srcs[4]);
+      src += src_stride;
+      srcs[2] = vext_u8(srcs[0], srcs[4], 4);
       srcs[4] = Load2<2>(src, srcs[4]);
       src += src_stride;
       srcs[3] = vext_u8(srcs[0], srcs[4], 6);
@@ -2267,10 +2269,8 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[8] = Load2<0>(src, srcs[8]);
       src += src_stride;
       srcs[5] = vext_u8(srcs[4], srcs[8], 2);
-      srcs[8] = Load2<1>(src, srcs[8]);
-      src += src_stride;
-      srcs[6] = vext_u8(srcs[4], srcs[8], 4);
 
+      // This uses srcs[0]..srcs[5].
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
@@ -2301,7 +2301,6 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
 
       srcs[0] = srcs[4];
       srcs[1] = srcs[5];
-      srcs[2] = srcs[6];
       srcs[4] = srcs[8];
       y += 4;
     } while (y < height);
@@ -2329,11 +2328,11 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
     srcs[4] = Load2<2>(src, srcs[4]);
     src += src_stride;
     srcs[3] = vext_u8(srcs[0], srcs[4], 6);
-    srcs[4] = Load2<3>(src, srcs[4]);
-    src += src_stride;
 
     int y = 0;
     do {
+      srcs[4] = Load2<3>(src, srcs[4]);
+      src += src_stride;
       srcs[8] = Load2<0>(src, srcs[8]);
       src += src_stride;
       srcs[5] = vext_u8(srcs[4], srcs[8], 2);
@@ -2343,9 +2342,8 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       srcs[8] = Load2<2>(src, srcs[8]);
       src += src_stride;
       srcs[7] = vext_u8(srcs[4], srcs[8], 6);
-      srcs[8] = Load2<3>(src, srcs[8]);
-      src += src_stride;
 
+      // This uses srcs[0]..srcs[7].
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
