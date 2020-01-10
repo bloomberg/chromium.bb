@@ -152,10 +152,6 @@ class YuvBuffer {
   int stride(int plane) const { return stride_[plane]; }
 
  private:
-  // Frame buffer pointer, i.e., |buffer_[plane]| can only be shifted in loop
-  // restoration. If loop restoration is applied on plane, |buffer_[plane]|
-  // will be shifted kRestorationBorder rows above, and
-  // kFrameBufferRowAlignment columns left.
   // |shift| is in pixels.
   // Positive vertical shift is a down shift. Negative vertical shift is an
   // up shift.
