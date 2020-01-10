@@ -445,11 +445,11 @@ class PostFilter {
   void InitDeblockFilterParams();  // Part of 7.14.4.
   void GetDeblockFilterParams(uint8_t level, int* outer_thresh,
                               int* inner_thresh, int* hev_thresh) const;
-  // Applies super resolution for the |buffer| for 4*|rows4x4| rows starting
-  // from |plane_offset[]| for each plane.
-  void ApplySuperRes(YuvBuffer* input_buffer, int rows4x4,
+  // Applies super resolution for the |buffers| for 4*|rows4x4| rows of each
+  // plane.
+  void ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& buffers,
+                     const std::array<int, kMaxPlanes>& strides, int rows4x4,
                      int8_t chroma_subsampling_y,
-                     const std::array<ptrdiff_t, kMaxPlanes>& plane_offsets,
                      size_t line_buffer_offset);  // Section 7.16.
   void ApplySuperResThreaded();
 
