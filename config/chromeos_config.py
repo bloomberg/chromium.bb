@@ -2052,7 +2052,6 @@ def FirmwareBuilders(site_config, _boards_dict, _ge_build_config):
       (MONTHLY, 'firmware-poppy-10431.B', ['poppy', 'soraka', 'nautilus'], {}),
       (MONTHLY, 'firmware-nami-10775.B', ['nami'], {}),
       (MONTHLY, 'firmware-nocturne-10984.B', ['nocturne'], {}),
-      (MONTHLY, 'firmware-servo-11011.B', ['oak'], {}),
       (MONTHLY, 'firmware-grunt-11031.B', ['grunt'], {}),
       (MONTHLY, 'firmware-nami-10775.108.B', ['nami'], {}),
       (WEEKLY, 'firmware-rammus-11275.B', ['rammus'], {}),

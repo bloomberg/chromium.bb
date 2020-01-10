@@ -13173,26 +13173,6 @@
         "suite_scheduling": false,
         "workspace_branch": "firmware-scarlet-10388.B"
     },
-    "firmware-servo-11011.B-firmwarebranch": {
-        "_template": "firmwarebranch",
-        "boards": [
-            "oak"
-        ],
-        "schedule": "with 720h interval",
-        "workspace_branch": "firmware-servo-11011.B"
-    },
-    "firmware-servo-11011.B-firmwarebranch-tryjob": {
-        "_template": "firmwarebranch",
-        "boards": [
-            "oak"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "luci_builder": "Try",
-        "push_image": false,
-        "suite_scheduling": false,
-        "workspace_branch": "firmware-servo-11011.B"
-    },
     "firmware-servo-12768.B-firmwarebranch": {
         "_template": "firmwarebranch",
         "boards": [
