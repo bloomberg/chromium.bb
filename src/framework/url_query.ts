@@ -1,5 +1,5 @@
 import { TestCaseID, TestSpecID } from './id.js';
-import { ParamArgument, ParamSpec } from './params/index.js';
+import { ParamArgument, stringifyPublicParams } from './params/index.js';
 import { unreachable } from './util/index.js';
 
 export function encodeSelectively(s: string): string {
@@ -14,16 +14,6 @@ export function encodeSelectively(s: string): string {
   ret = ret.replace(/%7B/g, '{');
   ret = ret.replace(/%7D/g, '}');
   return ret;
-}
-
-export function extractPublicParams(params: ParamSpec): ParamSpec {
-  const publicParams: ParamSpec = {};
-  for (const k of Object.keys(params)) {
-    if (!k.startsWith('_')) {
-      publicParams[k] = params[k];
-    }
-  }
-  return publicParams;
 }
 
 export function checkPublicParamType(v: ParamArgument): void {
@@ -46,9 +36,7 @@ export function makeQueryString(spec: TestSpecID, testcase?: TestCaseID): string
   s += spec.path + ':';
   if (testcase !== undefined) {
     s += testcase.test + '=';
-    if (testcase.params) {
-      s += JSON.stringify(extractPublicParams(testcase.params));
-    }
+    s += stringifyPublicParams(testcase.params);
   }
   return encodeSelectively(s);
 }

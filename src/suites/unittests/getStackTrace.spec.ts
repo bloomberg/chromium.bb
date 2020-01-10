@@ -18,7 +18,10 @@ g.test('stacks', t => {
   const parts = stringified.split('\n');
 
   t.expect(parts.length === lines);
-  t.expect(parts.every(p => p.indexOf('/suites/') !== -1));
+  const fst = parts[0];
+  const lst = parts[parts.length - 1];
+  t.expect(fst.indexOf('/suites/') !== -1 || fst.indexOf('\\suites\\') !== -1);
+  t.expect(lst.indexOf('/suites/') !== -1 || lst.indexOf('\\suites\\') !== -1);
 }).params([
   {
     case: 'node_fail',
@@ -28,6 +31,29 @@ g.test('stacks', t => {
    at RunCaseSpecific.exports.g.test.t [as fn] (/Users/kainino/src/cts-experiment/src/suites/unittests/logger.spec.ts:80:7)
    at RunCaseSpecific.run (/Users/kainino/src/cts-experiment/src/framework/test_group.ts:121:18)
    at processTicksAndRejections (internal/process/task_queues.js:86:5)`,
+  },
+  {
+    // TODO: make sure this test case actually matches what happens on windows
+    case: 'node_fail_backslash',
+    _expectedLines: 1,
+    _stack: `Error:
+   at CaseRecorder.fail (C:\\Users\\kainino\\src\\cts-experiment\\src\\framework\\logger.ts:99:30)
+   at RunCaseSpecific.exports.g.test.t [as fn] (C:\\Users\\kainino\\src\\cts-experiment\\src\\suites\\unittests\\logger.spec.ts:80:7)
+   at RunCaseSpecific.run (C:\\Users\\kainino\\src\\cts-experiment\\src\\framework\\test_group.ts:121:18)
+   at processTicksAndRejections (internal\\process\\task_queues.js:86:5)`,
+  },
+  {
+    case: 'node_fail_processTicksAndRejections',
+    _expectedLines: 3,
+    _stack: `Error: expectation had no effect: suite1:foo:
+    at Object.generateMinimalQueryList (/Users/kainino/src/cts/src/framework/generate_minimal_query_list.ts:72:24)
+    at testGenerateMinimalQueryList (/Users/kainino/src/cts/src/suites/unittests/loading.spec.ts:289:25)
+    at processTicksAndRejections (internal/process/task_queues.js:93:5)
+    at RunCaseSpecific.fn (/Users/kainino/src/cts/src/suites/unittests/loading.spec.ts:300:3)
+    at RunCaseSpecific.run (/Users/kainino/src/cts/src/framework/test_group.ts:144:9)
+    at /Users/kainino/src/cts/src/runtime/cmdline.ts:62:25
+    at async Promise.all (index 29)
+    at /Users/kainino/src/cts/src/runtime/cmdline.ts:78:5`,
   },
   {
     case: 'node_throw',
@@ -84,7 +110,7 @@ promiseReactionJob@[native code]`,
   },
   {
     case: 'chrome_throw',
-    _expectedLines: 1,
+    _expectedLines: 5,
     _stack: `Error: hello
     at RunCaseSpecific.fn (http://localhost:8080/out/suites/unittests/test_group.spec.js:48:11)
     at RunCaseSpecific.run (http://localhost:8080/out/framework/test_group.js:119:18)"
@@ -97,7 +123,7 @@ promiseReactionJob@[native code]`,
   },
   {
     case: 'multiple_lines',
-    _expectedLines: 3,
+    _expectedLines: 7,
     _stack: `Error: hello
     at RunCaseSpecific.fn (http://localhost:8080/out/suites/unittests/test_group.spec.js:48:11)
     at RunCaseSpecific.fn (http://localhost:8080/out/suites/unittests/test_group.spec.js:48:11)

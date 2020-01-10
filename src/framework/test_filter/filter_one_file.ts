@@ -1,4 +1,4 @@
-import { TestCaseID, TestSpecID } from '../id.js';
+import { TestCaseID, TestSpecID, TestSpecOrTestOrCaseID, testSpecEquals } from '../id.js';
 import { TestFileLoader, TestSpec } from '../loader.js';
 import { TestSpecRecorder } from '../logger.js';
 import { ParamSpec, paramsEquals, paramsSupersets } from '../params/index.js';
@@ -30,6 +30,13 @@ abstract class FilterOneFile implements TestFilter {
       },
     ];
   }
+
+  definitelyOneFile(): true {
+    return true;
+  }
+
+  abstract idIfSingle(): TestSpecOrTestOrCaseID | undefined;
+  abstract matches(id: TestSpecOrTestOrCaseID): boolean;
 }
 
 type TestGroupFilter = (testcase: TestCaseID) => boolean;
@@ -54,7 +61,26 @@ export class FilterByTestMatch extends FilterOneFile {
   }
 
   getCases(spec: TestSpec): RunCaseIterable {
-    return filterTestGroup(spec.g, testcase => testcase.test.startsWith(this.testPrefix));
+    return filterTestGroup(spec.g, testcase => this.testMatches(testcase.test));
+  }
+
+  idIfSingle(): TestSpecOrTestOrCaseID | undefined {
+    if (this.testPrefix.length !== 0) {
+      return undefined;
+    }
+    // This is one whole spec file.
+    return { spec: this.specId };
+  }
+
+  matches(id: TestSpecOrTestOrCaseID): boolean {
+    if (id.test === undefined) {
+      return false;
+    }
+    return testSpecEquals(id.spec, this.specId) && this.testMatches(id.test);
+  }
+
+  private testMatches(test: string): boolean {
+    return test.startsWith(this.testPrefix);
   }
 }
 
@@ -69,10 +95,29 @@ export class FilterByParamsMatch extends FilterOneFile {
   }
 
   getCases(spec: TestSpec): RunCaseIterable {
-    return filterTestGroup(
-      spec.g,
-      testcase => testcase.test === this.test && paramsSupersets(testcase.params, this.params)
-    );
+    return filterTestGroup(spec.g, testcase => this.caseMatches(testcase.test, testcase.params));
+  }
+
+  idIfSingle(): TestSpecOrTestOrCaseID | undefined {
+    if (this.params !== null) {
+      return undefined;
+    }
+    // This is one whole test.
+    return { spec: this.specId, test: this.test };
+  }
+
+  matches(id: TestSpecOrTestOrCaseID): boolean {
+    if (id.test === undefined) {
+      return false;
+    }
+    return testSpecEquals(id.spec, this.specId) && this.caseMatches(id.test, id.params);
+  }
+
+  private caseMatches(test: string, params: ParamSpec | null | undefined): boolean {
+    if (params === undefined) {
+      return false;
+    }
+    return test === this.test && paramsSupersets(params, this.params);
   }
 }
 
@@ -87,9 +132,22 @@ export class FilterByParamsExact extends FilterOneFile {
   }
 
   getCases(spec: TestSpec): RunCaseIterable {
-    return filterTestGroup(
-      spec.g,
-      testcase => testcase.test === this.test && paramsEquals(testcase.params, this.params)
-    );
+    return filterTestGroup(spec.g, testcase => this.caseMatches(testcase.test, testcase.params));
+  }
+
+  idIfSingle(): TestSpecOrTestOrCaseID | undefined {
+    // This is one single test case.
+    return { spec: this.specId, test: this.test, params: this.params };
+  }
+
+  matches(id: TestSpecOrTestOrCaseID): boolean {
+    if (id.test === undefined || id.params === undefined) {
+      return false;
+    }
+    return testSpecEquals(id.spec, this.specId) && this.caseMatches(id.test, id.params);
+  }
+
+  private caseMatches(test: string, params: ParamSpec | null): boolean {
+    return test === this.test && paramsEquals(params, this.params);
   }
 }

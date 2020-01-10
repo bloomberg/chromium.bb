@@ -1,6 +1,5 @@
 // tslint:disable: no-console
 
-// tslint:disable-next-line: no-implicit-dependencies
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
@@ -9,8 +8,8 @@ import { crawl } from './crawl.js';
 
 function usage(rc: number): void {
   console.error('Usage:');
-  console.error('  tools/gen [SUITES...]');
-  console.error('  tools/gen cts unittests');
+  console.error('  tools/gen_listings [SUITES...]');
+  console.error('  tools/gen_listings cts unittests');
   process.exit(rc);
 }
 

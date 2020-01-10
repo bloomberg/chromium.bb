@@ -2,6 +2,7 @@ export const description = `
 Tests for queries/filtering, loading, and running.
 `;
 
+import { generateMinimalQueryList } from '../../framework/generate_minimal_query_list.js';
 import { RunCase, TestGroup, paramsEquals } from '../../framework/index.js';
 import { TestSuiteListing, TestSuiteListingEntry } from '../../framework/listing.js';
 import { TestFileLoader, TestLoader, TestSpecOrReadme } from '../../framework/loader.js';
@@ -39,6 +40,14 @@ const specsData: { [k: string]: TestSpecOrReadme } = {
     })(),
   },
   'suite1/bar/README.txt': { description: 'desc 1c' },
+  'suite1/bar/biz.spec.js': {
+    description: 'desc 1f',
+    g: new TestGroup(UnitTest),
+  },
+  'suite1/bar/bez.spec.js': {
+    description: 'desc 1g',
+    g: new TestGroup(UnitTest),
+  },
   'suite1/bar/buzz.spec.js': {
     description: 'desc 1d',
     g: (() => {
@@ -51,6 +60,10 @@ const specsData: { [k: string]: TestSpecOrReadme } = {
     description: 'desc 1e',
     g: (() => {
       const g = new TestGroup(UnitTest);
+      g.test('wye', () => {}).params([
+        {}, //
+        { x: 1 },
+      ]);
       g.test('zed', () => {}).params([
         { a: 1, b: 2, _c: 0 }, //
         { a: 1, b: 3, _c: 0 },
@@ -128,7 +141,7 @@ g.test('whole group', async t => {
   t.shouldReject('Error', t.load(['suite1:bar:']));
   t.shouldReject('Error', t.load(['suite1:bar/:']));
   t.expect((await t.singleGroup('suite1:bar/buzz:')).length === 1);
-  t.expect((await t.singleGroup('suite1:baz:')).length === 2);
+  t.expect((await t.singleGroup('suite1:baz:')).length === 4);
 
   {
     const foo = (await t.load(['suite1:foo:']))[0];
@@ -247,4 +260,88 @@ g.test('end2end', async t => {
     t.expect(l.startsWith('FAIL: bye\n'));
     t.expect(l.indexOf('loading.spec.') !== -1);
   }
+});
+
+const testGenerateMinimalQueryList = async (
+  t: LoadingTest,
+  expectations: string[],
+  result: string[]
+) => {
+  const l = await t.load(['suite1:']);
+  const queries = await generateMinimalQueryList(l, expectations);
+  t.expect(objectEquals(queries, result));
+};
+
+g.test('generateMinimalQueryList/errors', async t => {
+  t.shouldReject('Error', testGenerateMinimalQueryList(t, ['garbage'], []));
+  t.shouldReject('Error', testGenerateMinimalQueryList(t, ['suite1:'], []));
+  t.shouldReject('Error', testGenerateMinimalQueryList(t, ['suite1:foo'], []));
+  t.shouldReject('Error', testGenerateMinimalQueryList(t, ['suite1:foo:ba'], []));
+  t.shouldReject('Error', testGenerateMinimalQueryList(t, ['suite2:foo:'], []));
+});
+
+g.test('generateMinimalQueryList', async t => {
+  await testGenerateMinimalQueryList(
+    t, //
+    [],
+    ['suite1:foo:', 'suite1:bar/buzz:', 'suite1:baz:']
+  );
+  await testGenerateMinimalQueryList(
+    t, //
+    ['suite1:foo:'],
+    ['suite1:foo:', 'suite1:bar/buzz:', 'suite1:baz:']
+  );
+  await testGenerateMinimalQueryList(
+    t, //
+    ['suite1:bar/buzz:'],
+    ['suite1:foo:', 'suite1:bar/buzz:', 'suite1:baz:']
+  );
+  await testGenerateMinimalQueryList(
+    t, //
+    ['suite1:baz:wye~'],
+    ['suite1:foo:', 'suite1:bar/buzz:', 'suite1:baz:wye~', 'suite1:baz:zed~']
+  );
+  await testGenerateMinimalQueryList(
+    t, //
+    ['suite1:baz:zed~'],
+    ['suite1:foo:', 'suite1:bar/buzz:', 'suite1:baz:wye~', 'suite1:baz:zed~']
+  );
+  await testGenerateMinimalQueryList(
+    t, //
+    ['suite1:baz:wye~', 'suite1:baz:zed~'],
+    ['suite1:foo:', 'suite1:bar/buzz:', 'suite1:baz:wye~', 'suite1:baz:zed~']
+  );
+  await testGenerateMinimalQueryList(
+    t, //
+    ['suite1:baz:wye='],
+    [
+      'suite1:foo:',
+      'suite1:bar/buzz:',
+      'suite1:baz:wye=',
+      'suite1:baz:wye={"x":1}',
+      'suite1:baz:zed~',
+    ]
+  );
+  await testGenerateMinimalQueryList(
+    t, //
+    ['suite1:baz:wye={"x":1}'],
+    [
+      'suite1:foo:',
+      'suite1:bar/buzz:',
+      'suite1:baz:wye=',
+      'suite1:baz:wye={"x":1}',
+      'suite1:baz:zed~',
+    ]
+  );
+  await testGenerateMinimalQueryList(
+    t, //
+    ['suite1:foo:', 'suite1:baz:wye='],
+    [
+      'suite1:foo:',
+      'suite1:bar/buzz:',
+      'suite1:baz:wye=',
+      'suite1:baz:wye={"x":1}',
+      'suite1:baz:zed~',
+    ]
+  );
 });

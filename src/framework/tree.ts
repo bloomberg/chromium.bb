@@ -1,4 +1,5 @@
 import { Logger } from './logger.js';
+import { stringifyPublicParams } from './params/index.js';
 import { TestFilterResult } from './test_filter/index.js';
 import { RunCase } from './test_group.js';
 
@@ -30,10 +31,10 @@ export function treeFromFilterResults(
   log: Logger,
   listing: IterableIterator<TestFilterResult>
 ): FilterResultTreeNode {
-  function insertOrNew(n: FilterResultTreeNode, k: string): FilterResultTreeNode {
+  function getOrInsert(n: FilterResultTreeNode, k: string): FilterResultTreeNode {
     const children = n.children!;
     if (children.has(k)) {
-      return children.get(k) as FilterResultTreeNode;
+      return children.get(k)!;
     }
     const v = { children: new Map() };
     children.set(k, v);
@@ -42,16 +43,16 @@ export function treeFromFilterResults(
 
   const tree = { children: new Map() };
   for (const f of listing) {
-    const files = insertOrNew(tree, f.id.suite + ':');
+    const files = getOrInsert(tree, f.id.suite + ':');
     if (f.id.path === '') {
       // This is a suite README.
-      files.description = f.spec.description;
+      files.description = f.spec.description.trim();
       continue;
     }
 
     let tests = files;
     for (const path of iteratePath(f.id.path, ':')) {
-      tests = insertOrNew(tests, f.id.suite + ':' + path);
+      tests = getOrInsert(tests, f.id.suite + ':' + path);
     }
     if (f.spec.description) {
       // This is a directory README or spec file.
@@ -68,10 +69,10 @@ export function treeFromFilterResults(
     for (const t of f.spec.g.iterate(tRec)) {
       let cases = tests;
       for (const path of iteratePath(t.id.test, '~')) {
-        cases = insertOrNew(cases, fId + ':' + path);
+        cases = getOrInsert(cases, fId + ':' + path);
       }
 
-      const p = t.id.params ? JSON.stringify(t.id.params) : '';
+      const p = stringifyPublicParams(t.id.params);
       cases.children!.set(fId + ':' + t.id.test + '=' + p, {
         runCase: t,
       });

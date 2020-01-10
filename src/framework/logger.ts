@@ -1,8 +1,7 @@
 import { SkipTestCase } from './fixture.js';
 import { TestSpecID } from './id.js';
-import { ParamSpec } from './params/index.js';
+import { ParamSpec, extractPublicParams } from './params/index.js';
 import { makeQueryString } from './url_query.js';
-import { extractPublicParams } from './url_query.js';
 import { assert, getStackTrace, now } from './util/index.js';
 import { version } from './version.js';
 
