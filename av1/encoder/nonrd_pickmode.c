@@ -1241,7 +1241,11 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   InterpFilter filters[FILTER_SEARCH_SIZE] = { EIGHTTAP_REGULAR,
                                                EIGHTTAP_SMOOTH };
   int i;
-  for (i = 0; i < FILTER_SEARCH_SIZE; ++i) {
+  const int filter_search_size =
+      x->source_variance > cpi->sf.interp_sf.disable_filter_search_var_thresh
+          ? FILTER_SEARCH_SIZE
+          : 1;
+  for (i = 0; i < filter_search_size; ++i) {
     int64_t cost;
     InterpFilter filter = filters[i];
     mi->interp_filters = av1_broadcast_interp_filter(filter);
@@ -1302,7 +1306,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   if (reuse_inter_pred) {
     pd->dst.buf = (*this_mode_pred)->data;
     pd->dst.stride = (*this_mode_pred)->stride;
-  } else if (best_filter_index < FILTER_SEARCH_SIZE - 1) {
+  } else if (best_filter_index < filter_search_size - 1) {
     av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
                                   AOM_PLANE_Y, AOM_PLANE_Y);
   }
