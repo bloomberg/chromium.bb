@@ -477,8 +477,7 @@ void PostFilter::CopyDeblockedPixels(Plane plane, int row4x4) {
   const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
   const ptrdiff_t src_stride = source_buffer_->stride(plane);
   const uint8_t* const src =
-      SetBufferOffset(source_buffer_, static_cast<Plane>(plane), row4x4, 0,
-                      subsampling_x, subsampling_y);
+      GetSourceBuffer(static_cast<Plane>(plane), row4x4, 0);
   const ptrdiff_t dst_stride = deblock_buffer_.stride(plane);
   const int row_unit = DivideBy16(row4x4);
   // First 4 rows of |deblock_buffer_| are never populated since they will not
@@ -972,8 +971,7 @@ void PostFilter::CopyBorderForRestoration(int row4x4, int sb4x4) {
                        cdef_horizontal_shift * pixel_size_
                  : 0;
     uint8_t* const start =
-        SetBufferOffset(source_buffer_, static_cast<Plane>(plane), row4x4, 0,
-                        subsampling_x, subsampling_y) +
+        GetSourceBuffer(static_cast<Plane>(plane), row4x4, 0) +
         cdef_buffer_offset;
     const ptrdiff_t stride = source_buffer_->stride(plane);
 #if LIBGAV1_MAX_BITDEPTH >= 10
@@ -1333,8 +1331,7 @@ void PostFilter::HorizontalDeblockFilter(Plane plane, int row4x4_start,
   const size_t src_step = 4 * pixel_size_;
   const ptrdiff_t row_stride = MultiplyBy4(source_buffer_->stride(plane));
   const ptrdiff_t src_stride = source_buffer_->stride(plane);
-  uint8_t* src = SetBufferOffset(source_buffer_, plane, row4x4_start,
-                                 column4x4_start, subsampling_x, subsampling_y);
+  uint8_t* src = GetSourceBuffer(plane, row4x4_start, column4x4_start);
   const uint64_t single_row_mask = 0xffff;
   // 3 (11), 5 (0101).
   const uint64_t two_block_mask = (subsampling_x > 0) ? 5 : 3;
@@ -1491,8 +1488,7 @@ void PostFilter::VerticalDeblockFilter(Plane plane, int row4x4_start,
   const ptrdiff_t row_stride = MultiplyBy4(source_buffer_->stride(plane));
   const ptrdiff_t two_row_stride = row_stride << 1;
   const ptrdiff_t src_stride = source_buffer_->stride(plane);
-  uint8_t* src = SetBufferOffset(source_buffer_, plane, row4x4_start,
-                                 column4x4_start, subsampling_x, subsampling_y);
+  uint8_t* src = GetSourceBuffer(plane, row4x4_start, column4x4_start);
   const uint64_t single_row_mask = 0xffff;
   const LoopFilterType type = kLoopFilterTypeVertical;
   // Subsampled UV samples correspond to the right/bottom position of
@@ -1676,8 +1672,7 @@ void PostFilter::HorizontalDeblockFilterNoMask(Plane plane, int row4x4_start,
   const int column_step = 1 << subsampling_x;
   const size_t src_step = MultiplyBy4(pixel_size_);
   const ptrdiff_t src_stride = source_buffer_->stride(plane);
-  uint8_t* src = SetBufferOffset(source_buffer_, plane, row4x4_start,
-                                 column4x4_start, subsampling_x, subsampling_y);
+  uint8_t* src = GetSourceBuffer(plane, row4x4_start, column4x4_start);
   const LoopFilterType type = kLoopFilterTypeHorizontal;
   int row_step;
   uint8_t level;
@@ -1721,8 +1716,7 @@ void PostFilter::VerticalDeblockFilterNoMask(Plane plane, int row4x4_start,
   const int row_step = 1 << subsampling_y;
   const ptrdiff_t row_stride = MultiplyBy4(source_buffer_->stride(plane));
   const ptrdiff_t src_stride = source_buffer_->stride(plane);
-  uint8_t* src = SetBufferOffset(source_buffer_, plane, row4x4_start,
-                                 column4x4_start, subsampling_x, subsampling_y);
+  uint8_t* src = GetSourceBuffer(plane, row4x4_start, column4x4_start);
   const LoopFilterType type = kLoopFilterTypeVertical;
   int column_step;
   uint8_t level;

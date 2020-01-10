@@ -241,15 +241,12 @@ class PostFilter {
   }
   LoopFilterMask* masks() const { return masks_; }
   LoopRestorationInfo* restoration_info() const { return restoration_info_; }
-  static uint8_t* SetBufferOffset(YuvBuffer* buffer, Plane plane, int row4x4,
-                                  int column4x4, int8_t subsampling_x,
-                                  int8_t subsampling_y) {
-    const size_t pixel_size =
-        (buffer->bitdepth() == 8) ? sizeof(uint8_t) : sizeof(uint16_t);
-    return buffer->data(plane) +
-           RowOrColumn4x4ToPixel(row4x4, plane, subsampling_y) *
-               buffer->stride(plane) +
-           RowOrColumn4x4ToPixel(column4x4, plane, subsampling_x) * pixel_size;
+  uint8_t* GetSourceBuffer(Plane plane, int row4x4, int column4x4) const {
+    return source_buffer_->data(plane) +
+           RowOrColumn4x4ToPixel(row4x4, plane, subsampling_y_) *
+               source_buffer_->stride(plane) +
+           RowOrColumn4x4ToPixel(column4x4, plane, subsampling_x_) *
+               pixel_size_;
   }
 
   // Extends frame, sets border pixel values to its closest frame boundary.
