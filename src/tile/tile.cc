@@ -1767,6 +1767,8 @@ void Tile::ResetEntropyContext(const Block& block) {
 }
 
 void Tile::ComputePrediction(const Block& block) {
+  const BlockParameters& bp = *block.bp;
+  if (!bp.is_inter) return;
   const int mask =
       (1 << (4 + static_cast<int>(sequence_header_.use_128x128_superblock))) -
       1;
@@ -1790,8 +1792,7 @@ void Tile::ComputePrediction(const Block& block) {
     const int block_height = MultiplyBy4(block_height4x4);
     const int base_x = MultiplyBy4(block.column4x4 >> subsampling_x);
     const int base_y = MultiplyBy4(block.row4x4 >> subsampling_y);
-    const BlockParameters& bp = *block.bp;
-    if (bp.is_inter && bp.reference_frame[1] == kReferenceFrameIntra) {
+    if (bp.reference_frame[1] == kReferenceFrameIntra) {
       const int tr_row4x4 = (sub_block_row4x4 >> subsampling_y);
       const int tr_column4x4 =
           (sub_block_column4x4 >> subsampling_x) + block_width4x4 + 1;
@@ -1814,40 +1815,37 @@ void Tile::ComputePrediction(const Block& block) {
                                      ->inter_intra_mode],
           tx_size);
     }
-    if (bp.is_inter) {
-      int candidate_row = (block.row4x4 >> subsampling_y) << subsampling_y;
-      int candidate_column = (block.column4x4 >> subsampling_x)
-                             << subsampling_x;
-      bool some_use_intra = false;
-      for (int r = 0; r < (block_height4x4 << subsampling_y); ++r) {
-        for (int c = 0; c < (block_width4x4 << subsampling_x); ++c) {
-          auto* const bp = block_parameters_holder_.Find(candidate_row + r,
-                                                         candidate_column + c);
-          if (bp != nullptr && bp->reference_frame[0] == kReferenceFrameIntra) {
-            some_use_intra = true;
-            break;
-          }
+    int candidate_row = (block.row4x4 >> subsampling_y) << subsampling_y;
+    int candidate_column = (block.column4x4 >> subsampling_x) << subsampling_x;
+    bool some_use_intra = false;
+    for (int r = 0; r < (block_height4x4 << subsampling_y); ++r) {
+      for (int c = 0; c < (block_width4x4 << subsampling_x); ++c) {
+        auto* const bp = block_parameters_holder_.Find(candidate_row + r,
+                                                       candidate_column + c);
+        if (bp != nullptr && bp->reference_frame[0] == kReferenceFrameIntra) {
+          some_use_intra = true;
+          break;
         }
-        if (some_use_intra) break;
       }
-      int prediction_width;
-      int prediction_height;
-      if (some_use_intra) {
-        candidate_row = block.row4x4;
-        candidate_column = block.column4x4;
-        prediction_width = block_width;
-        prediction_height = block_height;
-      } else {
-        prediction_width = block.width >> subsampling_x;
-        prediction_height = block.height >> subsampling_y;
-      }
-      for (int r = 0, y = 0; y < block_height; y += prediction_height, ++r) {
-        for (int c = 0, x = 0; x < block_width; x += prediction_width, ++c) {
-          InterPrediction(block, static_cast<Plane>(plane), base_x + x,
-                          base_y + y, prediction_width, prediction_height,
-                          candidate_row + r, candidate_column + c,
-                          &is_local_valid, &local_warp_params);
-        }
+      if (some_use_intra) break;
+    }
+    int prediction_width;
+    int prediction_height;
+    if (some_use_intra) {
+      candidate_row = block.row4x4;
+      candidate_column = block.column4x4;
+      prediction_width = block_width;
+      prediction_height = block_height;
+    } else {
+      prediction_width = block.width >> subsampling_x;
+      prediction_height = block.height >> subsampling_y;
+    }
+    for (int r = 0, y = 0; y < block_height; y += prediction_height, ++r) {
+      for (int c = 0, x = 0; x < block_width; x += prediction_width, ++c) {
+        InterPrediction(block, static_cast<Plane>(plane), base_x + x,
+                        base_y + y, prediction_width, prediction_height,
+                        candidate_row + r, candidate_column + c,
+                        &is_local_valid, &local_warp_params);
       }
     }
   }
