@@ -445,11 +445,14 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         delete_begin, delete_end, nullable_filter,
         CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));
 
-    // When clearing cache, wipe accumulated network related data
-    // (TransportSecurityState and HttpServerPropertiesManager data).
-    network_context->ClearNetworkingHistorySince(
-        delete_begin,
-        CreateTaskCompletionClosureForMojo(TracingDataType::kNetworkHistory));
+    // TODO(crbug.com/1985971) : Implement filtering for NetworkHistory.
+    if (filter_builder->GetMode() == BrowsingDataFilterBuilder::BLACKLIST) {
+      // When clearing cache, wipe accumulated network related data
+      // (TransportSecurityState and HttpServerPropertiesManager data).
+      network_context->ClearNetworkingHistorySince(
+          delete_begin,
+          CreateTaskCompletionClosureForMojo(TracingDataType::kNetworkHistory));
+    }
 
     // Clears the PrefetchedSignedExchangeCache of all RenderFrameHostImpls.
     RenderFrameHostImpl::ClearAllPrefetchedSignedExchangeCache();
