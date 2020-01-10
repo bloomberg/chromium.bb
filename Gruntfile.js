@@ -1,5 +1,3 @@
-require('quiet-grunt');
-
 module.exports = function (grunt) {
   // Project configuration.
   grunt.initConfig({
@@ -125,6 +123,11 @@ module.exports = function (grunt) {
     helpMessageTasks.push({ name, desc });
   }
 
+  grunt.registerTask('set-quiet-mode', () => {
+    grunt.log.write('Running other tasks');
+    require('quiet-grunt');
+  });
+
   grunt.registerTask('prebuild', 'Pre-build tasks (clean and re-copy)', [
     'clean',
     'mkdir:out',
@@ -140,23 +143,26 @@ module.exports = function (grunt) {
     'copy:out-wpt',
     'run:generate-wpt-cts-html',
   ]);
-  grunt.registerTask('compiledone', () => {
-    console.error('Build completed! Now running checks/tests.');
+  grunt.registerTask('compile-done-message', () => {
+    process.stderr.write('\nBuild completed! Running checks/tests');
   });
 
   registerTaskAndAddToHelp('pre', 'Run all presubmit checks: build+typecheck+test+lint', [
+    'set-quiet-mode',
     'wpt',
     'run:gts-check',
   ]);
   registerTaskAndAddToHelp('test', 'Quick development build: build+typecheck+test', [
+    'set-quiet-mode',
     'prebuild',
     'compile',
-    'compiledone',
+    'compile-done-message',
     'ts:check',
     'run:test',
   ]);
   registerTaskAndAddToHelp('wpt', 'Build for WPT: build+typecheck+test+wpt', ['test', 'generate-wpt']);
   registerTaskAndAddToHelp('check', 'Typecheck and lint', [
+    'set-quiet-mode',
     'copy:webgpu-constants',
     'ts:check',
     'run:gts-check',

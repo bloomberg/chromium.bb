@@ -3,7 +3,7 @@
   "tasks": [
     {
       "type": "grunt",
-      "task": "pre",
+      "task": "test",
       "problemMatcher": [],
       "group": {
         "kind": "build",
@@ -12,12 +12,7 @@
     },
     {
       "type": "grunt",
-      "task": "check",
-      "problemMatcher": []
-    },
-    {
-      "type": "grunt",
-      "task": "build",
+      "task": "pre",
       "problemMatcher": []
     }
   ]
