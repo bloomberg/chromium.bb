@@ -91,7 +91,6 @@ STATUS_INTERNAL_ENDPOINT_ERROR = 1011
 STATUS_TLS_HANDSHAKE = 1015
 
 # Extension tokens
-_DEFLATE_FRAME_EXTENSION = 'deflate-frame'
 _PERMESSAGE_DEFLATE_EXTENSION = 'permessage-deflate'
 
 def _method_line(resource):
@@ -427,12 +426,7 @@ class WebSocketHandshake(object):
         # extensions or extensions we didn't request in it. Then, for
         # extensions we request, parse them and store parameters. They will be
         # used later by each extension.
-        deflate_frame_accepted = False
         for extension in accepted_extensions:
-            if extension.name() == _DEFLATE_FRAME_EXTENSION:
-                if self._options.use_deflate_frame:
-                    deflate_frame_accepted = True
-                    continue
             if extension.name() == _PERMESSAGE_DEFLATE_EXTENSION:
                 checker = self._options.check_permessage_deflate
                 if checker:
@@ -442,12 +436,6 @@ class WebSocketHandshake(object):
             raise Exception(
                 'Received unrecognized extension: %s' % extension.name())
 
-        # Let all extensions check the response for extension request.
-
-        if (self._options.use_deflate_frame and
-            not deflate_frame_accepted):
-            raise Exception('%s extension not accepted' %
-                            _DEFLATE_FRAME_EXTENSION)
 
 class WebSocketStream(object):
     """Frame processor for the WebSocket protocol (RFC 6455)."""
@@ -459,11 +447,6 @@ class WebSocketStream(object):
         # Filters applied to application data part of data frames.
         self._outgoing_frame_filter = None
         self._incoming_frame_filter = None
-
-        if self._handshake._options.use_deflate_frame:
-            self._outgoing_frame_filter = (
-                util._RFC1979Deflater(None, False))
-            self._incoming_frame_filter = util._RFC1979Inflater()
 
         self._fragmented = False
 
@@ -498,9 +481,6 @@ class WebSocketStream(object):
         else:
             self._fragmented = True
             fin = 0
-
-        if self._handshake._options.use_deflate_frame:
-            rsv1 = 1
 
         if mask:
             mask_bit = 1 << 7
@@ -543,8 +523,6 @@ class WebSocketStream(object):
 
         if rsv1 is None:
             rsv1 = 0
-            if self._handshake._options.use_deflate_frame:
-                rsv1 = 1
 
         if rsv2 is None:
             rsv2 = 0
@@ -616,6 +594,7 @@ class WebSocketStream(object):
                 'Unexpected close frame: %r (expected) vs %r (actual)' %
                 (expected_frame, actual_frame))
 
+
 class ClientOptions(object):
     """Holds option values to configure the Client object."""
 
@@ -628,12 +607,6 @@ class ClientOptions(object):
         self.socket_timeout = 1000
         self.use_tls = False
         self.extensions = []
-        # Enable deflate-application-data.
-        self.use_deflate_frame = False
-
-    def enable_deflate_frame(self):
-        self.use_deflate_frame = True
-        self.extensions.append(_DEFLATE_FRAME_EXTENSION)
 
 
 def connect_socket_with_retry(host, port, timeout, use_tls,

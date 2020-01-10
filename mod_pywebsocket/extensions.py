@@ -35,7 +35,6 @@ from mod_pywebsocket.http_header_util import quote_if_necessary
 
 # The list of available server side extension processor classes.
 _available_processors = {}
-_compression_extension_names = []
 
 
 class ExtensionProcessorInterface(object):
@@ -143,184 +142,6 @@ class _AverageRatioCalculator(object):
                     self._total_original_bytes)
         else:
             return float('inf')
-
-
-class DeflateFrameExtensionProcessor(ExtensionProcessorInterface):
-    """deflate-frame extension processor.
-
-    Specification:
-    http://tools.ietf.org/html/draft-tyoshino-hybi-websocket-perframe-deflate
-    """
-
-    _WINDOW_BITS_PARAM = 'max_window_bits'
-    _NO_CONTEXT_TAKEOVER_PARAM = 'no_context_takeover'
-
-    def __init__(self, request):
-        ExtensionProcessorInterface.__init__(self, request)
-        self._logger = util.get_class_logger(self)
-
-        self._response_window_bits = None
-        self._response_no_context_takeover = False
-        self._bfinal = False
-
-        # Calculates
-        #     (Total outgoing bytes supplied to this filter) /
-        #     (Total bytes sent to the network after applying this filter)
-        self._outgoing_average_ratio_calculator = _AverageRatioCalculator()
-
-        # Calculates
-        #     (Total bytes received from the network) /
-        #     (Total incoming bytes obtained after applying this filter)
-        self._incoming_average_ratio_calculator = _AverageRatioCalculator()
-
-    def name(self):
-        return common.DEFLATE_FRAME_EXTENSION
-
-    def _get_extension_response_internal(self):
-        # Any unknown parameter will be just ignored.
-
-        window_bits = None
-        if self._request.has_parameter(self._WINDOW_BITS_PARAM):
-            window_bits = self._request.get_parameter_value(
-                self._WINDOW_BITS_PARAM)
-            try:
-                window_bits = _parse_window_bits(window_bits)
-            except ValueError, e:
-                return None
-
-        no_context_takeover = self._request.has_parameter(
-            self._NO_CONTEXT_TAKEOVER_PARAM)
-        if (no_context_takeover and
-            self._request.get_parameter_value(
-                self._NO_CONTEXT_TAKEOVER_PARAM) is not None):
-            return None
-
-        self._rfc1979_deflater = util._RFC1979Deflater(
-            window_bits, no_context_takeover)
-
-        self._rfc1979_inflater = util._RFC1979Inflater()
-
-        self._compress_outgoing = True
-
-        response = common.ExtensionParameter(self._request.name())
-
-        if self._response_window_bits is not None:
-            response.add_parameter(
-                self._WINDOW_BITS_PARAM, str(self._response_window_bits))
-        if self._response_no_context_takeover:
-            response.add_parameter(
-                self._NO_CONTEXT_TAKEOVER_PARAM, None)
-
-        self._logger.debug(
-            'Enable %s extension ('
-            'request: window_bits=%s; no_context_takeover=%r, '
-            'response: window_wbits=%s; no_context_takeover=%r)' %
-            (self._request.name(),
-             window_bits,
-             no_context_takeover,
-             self._response_window_bits,
-             self._response_no_context_takeover))
-
-        return response
-
-    def _setup_stream_options_internal(self, stream_options):
-
-        class _OutgoingFilter(object):
-
-            def __init__(self, parent):
-                self._parent = parent
-
-            def filter(self, frame):
-                self._parent._outgoing_filter(frame)
-
-        class _IncomingFilter(object):
-
-            def __init__(self, parent):
-                self._parent = parent
-
-            def filter(self, frame):
-                self._parent._incoming_filter(frame)
-
-        stream_options.outgoing_frame_filters.append(
-            _OutgoingFilter(self))
-        stream_options.incoming_frame_filters.insert(
-            0, _IncomingFilter(self))
-
-    def set_response_window_bits(self, value):
-        self._response_window_bits = value
-
-    def set_response_no_context_takeover(self, value):
-        self._response_no_context_takeover = value
-
-    def set_bfinal(self, value):
-        self._bfinal = value
-
-    def enable_outgoing_compression(self):
-        self._compress_outgoing = True
-
-    def disable_outgoing_compression(self):
-        self._compress_outgoing = False
-
-    def _outgoing_filter(self, frame):
-        """Transform outgoing frames. This method is called only by
-        an _OutgoingFilter instance.
-        """
-
-        original_payload_size = len(frame.payload)
-        self._outgoing_average_ratio_calculator.add_original_bytes(
-                original_payload_size)
-
-        if (not self._compress_outgoing or
-            common.is_control_opcode(frame.opcode)):
-            self._outgoing_average_ratio_calculator.add_result_bytes(
-                    original_payload_size)
-            return
-
-        frame.payload = self._rfc1979_deflater.filter(
-            frame.payload, bfinal=self._bfinal)
-        frame.rsv1 = 1
-
-        filtered_payload_size = len(frame.payload)
-        self._outgoing_average_ratio_calculator.add_result_bytes(
-                filtered_payload_size)
-
-        _log_outgoing_compression_ratio(
-                self._logger,
-                original_payload_size,
-                filtered_payload_size,
-                self._outgoing_average_ratio_calculator.get_average_ratio())
-
-    def _incoming_filter(self, frame):
-        """Transform incoming frames. This method is called only by
-        an _IncomingFilter instance.
-        """
-
-        received_payload_size = len(frame.payload)
-        self._incoming_average_ratio_calculator.add_result_bytes(
-                received_payload_size)
-
-        if frame.rsv1 != 1 or common.is_control_opcode(frame.opcode):
-            self._incoming_average_ratio_calculator.add_original_bytes(
-                    received_payload_size)
-            return
-
-        frame.payload = self._rfc1979_inflater.filter(frame.payload)
-        frame.rsv1 = 0
-
-        filtered_payload_size = len(frame.payload)
-        self._incoming_average_ratio_calculator.add_original_bytes(
-                filtered_payload_size)
-
-        _log_incoming_compression_ratio(
-                self._logger,
-                received_payload_size,
-                filtered_payload_size,
-                self._incoming_average_ratio_calculator.get_average_ratio())
-
-
-_available_processors[common.DEFLATE_FRAME_EXTENSION] = (
-    DeflateFrameExtensionProcessor)
-_compression_extension_names.append(common.DEFLATE_FRAME_EXTENSION)
 
 class PerMessageDeflateExtensionProcessor(ExtensionProcessorInterface):
     """permessage-deflate extension processor.
@@ -649,8 +470,6 @@ class _PerMessageDeflateFramer(object):
 
 _available_processors[common.PERMESSAGE_DEFLATE_EXTENSION] = (
         PerMessageDeflateExtensionProcessor)
-# TODO(tyoshino): Reorganize class names.
-_compression_extension_names.append('deflate')
 
 
 def get_extension_processor(extension_request):
@@ -663,10 +482,6 @@ def get_extension_processor(extension_request):
     if processor_class is None:
         return None
     return processor_class(extension_request)
-
-
-def is_compression_extension(extension_name):
-    return extension_name in _compression_extension_names
 
 
 # vi:sts=4 sw=4 et

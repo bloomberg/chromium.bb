@@ -81,7 +81,6 @@ SEC_WEBSOCKET_PROTOCOL_HEADER = 'Sec-WebSocket-Protocol'
 SEC_WEBSOCKET_EXTENSIONS_HEADER = 'Sec-WebSocket-Extensions'
 
 # Extensions
-DEFLATE_FRAME_EXTENSION = 'deflate-frame'
 PERMESSAGE_DEFLATE_EXTENSION = 'permessage-deflate'
 
 # Status codes

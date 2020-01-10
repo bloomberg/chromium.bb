@@ -65,7 +65,6 @@ import struct
 import sys
 
 from mod_pywebsocket import common
-from mod_pywebsocket.extensions import DeflateFrameExtensionProcessor
 from mod_pywebsocket.extensions import PerMessageDeflateExtensionProcessor
 from mod_pywebsocket.extensions import _PerMessageDeflateFramer
 from mod_pywebsocket.extensions import _parse_window_bits
@@ -430,10 +429,6 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
 
         extensions_to_request = []
 
-        if self._options.deflate_frame:
-            extensions_to_request.append(
-                common.ExtensionParameter(common.DEFLATE_FRAME_EXTENSION))
-
         if self._options.use_permessage_deflate:
             extension = common.ExtensionParameter(
                     common.PERMESSAGE_DEFLATE_EXTENSION)
@@ -536,7 +531,6 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
                 'Invalid %s header: %r (expected: %s)' %
                 (common.SEC_WEBSOCKET_ACCEPT_HEADER, accept, expected_accept))
 
-        deflate_frame_accepted = False
         permessage_deflate_accepted = False
 
         extensions_header = fields.get(
@@ -545,17 +539,9 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
         if extensions_header is not None and len(extensions_header) != 0:
             accepted_extensions = common.parse_extensions(extensions_header[0])
 
-        # TODO(bashi): Support the new style perframe compression extension.
         for extension in accepted_extensions:
             extension_name = extension.name()
-            if (extension_name == common.DEFLATE_FRAME_EXTENSION and
-                self._options.deflate_frame):
-                deflate_frame_accepted = True
-                processor = DeflateFrameExtensionProcessor(extension)
-                unused_extension_response = processor.get_extension_response()
-                self._options.deflate_frame = processor
-                continue
-            elif (extension_name == common.PERMESSAGE_DEFLATE_EXTENSION and
+            if (extension_name == common.PERMESSAGE_DEFLATE_EXTENSION and
                   self._options.use_permessage_deflate):
                 permessage_deflate_accepted = True
 
@@ -566,11 +552,6 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
 
             raise ClientHandshakeError(
                 'Unexpected extension %r' % extension_name)
-
-        if (self._options.deflate_frame and not deflate_frame_accepted):
-            raise ClientHandshakeError(
-                'Requested %s, but the server rejected it' %
-                common.DEFLATE_FRAME_EXTENSION)
 
         if (self._options.use_permessage_deflate and
             not permessage_deflate_accepted):
@@ -667,10 +648,6 @@ class EchoClient(object):
             stream_option.mask_send = True
             stream_option.unmask_receive = False
 
-            if self._options.deflate_frame is not False:
-                processor = self._options.deflate_frame
-                processor.setup_stream_options(stream_option)
-
             if self._options.use_permessage_deflate is not False:
                 framer = self._options.use_permessage_deflate
                 framer.setup_stream_options(stream_option)
@@ -764,10 +741,6 @@ def main():
     parser.add_option('-k', '--socket-timeout', '--socket_timeout',
                       dest='socket_timeout', type='int', default=_TIMEOUT_SEC,
                       help='Timeout(sec) for sockets')
-    parser.add_option('--deflate-frame', '--deflate_frame',
-                      dest='deflate_frame',
-                      action='store_true', default=False,
-                      help='Use the deflate-frame extension.')
     parser.add_option('--use-permessage-deflate', '--use_permessage_deflate',
                       dest='use_permessage_deflate',
                       action='store_true', default=False,

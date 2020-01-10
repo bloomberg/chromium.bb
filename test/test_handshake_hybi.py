@@ -316,20 +316,6 @@ class HandshakerTest(unittest.TestCase):
         # not caught by do_handshake.
         self.assertRaises(AbortedByUserException, handshaker.do_handshake)
 
-    def test_do_handshake_with_deflate_frame(self):
-        request_def = _create_good_request_def()
-        request_def.headers['Sec-WebSocket-Extensions'] = ('%s' % (
-            common.DEFLATE_FRAME_EXTENSION))
-        request = _create_request(request_def)
-        handshaker = _create_handshaker(request)
-        handshaker.do_handshake()
-        self.assertEqual(1, len(request.ws_extensions))
-        self.assertEqual(common.DEFLATE_FRAME_EXTENSION,
-                         request.ws_extensions[0].name())
-        self.assertEqual(1, len(request.ws_extension_processors))
-        self.assertEqual(common.DEFLATE_FRAME_EXTENSION,
-                         request.ws_extension_processors[0].name())
-
     def test_bad_requests(self):
         bad_cases = [
             ('HTTP request',
