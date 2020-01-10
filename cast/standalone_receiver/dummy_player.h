@@ -20,7 +20,7 @@ namespace cast {
 // each one's FrameId, timestamp and size. This is only useful for confirming a
 // Receiver is successfully receiving a stream, for platforms where
 // SDLVideoPlayer cannot be built.
-class DummyPlayer : public Receiver::Consumer {
+class DummyPlayer final : public Receiver::Consumer {
  public:
   explicit DummyPlayer(Receiver* receiver);
 

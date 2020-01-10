@@ -8,13 +8,7 @@ config("zlib_config") {
 
 config("zlib_internal_config") {
   defines = [ "ZLIB_IMPLEMENTATION" ]
-  cflags = [ "-Wno-implicit-function-declaration" ]
-  if (is_clang) {
-    cflags += [
-      "-Wno-incompatible-pointer-types",
-      "-Wno-unused-variable",
-    ]
-  }
+  cflags = [ "-w" ]  # Disable all warnings.
 }
 
 static_library("zlib") {

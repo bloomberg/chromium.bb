@@ -74,12 +74,6 @@ declare_args() {
   is_clang = !is_gcc
 }
 
-# We need to ensure that clang is pulled down using the update script. In
-# Chromium, this is done with a gclient hook, but we can just call
-if (is_clang) {
-  exec_script("//tools/clang/scripts/update.py")
-}
-
 # ==============================================================================
 # TOOLCHAIN SETUP
 # ==============================================================================

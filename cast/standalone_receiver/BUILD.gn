@@ -49,9 +49,9 @@ if (!build_with_chromium) {
         "sdl_video_player.h",
       ]
       libs += [
-        "-lSDL2",
-        "-lavcodec",
-        "-lavutil",
+        "SDL2",
+        "avcodec",
+        "avutil",
       ]
     } else {
       sources += [

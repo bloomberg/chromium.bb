@@ -26,22 +26,28 @@ lint` and `git cl upload.`
 
 ## Checking out code
 
-From the parent directory of where you want the openscreen checkout, configure
-`gclient` and check out openscreen with the following commands:
+From the parent directory of where you want the openscreen checkout (e.g.,
+`~/my_project_dir`), configure `gclient` and check out openscreen with the
+following commands:
 
 ```bash
+    cd ~/my_project_dir
     gclient config https://chromium.googlesource.com/openscreen
     gclient sync
 ```
 
-Now, you should have `openscreen/` repository checked out, with all dependencies
-checked out to their appropriate revisions.
+The first `gclient` command will create a default .gclient file in
+`~/my_project_dir` that describes how to pull down the `openscreen` repository.
+The second command creates an `openscreen/` subdirectory, downloads the source
+code, all third-party dependencies, and the toolchain needed to build things;
+and at their appropriate revisions.
 
 ## Syncing your local checkout
 
 To update your local checkout from the openscreen master repository, just run
 
 ```bash
+   cd ~/my_project_dir/openscreen
    git pull
    gclient sync
 ```
@@ -51,24 +57,23 @@ dependencies that have changed.
 
 # Build setup
 
-## Installing build dependencies
-
-The following tools are required for building:
+The following are the main tools are required for development/builds:
 
  - Build file generator: `gn`
- - Code formatter (optional): `clang-format`
+ - Code formatter: `clang-format`
  - Builder: `ninja` ([GitHub releases](https://github.com/ninja-build/ninja/releases))
+ - Compiler/Linker: `clang` (installed by default) or `gcc` (installed by you)
 
-`clang-format` and `ninja` can be downloaded to `buildtools/<platform>` root by
-running `./tools/install-build-tools.sh`.
+All of these--except `gcc` as noted above--are automatically downloaded/updated
+for the Linux and Mac environments via `gclient sync` as described above. The
+first two are installed into `buildtools/<platform>/`.
 
-`clang-format` is only used for presubmit checks and optionally used on
-generated code from the CDDL tool.
+Mac only: XCode must be installed on the system, to link against its frameworks.
 
-`gn` will be installed in `buildtools/<platform>/` automatically by `gclient sync`.
-
-You also need to ensure that you have the compiler and its toolchain dependencies.
-Currently, both Linux and Mac OS X build configurations use clang by default.
+`clang-format` is used for maintaining consistent coding style, but it is not a
+complete replacement for adhering to Chromium/Google C++ style (that's on you!).
+The presubmit script will sanity-check that it has been run on all new/changed
+code.
 
 ## Linux clang
 
@@ -153,6 +158,11 @@ the working directory for the build.  So the same could be done as follows:
 After editing a file, only `ninja` needs to be rerun, not `gn`.  If you have
 edited a `BUILD.gn` file, `ninja` will re-run `gn` for you.
 
+Unless you like to wait longer than necessary for builds to complete, run
+`autoninja` instead of `ninja`, which takes the same command-line arguments.
+This will automatically parallelize the build for your system, depending on
+number of processor cores, RAM, etc.
+
 For details on running `demo`, see its [README.md](demo/README.md).
 
 ## Building other targets
@@ -214,11 +224,13 @@ review tool) and is recommended for pushing patches for review.  Once you have
 committed changes locally, simply run:
 
 ```bash
+  git cl format
   git cl upload
 ```
 
-This will run our `PRESUBMIT.sh` script to check style, and if it passes, a new
-code review will be posted on `chromium-review.googlesource.com`.
+The first command will will auto-format the code changes. Then, the second
+command runs the `PRESUBMIT.sh` script to check style and, if it passes, a
+newcode review will be posted on `chromium-review.googlesource.com`.
 
 If you make additional commits to your local branch, then running `git cl
 upload` again in the same branch will merge those commits into the ongoing
