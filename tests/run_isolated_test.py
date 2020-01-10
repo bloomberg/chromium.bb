@@ -360,6 +360,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
         install_packages_fn=run_isolated.noop_install_packages,
         use_go_isolated=False,
         go_cache_dir=None,
+        go_cache_policies=None,
         env={},
         env_prefix={},
         lower_priority=lower_priority,
@@ -1024,7 +1025,6 @@ class RunIsolatedTest(RunIsolatedTestBase):
     cipd_server = 'https://chrome-infra-packages.appspot.com/'
     storage = isolate_storage.IsolateServer(
         isolate_storage.ServerRef(cipd_server, options.namespace))
-    isolate_cache = isolateserver.process_cache_options(options, trim=False)
 
     def fake_wait(args, **kwargs):  # pylint: disable=unused-argument
       for arg in args:
@@ -1042,8 +1042,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
 
     self.popen_fakes.append(fake_wait)
     bundle, stats = run_isolated._fetch_and_map_with_go(
-        'fake_isolated_hash', storage, isolate_cache, 'fake_outdir',
-        'fake_cache_dir', 'fake/path/to/isolated')
+        'fake_isolated_hash', storage, 'fake_outdir', 'fake_cache_dir',
+        local_caching.CachePolicies(0, 0, 0, 0), 'fake/path/to/isolated')
     self.assertTrue(bundle)
     self.assertTrue(stats)
 
@@ -1099,6 +1099,7 @@ class RunIsolatedTestRun(RunIsolatedTestBase):
           install_packages_fn=run_isolated.noop_install_packages,
           use_go_isolated=False,
           go_cache_dir=None,
+          go_cache_policies=None,
           env={},
           env_prefix={},
           lower_priority=False,
@@ -1473,6 +1474,7 @@ class RunIsolatedTestOutputFiles(RunIsolatedTestBase):
           install_packages_fn=run_isolated.noop_install_packages,
           use_go_isolated=False,
           go_cache_dir=None,
+          go_cache_policies=None,
           env={},
           env_prefix={},
           lower_priority=False,
