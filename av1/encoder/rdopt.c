@@ -2353,6 +2353,10 @@ static AOM_INLINE void PrintPredictionUnitStats(const AV1_COMP *const cpi,
 }
 #endif  // CONFIG_COLLECT_RD_STATS >= 2
 #endif  // CONFIG_COLLECT_RD_STATS
+
+// pruning thresholds for prune_txk_type and prune_txk_type_separ
+static const int prune_factors[5] = { 200, 200, 120, 80, 40 };  // scale 1000
+static const int mul_factors[5] = { 80, 80, 70, 50, 30 };       // scale 100
 // R-D costs are sorted in ascending order.
 static INLINE void sort_rd(int64_t rds[], int txk[], int len) {
   int i, j, k;
@@ -2422,10 +2426,10 @@ uint16_t prune_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     num_cand++;
   }
 
-  if (num_cand == 0) return 0xFFFF;
+  if (num_cand == 0) return (uint16_t)0xFFFF;
 
   sort_rd(rds, txk_map, num_cand);
-  uint16_t prune = ~(1 << txk_map[0]);
+  uint16_t prune = (uint16_t)(~(1 << txk_map[0]));
 
   // 0 < prune_factor <= 1000 controls aggressiveness
   int64_t factor = 0;
@@ -2439,13 +2443,13 @@ uint16_t prune_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   return prune;
 }
 
-int16_t prune_txk_type_separ(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                             int block, TX_SIZE tx_size, int blk_row,
-                             int blk_col, BLOCK_SIZE plane_bsize, int *txk_map,
-                             int16_t allowed_tx_mask, int prune_factor,
-                             const TXB_CTX *const txb_ctx,
-                             int reduced_tx_set_used, int64_t ref_best_rd,
-                             int num_sel) {
+uint16_t prune_txk_type_separ(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+                              int block, TX_SIZE tx_size, int blk_row,
+                              int blk_col, BLOCK_SIZE plane_bsize, int *txk_map,
+                              int16_t allowed_tx_mask, int prune_factor,
+                              const TXB_CTX *const txb_ctx,
+                              int reduced_tx_set_used, int64_t ref_best_rd,
+                              int num_sel) {
   const AV1_COMMON *cm = &cpi->common;
 
   int idx;
@@ -2506,7 +2510,7 @@ int16_t prune_txk_type_separ(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (rds_h[idx] > rds_h[0] * 1.2) skip_h[idx_h[idx]] = 1;
   }
 
-  if (skip_h[idx_h[0]]) return 0xFFFF;
+  if (skip_h[idx_h[0]]) return (uint16_t)0xFFFF;
 
   // evaluate vertical with the best horizontal chosen
   rds_v[0] = rds_h[0];
@@ -2557,7 +2561,7 @@ int16_t prune_txk_type_separ(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
   sort_rd(rds, txk_map, num_cand);
 
-  uint16_t prune = ~(1 << txk_map[0]);
+  uint16_t prune = (uint16_t)(~(1 << txk_map[0]));
   num_sel = AOMMIN(num_sel, num_cand);
 
   for (int i = 1; i < num_sel; i++) {
@@ -2744,18 +2748,37 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       }
       allowed_tx_mask &= (~prune);
     }
-
     for (i = 0; i < TX_TYPES; i++) {
       if (allowed_tx_mask & (1 << i)) num_allowed++;
     }
     assert(num_allowed > 0);
 
-    int allowed_tx_count = (x->prune_mode == PRUNE_2D_AGGRESSIVE) ? 1 : 5;
-    // !fast_tx_search && txk_end != txk_start && plane == 0
-    if (x->prune_mode >= PRUNE_2D_ACCURATE && is_inter &&
-        num_allowed > allowed_tx_count) {
-      prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
-                  x->prune_mode, txk_map, &allowed_tx_mask);
+    if (num_allowed > 2 && cpi->sf.tx_sf.tx_type_search.prune_tx_type_est_rd) {
+      int pf = prune_factors[x->prune_mode];
+      int mf = mul_factors[x->prune_mode];
+      if (num_allowed <= 7) {
+        const uint16_t prune = prune_txk_type(
+            cpi, x, plane, block, tx_size, blk_row, blk_col, plane_bsize,
+            txk_map, allowed_tx_mask, pf, txb_ctx, cm->reduced_tx_set_used);
+        allowed_tx_mask &= (~prune);
+      } else {
+        const int num_sel = (num_allowed * mf + 50) / 100;
+        const uint16_t prune = prune_txk_type_separ(
+            cpi, x, plane, block, tx_size, blk_row, blk_col, plane_bsize,
+            txk_map, allowed_tx_mask, pf, txb_ctx, cm->reduced_tx_set_used,
+            ref_best_rd, num_sel);
+
+        allowed_tx_mask &= (~prune);
+      }
+    } else {
+      assert(num_allowed > 0);
+      int allowed_tx_count = (x->prune_mode == PRUNE_2D_AGGRESSIVE) ? 1 : 5;
+      // !fast_tx_search && txk_end != txk_start && plane == 0
+      if (x->prune_mode >= PRUNE_2D_ACCURATE && is_inter &&
+          num_allowed > allowed_tx_count) {
+        prune_tx_2D(x, plane_bsize, tx_size, blk_row, blk_col, tx_set_type,
+                    x->prune_mode, txk_map, &allowed_tx_mask);
+      }
     }
   }
 

@@ -227,6 +227,8 @@ typedef struct {
 
   // Prune tx type search using previous frame stats.
   int prune_tx_type_using_stats;
+  // Prune tx type search using estimated RDcost
+  int prune_tx_type_est_rd;
 
   // Flag used to control the winner mode processing for tx type pruning for
   // inter blocks. It enables further tx type mode pruning based on ML model for

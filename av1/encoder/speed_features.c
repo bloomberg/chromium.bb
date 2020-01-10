@@ -494,6 +494,7 @@ static void set_good_speed_features_framesize_independent(
     sf->tx_sf.tx_type_search.enable_winner_mode_tx_type_pruning = 1;
     sf->tx_sf.tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_sf.tx_type_search.prune_mode = PRUNE_2D_MORE;
+    sf->tx_sf.tx_type_search.prune_tx_type_est_rd = 1;
     // TODO(any): Experiment with enabling of this speed feature as hash state
     // is reset during winner mode processing
     sf->tx_sf.use_intra_txb_hash = 0;
@@ -987,6 +988,7 @@ static AOM_INLINE void init_tx_sf(TX_SPEED_FEATURES *tx_sf) {
   tx_sf->tx_type_search.fast_inter_tx_type_search = 0;
   tx_sf->tx_type_search.skip_tx_search = 0;
   tx_sf->tx_type_search.prune_tx_type_using_stats = 0;
+  tx_sf->tx_type_search.prune_tx_type_est_rd = 0;
   tx_sf->tx_type_search.enable_winner_mode_tx_type_pruning = 0;
   tx_sf->txb_split_cap = 1;
   tx_sf->adaptive_txb_search_level = 0;
