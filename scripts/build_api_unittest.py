@@ -22,28 +22,27 @@ class BuildApiScriptTest(cros_test_lib.MockTempDirTestCase):
     self.find_mock = self.PatchObject(router_lib.Router, 'Route')
     self.input_json = os.path.join(self.tempdir, 'input.json')
     self.output_json = os.path.join(self.tempdir, 'output.json')
+    self.config_json = os.path.join(self.tempdir, 'config.json')
     self.tee_log = os.path.join(self.tempdir, 'tee_out.txt')
-    input_json_contents = """
-{
-  "buildTarget": {
-    "name": "amd64-generic"
-  }
-}
-    """
-    osutils.WriteFile(self.input_json, input_json_contents)
+
+    tee_config = '{"log_path": "%s"}' % self.tee_log
+
+    osutils.WriteFile(self.input_json, '{}')
+    osutils.WriteFile(self.config_json, tee_config)
+
 
   def testSmoke(self):
     """Basic sanity check"""
     build_api.main(['--input-json', self.input_json,
                     '--output-json', self.output_json,
-                    'chromite.api.PackageService/GetTargetVersions'])
+                    'chromite.api.VersionService/Get'])
 
   def testTee(self):
     """Call build_api with tee-log set, verify log contents."""
     build_api.main(['--input-json', self.input_json,
                     '--output-json', self.output_json,
-                    '--tee-log', self.tee_log,
-                    'chromite.api.PackageService/GetTargetVersions'])
+                    '--config-json', self.config_json,
+                    'chromite.api.VersionService/Get'])
     contents = osutils.ReadFile(self.tee_log)
     self.assertIn('Teeing stdout', contents)
 
@@ -52,6 +51,6 @@ class BuildApiScriptTest(cros_test_lib.MockTempDirTestCase):
     os.environ['BUILD_API_TEE_LOG_FILE'] = self.tee_log
     build_api.main(['--input-json', self.input_json,
                     '--output-json', self.output_json,
-                    'chromite.api.PackageService/GetTargetVersions'])
+                    'chromite.api.VersionService/Get'])
     contents = osutils.ReadFile(self.tee_log)
     self.assertIn('Teeing stdout and stderr to env path ', contents)

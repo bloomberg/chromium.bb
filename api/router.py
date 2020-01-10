@@ -84,6 +84,7 @@ class Router(object):
 
   REEXEC_INPUT_FILE = 'input.json'
   REEXEC_OUTPUT_FILE = 'output.json'
+  REEXEC_CONFIG_FILE = 'config.json'
 
   def __init__(self):
     self._services = {}
@@ -265,16 +266,20 @@ class Router(object):
       chroot_input = '/%s' % os.path.relpath(new_input, chroot.path)
       new_output = os.path.join(tempdir, self.REEXEC_OUTPUT_FILE)
       chroot_output = '/%s' % os.path.relpath(new_output, chroot.path)
+      new_config = os.path.join(tempdir, self.REEXEC_CONFIG_FILE)
+      chroot_config = '/%s' % os.path.relpath(new_config, chroot.path)
 
       logging.info('Writing input message to: %s', new_input)
       osutils.WriteFile(new_input, json_format.MessageToJson(input_msg))
       osutils.Touch(new_output)
+      logging.info('Writing config message to: %s', new_config)
+      osutils.WriteFile(new_config,
+                        json_format.MessageToJson(config.get_proto()))
 
       cmd = ['build_api', '%s/%s' % (service_name, method_name),
-             '--input-json', chroot_input, '--output-json', chroot_output]
-
-      if config.validate_only:
-        cmd.append('--validate-only')
+             '--input-json', chroot_input,
+             '--output-json', chroot_output,
+             '--config-json', chroot_config]
 
       try:
         result = cros_build_lib.run(
