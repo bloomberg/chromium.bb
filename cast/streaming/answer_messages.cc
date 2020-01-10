@@ -165,12 +165,19 @@ ErrorOr<Json::Value> Answer::ToJson() const {
 
   root["castMode"] = cast_mode.ToString();
   root["udpPort"] = udp_port;
+  root["receiverGetStatus"] = supports_wifi_status_reporting;
   root["sendIndexes"] = PrimitiveVectorToJson(send_indexes);
   root["ssrcs"] = PrimitiveVectorToJson(ssrcs);
-  root["receiverRtcpEventLog"] = PrimitiveVectorToJson(receiver_rtcp_event_log);
-  root["receiverRtcpDscp"] = PrimitiveVectorToJson(receiver_rtcp_dscp);
-  root["receiverGetStatus"] = supports_wifi_status_reporting;
-  root["rtpExtensions"] = PrimitiveVectorToJson(rtp_extensions);
+  if (!receiver_rtcp_event_log.empty()) {
+    root["receiverRtcpEventLog"] =
+        PrimitiveVectorToJson(receiver_rtcp_event_log);
+  }
+  if (!receiver_rtcp_dscp.empty()) {
+    root["receiverRtcpDscp"] = PrimitiveVectorToJson(receiver_rtcp_dscp);
+  }
+  if (!rtp_extensions.empty()) {
+    root["rtpExtensions"] = PrimitiveVectorToJson(rtp_extensions);
+  }
   return root;
 }
 
