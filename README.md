@@ -32,10 +32,10 @@ unittests), use:
 npx grunt pre
 ```
 
-To just build the project, use:
+For a quicker iterative build:
 
 ```sh
-npx grunt build
+npx grunt test
 ```
 
 ### Run
