@@ -22,6 +22,7 @@ chromite changes.
 * test_platform/ contains the APIs of components of the Test Platform recipe.
   * test_platform/request.proto and test_platform/response.proto contain the API
     of the overall recipe.
+* device/ contains the proto for hardware related configuration.
 
 When making changes to the proto, you must:
 

@@ -94,7 +94,8 @@ def _GenerateFiles(source, output):
       os.path.join(source, 'chromite'),
       os.path.join(source, 'chromiumos'),
       os.path.join(source, 'config'),
-      os.path.join(source, 'test_platform')
+      os.path.join(source, 'test_platform'),
+      os.path.join(source, 'device')
   ]
   for basedir in subdirs:
     for dirpath, _dirnames, filenames in os.walk(basedir):
