@@ -990,6 +990,9 @@ typedef struct AV1_COMP {
   int warped_probs[FRAME_UPDATE_TYPES];
   int tx_type_probs[FRAME_UPDATE_TYPES][TX_SIZES_ALL][TX_TYPES];
   int tx_type_probs_thresh[FRAME_UPDATE_TYPES];
+  int switchable_interp_probs[FRAME_UPDATE_TYPES][SWITCHABLE_FILTER_CONTEXTS]
+                             [SWITCHABLE_FILTERS];
+  int switchable_interp_thresh[FRAME_UPDATE_TYPES];
 
   // Multi-threading
   int num_workers;

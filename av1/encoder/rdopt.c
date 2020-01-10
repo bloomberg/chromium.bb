@@ -8257,6 +8257,29 @@ static INLINE void find_best_non_dual_interp_filter(
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
 
+  uint16_t interp_filter_search_mask = cpi->interp_filter_search_mask;
+
+  if (cpi->sf.interp_sf.adaptive_interp_filter_search == 2) {
+    const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
+    const int ctx0 = av1_get_pred_context_switchable_interp(xd, 0);
+    const int ctx1 = av1_get_pred_context_switchable_interp(xd, 1);
+    const int *switchable_interp_p0 =
+        cpi->switchable_interp_probs[update_type][ctx0];
+    const int *switchable_interp_p1 =
+        cpi->switchable_interp_probs[update_type][ctx1];
+
+    const int thresh = cpi->switchable_interp_thresh[update_type];
+    for (i = 0; i < SWITCHABLE_FILTERS; i++) {
+      // For non-dual case, the 2 dir's prob should be identical.
+      assert(switchable_interp_p0[i] == switchable_interp_p1[i]);
+      if (switchable_interp_p0[i] < thresh &&
+          switchable_interp_p1[i] < thresh) {
+        DUAL_FILTER_TYPE filt_type = i + SWITCHABLE_FILTERS * i;
+        reset_interp_filter_allowed_mask(&interp_filter_search_mask, filt_type);
+      }
+    }
+  }
+
   // Regular filter evaluation should have been done and hence the same should
   // be the winner
   assert(x->e_mbd.mi[0]->interp_filters.as_int == filter_sets[0].as_int);
@@ -8273,7 +8296,7 @@ static INLINE void find_best_non_dual_interp_filter(
       assert(filter_sets[filter_idx].as_filters.x_filter ==
              filter_sets[filter_idx].as_filters.y_filter);
       if (cpi->sf.interp_sf.adaptive_interp_filter_search &&
-          !(get_interp_filter_allowed_mask(cpi->interp_filter_search_mask,
+          !(get_interp_filter_allowed_mask(interp_filter_search_mask,
                                            filter_idx))) {
         return;
       }
@@ -8308,7 +8331,7 @@ static INLINE void find_best_non_dual_interp_filter(
     set_interp_filter_allowed_mask(&allowed_interp_mask, SHARP_SHARP);
     set_interp_filter_allowed_mask(&allowed_interp_mask, SMOOTH_SMOOTH);
     if (cpi->sf.interp_sf.adaptive_interp_filter_search)
-      allowed_interp_mask &= cpi->interp_filter_search_mask;
+      allowed_interp_mask &= interp_filter_search_mask;
 
     find_best_interp_rd_facade(x, cpi, tile_data, bsize, orig_dst, rd,
                                rd_stats_y, rd_stats, switchable_rate, dst_bufs,
@@ -8322,8 +8345,7 @@ static INLINE void find_best_non_dual_interp_filter(
       assert(filter_sets[i].as_filters.x_filter ==
              filter_sets[i].as_filters.y_filter);
       if (cpi->sf.interp_sf.adaptive_interp_filter_search &&
-          !(get_interp_filter_allowed_mask(cpi->interp_filter_search_mask,
-                                           i))) {
+          !(get_interp_filter_allowed_mask(interp_filter_search_mask, i))) {
         continue;
       }
       interpolation_filter_rd(x, cpi, tile_data, bsize, orig_dst, rd,

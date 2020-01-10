@@ -539,6 +539,8 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.disable_smooth_interintra = 1;
 
     sf->lpf_sf.disable_lr_filter = 1;
+
+    sf->interp_sf.adaptive_interp_filter_search = 2;
   }
 }
 
