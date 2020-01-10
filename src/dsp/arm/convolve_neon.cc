@@ -381,9 +381,10 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
 }
 
 // Process 16 bit inputs and output 32 bits.
-template <int num_taps>
-inline int32x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
-                                    const int16x8_t taps) {
+template <int num_taps, bool is_compound>
+inline int16x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
+                                    const int16x8_t taps,
+                                    const int inter_round_bits_vertical) {
   const int16x4_t taps_lo = vget_low_s16(taps);
   const int16x4_t taps_hi = vget_high_s16(taps);
   int32x4_t sum;
@@ -413,7 +414,19 @@ inline int32x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
     sum = vmlal_lane_s16(sum, src[1], taps_hi, 0);
   }
 
-  return sum;
+  if (is_compound) {
+    const int32x4_t v_inter_round_bits_vertical =
+        vdupq_n_s32(-(inter_round_bits_vertical - 1));
+    const int16x4_t compound_round_offset =
+        vdup_n_s16(((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3))) >>
+                   (inter_round_bits_vertical - kFilterBits));
+    const int16x4_t shifted =
+        vmovn_s32(vqrshlq_s32(sum, v_inter_round_bits_vertical));
+    // TODO(johannkoenig): Remove this offset from downstream blend users.
+    return vadd_s16(shifted, compound_round_offset);
+  }
+
+  return vqrshrn_n_s32(sum, kInterRoundBitsVertical - 1);
 }
 
 template <int num_taps, bool is_compound>
@@ -1480,12 +1493,6 @@ void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
                               const int filter_index, const int step_y,
                               const int height, void* dest,
                               const ptrdiff_t dest_stride) {
-  const int32x4_t v_inter_round_bits = vdupq_n_s32(-(inter_round_bits - 1));
-  // TODO(johannkoenig): Move this calculation to SumHorizontalTaps4. Then
-  // remove this offset. Also needs to be removed from Blend functions.
-  const int16x4_t compound_round_offset =
-      vdup_n_s16(((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3))) >>
-                 (inter_round_bits - kFilterBits));
   constexpr ptrdiff_t src_stride = kIntermediateStride;
   constexpr int kernel_offset = (8 - num_taps) / 2;
   src += src_stride * kernel_offset;
@@ -1505,18 +1512,17 @@ void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
     int filter_id = (p >> 6) & kSubPixelMask;
     int16x8_t filter =
         vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
-    int32x4_t sums = Sum2DVerticalTaps4<num_taps>(s, filter);
-    int16x4_t shifted = vmovn_s32(vqrshlq_s32(sums, v_inter_round_bits));
+    int16x4_t sums =
+        Sum2DVerticalTaps4<num_taps, is_compound>(s, filter, inter_round_bits);
     if (is_compound) {
-      const uint16x4_t result =
-          vreinterpret_u16_s16(vadd_s16(shifted, compound_round_offset));
+      const uint16x4_t result = vreinterpret_u16_s16(sums);
       if (width == 2) {
         Store2<0>(dest16_y, result);
       } else {
         vst1_u16(dest16_y, result);
       }
     } else {
-      const uint8x8_t result = vqmovun_s16(vcombine_s16(shifted, shifted));
+      const uint8x8_t result = vqmovun_s16(vcombine_s16(sums, sums));
       if (width == 2) {
         Store2<0>(dest_y, result);
       } else {
@@ -1538,18 +1544,17 @@ void ConvolveVerticalScale4xH(const int16_t* src, const int subpixel_y,
 
     filter_id = (p >> 6) & kSubPixelMask;
     filter = vmovl_s8(vld1_s8(kHalfSubPixelFilters[filter_index][filter_id]));
-    sums = Sum2DVerticalTaps4<num_taps>(&s[p_diff], filter);
-    shifted = vmovn_s32(vqrshlq_s32(sums, v_inter_round_bits));
+    sums = Sum2DVerticalTaps4<num_taps, is_compound>(&s[p_diff], filter,
+                                                     inter_round_bits);
     if (is_compound) {
-      const uint16x4_t result =
-          vreinterpret_u16_s16(vadd_s16(shifted, compound_round_offset));
+      const uint16x4_t result = vreinterpret_u16_s16(sums);
       if (width == 2) {
         Store2<0>(dest16_y, result);
       } else {
         vst1_u16(dest16_y, result);
       }
     } else {
-      const uint8x8_t result = vqmovun_s16(vcombine_s16(shifted, shifted));
+      const uint8x8_t result = vqmovun_s16(vcombine_s16(sums, sums));
       if (width == 2) {
         Store2<0>(dest_y, result);
       } else {
