@@ -37,6 +37,9 @@ constexpr int kWarpValidThreshold[kMaxBlockSizes] = {
     16, 16, 16, 16, 16, 16, 32, 16, 16,  16,  32,
     64, 32, 32, 32, 64, 64, 64, 64, 112, 112, 112};
 
+// Applies |sign| (must be 0 or -1) to |value| and does so without a branch.
+constexpr int ApplySign(int value, int sign) { return (value ^ sign) - sign; }
+
 // 7.10.2.10.
 void LowerMvPrecision(const Tile::Block& block, int16_t* const mv) {
   assert(mv != nullptr);
@@ -44,17 +47,15 @@ void LowerMvPrecision(const Tile::Block& block, int16_t* const mv) {
   if (block.tile.frame_header().force_integer_mv != 0) {
     for (int i = 0; i < 2; ++i) {
       const int value = MultiplyBy8(DivideBy8(std::abs(mv[i]) + 3));
-      // The next two lines are the branch free equivalent of:
-      // mv[i] = (mv[i] > 0) ? value : -value;
-      const int a = mv[i] >> 15;
-      mv[i] = (value ^ a) - a;
+      const int sign = mv[i] >> 15;
+      mv[i] = ApplySign(value, sign);
     }
   } else {
     for (int i = 0; i < 2; ++i) {
       if ((mv[i] & 1) != 0) {
         // The next line is equivalent to:
         // if (mv[i] > 0) { --mv[i]; } else { ++mv[i]; }
-        mv[i] -= 2 * (mv[i] >> 15) + 1;
+        mv[i] -= (mv[i] >> 14) | 1;
       }
     }
   }
@@ -679,13 +680,8 @@ bool CompareCandidateMotionVectors(const CandidateMotionVector& lhs,
 }
 
 // 7.9.4.
-int Project(const int value, const int16_t delta, const int dst_sign) {
-  // Add 63 to negative delta so that it shifts towards zero.
-  const int16_t delta_sign = (delta >= 0) ? delta : (delta + 63);
-  const int offset = DivideBy64(delta_sign);
-  // The next line is the branch free equivalent of:
-  // return (dst_sign == 0) ? (value + offset) : (value - offset);
-  return value + (offset ^ dst_sign) - dst_sign;
+constexpr int Project(const int value, const int delta, const int dst_sign) {
+  return value + ApplySign(delta / 64, dst_sign);
 }
 
 // 7.9.2.
