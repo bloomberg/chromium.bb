@@ -885,7 +885,15 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
     # the interpreter to use. It also has limitations on the size of
     # the command-line, so we pass arguments via a pipe.
     tool = input_api.os_path.join(_HERE, 'pylint')
+    cwd = input_api.change.RepositoryRoot()
     if input_api.platform == 'win32':
+      # On Windows, scripts on the current directory take precedence over PATH.
+      # When `pylint.bat` calls `vpython`, it will execute the `vpython` of the
+      # depot_tools under test instead of the one in the bot.
+      # As a workaround, we run the tests from the parent directory instead.
+      if input_api.os_path.basename(cwd) == 'depot_tools':
+        cwd = input_api.os_path.dirname(cwd)
+        flist = [input_api.os_path.join('depot_tools', f) for f in flist]
       tool += '.bat'
     cmd = [tool, '--args-on-stdin']
     if len(flist) == 1:
@@ -904,7 +912,7 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
     return input_api.Command(
         name='Pylint (%s)' % description,
         cmd=cmd,
-        kwargs={'env': env, 'stdin': '\n'.join(args + flist)},
+        kwargs={'env': env, 'stdin': '\n'.join(args + flist), 'cwd': cwd},
         message=error_type)
 
   # Always run pylint and pass it all the py files at once.
