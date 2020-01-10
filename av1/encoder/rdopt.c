@@ -2675,7 +2675,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       mbmi->filter_intra_mode_info.use_filter_intra
           ? fimode_to_intradir[mbmi->filter_intra_mode_info.filter_intra_mode]
           : mbmi->mode;
-  const uint16_t ext_tx_used_flag =
+  uint16_t ext_tx_used_flag =
       cpi->sf.tx_sf.tx_type_search.use_reduced_intra_txset &&
               tx_set_type == EXT_TX_SET_DTT4_IDTX_1DDCT
           ? av1_reduced_intra_tx_used_flag[intra_dir]
@@ -2686,6 +2686,32 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       (!is_inter && cpi->oxcf.use_intra_dct_only)) {
     txk_allowed = DCT_DCT;
   }
+
+  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
+  int64_t block_sse = 0;
+  unsigned int block_mse_q8 = UINT_MAX;
+  block_sse = pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize,
+                              &block_mse_q8);
+  assert(block_mse_q8 != UINT_MAX);
+  if (is_cur_buf_hbd(xd)) {
+    block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
+    block_mse_q8 = ROUND_POWER_OF_TWO(block_mse_q8, (xd->bd - 8) * 2);
+  }
+  block_sse *= 16;
+
+  // Used mse based threshold logic to take decision of R-D of optimization of
+  // coeffs. For smaller residuals, coeff optimization would be helpful. For
+  // larger residuals, R-D optimization may not be effective.
+  // TODO(any): Experiment with variance and mean based thresholds
+  perform_block_coeff_opt = (block_mse_q8 <= x->coeff_opt_dist_threshold);
+  skip_trellis |= !perform_block_coeff_opt;
+
+  if (cpi->oxcf.enable_flip_idtx == 0) {
+    for (TX_TYPE tx_type = FLIPADST_DCT; tx_type <= H_FLIPADST; ++tx_type) {
+      ext_tx_used_flag &= ~(1 << tx_type);
+    }
+  }
+
   uint16_t allowed_tx_mask = 0;  // 1: allow; 0: skip.
   if (txk_allowed < TX_TYPES) {
     allowed_tx_mask = 1 << txk_allowed;
@@ -2733,29 +2759,14 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     }
   }
 
-  if (cpi->oxcf.enable_flip_idtx == 0) {
-    for (TX_TYPE tx_type = FLIPADST_DCT; tx_type <= H_FLIPADST; ++tx_type) {
-      allowed_tx_mask &= ~(1 << tx_type);
-    }
-  }
-
   // Need to have at least one transform type allowed.
   if (allowed_tx_mask == 0) {
     txk_allowed = (plane ? uv_tx_type : DCT_DCT);
     allowed_tx_mask = (1 << txk_allowed);
   }
 
-  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
-  int64_t block_sse = 0;
-  unsigned int block_mse_q8 = UINT_MAX;
-  block_sse = pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize,
-                              &block_mse_q8);
-  assert(block_mse_q8 != UINT_MAX);
-  if (is_cur_buf_hbd(xd)) {
-    block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
-    block_mse_q8 = ROUND_POWER_OF_TWO(block_mse_q8, (xd->bd - 8) * 2);
-  }
-  block_sse *= 16;
+  assert(IMPLIES(txk_allowed < TX_TYPES, allowed_tx_mask == 1 << txk_allowed));
+
   // Tranform domain distortion is accurate for higher residuals.
   // TODO(any): Experiment with variance and mean based thresholds
   int use_transform_domain_distortion =
@@ -2776,15 +2787,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     calc_pixel_domain_distortion_final = use_transform_domain_distortion = 0;
 
   const uint16_t *eobs_ptr = x->plane[plane].eobs;
-
-  // Used mse based threshold logic to take decision of R-D of optimization of
-  // coeffs. For smaller residuals, coeff optimization would be helpful. For
-  // larger residuals, R-D optimization may not be effective.
-  // TODO(any): Experiment with variance and mean based thresholds
-  perform_block_coeff_opt = (block_mse_q8 <= x->coeff_opt_dist_threshold);
-  skip_trellis |= !perform_block_coeff_opt;
-
-  assert(IMPLIES(txk_allowed < TX_TYPES, allowed_tx_mask == 1 << txk_allowed));
 
   TxfmParam txfm_param;
   QUANT_PARAM quant_param;
