@@ -379,9 +379,13 @@ class PaygenPayload(object):
       inner_run_thread.setDaemon(True)
       inner_run_thread.start()
       # Wait for the inner run thread to finish, waking up each minute.
+      i = 0
       while inner_run_thread.isAlive():
+        i += 1
         time.sleep(60)
-        logging.info('Placating ProcessSilentTimeout...')
+        # Only report once an hour, otherwise we'd be too noisy.
+        if i % 60 == 0:
+          logging.info('Placating ProcessSilentTimeout...')
     else:
       _inner_run(cmd, response_queue)
 
