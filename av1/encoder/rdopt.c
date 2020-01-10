@@ -2353,6 +2353,91 @@ static AOM_INLINE void PrintPredictionUnitStats(const AV1_COMP *const cpi,
 }
 #endif  // CONFIG_COLLECT_RD_STATS >= 2
 #endif  // CONFIG_COLLECT_RD_STATS
+// R-D costs are sorted in ascending order.
+static INLINE void sort_rd(int64_t rds[], int txk[], int len) {
+  int i, j, k;
+
+  for (i = 1; i <= len - 1; ++i) {
+    for (j = 0; j < i; ++j) {
+      if (rds[j] > rds[i]) {
+        int64_t temprd;
+        int tempi;
+
+        temprd = rds[i];
+        tempi = txk[i];
+
+        for (k = i; k > j; k--) {
+          rds[k] = rds[k - 1];
+          txk[k] = txk[k - 1];
+        }
+
+        rds[j] = temprd;
+        txk[j] = tempi;
+        break;
+      }
+    }
+  }
+}
+
+uint16_t prune_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+                        int block, TX_SIZE tx_size, int blk_row, int blk_col,
+                        BLOCK_SIZE plane_bsize, int *txk_map,
+                        uint16_t allowed_tx_mask, int prune_factor,
+                        const TXB_CTX *const txb_ctx, int reduced_tx_set_used) {
+  const AV1_COMMON *cm = &cpi->common;
+  int tx_type;
+
+  int64_t rds[TX_TYPES];
+
+  int num_cand = 0;
+  int last = TX_TYPES - 1;
+
+  TxfmParam txfm_param;
+  QUANT_PARAM quant_param;
+  av1_setup_xform(cm, x, tx_size, DCT_DCT, &txfm_param);
+  av1_setup_quant(cm, tx_size, 1, AV1_XFORM_QUANT_B, &quant_param);
+
+  for (int idx = 0; idx < TX_TYPES; idx++) {
+    tx_type = idx;
+    int rate_cost = 0;
+    int64_t dist = 0, sse = 0;
+    if (!(allowed_tx_mask & (1 << tx_type))) {
+      txk_map[last] = tx_type;
+      last--;
+      continue;
+    }
+    txfm_param.tx_type = tx_type;
+
+    // do txfm and quantization
+    av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize, &txfm_param,
+                    &quant_param);
+    // estimate rate cost
+    rate_cost = av1_cost_coeffs_txb_laplacian(x, plane, block, tx_size, tx_type,
+                                              txb_ctx, reduced_tx_set_used, 0);
+    // tx domain dist
+    dist_block_tx_domain(x, plane, block, tx_size, &dist, &sse);
+
+    txk_map[num_cand] = tx_type;
+    rds[num_cand] = RDCOST(x->rdmult, rate_cost, dist);
+    num_cand++;
+  }
+
+  if (num_cand == 0) return 0xFFFF;
+
+  sort_rd(rds, txk_map, num_cand);
+  uint16_t prune = ~(1 << txk_map[0]);
+
+  // 0 < prune_factor <= 1000 controls aggressiveness
+  int64_t factor = 0;
+  for (int idx = 1; idx < num_cand; idx++) {
+    factor = 1000 * (rds[idx] - rds[0]) / rds[0];
+    if (factor < (int64_t)prune_factor)
+      prune &= ~(1 << txk_map[idx]);
+    else
+      break;
+  }
+  return prune;
+}
 
 static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                int block, int blk_row, int blk_col,
