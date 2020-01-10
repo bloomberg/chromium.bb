@@ -28,6 +28,7 @@
 #include "src/dsp/loop_filter.h"
 #include "src/dsp/loop_restoration.h"
 #include "src/dsp/mask_blend.h"
+#include "src/dsp/motion_field_projection.h"
 #include "src/dsp/obmc.h"
 #include "src/dsp/super_res.h"
 #include "src/dsp/warp.h"
@@ -71,6 +72,7 @@ void DspInit() {
     LoopFilterInit_C();
     LoopRestorationInit_C();
     MaskBlendInit_C();
+    MotionFieldProjectionInit_C();
     ObmcInit_C();
     SuperResInit_C();
     WarpInit_C();

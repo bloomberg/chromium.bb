@@ -91,6 +91,8 @@ class RefCountedBuffer {
   bool showable_frame() const { return showable_frame_; }
   void set_showable_frame(bool value) { showable_frame_ = value; }
 
+  // This array has kNumReferenceFrameTypes elements.
+  const uint8_t* order_hint_array() const { return order_hint_.data(); }
   uint8_t order_hint(ReferenceFrameType reference_frame) const {
     return order_hint_[reference_frame];
   }

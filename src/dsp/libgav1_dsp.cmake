@@ -48,6 +48,8 @@ list(APPEND libgav1_dsp_sources
             "${libgav1_source}/dsp/loop_restoration.h"
             "${libgav1_source}/dsp/mask_blend.cc"
             "${libgav1_source}/dsp/mask_blend.h"
+            "${libgav1_source}/dsp/motion_field_projection.cc"
+            "${libgav1_source}/dsp/motion_field_projection.h"
             "${libgav1_source}/dsp/obmc.cc"
             "${libgav1_source}/dsp/obmc.h"
             "${libgav1_source}/dsp/super_res.cc"

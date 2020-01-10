@@ -24,6 +24,7 @@
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
 #include "src/utils/cpu.h"
+#include "src/utils/types.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -759,6 +760,30 @@ struct FilmGrainFuncs {
   BlendNoiseWithImageChromaFuncs blend_noise_chroma;
 };
 
+// Motion field projection function signature. Section 7.9.
+// |source_reference_type| corresponds to MfRefFrames[i * 2 + 1][j * 2 + 1] in
+// the spec.
+// |mv| corresponds to MfMvs[i * 2 + 1][j * 2 + 1] in the spec.
+// |order_hint| points to an array of kNumReferenceFrameTypes elements which
+// specifies OrderHintBits least significant bits of the expected output order
+// for reference frames.
+// |current_frame_order_hint| specifies OrderHintBits least significant bits of
+// the expected output order for this frame.
+// |reference_to_current_with_sign| is the precalculated reference frame id
+// distance from current frame.
+// |dst_sign| is -1 for LAST_FRAME and LAST2_FRAME, or 0 (1 in spec) for others.
+// |y8_start| and |y8_end| are the start and end 8x8 rows of the current tile.
+// |x8_start| and |x8_end| are the start and end 8x8 columns of the current
+// tile.
+// |motion_field| is the output which saves the projected motion field
+// information.
+using MotionFieldProjectionKernelFunc = void (*)(
+    const ReferenceFrameType* source_reference_type, const MotionVector* mv,
+    const uint8_t order_hint[kNumReferenceFrameTypes],
+    unsigned int current_frame_order_hint, unsigned int order_hint_range,
+    int reference_to_current_with_sign, int dst_sign, int y8_start, int y8_end,
+    int x8_start, int x8_end, TemporalMotionField* motion_field);
+
 struct Dsp {
   IntraPredictorFuncs intra_predictors;
   DirectionalIntraPredictorZone1Func directional_intra_predictor_zone1;
@@ -775,6 +800,7 @@ struct Dsp {
   CdefFilteringFunc cdef_filter;
   SuperResRowFunc super_res_row;
   LoopRestorationFuncs loop_restorations;
+  MotionFieldProjectionKernelFunc motion_field_projection_kernel;
   ConvolveFuncs convolve;
   ConvolveScaleFuncs convolve_scale;
   WeightMaskFuncs weight_mask;
