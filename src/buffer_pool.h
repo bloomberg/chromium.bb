@@ -23,7 +23,6 @@
 
 #include "src/dsp/common.h"
 #include "src/gav1/decoder_buffer.h"
-#include "src/gav1/decoder_settings.h"
 #include "src/gav1/frame_buffer.h"
 #include "src/internal_frame_buffer_list.h"
 #include "src/obu_parser.h"
@@ -253,7 +252,9 @@ using RefCountedBufferPtr = std::shared_ptr<RefCountedBuffer>;
 // BufferPool maintains a pool of RefCountedBuffers.
 class BufferPool {
  public:
-  explicit BufferPool(const DecoderSettings& settings);
+  BufferPool(GetFrameBufferCallback get_frame_buffer,
+             ReleaseFrameBufferCallback release_frame_buffer,
+             void* callback_private_data);
 
   // Not copyable or movable.
   BufferPool(const BufferPool&) = delete;

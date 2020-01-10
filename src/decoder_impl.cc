@@ -88,7 +88,9 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
 }
 
 DecoderImpl::DecoderImpl(const DecoderSettings* settings)
-    : buffer_pool_(*settings), settings_(*settings) {
+    : buffer_pool_(settings->get, settings->release,
+                   settings->callback_private_data),
+      settings_(*settings) {
   dsp::DspInit();
 }
 

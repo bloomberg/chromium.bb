@@ -108,11 +108,14 @@ void RefCountedBuffer::ReturnToBufferPool(RefCountedBuffer* ptr) {
 // static
 constexpr int BufferPool::kNumBuffers;
 
-BufferPool::BufferPool(const DecoderSettings& settings) {
-  if (settings.get != nullptr && settings.release != nullptr) {
-    get_frame_buffer_ = settings.get;
-    release_frame_buffer_ = settings.release;
-    callback_private_data_ = settings.callback_private_data;
+BufferPool::BufferPool(GetFrameBufferCallback get_frame_buffer,
+                       ReleaseFrameBufferCallback release_frame_buffer,
+                       void* callback_private_data) {
+  if (get_frame_buffer != nullptr) {
+    assert(release_frame_buffer != nullptr);
+    get_frame_buffer_ = get_frame_buffer;
+    release_frame_buffer_ = release_frame_buffer;
+    callback_private_data_ = callback_private_data;
   } else {
     internal_frame_buffers_ = InternalFrameBufferList::Create(kNumBuffers);
     // GetInternalFrameBuffer checks whether its private_data argument is null,
