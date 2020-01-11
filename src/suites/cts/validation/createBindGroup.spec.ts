@@ -2,10 +2,10 @@ export const description = `
 createBindGroup validation tests.
 `;
 
-import { C, TestGroup, pbool, pcombine, poptions, unreachable } from '../../../framework/index.js';
+import { C, TestGroup, pcombine, poptions, unreachable } from '../../../framework/index.js';
 import { bindingTypes } from '../format_info.js';
 
-import { BindingResourceType, ValidationTest } from './validation_test.js';
+import { BindingResourceType, ValidationTest, resourceBindingMatches } from './validation_test.js';
 
 function clone(descriptor: GPUTextureDescriptor): GPUTextureDescriptor {
   return JSON.parse(JSON.stringify(descriptor));
@@ -66,48 +66,33 @@ g.test('binding must be present in layout', async t => {
 });
 
 g.test('buffer binding must contain exactly one buffer of its type', t => {
-  const { bindingType, resourceType, resourceIsError } = t.params;
+  const bindingType: GPUBindingType = t.params.bindingType;
+  const resourceType: BindingResourceType = t.params.resourceType;
 
   const layout = t.device.createBindGroupLayout({
     bindings: [{ binding: 0, visibility: GPUShaderStage.COMPUTE, type: bindingType }],
   });
 
-  const resource = t.getBindingResource(resourceType, resourceIsError);
+  const resource = t.getBindingResource(resourceType);
 
-  let shouldError = bindingType !== resourceType;
-  if (bindingType === 'readonly-storage-buffer' && resourceType === 'storage-buffer') {
-    shouldError = false;
-  }
-  if (resourceIsError) {
-    shouldError = true;
-  }
-
+  const shouldError = !resourceBindingMatches(bindingType, resourceType);
   t.expectValidationError(() => {
     t.device.createBindGroup({ layout, bindings: [{ binding: 0, resource }] });
   }, shouldError);
 }).params(
   pcombine(
     poptions('bindingType', bindingTypes),
-    poptions('resourceType', Object.keys(BindingResourceType)),
-    pbool('resourceIsError')
+    poptions('resourceType', Object.keys(BindingResourceType))
   )
 );
 
 g.test('texture binding must have correct usage', async t => {
-  const { type } = t.params;
+  const type: GPUBindingType = t.params.type;
+  const usage: GPUTextureUsageFlags = t.params._usage;
 
   const bindGroupLayout = t.device.createBindGroupLayout({
     bindings: [{ binding: 0, visibility: GPUShaderStage.FRAGMENT, type }],
   });
-
-  let usage: GPUTextureUsageFlags;
-  if (type === 'sampled-texture') {
-    usage = GPUTextureUsage.SAMPLED;
-  } else if (type === 'storage-texture') {
-    usage = GPUTextureUsage.STORAGE;
-  } else {
-    unreachable('Unexpected binding type');
-  }
 
   const goodDescriptor = {
     size: { width: 16, height: 16, depth: 1 },
@@ -145,7 +130,10 @@ g.test('texture binding must have correct usage', async t => {
       });
     });
   }
-}).params(poptions('type', ['sampled-texture', 'storage-texture']));
+}).params([
+  { type: 'sampled-texture', _usage: C.TextureUsage.Sampled },
+  { type: 'storage-texture', _usage: C.TextureUsage.Storage },
+]);
 
 g.test('texture must have correct component type', async t => {
   const { textureComponentType } = t.params;

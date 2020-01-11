@@ -1,13 +1,33 @@
 import { unreachable } from '../../../framework/index.js';
-import { bindingTypeInfo } from '../format_info.js';
 import { GPUTest } from '../gpu_test.js';
 
 export enum BindingResourceType {
+  'error-buffer' = 'error-buffer',
+  'error-sampler' = 'error-sampler',
+  'error-textureview' = 'error-textureview',
   'uniform-buffer' = 'uniform-buffer',
   'storage-buffer' = 'storage-buffer',
   'sampler' = 'sampler',
-  'sampled-texture' = 'sampled-texture',
-  'storage-texture' = 'storage-texture',
+  'sampled-textureview' = 'sampled-textureview',
+  'storage-textureview' = 'storage-textureview',
+}
+
+export function resourceBindingMatches(b: GPUBindingType, r: BindingResourceType): boolean {
+  switch (b) {
+    case 'storage-buffer':
+    case 'readonly-storage-buffer':
+      return r === 'storage-buffer';
+    case 'sampled-texture':
+      return r === 'sampled-textureview';
+    case 'sampler':
+      return r === 'sampler';
+    case 'storage-texture':
+      return r === 'storage-textureview';
+    case 'uniform-buffer':
+      return r === 'uniform-buffer';
+    default:
+      unreachable('unknown GPUBindingType');
+  }
 }
 
 export class ValidationTest extends GPUTest {
@@ -69,32 +89,26 @@ export class ValidationTest extends GPUTest {
     return view;
   }
 
-  getBindingResource(bindingType: BindingResourceType, error: boolean = false): GPUBindingResource {
-    if (error) {
-      const objectType = bindingTypeInfo[bindingType].type;
-      if (objectType === 'buffer') {
+  getBindingResource(bindingType: BindingResourceType): GPUBindingResource {
+    switch (bindingType) {
+      case 'error-buffer':
         return { buffer: this.getErrorBuffer() };
-      } else if (objectType === 'sampler') {
+      case 'error-sampler':
         return this.getErrorSampler();
-      } else if (objectType === 'texture') {
+      case 'error-textureview':
         return this.getErrorTextureView();
-      } else {
-        unreachable('unknown binding resource type');
-      }
-    } else {
-      if (bindingType === 'uniform-buffer') {
+      case 'uniform-buffer':
         return { buffer: this.getUniformBuffer() };
-      } else if (bindingType === 'storage-buffer') {
+      case 'storage-buffer':
         return { buffer: this.getStorageBuffer() };
-      } else if (bindingType === 'sampler') {
+      case 'sampler':
         return this.getSampler();
-      } else if (bindingType === 'sampled-texture') {
+      case 'sampled-textureview':
         return this.getSampledTexture().createView();
-      } else if (bindingType === 'storage-texture') {
+      case 'storage-textureview':
         return this.getStorageTexture().createView();
-      } else {
+      default:
         unreachable('unknown binding resource type');
-      }
     }
   }
 
