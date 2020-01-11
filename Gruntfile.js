@@ -80,6 +80,7 @@ module.exports = function (grunt) {
       'out-wpt': {
         files: [
           { expand: true, cwd: '.', src: 'LICENSE.txt', dest: 'out-wpt/' },
+          { expand: true, cwd: 'out', src: 'constants.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'framework/**/*.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'suites/cts/**/*.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'runtime/wpt.js', dest: 'out-wpt/' },
