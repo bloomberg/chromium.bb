@@ -11,7 +11,7 @@ export class TestWorker {
   constructor() {
     const selfPath = import.meta.url;
     const selfPathDir = selfPath.substring(0, selfPath.lastIndexOf('/'));
-    const workerPath = selfPathDir + '/test_worker.worker.js';
+    const workerPath = selfPathDir + '/test_worker-worker.js';
     this.worker = new Worker(workerPath, { type: 'module' });
     this.worker.onmessage = ev => {
       const query: string = ev.data.query;
