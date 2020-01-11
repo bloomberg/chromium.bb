@@ -157,7 +157,7 @@ inline void WriteMaskBlendLine4x2(const uint16_t* const pred_0,
   Store4(dst + dst_stride, _mm_srli_si128(res, 4));
 }
 
-template <bool is_inter_intra, int subsampling_x, int subsampling_y>
+template <int subsampling_x, int subsampling_y>
 inline void MaskBlending4x4_SSE4(const uint16_t* pred_0,
                                  const ptrdiff_t prediction_stride_0,
                                  const uint16_t* pred_1,
@@ -184,7 +184,7 @@ inline void MaskBlending4x4_SSE4(const uint16_t* pred_0,
                         dst_stride);
 }
 
-template <bool is_inter_intra, int subsampling_x, int subsampling_y>
+template <int subsampling_x, int subsampling_y>
 inline void MaskBlending4xH_SSE4(const uint16_t* pred_0,
                                  const ptrdiff_t pred_stride_0,
                                  const int height, const uint16_t* pred_1,
@@ -194,7 +194,7 @@ inline void MaskBlending4xH_SSE4(const uint16_t* pred_0,
                                  const ptrdiff_t dst_stride) {
   const uint8_t* mask = mask_ptr;
   if (height == 4) {
-    MaskBlending4x4_SSE4<is_inter_intra, subsampling_x, subsampling_y>(
+    MaskBlending4x4_SSE4<subsampling_x, subsampling_y>(
         pred_0, pred_stride_0, pred_1, pred_stride_1, mask, mask_stride, dst,
         dst_stride);
     return;
@@ -255,7 +255,7 @@ inline void MaskBlend_SSE4(
   const ptrdiff_t pred_stride_0 = prediction_stride_0;
   const ptrdiff_t pred_stride_1 = prediction_stride_1;
   if (width == 4) {
-    MaskBlending4xH_SSE4<false, subsampling_x, subsampling_y>(
+    MaskBlending4xH_SSE4<subsampling_x, subsampling_y>(
         pred_0, pred_stride_0, height, pred_1, pred_stride_1, mask_ptr,
         mask_stride, dst, dst_stride);
     return;
