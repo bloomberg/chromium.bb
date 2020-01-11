@@ -257,8 +257,8 @@ void PostFilter::ApplySuperResThreaded() {
   pending_workers.Wait();
 }
 
-bool PostFilter::ApplyFilteringThreaded() {
-  if (DoDeblock() && !ApplyDeblockFilterThreaded()) return false;
+void PostFilter::ApplyFilteringThreaded() {
+  if (DoDeblock()) ApplyDeblockFilterThreaded();
   if (DoCdef() && DoRestoration()) {
     for (int row4x4 = 0; row4x4 < frame_header_.rows4x4;
          row4x4 += kNum4x4InLoopFilterMaskUnit) {
@@ -269,7 +269,6 @@ bool PostFilter::ApplyFilteringThreaded() {
   if (DoSuperRes()) ApplySuperResThreaded();
   if (DoRestoration()) ApplyLoopRestoration();
   ExtendBordersForReferenceFrame();
-  return true;
 }
 
 void PostFilter::ShiftSourceBuffer(const bool to_upper_left) {
@@ -353,39 +352,37 @@ void PostFilter::ExtendFrameBoundary(uint8_t* const frame_start,
                        bottom);
 }
 
-void PostFilter::DeblockFilterWorker(const DeblockFilterJob* jobs, int num_jobs,
+void PostFilter::DeblockFilterWorker(int jobs_per_plane, const Plane* planes,
+                                     int num_planes,
                                      std::atomic<int>* job_counter,
                                      DeblockFilter deblock_filter) {
+  const int total_jobs = jobs_per_plane * num_planes;
   int job_index;
   while ((job_index = job_counter->fetch_add(1, std::memory_order_relaxed)) <
-         num_jobs) {
-    const DeblockFilterJob& job = jobs[job_index];
+         total_jobs) {
+    const Plane plane = planes[job_index / jobs_per_plane];
+    const int row_unit = job_index % jobs_per_plane;
+    const int row4x4 = row_unit * kNum4x4InLoopFilterMaskUnit;
     for (int column4x4 = 0, column_unit = 0;
          column4x4 < frame_header_.columns4x4;
          column4x4 += kNum4x4InLoopFilterMaskUnit, ++column_unit) {
-      const int unit_id = GetDeblockUnitId(job.row_unit, column_unit);
-      (this->*deblock_filter)(static_cast<Plane>(job.plane), job.row4x4,
-                              column4x4, unit_id);
+      const int unit_id = GetDeblockUnitId(row_unit, column_unit);
+      (this->*deblock_filter)(plane, row4x4, column4x4, unit_id);
     }
   }
 }
 
-bool PostFilter::ApplyDeblockFilterThreaded() {
+void PostFilter::ApplyDeblockFilterThreaded() {
   const int jobs_per_plane = DivideBy16(frame_header_.rows4x4 + 15);
   const int num_workers = thread_pool_->num_threads();
-  int planes[kMaxPlanes];
+  std::array<Plane, kMaxPlanes> planes;
   planes[0] = kPlaneY;
   int num_planes = 1;
   for (int plane = kPlaneU; plane < planes_; ++plane) {
     if (frame_header_.loop_filter.level[plane + 1] != 0) {
-      planes[num_planes++] = plane;
+      planes[num_planes++] = static_cast<Plane>(plane);
     }
   }
-  const int num_jobs = num_planes * jobs_per_plane;
-  std::unique_ptr<DeblockFilterJob[]> jobs_unique_ptr(
-      new (std::nothrow) DeblockFilterJob[num_jobs]);
-  if (jobs_unique_ptr == nullptr) return false;
-  DeblockFilterJob* jobs = jobs_unique_ptr.get();
   // The vertical filters are not dependent on each other. So simply schedule
   // them for all possible rows.
   //
@@ -400,34 +397,23 @@ bool PostFilter::ApplyDeblockFilterThreaded() {
   for (auto& type : {kLoopFilterTypeVertical, kLoopFilterTypeHorizontal}) {
     const DeblockFilter deblock_filter =
         deblock_filter_type_table_[kDeblockFilterBitMask][type];
-    int job_index = 0;
-    for (int i = 0; i < num_planes; ++i) {
-      const int plane = planes[i];
-      for (int row4x4 = 0, row_unit = 0; row4x4 < frame_header_.rows4x4;
-           row4x4 += kNum4x4InLoopFilterMaskUnit, ++row_unit) {
-        assert(job_index < num_jobs);
-        DeblockFilterJob& job = jobs[job_index++];
-        job.plane = plane;
-        job.row4x4 = row4x4;
-        job.row_unit = row_unit;
-      }
-    }
-    assert(job_index == num_jobs);
     std::atomic<int> job_counter(0);
     BlockingCounter pending_workers(num_workers);
     for (int i = 0; i < num_workers; ++i) {
-      thread_pool_->Schedule([this, jobs, num_jobs, &job_counter,
-                              deblock_filter, &pending_workers]() {
-        DeblockFilterWorker(jobs, num_jobs, &job_counter, deblock_filter);
+      thread_pool_->Schedule([this, jobs_per_plane, &planes, num_planes,
+                              &job_counter, deblock_filter,
+                              &pending_workers]() {
+        DeblockFilterWorker(jobs_per_plane, planes.data(), num_planes,
+                            &job_counter, deblock_filter);
         pending_workers.Decrement();
       });
     }
     // Run the jobs on the current thread.
-    DeblockFilterWorker(jobs, num_jobs, &job_counter, deblock_filter);
+    DeblockFilterWorker(jobs_per_plane, planes.data(), num_planes, &job_counter,
+                        deblock_filter);
     // Wait for the threadpool jobs to finish.
     pending_workers.Wait();
   }
-  return true;
 }
 
 void PostFilter::SetupDeblockBuffer(int row4x4_start, int sb4x4) {

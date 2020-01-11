@@ -170,7 +170,7 @@ class PostFilter {
   //                and the output is written into the
   //                |threaded_window_buffer_|. It is then copied to the
   //                |source_buffer_| with a shift on the top left.
-  bool ApplyFilteringThreaded();
+  void ApplyFilteringThreaded();
 
   // Does the overall post processing filter for one superblock row (starting at
   // |row4x4| with height 4*|sb4x4|. Cdef, SuperRes and Loop Restoration lag by
@@ -296,12 +296,6 @@ class PostFilter {
       {&PostFilter::VerticalDeblockFilter,
        &PostFilter::HorizontalDeblockFilter},
   };
-  // Represents a job for a worker thread to apply the deblock filter.
-  struct DeblockFilterJob : public Allocable {
-    int plane;
-    int row4x4;
-    int row_unit;
-  };
   // Buffers for loop restoration intermediate results. Depending on the filter
   // type, only one member of the union is used.
   union IntermediateBuffers {
@@ -335,10 +329,10 @@ class PostFilter {
                                          int current_process_unit_height,
                                          int process_unit_width);
 
-  void DeblockFilterWorker(const DeblockFilterJob* jobs, int num_jobs,
-                           std::atomic<int>* job_counter,
+  void DeblockFilterWorker(int jobs_per_plane, const Plane* planes,
+                           int num_planes, std::atomic<int>* job_counter,
                            DeblockFilter deblock_filter);
-  bool ApplyDeblockFilterThreaded();
+  void ApplyDeblockFilterThreaded();
 
   uint8_t* GetCdefBufferAndStride(int start_x, int start_y, int plane,
                                   int subsampling_x, int subsampling_y,

@@ -759,10 +759,8 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
                             obu->tile_groups().back().end,
                             block_parameters_holder, inter_transform_sizes_);
   }
-  if (threading_strategy_.post_filter_thread_pool() != nullptr &&
-      !post_filter.ApplyFilteringThreaded()) {
-    LIBGAV1_DLOG(ERROR, "Error applying in-loop filtering.");
-    return kLibgav1StatusUnknownError;
+  if (threading_strategy_.post_filter_thread_pool() != nullptr) {
+    post_filter.ApplyFilteringThreaded();
   }
   SetCurrentFrameSegmentationMap(obu->frame_header(), prev_segment_ids);
   return kLibgav1StatusOk;
