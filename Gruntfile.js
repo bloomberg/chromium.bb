@@ -160,7 +160,15 @@ module.exports = function (grunt) {
     'ts:check',
     'run:test',
   ]);
-  registerTaskAndAddToHelp('wpt', 'Build for WPT: build+typecheck+test+wpt', ['test', 'generate-wpt']);
+  registerTaskAndAddToHelp('wpt', 'Build for WPT: build+typecheck+test+wpt', [
+    'set-quiet-mode',
+    'prebuild',
+    'compile',
+    'generate-wpt',
+    'compile-done-message',
+    'ts:check',
+    'run:test',
+  ]);
   registerTaskAndAddToHelp('check', 'Typecheck and lint', [
     'set-quiet-mode',
     'copy:webgpu-constants',
