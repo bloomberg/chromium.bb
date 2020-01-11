@@ -22,6 +22,7 @@
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 #include "src/utils/constants.h"
+#include "src/utils/types.h"
 
 namespace libgav1 {
 namespace dsp {
@@ -33,21 +34,11 @@ namespace {
     (!defined(LIBGAV1_Dsp8bpp_MotionFieldProjectionKernel) && \
      !defined(LIBGAV1_Dsp10bpp_MotionFieldProjectionKernel))
 
-constexpr int kProjectionMvClamp = 16383;
 constexpr int kProjectionMvMaxHorizontalOffset = 8;
-
-// Applies |sign| (must be 0 or -1) to |value| and does so without a branch.
-constexpr int ApplySign(int value, int sign) { return (value ^ sign) - sign; }
-
-constexpr int16_t kDivisionLookup[kMaxFrameDistance + 1] = {
-    0,    16384, 8192, 5461, 4096, 3276, 2730, 2340, 2048, 1820, 1638,
-    1489, 1365,  1260, 1170, 1092, 1024, 963,  910,  862,  819,  780,
-    744,  712,   682,  655,  630,  606,  585,  564,  546,  528};
 
 // 7.9.3. (without the clamp for numerator and denominator).
 void GetMvProjectionNoClamp(const MotionVector& mv, int numerator,
-                            int denominator,
-                            MotionVector* const projection_mv) {
+                            int denominator, MotionVector* projection_mv) {
   // Allow numerator and denominator to be 0 so that this function can be called
   // unconditionally. When either numerator or denominator is 0, |projection_mv|
   // will be 0, and this is what we want.
@@ -55,10 +46,11 @@ void GetMvProjectionNoClamp(const MotionVector& mv, int numerator,
   assert(denominator >= 0);
   assert(denominator <= kMaxFrameDistance);
   for (int i = 0; i < 2; ++i) {
-    projection_mv->mv[i] =
-        Clip3(RightShiftWithRoundingSigned(
-                  mv.mv[i] * numerator * kDivisionLookup[denominator], 14),
-              -kProjectionMvClamp, kProjectionMvClamp);
+    projection_mv->mv[i] = Clip3(
+        RightShiftWithRoundingSigned(
+            mv.mv[i] * numerator * kProjectionMvDivisionLookup[denominator],
+            14),
+        -kProjectionMvClamp, kProjectionMvClamp);
   }
 }
 
@@ -73,7 +65,7 @@ void MotionFieldProjectionKernel_C(
     const uint8_t order_hint[kNumReferenceFrameTypes],
     unsigned int current_frame_order_hint, unsigned int order_hint_range,
     int reference_to_current_with_sign, int dst_sign, int y8_start, int y8_end,
-    int x8_start, int x8_end, TemporalMotionField* const motion_field) {
+    int x8_start, int x8_end, TemporalMotionField* motion_field) {
   const ptrdiff_t stride = motion_field->mv.columns();
   // The column range has to be offset by kProjectionMvMaxHorizontalOffset since
   // coordinates in that range could end up being position_x8 because of

@@ -125,6 +125,11 @@ const BlockSize kPlaneResidualSize[kMaxBlockSizes][2][2] = {
     {{kBlock128x64, kBlockInvalid}, {kBlock64x64, kBlock64x32}},
     {{kBlock128x128, kBlock128x64}, {kBlock64x128, kBlock64x64}}};
 
+const int16_t kProjectionMvDivisionLookup[kMaxFrameDistance + 1] = {
+    0,    16384, 8192, 5461, 4096, 3276, 2730, 2340, 2048, 1820, 1638,
+    1489, 1365,  1260, 1170, 1092, 1024, 963,  910,  862,  819,  780,
+    744,  712,   682,  655,  630,  606,  585,  564,  546,  528};
+
 const uint8_t kTransformWidth[kNumTransformSizes] = {
     4, 4, 4, 8, 8, 8, 8, 16, 16, 16, 16, 16, 32, 32, 32, 32, 64, 64, 64};
 

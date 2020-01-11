@@ -23,22 +23,19 @@
 #include "src/dsp/dsp.h"
 #include "src/utils/bit_mask_set.h"
 #include "src/utils/common.h"
+#include "src/utils/constants.h"
 #include "src/utils/logging.h"
 
 namespace libgav1 {
 namespace {
 
 constexpr int kMvBorder = 128;
-constexpr int kProjectionMvClamp = 16383;
 
 // Entry at index i is computed as:
 // Clip3(std::max(kBlockWidthPixels[i], kBlockHeightPixels[i], 16, 112)).
 constexpr int kWarpValidThreshold[kMaxBlockSizes] = {
     16, 16, 16, 16, 16, 16, 32, 16, 16,  16,  32,
     64, 32, 32, 32, 64, 64, 64, 64, 112, 112, 112};
-
-// Applies |sign| (must be 0 or -1) to |value| and does so without a branch.
-constexpr int ApplySign(int value, int sign) { return (value ^ sign) - sign; }
 
 // 7.10.2.10.
 void LowerMvPrecision(const Tile::Block& block, int16_t* const mv) {
@@ -61,11 +58,6 @@ void LowerMvPrecision(const Tile::Block& block, int16_t* const mv) {
   }
 }
 
-constexpr int16_t kDivisionLookup[kMaxFrameDistance + 1] = {
-    0,    16384, 8192, 5461, 4096, 3276, 2730, 2340, 2048, 1820, 1638,
-    1489, 1365,  1260, 1170, 1092, 1024, 963,  910,  862,  819,  780,
-    744,  712,   682,  655,  630,  606,  585,  564,  546,  528};
-
 // 7.9.3.
 void GetMvProjection(const MotionVector& mv, int numerator, int denominator,
                      MotionVector* const projection_mv) {
@@ -73,10 +65,11 @@ void GetMvProjection(const MotionVector& mv, int numerator, int denominator,
   assert(denominator <= kMaxFrameDistance);
   numerator = Clip3(numerator, -kMaxFrameDistance, kMaxFrameDistance);
   for (int i = 0; i < 2; ++i) {
-    projection_mv->mv[i] =
-        Clip3(RightShiftWithRoundingSigned(
-                  mv.mv[i] * numerator * kDivisionLookup[denominator], 14),
-              -kProjectionMvClamp, kProjectionMvClamp);
+    projection_mv->mv[i] = Clip3(
+        RightShiftWithRoundingSigned(
+            mv.mv[i] * numerator * kProjectionMvDivisionLookup[denominator],
+            14),
+        -kProjectionMvClamp, kProjectionMvClamp);
   }
 }
 

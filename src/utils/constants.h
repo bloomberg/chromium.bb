@@ -96,6 +96,7 @@ enum {
   kMaxScaledSuperBlockSizeInPixels = 128 * 2,
   kMaxSuperBlockSizeSquareInPixels = 128 * 128,
   kNum4x4InLoopFilterMaskUnit = 16,
+  kProjectionMvClamp = 16383,
   kRestorationUnitOffset = 8,
   // 2 pixel padding for 5x5 box sum on each side.
   kRestorationPadding = 4,
@@ -662,6 +663,8 @@ extern const uint8_t kBlockHeightPixels[kMaxBlockSizes];
 extern const BlockSize kSubSize[kMaxPartitionTypes][kMaxBlockSizes];
 
 extern const BlockSize kPlaneResidualSize[kMaxBlockSizes][2][2];
+
+extern const int16_t kProjectionMvDivisionLookup[kMaxFrameDistance + 1];
 
 extern const uint8_t kTransformWidth[kNumTransformSizes];
 

@@ -317,6 +317,11 @@ inline int GetRelativeDistance(const unsigned int a, const unsigned int b,
   return (diff & (order_hint_range - 1)) - (diff & order_hint_range);
 }
 
+// Applies |sign| (must be 0 or -1) to |value|, i.e.,
+//   return (sign == 0) ? value : -value;
+// and does so without a branch.
+constexpr int ApplySign(int value, int sign) { return (value ^ sign) - sign; }
+
 inline bool IsBlockSmallerThan8x8(BlockSize size) {
   return size < kBlock8x8 && size != kBlock4x16;
 }
