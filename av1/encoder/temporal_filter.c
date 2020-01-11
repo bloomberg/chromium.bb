@@ -107,12 +107,14 @@ static void tf_build_predictors_mb_c(
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
     const struct scale_factors *scale, const int num_planes,
     const int use_subblock, const MV *subblock_mvs, uint8_t *pred) {
+  assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
+
   // Information of the entire block.
   const int mb_height = block_size_high[block_size];  // Height.
   const int mb_width = block_size_wide[block_size];   // Width.
   const int mb_size = mb_height * mb_width;           // Number of pixels.
-  const int mb_y = mb_height * mb_row;                // Y-coord.
-  const int mb_x = mb_width * mb_col;                 // X-coord.
+  const int mb_y = mb_height * mb_row;                // Y-coord (Top-left).
+  const int mb_x = mb_width * mb_col;                 // X-coord (Top-left).
   const int bit_depth = mbd->bd;                      // Bit depth.
   const int is_high_bitdepth = is_cur_buf_hbd(mbd);   // Is high bit-depth?
   const int is_intrabc = 0;                           // Is intra-copied?
@@ -129,48 +131,50 @@ static void tf_build_predictors_mb_c(
   const int_interpfilters interp_filters =
       av1_broadcast_interp_filter(MULTITAP_SHARP);
 
-  InterPredParams inter_pred_params;
-  struct buf_2d ref_buf = { NULL, NULL, 0, 0, 0 };
-
-  // Handle Y-plane and UV-plane.
+  // Handle Y-plane, U-plane and V-plane (if needed) in sequence.
+  int plane_offset = 0;
   for (int plane = 0; plane < num_planes; ++plane) {
     const int subsampling_y = mbd->plane[plane].subsampling_y;
     const int subsampling_x = mbd->plane[plane].subsampling_x;
-    const int plane_y = mb_y >> subsampling_y;
-    const int plane_x = mb_x >> subsampling_x;
-    const int h = block_height >> subsampling_y;
-    const int w = block_width >> subsampling_x;
-    const int pred_stride = mb_width >> subsampling_x;
-    switch (plane) {
-      case 0: ref_buf.buf0 = ref_frame->y_buffer; break;
-      case 1: ref_buf.buf0 = ref_frame->u_buffer; break;
-      case 2: ref_buf.buf0 = ref_frame->v_buffer; break;
-      default: assert(0 && "Number of planes should be at most 3.");
-    }
-    ref_buf.height = (plane == 0) ? ref_frame->y_height : ref_frame->uv_height;
-    ref_buf.width = (plane == 0) ? ref_frame->y_width : ref_frame->uv_width;
-    ref_buf.stride = (plane == 0) ? ref_frame->y_stride : ref_frame->uv_stride;
+    // Information of each sub-block in current plane.
+    const int plane_h = mb_height >> subsampling_y;  // Plane height.
+    const int plane_w = mb_width >> subsampling_x;   // Plane width.
+    const int plane_y = mb_y >> subsampling_y;       // Y-coord (Top-left).
+    const int plane_x = mb_x >> subsampling_x;       // X-coord (Top-left).
+    const int h = block_height >> subsampling_y;     // Sub-block height.
+    const int w = block_width >> subsampling_x;      // Sub-block width.
+    const int is_y_plane = (plane == 0);             // Is Y-plane?
+
+    const struct buf_2d ref_buf = { NULL, ref_frame->buffers[plane],
+                                    ref_frame->widths[is_y_plane ? 0 : 1],
+                                    ref_frame->heights[is_y_plane ? 0 : 1],
+                                    ref_frame->strides[is_y_plane ? 0 : 1] };
 
     // Handle entire block or sub-blocks if needed.
-    for (int i = 0; i < num_blocks; ++i) {
-      for (int j = 0; j < num_blocks; ++j) {
+    int subblock_idx = 0;
+    for (int i = 0; i < plane_h; i += h) {
+      for (int j = 0; j < plane_w; j += w) {
         // Choose proper motion vector.
-        const MV mv = use_subblock ? subblock_mvs[i * num_blocks + j] : mb_mv;
+        const MV mv = use_subblock ? subblock_mvs[subblock_idx] : mb_mv;
         assert(mv.row >= INT16_MIN && mv.row <= INT16_MAX &&
                mv.col >= INT16_MIN && mv.col <= INT16_MAX);
 
-        const int y = plane_y + i * h;
-        const int x = plane_x + j * w;
+        const int y = plane_y + i;
+        const int x = plane_x + j;
 
-        const int offset = i * h * pred_stride + j * w;
+        // Build predictior for each sub-block on current plane.
+        InterPredParams inter_pred_params;
         av1_init_inter_params(&inter_pred_params, w, h, y, x, subsampling_x,
                               subsampling_y, bit_depth, is_high_bitdepth,
                               is_intrabc, scale, &ref_buf, interp_filters);
         inter_pred_params.conv_params = get_conv_params(0, plane, bit_depth);
-        av1_build_inter_predictor(&pred[mb_size * plane + offset], pred_stride,
-                                  &mv, &inter_pred_params);
+        av1_build_inter_predictor(&pred[plane_offset + i * plane_w + j],
+                                  plane_w, &mv, &inter_pred_params);
+
+        ++subblock_idx;
       }
     }
+    plane_offset += mb_size;
   }
 }
 
@@ -1004,6 +1008,8 @@ static FRAME_DIFF temporal_filter_iterate_c(
   uint8_t *dst1, *dst2;
   DECLARE_ALIGNED(32, uint16_t, predictor16[BLK_PELS * 3]);
   DECLARE_ALIGNED(32, uint8_t, predictor8[BLK_PELS * 3]);
+  memset(predictor16, 0, BLK_PELS * 3 * sizeof(predictor16[0]));
+  memset(predictor8, 0, BLK_PELS * 3 * sizeof(predictor8[0]));
   uint8_t *predictor;
   const int mb_uv_height = BH >> mbd->plane[1].subsampling_y;
   const int mb_uv_width = BW >> mbd->plane[1].subsampling_x;
