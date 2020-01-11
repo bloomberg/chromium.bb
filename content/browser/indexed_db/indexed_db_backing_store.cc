@@ -3042,6 +3042,16 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction(
       direct_txn.get(), database_id_, &next_blob_key);
   if (!result || next_blob_key < 0)
     return InternalInconsistencyStatus();
+
+  // Because blob keys were not incremented on the correct transaction for m78
+  // and m79, they need to be checked. See https://crbug.com/1039446
+  base::FilePath blob_path =
+      backing_store_->GetBlobFileName(database_id_, next_blob_key);
+  while (base::PathExists(blob_path)) {
+    ++next_blob_key;
+    blob_path = backing_store_->GetBlobFileName(database_id_, next_blob_key);
+  }
+
   for (auto& iter : blob_change_map_) {
     std::vector<IndexedDBBlobInfo*> new_blob_keys;
     for (auto& entry : iter.second->mutable_blob_info()) {
