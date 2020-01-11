@@ -52,7 +52,7 @@ const [
     const lines = entries
       // Exclude READMEs.
       .filter(l => l.path.length !== 0 && !l.path.endsWith('/'))
-      .map(l => l.path);
+      .map(l => '?q=cts:' + l.path);
     await generateFile(lines);
   } else {
     // Prefixes sorted from longest to shortest
