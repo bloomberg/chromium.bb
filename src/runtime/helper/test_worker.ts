@@ -1,4 +1,8 @@
-import { LiveTestCaseResult } from '../../framework/logger';
+import {
+  LiveTestCaseResult,
+  LogMessageWithStack,
+  TransferredTestCaseResult,
+} from '../../framework/logger.js';
 
 export class TestWorker {
   private worker: Worker;
@@ -10,8 +14,14 @@ export class TestWorker {
     const workerPath = selfPathDir + '/test_worker.worker.js';
     this.worker = new Worker(workerPath, { type: 'module' });
     this.worker.onmessage = ev => {
-      const { query, result } = ev.data;
-      this.resolvers.get(query)!(result);
+      const query: string = ev.data.query;
+      const result: TransferredTestCaseResult = ev.data.result;
+      if (result.logs) {
+        for (const l of result.logs) {
+          Object.setPrototypeOf(l, LogMessageWithStack.prototype);
+        }
+      }
+      this.resolvers.get(query)!(result as LiveTestCaseResult);
 
       // TODO(kainino0x): update the Logger with this result (or don't have a logger and update the
       // entire results JSON somehow at some point).

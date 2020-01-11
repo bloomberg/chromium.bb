@@ -225,7 +225,7 @@ g.test('end2end', async t => {
     t.expect(res0.status === 'pass');
     t.expect(res0.timems >= 0);
     assert(res0.logs !== undefined, 'results case logs');
-    t.expect(objectEquals(JSON.stringify(res0.logs), '["OK"]'));
+    t.expect(objectEquals(JSON.stringify(res0.logs), '["DEBUG: OK"]'));
   }
   {
     // Store cases off to a separate variable due to a typescript bug
@@ -240,7 +240,7 @@ g.test('end2end', async t => {
     t.expect(res1.status === 'pass');
     t.expect(res1.timems >= 0);
     assert(res1.logs !== undefined, 'results case logs');
-    t.expect(objectEquals(JSON.stringify(res1.logs), '["OK","OK"]'));
+    t.expect(objectEquals(JSON.stringify(res1.logs), '["DEBUG: OK","DEBUG: OK"]'));
   }
   {
     // Store cases off to a separate variable due to a typescript bug

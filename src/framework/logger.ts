@@ -11,20 +11,29 @@ export interface LiveTestSpecResult {
   readonly cases: LiveTestCaseResult[];
 }
 
-export interface LiveTestCaseResult {
+interface TestCaseResult {
   readonly test: string;
   readonly params: ParamSpec | null;
   status: Status;
-  logs?: LogMessageWithStack[];
   timems: number;
 }
 
-class LogMessageWithStack extends Error {
-  constructor(name: string, ex: Error) {
+export interface LiveTestCaseResult extends TestCaseResult {
+  logs?: LogMessageWithStack[];
+}
+
+export interface TransferredTestCaseResult extends TestCaseResult {
+  // When transferred from a worker, a LogMessageWithStack turns into a generic Error
+  // (its prototype gets lost and replaced with Error).
+  logs?: Error[];
+}
+
+export class LogMessageWithStack extends Error {
+  constructor(name: string, ex: Error, includeStack: boolean = true) {
     super(ex.message);
 
     this.name = name;
-    this.stack = ex.stack;
+    this.stack = includeStack ? ex.stack : undefined;
   }
 
   toJSON(): string {
@@ -32,14 +41,10 @@ class LogMessageWithStack extends Error {
     if (this.message) {
       m += ': ' + this.message;
     }
-    m += '\n' + getStackTrace(this);
+    if (this.stack) {
+      m += '\n' + getStackTrace(this);
+    }
     return m;
-  }
-}
-
-class LogMessageWithoutStack extends LogMessageWithStack {
-  toJSON(): string {
-    return this.message;
   }
 }
 
@@ -119,7 +124,7 @@ export class TestCaseRecorder {
     if (!this.debugging) {
       return;
     }
-    this.logs.push(new LogMessageWithoutStack('DEBUG', ex));
+    this.logs.push(new LogMessageWithStack('DEBUG', ex, false));
   }
 
   warn(ex: Error): void {
