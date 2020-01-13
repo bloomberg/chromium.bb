@@ -19,28 +19,28 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromiumos',
   syntax='proto3',
   serialized_options=_b('Z4go.chromium.org/chromiumos/infra/proto/go/chromiumos'),
-  serialized_pb=_b('\n\x1c\x63hromiumos/bot_scaling.proto\x12\nchromiumos\"\xce\x03\n\tBotPolicy\x12\x11\n\tbot_group\x18\x01 \x01(\t\x12/\n\x08\x62ot_type\x18\x02 \x01(\x0b\x32\x1d.chromiumos.BotPolicy.BotType\x12\x45\n\x13scaling_restriction\x18\x03 \x01(\x0b\x32(.chromiumos.BotPolicy.ScalingRestriction\x12\x44\n\x13region_restrictions\x18\x04 \x03(\x0b\x32\'.chromiumos.BotPolicy.RegionRestriction\x1a\x32\n\x07\x42otType\x12\x10\n\x08\x62ot_size\x18\x01 \x01(\t\x12\x15\n\rcores_per_bot\x18\x02 \x01(\x05\x1aw\n\x12ScalingRestriction\x12\x13\n\x0b\x62ot_ceiling\x18\x01 \x01(\x05\x12\x11\n\tbot_floor\x18\x02 \x01(\x05\x12\x10\n\x08min_idle\x18\x03 \x01(\x05\x12\x11\n\tstep_size\x18\x04 \x01(\x05\x12\x14\n\x0c\x62ot_fallback\x18\x05 \x01(\x05\x1a\x43\n\x11RegionRestriction\x12\x0e\n\x06region\x18\x01 \x01(\t\x12\x0e\n\x06prefix\x18\x02 \x01(\t\x12\x0e\n\x06weight\x18\x03 \x01(\x02\";\n\x0c\x42otPolicyCfg\x12+\n\x0c\x62ot_policies\x18\x01 \x03(\x0b\x32\x15.chromiumos.BotPolicyB6Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
+  serialized_pb=_b('\n\x1c\x63hromiumos/bot_scaling.proto\x12\nchromiumos\"2\n\x07\x42otType\x12\x10\n\x08\x62ot_size\x18\x01 \x01(\t\x12\x15\n\rcores_per_bot\x18\x02 \x01(\x05\"\x90\x03\n\tBotPolicy\x12\x11\n\tbot_group\x18\x01 \x01(\t\x12%\n\x08\x62ot_type\x18\x02 \x01(\x0b\x32\x13.chromiumos.BotType\x12\x45\n\x13scaling_restriction\x18\x03 \x01(\x0b\x32(.chromiumos.BotPolicy.ScalingRestriction\x12\x44\n\x13region_restrictions\x18\x04 \x03(\x0b\x32\'.chromiumos.BotPolicy.RegionRestriction\x1aw\n\x12ScalingRestriction\x12\x13\n\x0b\x62ot_ceiling\x18\x01 \x01(\x05\x12\x11\n\tbot_floor\x18\x02 \x01(\x05\x12\x10\n\x08min_idle\x18\x03 \x01(\x05\x12\x11\n\tstep_size\x18\x04 \x01(\x05\x12\x14\n\x0c\x62ot_fallback\x18\x05 \x01(\x05\x1a\x43\n\x11RegionRestriction\x12\x0e\n\x06region\x18\x01 \x01(\t\x12\x0e\n\x06prefix\x18\x02 \x01(\t\x12\x0e\n\x06weight\x18\x03 \x01(\x02\";\n\x0c\x42otPolicyCfg\x12+\n\x0c\x62ot_policies\x18\x01 \x03(\x0b\x32\x15.chromiumos.BotPolicy\"\x83\x02\n\rScalingAction\x12\x11\n\tbot_group\x18\x01 \x01(\t\x12%\n\x08\x62ot_type\x18\x02 \x01(\x0b\x32\x13.chromiumos.BotType\x12\x12\n\nactionable\x18\x03 \x01(\x08\x12\x16\n\x0e\x62ots_requested\x18\x04 \x01(\x05\x12\x42\n\x10regional_actions\x18\x05 \x03(\x0b\x32(.chromiumos.ScalingAction.RegionalAction\x1aH\n\x0eRegionalAction\x12\x0e\n\x06region\x18\x01 \x01(\t\x12\x0e\n\x06prefix\x18\x02 \x01(\t\x12\x16\n\x0e\x62ots_requested\x18\x03 \x01(\x05\x42\x36Z4go.chromium.org/chromiumos/infra/proto/go/chromiumosb\x06proto3')
 )
 
 
 
 
-_BOTPOLICY_BOTTYPE = _descriptor.Descriptor(
+_BOTTYPE = _descriptor.Descriptor(
   name='BotType',
-  full_name='chromiumos.BotPolicy.BotType',
+  full_name='chromiumos.BotType',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='bot_size', full_name='chromiumos.BotPolicy.BotType.bot_size', index=0,
+      name='bot_size', full_name='chromiumos.BotType.bot_size', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='cores_per_bot', full_name='chromiumos.BotPolicy.BotType.cores_per_bot', index=1,
+      name='cores_per_bot', full_name='chromiumos.BotType.cores_per_bot', index=1,
       number=2, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -58,9 +58,10 @@ _BOTPOLICY_BOTTYPE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=267,
-  serialized_end=317,
+  serialized_start=44,
+  serialized_end=94,
 )
+
 
 _BOTPOLICY_SCALINGRESTRICTION = _descriptor.Descriptor(
   name='ScalingRestriction',
@@ -116,8 +117,8 @@ _BOTPOLICY_SCALINGRESTRICTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=319,
-  serialized_end=438,
+  serialized_start=309,
+  serialized_end=428,
 )
 
 _BOTPOLICY_REGIONRESTRICTION = _descriptor.Descriptor(
@@ -160,8 +161,8 @@ _BOTPOLICY_REGIONRESTRICTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=440,
-  serialized_end=507,
+  serialized_start=430,
+  serialized_end=497,
 )
 
 _BOTPOLICY = _descriptor.Descriptor(
@@ -202,7 +203,7 @@ _BOTPOLICY = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_BOTPOLICY_BOTTYPE, _BOTPOLICY_SCALINGRESTRICTION, _BOTPOLICY_REGIONRESTRICTION, ],
+  nested_types=[_BOTPOLICY_SCALINGRESTRICTION, _BOTPOLICY_REGIONRESTRICTION, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -211,8 +212,8 @@ _BOTPOLICY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=45,
-  serialized_end=507,
+  serialized_start=97,
+  serialized_end=497,
 )
 
 
@@ -242,29 +243,136 @@ _BOTPOLICYCFG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=509,
-  serialized_end=568,
+  serialized_start=499,
+  serialized_end=558,
 )
 
-_BOTPOLICY_BOTTYPE.containing_type = _BOTPOLICY
+
+_SCALINGACTION_REGIONALACTION = _descriptor.Descriptor(
+  name='RegionalAction',
+  full_name='chromiumos.ScalingAction.RegionalAction',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='region', full_name='chromiumos.ScalingAction.RegionalAction.region', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='prefix', full_name='chromiumos.ScalingAction.RegionalAction.prefix', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='bots_requested', full_name='chromiumos.ScalingAction.RegionalAction.bots_requested', index=2,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=748,
+  serialized_end=820,
+)
+
+_SCALINGACTION = _descriptor.Descriptor(
+  name='ScalingAction',
+  full_name='chromiumos.ScalingAction',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='bot_group', full_name='chromiumos.ScalingAction.bot_group', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='bot_type', full_name='chromiumos.ScalingAction.bot_type', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='actionable', full_name='chromiumos.ScalingAction.actionable', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='bots_requested', full_name='chromiumos.ScalingAction.bots_requested', index=3,
+      number=4, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='regional_actions', full_name='chromiumos.ScalingAction.regional_actions', index=4,
+      number=5, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_SCALINGACTION_REGIONALACTION, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=561,
+  serialized_end=820,
+)
+
 _BOTPOLICY_SCALINGRESTRICTION.containing_type = _BOTPOLICY
 _BOTPOLICY_REGIONRESTRICTION.containing_type = _BOTPOLICY
-_BOTPOLICY.fields_by_name['bot_type'].message_type = _BOTPOLICY_BOTTYPE
+_BOTPOLICY.fields_by_name['bot_type'].message_type = _BOTTYPE
 _BOTPOLICY.fields_by_name['scaling_restriction'].message_type = _BOTPOLICY_SCALINGRESTRICTION
 _BOTPOLICY.fields_by_name['region_restrictions'].message_type = _BOTPOLICY_REGIONRESTRICTION
 _BOTPOLICYCFG.fields_by_name['bot_policies'].message_type = _BOTPOLICY
+_SCALINGACTION_REGIONALACTION.containing_type = _SCALINGACTION
+_SCALINGACTION.fields_by_name['bot_type'].message_type = _BOTTYPE
+_SCALINGACTION.fields_by_name['regional_actions'].message_type = _SCALINGACTION_REGIONALACTION
+DESCRIPTOR.message_types_by_name['BotType'] = _BOTTYPE
 DESCRIPTOR.message_types_by_name['BotPolicy'] = _BOTPOLICY
 DESCRIPTOR.message_types_by_name['BotPolicyCfg'] = _BOTPOLICYCFG
+DESCRIPTOR.message_types_by_name['ScalingAction'] = _SCALINGACTION
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
-BotPolicy = _reflection.GeneratedProtocolMessageType('BotPolicy', (_message.Message,), dict(
+BotType = _reflection.GeneratedProtocolMessageType('BotType', (_message.Message,), dict(
+  DESCRIPTOR = _BOTTYPE,
+  __module__ = 'chromiumos.bot_scaling_pb2'
+  # @@protoc_insertion_point(class_scope:chromiumos.BotType)
+  ))
+_sym_db.RegisterMessage(BotType)
 
-  BotType = _reflection.GeneratedProtocolMessageType('BotType', (_message.Message,), dict(
-    DESCRIPTOR = _BOTPOLICY_BOTTYPE,
-    __module__ = 'chromiumos.bot_scaling_pb2'
-    # @@protoc_insertion_point(class_scope:chromiumos.BotPolicy.BotType)
-    ))
-  ,
+BotPolicy = _reflection.GeneratedProtocolMessageType('BotPolicy', (_message.Message,), dict(
 
   ScalingRestriction = _reflection.GeneratedProtocolMessageType('ScalingRestriction', (_message.Message,), dict(
     DESCRIPTOR = _BOTPOLICY_SCALINGRESTRICTION,
@@ -284,7 +392,6 @@ BotPolicy = _reflection.GeneratedProtocolMessageType('BotPolicy', (_message.Mess
   # @@protoc_insertion_point(class_scope:chromiumos.BotPolicy)
   ))
 _sym_db.RegisterMessage(BotPolicy)
-_sym_db.RegisterMessage(BotPolicy.BotType)
 _sym_db.RegisterMessage(BotPolicy.ScalingRestriction)
 _sym_db.RegisterMessage(BotPolicy.RegionRestriction)
 
@@ -294,6 +401,21 @@ BotPolicyCfg = _reflection.GeneratedProtocolMessageType('BotPolicyCfg', (_messag
   # @@protoc_insertion_point(class_scope:chromiumos.BotPolicyCfg)
   ))
 _sym_db.RegisterMessage(BotPolicyCfg)
+
+ScalingAction = _reflection.GeneratedProtocolMessageType('ScalingAction', (_message.Message,), dict(
+
+  RegionalAction = _reflection.GeneratedProtocolMessageType('RegionalAction', (_message.Message,), dict(
+    DESCRIPTOR = _SCALINGACTION_REGIONALACTION,
+    __module__ = 'chromiumos.bot_scaling_pb2'
+    # @@protoc_insertion_point(class_scope:chromiumos.ScalingAction.RegionalAction)
+    ))
+  ,
+  DESCRIPTOR = _SCALINGACTION,
+  __module__ = 'chromiumos.bot_scaling_pb2'
+  # @@protoc_insertion_point(class_scope:chromiumos.ScalingAction)
+  ))
+_sym_db.RegisterMessage(ScalingAction)
+_sym_db.RegisterMessage(ScalingAction.RegionalAction)
 
 
 DESCRIPTOR._options = None
