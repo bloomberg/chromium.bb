@@ -11,8 +11,6 @@ goog.provide('mr.MediaSourceUtils');
 goog.require('mr.Config');
 
 
-
-
 /**
  * @param {string} sourceUrn
  * @return {boolean} True if it is a mirror URN.

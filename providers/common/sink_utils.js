@@ -72,7 +72,7 @@ class SinkUtils {
    * Generates ID from the receiver UUID and a per-profile token saved in
    * localStorage.
    *
-   * Both DIAL and mDNS use this to generate receiver ID so that it is
+   * Cast uses this to generate a receiver ID that is
    * consistent and can be used to deduplicate receivers. For a given token, the
    * ID is the same for the same device no matter when it is discovered.
    *

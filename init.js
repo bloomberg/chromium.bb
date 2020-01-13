@@ -159,11 +159,6 @@ mr.Init.logFeatureStatuses_ = function(config) {
     mr.Init.logger_.info(`Native Cast MRP is ${
         config.enable_cast_sink_query ? 'disabled' : 'enabled'}.`);
   }
-  if (config.enable_dial_sink_query !== undefined) {
-    // Native DIAL MRP usage is the opposite of |enable_dial_sink_query|.
-    mr.Init.logger_.info(`Native DIAL MRP is ${
-        config.enable_dial_sink_query ? 'disabled' : 'enabled'}.`);
-  }
   if (config.use_mirroring_service !== undefined) {
     mr.Init.logger_.info(`Native Mirroring Service is ${
         config.use_mirroring_service ? 'enabled' : 'disabled'}.`);

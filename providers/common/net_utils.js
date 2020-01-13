@@ -11,7 +11,6 @@ goog.module('mr.NetUtils');
 goog.module.declareLegacyNamespace();
 
 
-
 /** @const @private {!RegExp} */
 exports.IPV4_REGEXP_ =
     new RegExp('^([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})\\.([0-9]{1,3})$');
