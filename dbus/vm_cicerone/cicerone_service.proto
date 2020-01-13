@@ -82,6 +82,9 @@ message ContainerStartedSignal {
 
   // The home directory of uid 1000 in the container.
   string container_homedir = 5;
+
+  // The IPv4 address of the container.
+  string ipv4_address = 6;
 }
 
 // Message used in the signal for when a container has shut down.
