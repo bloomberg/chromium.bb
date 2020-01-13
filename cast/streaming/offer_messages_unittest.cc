@@ -91,6 +91,90 @@ void ExpectFailureOnParse(absl::string_view body) {
   EXPECT_TRUE(Offer::Parse(std::move(root.value())).is_error());
 }
 
+void ExpectEqualsValidOffer(const Offer& offer) {
+  EXPECT_EQ(CastMode::Type::kMirroring, offer.cast_mode.type);
+  EXPECT_EQ(true, offer.supports_wifi_status_reporting);
+
+  // Verify list of video streams.
+  EXPECT_EQ(2u, offer.video_streams.size());
+  const auto& video_streams = offer.video_streams;
+
+  const bool flipped = video_streams[0].stream.index != 0;
+  const VideoStream& vs_one = flipped ? video_streams[1] : video_streams[0];
+  const VideoStream& vs_two = flipped ? video_streams[0] : video_streams[1];
+
+  EXPECT_EQ(0, vs_one.stream.index);
+  EXPECT_EQ(1, vs_one.stream.channels);
+  EXPECT_EQ(Stream::Type::kVideoSource, vs_one.stream.type);
+  EXPECT_EQ("h264", vs_one.stream.codec_name);
+  EXPECT_EQ(RtpPayloadType::kVideoH264, vs_one.stream.rtp_payload_type);
+  EXPECT_EQ(19088743u, vs_one.stream.ssrc);
+  EXPECT_EQ((SimpleFraction{60000, 1000}), vs_one.max_frame_rate);
+  EXPECT_EQ(90000, vs_one.stream.rtp_timebase);
+  EXPECT_EQ(5000000, vs_one.max_bit_rate);
+  EXPECT_EQ("main", vs_one.profile);
+  EXPECT_EQ("4", vs_one.level);
+  EXPECT_THAT(vs_one.stream.aes_key,
+              ElementsAre(0x04, 0x0d, 0x75, 0x67, 0x91, 0x71, 0x1f, 0xd3, 0xad,
+                          0xb9, 0x39, 0x06, 0x6e, 0x6d, 0x86, 0x90));
+  EXPECT_THAT(vs_one.stream.aes_iv_mask,
+              ElementsAre(0x9f, 0xf0, 0xf0, 0x22, 0xa9, 0x59, 0x15, 0x0e, 0x70,
+                          0xa2, 0xd0, 0x5a, 0x6c, 0x18, 0x4a, 0xed));
+
+  const auto& resolutions = vs_one.resolutions;
+  EXPECT_EQ(3u, resolutions.size());
+  const Resolution& r_one = resolutions[0];
+  EXPECT_EQ(1280, r_one.width);
+  EXPECT_EQ(720, r_one.height);
+
+  const Resolution& r_two = resolutions[1];
+  EXPECT_EQ(640, r_two.width);
+  EXPECT_EQ(360, r_two.height);
+
+  const Resolution& r_three = resolutions[2];
+  EXPECT_EQ(640, r_three.width);
+  EXPECT_EQ(480, r_three.height);
+
+  EXPECT_EQ(1, vs_two.stream.index);
+  EXPECT_EQ(1, vs_two.stream.channels);
+  EXPECT_EQ(Stream::Type::kVideoSource, vs_two.stream.type);
+  EXPECT_EQ("vp8", vs_two.stream.codec_name);
+  EXPECT_EQ(RtpPayloadType::kVideoVp8, vs_two.stream.rtp_payload_type);
+  EXPECT_EQ(19088743u, vs_two.stream.ssrc);
+  EXPECT_EQ((SimpleFraction{30000, 1001}), vs_two.max_frame_rate);
+  EXPECT_EQ(90000, vs_two.stream.rtp_timebase);
+  EXPECT_EQ(5000000, vs_two.max_bit_rate);
+  EXPECT_EQ("main", vs_two.profile);
+  EXPECT_EQ("5", vs_two.level);
+  EXPECT_THAT(vs_two.stream.aes_key,
+              ElementsAre(0xbb, 0xf1, 0x09, 0xbf, 0x84, 0x51, 0x3b, 0x45, 0x6b,
+                          0x13, 0xa1, 0x84, 0x45, 0x3b, 0x66, 0xce));
+  EXPECT_THAT(vs_two.stream.aes_iv_mask,
+              ElementsAre(0xed, 0xaf, 0x9e, 0x45, 0x36, 0xe2, 0xb6, 0x61, 0x91,
+                          0xf5, 0x60, 0xd9, 0xc0, 0x4b, 0x2a, 0x69));
+
+  const auto& resolutions_two = vs_two.resolutions;
+  EXPECT_EQ(0u, resolutions_two.size());
+
+  // Verify list of audio streams.
+  EXPECT_EQ(1u, offer.audio_streams.size());
+  const AudioStream& as = offer.audio_streams[0];
+  EXPECT_EQ(2, as.stream.index);
+  EXPECT_EQ(Stream::Type::kAudioSource, as.stream.type);
+  EXPECT_EQ("opus", as.stream.codec_name);
+  EXPECT_EQ(RtpPayloadType::kAudioOpus, as.stream.rtp_payload_type);
+  EXPECT_EQ(19088743u, as.stream.ssrc);
+  EXPECT_EQ(124000, as.bit_rate);
+  EXPECT_EQ(2, as.stream.channels);
+
+  EXPECT_THAT(as.stream.aes_key,
+              ElementsAre(0x51, 0x02, 0x7e, 0x4e, 0x23, 0x47, 0xcb, 0xcb, 0x49,
+                          0xd5, 0x7e, 0xf1, 0x01, 0x77, 0xae, 0xbc));
+  EXPECT_THAT(as.stream.aes_iv_mask,
+              ElementsAre(0x7f, 0x12, 0xa1, 0x9b, 0xe6, 0x2a, 0x36, 0xc0, 0x4a,
+                          0xe4, 0x11, 0x6c, 0xaa, 0xef, 0xf6, 0xd1));
+}
+
 }  // namespace
 
 TEST(OfferTest, ErrorOnEmptyOffer) {
@@ -266,84 +350,58 @@ TEST(OfferTest, CanParseValidOffer) {
   ASSERT_TRUE(root.is_value());
   ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
 
-  EXPECT_EQ(CastMode::Type::kMirroring, offer.value().cast_mode.type);
-  EXPECT_EQ(true, offer.value().supports_wifi_status_reporting);
+  ExpectEqualsValidOffer(offer.value());
+}
 
-  // Verify list of video streams.
-  EXPECT_EQ(2u, offer.value().video_streams.size());
-  auto video_streams = offer.value().video_streams;
-  VideoStream vs_one = video_streams[0];
-  EXPECT_EQ(0, vs_one.stream.index);
-  EXPECT_EQ(1, vs_one.stream.channels);
-  EXPECT_EQ(Stream::Type::kVideoSource, vs_one.stream.type);
-  EXPECT_EQ("h264", vs_one.stream.codec_name);
-  EXPECT_EQ(RtpPayloadType::kVideoH264, vs_one.stream.rtp_payload_type);
-  EXPECT_EQ(19088743u, vs_one.stream.ssrc);
-  ASSERT_DOUBLE_EQ(60000.0 / 1000.0, vs_one.max_frame_rate);
-  EXPECT_EQ(90000, vs_one.stream.rtp_timebase);
-  EXPECT_EQ(5000000, vs_one.max_bit_rate);
-  EXPECT_EQ("main", vs_one.profile);
-  EXPECT_EQ("4", vs_one.level);
-  EXPECT_THAT(vs_one.stream.aes_key,
-              ElementsAre(0x04, 0x0d, 0x75, 0x67, 0x91, 0x71, 0x1f, 0xd3, 0xad,
-                          0xb9, 0x39, 0x06, 0x6e, 0x6d, 0x86, 0x90));
-  EXPECT_THAT(vs_one.stream.aes_iv_mask,
-              ElementsAre(0x9f, 0xf0, 0xf0, 0x22, 0xa9, 0x59, 0x15, 0x0e, 0x70,
-                          0xa2, 0xd0, 0x5a, 0x6c, 0x18, 0x4a, 0xed));
+TEST(OfferTest, ParseAndToJsonResultsInSameOffer) {
+  ErrorOr<Json::Value> root = json::Parse(kValidOffer);
+  ASSERT_TRUE(root.is_value());
+  ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
 
-  auto resolutions = vs_one.resolutions;
-  EXPECT_EQ(3u, resolutions.size());
-  Resolution r_one = resolutions[0];
-  EXPECT_EQ(1280, r_one.width);
-  EXPECT_EQ(720, r_one.height);
+  ExpectEqualsValidOffer(offer.value());
 
-  Resolution r_two = resolutions[1];
-  EXPECT_EQ(640, r_two.width);
-  EXPECT_EQ(360, r_two.height);
+  auto eoj = offer.value().ToJson();
+  EXPECT_TRUE(eoj.is_value());
+  ErrorOr<Offer> reparsed_offer = Offer::Parse(std::move(eoj.value()));
+  ExpectEqualsValidOffer(reparsed_offer.value());
+}
 
-  Resolution r_three = resolutions[2];
-  EXPECT_EQ(640, r_three.width);
-  EXPECT_EQ(480, r_three.height);
+// We don't want to enforce that a given offer must have both audio and
+// video, so we don't assert on either.
+TEST(OfferTest, ToJsonSucceedsWithMissingStreams) {
+  ErrorOr<Json::Value> root = json::Parse(kValidOffer);
+  ASSERT_TRUE(root.is_value());
+  ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
+  ExpectEqualsValidOffer(offer.value());
+  const Offer valid_offer = std::move(offer.value());
 
-  VideoStream vs_two = video_streams[1];
-  EXPECT_EQ(1, vs_two.stream.index);
-  EXPECT_EQ(1, vs_two.stream.channels);
-  EXPECT_EQ(Stream::Type::kVideoSource, vs_two.stream.type);
-  EXPECT_EQ("vp8", vs_two.stream.codec_name);
-  EXPECT_EQ(RtpPayloadType::kVideoVp8, vs_two.stream.rtp_payload_type);
-  EXPECT_EQ(19088743u, vs_two.stream.ssrc);
-  ASSERT_DOUBLE_EQ(30000.0 / 1001.0, vs_two.max_frame_rate);
-  EXPECT_EQ(90000, vs_two.stream.rtp_timebase);
-  EXPECT_EQ(5000000, vs_two.max_bit_rate);
-  EXPECT_EQ("main", vs_two.profile);
-  EXPECT_EQ("5", vs_two.level);
-  EXPECT_THAT(vs_two.stream.aes_key,
-              ElementsAre(0xbb, 0xf1, 0x09, 0xbf, 0x84, 0x51, 0x3b, 0x45, 0x6b,
-                          0x13, 0xa1, 0x84, 0x45, 0x3b, 0x66, 0xce));
-  EXPECT_THAT(vs_two.stream.aes_iv_mask,
-              ElementsAre(0xed, 0xaf, 0x9e, 0x45, 0x36, 0xe2, 0xb6, 0x61, 0x91,
-                          0xf5, 0x60, 0xd9, 0xc0, 0x4b, 0x2a, 0x69));
+  Offer missing_audio_streams = valid_offer;
+  missing_audio_streams.audio_streams.clear();
+  EXPECT_TRUE(missing_audio_streams.ToJson().is_value());
 
-  auto resolutions_two = vs_two.resolutions;
-  EXPECT_EQ(0u, resolutions_two.size());
+  Offer missing_video_streams = valid_offer;
+  missing_video_streams.audio_streams.clear();
+  EXPECT_TRUE(missing_video_streams.ToJson().is_value());
+}
 
-  // Verify list of audio streams.
-  EXPECT_EQ(1u, offer.value().audio_streams.size());
-  AudioStream as = offer.value().audio_streams[0];
-  EXPECT_EQ(2, as.stream.index);
-  EXPECT_EQ(Stream::Type::kAudioSource, as.stream.type);
-  EXPECT_EQ("opus", as.stream.codec_name);
-  EXPECT_EQ(RtpPayloadType::kAudioOpus, as.stream.rtp_payload_type);
-  EXPECT_EQ(19088743u, as.stream.ssrc);
-  EXPECT_EQ(124000, as.bit_rate);
-  EXPECT_EQ(2, as.stream.channels);
+TEST(OfferTest, ToJsonFailsWithInvalidStreams) {
+  ErrorOr<Json::Value> root = json::Parse(kValidOffer);
+  ASSERT_TRUE(root.is_value());
+  ErrorOr<Offer> offer = Offer::Parse(std::move(root.value()));
+  ExpectEqualsValidOffer(offer.value());
+  const Offer valid_offer = std::move(offer.value());
 
-  EXPECT_THAT(as.stream.aes_key,
-              ElementsAre(0x51, 0x02, 0x7e, 0x4e, 0x23, 0x47, 0xcb, 0xcb, 0x49,
-                          0xd5, 0x7e, 0xf1, 0x01, 0x77, 0xae, 0xbc));
-  EXPECT_THAT(as.stream.aes_iv_mask,
-              ElementsAre(0x7f, 0x12, 0xa1, 0x9b, 0xe6, 0x2a, 0x36, 0xc0, 0x4a,
-                          0xe4, 0x11, 0x6c, 0xaa, 0xef, 0xf6, 0xd1));
+  Offer video_stream_invalid = valid_offer;
+  video_stream_invalid.video_streams[0].max_frame_rate.denominator = 0;
+  EXPECT_TRUE(video_stream_invalid.ToJson().is_error());
+
+  Offer audio_stream_invalid = valid_offer;
+  video_stream_invalid.audio_streams[0].bit_rate = 0;
+  EXPECT_TRUE(video_stream_invalid.ToJson().is_error());
+
+  Offer stream_invalid = valid_offer;
+  stream_invalid.video_streams[0].stream.codec_name = "";
+  EXPECT_TRUE(stream_invalid.ToJson().is_error());
 }
 
 }  // namespace cast

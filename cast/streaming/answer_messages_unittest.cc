@@ -31,14 +31,14 @@ const Answer kValidAnswer{
         VideoConstraints{
             40000.0,  // max_pixels_per_second
             Dimensions{
-                320,        // width
-                480,        // height
-                15000, 101  // frame_rate
-            },              // min_dimensions
+                320,                        // width
+                480,                        // height
+                SimpleFraction{15000, 101}  // frame_rate
+            },                              // min_dimensions
             Dimensions{
-                1920,   // width
-                1080,   // height
-                288, 2  // frame_rate
+                1920,                   // width
+                1080,                   // height
+                SimpleFraction{288, 2}  // frame_rate
             },
             300000,                          // min_bit_rate
             144000000,                       // max_bit_rate
@@ -47,9 +47,9 @@ const Answer kValidAnswer{
     },                                       // constraints
     DisplayDescription{
         Dimensions{
-            640,   // width
-            480,   // height
-            30, 1  // frame_rate
+            640,                   // width
+            480,                   // height
+            SimpleFraction{30, 1}  // frame_rate
         },
         AspectRatio{16, 9},             // aspect_ratio
         AspectRatioConstraint::kFixed,  // scaling

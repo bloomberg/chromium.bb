@@ -5,9 +5,14 @@
 #ifndef CAST_STREAMING_MESSAGE_UTIL_H_
 #define CAST_STREAMING_MESSAGE_UTIL_H_
 
+#include <vector>
+
+#include "absl/strings/string_view.h"
 #include "json/value.h"
 #include "platform/base/error.h"
 
+// This file contains helper methods that are used by both answer and offer
+// messages, but should not be publicly exposed/consumed.
 namespace openscreen {
 namespace cast {
 

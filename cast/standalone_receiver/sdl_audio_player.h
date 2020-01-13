@@ -5,6 +5,8 @@
 #ifndef CAST_STANDALONE_RECEIVER_SDL_AUDIO_PLAYER_H_
 #define CAST_STANDALONE_RECEIVER_SDL_AUDIO_PLAYER_H_
 
+#include <vector>
+
 #include "cast/standalone_receiver/sdl_player_base.h"
 
 namespace openscreen {

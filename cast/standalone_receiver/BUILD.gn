@@ -12,9 +12,14 @@ if (!build_with_chromium) {
   executable("cast_receiver") {
     sources = [
       "main.cc",
+      "simple_message_port.cc",
+      "simple_message_port.h",
+      "streaming_playback_controller.cc",
+      "streaming_playback_controller.h",
     ]
     deps = [
       "../../platform",
+      "../../third_party/jsoncpp",
       "../streaming:receiver",
     ]
 

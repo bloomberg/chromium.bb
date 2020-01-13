@@ -5,6 +5,14 @@
 import("//build_overrides/build.gni")
 import("osp/build/config/services.gni")
 
+declare_args() {
+  # Set to true to force building the standalone receiver on Mac. It's currently
+  # disabled due to build bot struggles, but works fine on local, recent clang
+  # installations.
+  # TODO(crbug.com/openscreen/86): Remove when the Mac bots have been upgraded.
+  force_build_standalone_receiver = false
+}
+
 # All compilable non-test targets in the repository (both executables and
 # source_sets).
 group("gn_all") {
@@ -39,8 +47,8 @@ group("gn_all") {
   if (use_chromium_quic) {
     deps += [
       "third_party/chromium_quic",
-      "third_party/chromium_quic:quic_demo_client",
       "third_party/chromium_quic:quic_demo_server",
+      "third_party/chromium_quic:quic_streaming_playback_controller",
     ]
   }
 
@@ -60,7 +68,7 @@ group("gn_all") {
 
     # TODO(crbug.com/openscreen/86): Build for Mac too once the mac buildbot
     # compiler is upgraded.
-    if (!is_mac) {
+    if (!is_mac || force_build_standalone_receiver) {
       deps += [ "cast/standalone_receiver:cast_receiver" ]
     }
   }

@@ -68,21 +68,15 @@ ErrorOr<Json::Value> AudioConstraints::ToJson() const {
 }
 
 ErrorOr<Json::Value> Dimensions::ToJson() const {
-  if (width <= 0 || height <= 0 || frame_rate_denominator <= 0 ||
-      frame_rate_numerator <= 0) {
+  if (width <= 0 || height <= 0 || !frame_rate.is_defined() ||
+      !frame_rate.is_positive()) {
     return CreateParameterError("Dimensions");
   }
 
   Json::Value root;
   root["width"] = width;
   root["height"] = height;
-
-  if (frame_rate_denominator > 1) {
-    root["frameRate"] =
-        absl::StrCat(frame_rate_numerator, "/", frame_rate_denominator);
-  } else {
-    root["frameRate"] = std::to_string(frame_rate_numerator);
-  }
+  root["frameRate"] = frame_rate.ToString();
   return root;
 }
 

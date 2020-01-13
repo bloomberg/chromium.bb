@@ -53,39 +53,70 @@ ErrorOr<int> ParseRtpTimebase(const Json::Value& parent,
     return error_or_raw.error();
   }
 
-  int rtp_timebase = 0;
-  constexpr char kTimeBasePrefix[] = "1/";
-  if (!absl::StartsWith(error_or_raw.value(), kTimeBasePrefix) ||
-      !absl::SimpleAtoi(error_or_raw.value().substr(strlen(kTimeBasePrefix)),
-                        &rtp_timebase) ||
-      (rtp_timebase <= 0)) {
+  const auto fraction = SimpleFraction::FromString(error_or_raw.value());
+  if (fraction.is_error() || !fraction.value().is_positive()) {
     return CreateParseError("RTP timebase");
   }
-
-  return rtp_timebase;
+  // The spec demands a leading 1, so this isn't really a fraction.
+  OSP_DCHECK(fraction.value().numerator == 1);
+  return fraction.value().denominator;
 }
 
-ErrorOr<std::array<uint8_t, 16>> ParseAesHexBytes(const Json::Value& parent,
-                                                  const std::string& field) {
+// For a hex byte, the conversion is 4 bits to 1 character, e.g.
+// 0b11110001 becomes F1, so 1 byte is two characters.
+constexpr int kHexDigitsPerByte = 2;
+constexpr int kAesBytesSize = 16;
+constexpr int kAesStringLength = kAesBytesSize * kHexDigitsPerByte;
+ErrorOr<std::array<uint8_t, kAesBytesSize>> ParseAesHexBytes(
+    const Json::Value& parent,
+    const std::string& field) {
   auto hex_string = ParseString(parent, field);
   if (!hex_string) {
     return hex_string.error();
   }
 
-  uint64_t quads[2];
+  constexpr int kHexDigitsPerScanField = 16;
+  constexpr int kNumScanFields = kAesStringLength / kHexDigitsPerScanField;
+  uint64_t quads[kNumScanFields];
   int chars_scanned;
-  if (hex_string.value().size() == 32 &&
+  if (hex_string.value().size() == kAesStringLength &&
       sscanf(hex_string.value().c_str(), "%16" SCNx64 "%16" SCNx64 "%n",
-             &quads[0], &quads[1], &chars_scanned) == 2 &&
-      chars_scanned == 32 &&
+             &quads[0], &quads[1], &chars_scanned) == kNumScanFields &&
+      chars_scanned == kAesStringLength &&
       std::none_of(hex_string.value().begin(), hex_string.value().end(),
                    [](char c) { return std::isspace(c); })) {
-    std::array<uint8_t, 16> bytes;
+    std::array<uint8_t, kAesBytesSize> bytes;
     WriteBigEndian(quads[0], bytes.data());
     WriteBigEndian(quads[1], bytes.data() + 8);
     return bytes;
   }
   return CreateParseError("AES hex string bytes");
+}
+
+char HexToChar(uint8_t hex) {
+  OSP_DCHECK(hex < 16);
+  if (hex < 10) {
+    return '0' + hex;
+  }
+  return 'a' + hex - 10;
+}
+
+std::string AesHexBytesToString(
+    const std::array<uint8_t, kAesBytesSize>& bytes) {
+  std::array<char, kAesBytesSize * kHexDigitsPerByte> buffer;
+  for (size_t i = 0; i < kAesBytesSize; ++i) {
+    const uint8_t byte = bytes[i];
+    const uint8_t top_nibble = (byte & 0b11110000) >> 4;
+    const uint8_t bottom_nibble = (byte & 0b00001111);
+
+    buffer[i * 2] = HexToChar(top_nibble);
+    buffer[i * 2 + 1] = HexToChar(bottom_nibble);
+  }
+
+  // Unfortunately, strings are not guaranteed to store their data in contiguous
+  // memory, so data() does not necessarily point to its internal storage and
+  // a copy is necessary here.
+  return std::string(buffer.data(), buffer.size());
 }
 
 ErrorOr<Stream> ParseStream(const Json::Value& value, Stream::Type type) {
@@ -216,27 +247,12 @@ ErrorOr<VideoStream> ParseVideoStream(const Json::Value& value) {
     return resolutions.error();
   }
 
-  auto max_frame_rate = ParseString(value, "maxFrameRate");
-  double max_frame_rate_value = kDefaultMaxFrameRate;
-  if (max_frame_rate.is_value()) {
-    // The max frame rate should be given as an fraction composed of natural
-    // numbers.
-    std::vector<absl::string_view> fields =
-        absl::StrSplit(max_frame_rate.value(), '/');
-    if (fields.size() == 2) {
-      double numerator;
-      double denominator;
-      if (absl::SimpleAtod(fields[0], &numerator) &&
-          absl::SimpleAtod(fields[1], &denominator) && denominator != 0) {
-        max_frame_rate_value = numerator / denominator;
-      }
-    }
-
-    if (!std::isfinite(max_frame_rate_value) || max_frame_rate_value <= 0) {
-      OSP_LOG_WARN << "Received invalid max frame rate: '"
-                   << max_frame_rate.value() << "'. Using default of: '"
-                   << kDefaultMaxFrameRate << "'.";
-      max_frame_rate_value = kDefaultMaxFrameRate;
+  auto raw_max_frame_rate = ParseString(value, "maxFrameRate");
+  SimpleFraction max_frame_rate{kDefaultMaxFrameRate, 1};
+  if (raw_max_frame_rate.is_value()) {
+    auto parsed = SimpleFraction::FromString(raw_max_frame_rate.value());
+    if (parsed.is_value() && parsed.value().is_positive()) {
+      max_frame_rate = parsed.value();
     }
   }
 
@@ -246,13 +262,26 @@ ErrorOr<VideoStream> ParseVideoStream(const Json::Value& value) {
   auto level = ParseString(value, "level");
   auto error_recovery_mode = ParseString(value, "errorRecoveryMode");
   return VideoStream{stream.value(),
-                     max_frame_rate_value,
+                     max_frame_rate,
                      ValueOrDefault(max_bit_rate, 4 << 20),
                      ValueOrDefault(protection),
                      ValueOrDefault(profile),
                      ValueOrDefault(level),
                      resolutions.value(),
                      ValueOrDefault(error_recovery_mode)};
+}
+
+absl::string_view ToString(Stream::Type type) {
+  switch (type) {
+    case Stream::Type::kAudioSource:
+      return kAudioSourceType;
+    case Stream::Type::kVideoSource:
+      return kVideoSourceType;
+    default: {
+      OSP_NOTREACHED();
+      return "";
+    }
+  }
 }
 
 }  // namespace
@@ -266,6 +295,30 @@ CastMode CastMode::Parse(absl::string_view value) {
                                   : CastMode{CastMode::Type::kMirroring};
 }
 
+ErrorOr<Json::Value> Stream::ToJson() const {
+  if (channels < 1 || index < 0 || codec_name.empty() || rtp_timebase < 1) {
+    return CreateParameterError("Stream");
+  }
+
+  Json::Value root;
+  root["index"] = index;
+  root["type"] = std::string(ToString(type));
+  root["channels"] = channels;
+  root["codecName"] = codec_name;
+  root["rtpPayloadType"] = static_cast<int>(rtp_payload_type);
+  // rtpProfile is technically required by the spec, although it is always set
+  // to cast. We set it here to be compliant with all spec implementers.
+  root["rtpProfile"] = "cast";
+  root["ssrc"] = static_cast<int>(ssrc);
+  root["targetDelay"] = target_delay.count();
+  root["aesKey"] = AesHexBytesToString(aes_key);
+  root["aesIvMask"] = AesHexBytesToString(aes_iv_mask);
+  root["ReceiverRtcpEventLog"] = receiver_rtcp_event_log;
+  root["receiverRtcpDscp"] = receiver_rtcp_dscp;
+  root["timeBase"] = "1/" + std::to_string(rtp_timebase);
+  return root;
+}
+
 std::string CastMode::ToString() const {
   switch (type) {
     case Type::kMirroring:
@@ -276,6 +329,61 @@ std::string CastMode::ToString() const {
       OSP_NOTREACHED();
       return "";
   }
+}
+
+ErrorOr<Json::Value> AudioStream::ToJson() const {
+  if (bit_rate <= 0) {
+    return CreateParameterError("AudioStream");
+  }
+
+  auto error_or_stream = stream.ToJson();
+  if (error_or_stream.is_error()) {
+    return error_or_stream;
+  }
+
+  error_or_stream.value()["bitRate"] = bit_rate;
+  return error_or_stream;
+}
+
+ErrorOr<Json::Value> Resolution::ToJson() const {
+  if (width <= 0 || height <= 0) {
+    return CreateParameterError("Resolution");
+  }
+
+  Json::Value root;
+  root["width"] = width;
+  root["height"] = height;
+  return root;
+}
+
+ErrorOr<Json::Value> VideoStream::ToJson() const {
+  if (max_bit_rate <= 0 || !max_frame_rate.is_positive()) {
+    return CreateParameterError("VideoStream");
+  }
+
+  auto error_or_stream = stream.ToJson();
+  if (error_or_stream.is_error()) {
+    return error_or_stream;
+  }
+
+  auto& stream = error_or_stream.value();
+  stream["maxFrameRate"] = max_frame_rate.ToString();
+  stream["maxBitRate"] = max_bit_rate;
+  stream["protection"] = protection;
+  stream["profile"] = profile;
+  stream["level"] = level;
+  stream["errorRecoveryMode"] = error_recovery_mode;
+
+  Json::Value rs;
+  for (auto resolution : resolutions) {
+    auto eoj = resolution.ToJson();
+    if (eoj.is_error()) {
+      return eoj;
+    }
+    rs.append(eoj.value());
+  }
+  stream["resolutions"] = std::move(rs);
+  return error_or_stream;
 }
 
 // static
@@ -315,6 +423,32 @@ ErrorOr<Offer> Offer::Parse(const Json::Value& root) {
 
   return Offer{cast_mode, ValueOrDefault(get_status), std::move(audio_streams),
                std::move(video_streams)};
+}
+
+ErrorOr<Json::Value> Offer::ToJson() const {
+  Json::Value root;
+  root["castMode"] = cast_mode.ToString();
+  root["receiverGetStatus"] = supports_wifi_status_reporting;
+
+  Json::Value streams;
+  for (auto& as : audio_streams) {
+    auto eoj = as.ToJson();
+    if (eoj.is_error()) {
+      return eoj;
+    }
+    streams.append(eoj.value());
+  }
+
+  for (auto& vs : video_streams) {
+    auto eoj = vs.ToJson();
+    if (eoj.is_error()) {
+      return eoj;
+    }
+    streams.append(eoj.value());
+  }
+
+  root[kSupportedStreams] = std::move(streams);
+  return root;
 }
 
 }  // namespace cast

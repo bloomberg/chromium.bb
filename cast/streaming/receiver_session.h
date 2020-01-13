@@ -60,14 +60,14 @@ class ReceiverSession final : public MessagePort::Client {
   class Client {
    public:
     // This method is called when a new set of receivers has been negotiated.
-    virtual void OnNegotiated(ReceiverSession* session,
+    virtual void OnNegotiated(const ReceiverSession* session,
                               ConfiguredReceivers receivers) = 0;
 
     // This method is called immediately preceding the invalidation of
     // this session's receivers.
-    virtual void OnReceiversDestroyed(ReceiverSession* session) = 0;
+    virtual void OnReceiversDestroyed(const ReceiverSession* session) = 0;
 
-    virtual void OnError(ReceiverSession* session, Error error) = 0;
+    virtual void OnError(const ReceiverSession* session, Error error) = 0;
   };
 
   // The embedder has the option of providing a list of prioritized

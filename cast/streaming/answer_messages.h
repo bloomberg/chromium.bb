@@ -18,6 +18,7 @@
 #include "cast/streaming/ssrc.h"
 #include "json/value.h"
 #include "platform/base/error.h"
+#include "util/simple_fraction.h"
 
 namespace openscreen {
 namespace cast {
@@ -36,8 +37,7 @@ struct AudioConstraints {
 struct Dimensions {
   int width = 0;
   int height = 0;
-  int frame_rate_numerator = 0;
-  int frame_rate_denominator = 0;
+  SimpleFraction frame_rate;
 
   ErrorOr<Json::Value> ToJson() const;
 };

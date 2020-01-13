@@ -26,7 +26,7 @@ source_set("chromium_quic") {
   ]
 }
 
-executable("quic_demo_client") {
+executable("quic_streaming_playback_controller") {
   sources = [
     "demo/client.cc",
     "demo/delegates.cc",
