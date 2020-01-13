@@ -31,6 +31,7 @@ bool IsRtcpPacketType(uint8_t raw_byte) {
   switch (static_cast<RtcpPacketType>(raw_byte)) {
     case RtcpPacketType::kSenderReport:
     case RtcpPacketType::kReceiverReport:
+    case RtcpPacketType::kSourceDescription:
     case RtcpPacketType::kApplicationDefined:
     case RtcpPacketType::kPayloadSpecific:
     case RtcpPacketType::kExtendedReports:

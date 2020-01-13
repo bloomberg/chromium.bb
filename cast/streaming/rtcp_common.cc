@@ -27,6 +27,9 @@ void RtcpCommonHeader::AppendFields(absl::Span<uint8_t>* buffer) const {
                     FieldBitmask<int>(kRtcpReportCountFieldNumBits));
       byte0 |= with.report_count;
       break;
+    case RtcpPacketType::kSourceDescription:
+      OSP_UNIMPLEMENTED();
+      break;
     case RtcpPacketType::kApplicationDefined:
     case RtcpPacketType::kPayloadSpecific:
       switch (with.subtype) {

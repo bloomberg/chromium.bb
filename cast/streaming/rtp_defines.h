@@ -142,6 +142,7 @@ enum class RtcpPacketType : uint8_t {
 
   kSenderReport = 200,
   kReceiverReport = 201,
+  kSourceDescription = 202,
   kApplicationDefined = 204,
   kPayloadSpecific = 206,
   kExtendedReports = 207,
