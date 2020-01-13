@@ -95,7 +95,7 @@ void aom_calc_vmaf_multi_frame(
   double vmaf_score;
   const int ret = compute_vmaf(
       &vmaf_score, (char *)"yuv420p", frame_width, frame_height, read_frame,
-      /*user_data=*/&user_data, (char *)model_path,
+      /*user_data=*/user_data, (char *)model_path,
       /*log_path=*/"vmaf_scores.xml", /*log_fmt=*/NULL, /*disable_clip=*/0,
       /*disable_avx=*/0, /*enable_transform=*/0,
       /*phone_model=*/0, /*do_psnr=*/0, /*do_ssim=*/0,
