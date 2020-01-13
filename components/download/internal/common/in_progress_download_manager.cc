@@ -224,6 +224,14 @@ void InProgressDownloadManager::OnUrlDownloadStarted(
         url_loader_factory_provider,
     UrlDownloadHandler* downloader,
     DownloadUrlParameters::OnStartedCallback callback) {
+  // If a new download's GUID already exists, skip it.
+  if (!download_create_info->guid.empty() &&
+      download_create_info->is_new_download &&
+      GetDownloadByGuid(download_create_info->guid)) {
+    LOG(WARNING) << "A download with the same GUID already exists, the new "
+                    "request is ignored.";
+    return;
+  }
   StartDownload(std::move(download_create_info), std::move(input_stream),
                 std::move(url_loader_factory_provider),
                 base::BindOnce(&InProgressDownloadManager::CancelUrlDownload,
@@ -369,11 +377,10 @@ void InProgressDownloadManager::ShutDown() {
 void InProgressDownloadManager::DetermineDownloadTarget(
     DownloadItemImpl* download,
     const DownloadTargetCallback& callback) {
-#if defined(OS_ANDROID)
   base::FilePath target_path = download->GetForcedFilePath().empty()
                                    ? download->GetTargetFilePath()
                                    : download->GetForcedFilePath();
-
+#if defined(OS_ANDROID)
   if (target_path.empty()) {
     callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
                  download->GetDangerType(), target_path,
@@ -403,9 +410,11 @@ void InProgressDownloadManager::DetermineDownloadTarget(
       base::Bind(&OnPathReserved, callback, download->GetDangerType(),
                  intermediate_path_cb_, download->GetForcedFilePath()));
 #else
-  callback.Run(download->GetTargetFilePath(),
-               DownloadItem::TARGET_DISPOSITION_OVERWRITE,
-               download->GetDangerType(), download->GetFullPath(),
+  // For non-android, the code below is only used by tests.
+  base::FilePath intermediate_path =
+      download->GetFullPath().empty() ? target_path : download->GetFullPath();
+  callback.Run(target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+               download->GetDangerType(), intermediate_path,
                DOWNLOAD_INTERRUPT_REASON_NONE);
 #endif  // defined(OS_ANDROID)
 }
@@ -487,6 +496,8 @@ void InProgressDownloadManager::StartDownload(
       auto download = std::make_unique<DownloadItemImpl>(
           this, DownloadItem::kInvalidId, *info);
       OnNewDownloadCreated(download.get());
+      guid = download->GetGuid();
+      DCHECK(!guid.empty());
       in_progress_downloads_.push_back(std::move(download));
     }
     StartDownloadWithItem(
