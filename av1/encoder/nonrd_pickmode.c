@@ -1227,7 +1227,6 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
   int is_skippable;
   int pf_rate[FILTER_SEARCH_SIZE] = { 0 };
   int64_t pf_dist[FILTER_SEARCH_SIZE] = { 0 };
-  int curr_rate[FILTER_SEARCH_SIZE] = { 0 };
   unsigned int pf_var[FILTER_SEARCH_SIZE] = { 0 };
   unsigned int pf_sse[FILTER_SEARCH_SIZE] = { 0 };
   int64_t pf_sse_block_yrd[FILTER_SEARCH_SIZE] = { 0 };
@@ -1270,7 +1269,6 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
       skip_txfm[i] = this_rdc_fil.skip;
       *block_yrd_computed = 1;
     }
-    curr_rate[i] = pf_rate[i];
     pf_rate[i] += av1_get_switchable_rate(cm, x, xd);
     cost = RDCOST(x->rdmult, pf_rate[i], pf_dist[i]);
     pf_tx_size[i] = mi->tx_size;
@@ -1296,7 +1294,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
 
   mi->interp_filters = av1_broadcast_interp_filter(filters[best_filter_index]);
   mi->tx_size = pf_tx_size[best_filter_index];
-  this_rdc->rate = curr_rate[best_filter_index];
+  this_rdc->rate = pf_rate[best_filter_index];
   this_rdc->dist = pf_dist[best_filter_index];
   *var_y = pf_var[best_filter_index];
   *sse_y = pf_sse[best_filter_index];
