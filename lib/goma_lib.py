@@ -13,10 +13,15 @@ import glob
 import json
 import os
 import shlex
+import shutil
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+class SpecifiedFileMissingError(Exception):
+  """Error occurred when running LogsArchiver."""
 
 
 class LogsArchiver(object):
@@ -27,20 +32,24 @@ Unlike the GomaLogUploader, it does not interact with GoogleStorage at all.
 Instead it copies Goma files to a client-specified archive directory.
   """
 
-  def __init__(self, log_dir, dest_dir):
+  def __init__(self, log_dir, dest_dir, stats_file=None, counterz_file=None):
     """Initializes the archiver.
 
     Args:
       log_dir: path to the directory containing goma's INFO log files.
       dest_dir: path to the target directory to which logs are written.
+      stats_file: name of stats file in the log_dir.
+      counterz_file: name of the counterz file in the log dir.
     """
     self._log_dir = log_dir
+    self._stats_file = stats_file
+    self._counterz_file = counterz_file
     self._dest_dir = dest_dir
     # Ensure destination dir exists.
     osutils.SafeMakedirs(self._dest_dir)
 
   def Archive(self):
-    """Archives all necessary log files to dest_dir.
+    """Archives all goma log files, stats file, and counterz file to dest_dir.
 
     Returns:
       A list of files that were copied to dest_dir.
@@ -78,6 +87,24 @@ Instead it copies Goma files to a client-specified archive directory.
     archived_ninja_log_filename = self._ArchiveNinjaLog(compiler_proxy_path)
     if archived_ninja_log_filename:
       log_files.append(archived_ninja_log_filename)
+
+    # Copy stats file and counterz file if they are specified.
+    if self._counterz_file:
+      counterz_path = os.path.join(self._log_dir, self._counterz_file)
+      if not os.path.isfile(counterz_path):
+        raise SpecifiedFileMissingError(
+            'Goma counterz file missing: ' + counterz_path)
+      shutil.copyfile(counterz_path,
+                      os.path.join(self._dest_dir, self._counterz_file))
+      log_files.append(self._counterz_file)
+    if self._stats_file:
+      stats_path = os.path.join(self._log_dir, self._stats_file)
+      if not os.path.isfile(stats_path):
+        raise SpecifiedFileMissingError(
+            'Goma stats file missing: ' + stats_path)
+      shutil.copyfile(stats_path,
+                      os.path.join(self._dest_dir, self._stats_file))
+      log_files.append(self._stats_file)
     return log_files
 
   def _ArchiveInfoFiles(self, pattern):

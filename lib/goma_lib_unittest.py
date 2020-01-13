@@ -29,6 +29,14 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
     self.dest_dir = os.path.join(self.tempdir, 'destination_dir')
     osutils.SafeMakedirs(self.dest_dir)
 
+  def _CreateFile(self, name):
+    """Creates a basic file, such as a stats or counterz file.
+
+    Args:
+      name (str): Filename
+    """
+    osutils.WriteFile(os.path.join(self.goma_log_dir, name), 'File: ' + name)
+
   def _CreateLogFile(self, name, timestamp):
     """Creates a log file for testing.
 
@@ -44,7 +52,7 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
         timestamp.strftime('Log file created at: %Y/%m/%d %H:%M:%S'))
 
   def testArchive(self):
-    """Test successful archive of goma logs."""
+    """Test successful archive of goma logs without stats/counterz specified."""
     self._CreateLogFile(
         'compiler_proxy', datetime.datetime(2017, 4, 26, 12, 0, 0))
     self._CreateLogFile(
@@ -54,16 +62,7 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
     self._CreateLogFile(
         'gomacc', datetime.datetime(2017, 4, 26, 12, 2, 0))
 
-    # Set env vars.
-    os.environ.update({
-        'GLOG_log_dir': self.goma_log_dir,
-        'BUILDBOT_BUILDERNAME': 'builder-name',
-        'BUILDBOT_MASTERNAME': 'master-name',
-        'BUILDBOT_SLAVENAME': 'slave-name',
-        'BUILDBOT_CLOBBER': '1',
-    })
-
-    archiver = goma_lib.LogsArchiver(self.goma_log_dir, self.dest_dir)
+    archiver = goma_lib.LogsArchiver(self.goma_log_dir, dest_dir=self.dest_dir)
     file_list = archiver.Archive()
 
     archived_files = os.listdir(self.dest_dir)
@@ -77,6 +76,57 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
         ['compiler_proxy.host.log.INFO.20170426-120000.000000.gz',
          'gomacc.host.log.INFO.20170426-120100.000000.tar.gz',
          'compiler_proxy-subproc.host.log.INFO.20170426-120000.000000.gz'])
+
+  def testArchiveWithStatsAndCounterz(self):
+    """Test successful archive of goma logs with stats and counterz."""
+    self._CreateLogFile(
+        'compiler_proxy', datetime.datetime(2017, 4, 26, 12, 0, 0))
+    self._CreateLogFile(
+        'compiler_proxy-subproc', datetime.datetime(2017, 4, 26, 12, 0, 0))
+    self._CreateLogFile(
+        'gomacc', datetime.datetime(2017, 4, 26, 12, 1, 0))
+    self._CreateLogFile(
+        'gomacc', datetime.datetime(2017, 4, 26, 12, 2, 0))
+    self._CreateFile('stats.binaryproto')
+    self._CreateFile('counterz.binaryproto')
+
+    archiver = goma_lib.LogsArchiver(self.goma_log_dir, dest_dir=self.dest_dir,
+                                     stats_file='stats.binaryproto',
+                                     counterz_file='counterz.binaryproto')
+    file_list = archiver.Archive()
+
+    archived_files = os.listdir(self.dest_dir)
+    # Verify that the list of files returned matched what we find in the
+    # dest_dir.
+    self.assertCountEqual(file_list, archived_files)
+
+    self.assertCountEqual(
+        archived_files,
+        ['compiler_proxy.host.log.INFO.20170426-120000.000000.gz',
+         'gomacc.host.log.INFO.20170426-120100.000000.tar.gz',
+         'compiler_proxy-subproc.host.log.INFO.20170426-120000.000000.gz',
+         'stats.binaryproto',
+         'counterz.binaryproto'])
+
+  def testArchiveWithStatsAndMissingCounterz(self):
+    """Test successful archive of goma logs with stats and counterz."""
+    self._CreateLogFile(
+        'compiler_proxy', datetime.datetime(2017, 4, 26, 12, 0, 0))
+    self._CreateLogFile(
+        'compiler_proxy-subproc', datetime.datetime(2017, 4, 26, 12, 0, 0))
+    self._CreateLogFile(
+        'gomacc', datetime.datetime(2017, 4, 26, 12, 1, 0))
+    self._CreateLogFile(
+        'gomacc', datetime.datetime(2017, 4, 26, 12, 2, 0))
+    self._CreateFile('stats.binaryproto')
+
+    archiver = goma_lib.LogsArchiver(self.goma_log_dir, dest_dir=self.dest_dir,
+                                     stats_file='stats.binaryproto',
+                                     counterz_file='counterz.binaryproto')
+    # Because counterz.binaryproto does not exist, we expect
+    # SpecifiedFileMissingError to be raised.
+    with self.assertRaises(goma_lib.SpecifiedFileMissingError):
+      archiver.Archive()
 
   def testNinjaLogArchive(self):
     """Test successful archive of ninja logs."""
@@ -101,7 +151,7 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
     osutils.WriteFile(
         os.path.join(self.goma_log_dir, 'ninja_exit'), '0')
 
-    archiver = goma_lib.LogsArchiver(self.goma_log_dir, self.dest_dir)
+    archiver = goma_lib.LogsArchiver(self.goma_log_dir, dest_dir=self.dest_dir)
     archiver.Archive()
     archived_files = os.listdir(self.dest_dir)
 
