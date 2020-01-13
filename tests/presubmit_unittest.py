@@ -2106,9 +2106,7 @@ the current line as well!
     self.assertEqual(results, [])
 
   def testCannedRunPylint(self):
-    change = mock.Mock()
-    change.RepositoryRoot.return_value = 'CWD'
-    input_api = self.MockInputApi(change, True)
+    input_api = self.MockInputApi(None, True)
     input_api.environ = mock.MagicMock(os.environ)
     input_api.environ.copy.return_value = {}
     input_api.AffectedSourceFiles.return_value = True
