@@ -5117,6 +5117,65 @@ def BuildGitDiffCmd(diff_type, upstream_commit, args, allow_prefix=False):
   return diff_cmd
 
 
+def _RunClangFormatDiff(opts, clang_diff_files, top_dir, upstream_commit):
+  """Runs clang-format-diff and sets a return value if necessary."""
+
+  if not clang_diff_files:
+    return 0
+
+  # Set to 2 to signal to CheckPatchFormatted() that this patch isn't
+  # formatted. This is used to block during the presubmit.
+  return_value = 0
+
+  # Locate the clang-format binary in the checkout
+  try:
+    clang_format_tool = clang_format.FindClangFormatToolInChromiumTree()
+  except clang_format.NotFoundError as e:
+    DieWithError(e)
+
+  if opts.full or settings.GetFormatFullByDefault():
+    cmd = [clang_format_tool]
+    if not opts.dry_run and not opts.diff:
+      cmd.append('-i')
+    if opts.dry_run:
+      for diff_file in clang_diff_files:
+        with open(diff_file, 'r') as myfile:
+          code = myfile.read().replace('\r\n', '\n')
+          stdout = RunCommand(cmd + [diff_file], cwd=top_dir)
+          stdout = stdout.replace('\r\n', '\n')
+          if opts.diff:
+            sys.stdout.write(stdout)
+          if code != stdout:
+            return_value = 2
+    else:
+      stdout = RunCommand(cmd + clang_diff_files, cwd=top_dir)
+      if opts.diff:
+        sys.stdout.write(stdout)
+  else:
+    env = os.environ.copy()
+    env['PATH'] = str(os.path.dirname(clang_format_tool))
+    try:
+      script = clang_format.FindClangFormatScriptInChromiumTree(
+          'clang-format-diff.py')
+    except clang_format.NotFoundError as e:
+      DieWithError(e)
+
+    cmd = [sys.executable, script, '-p0']
+    if not opts.dry_run and not opts.diff:
+      cmd.append('-i')
+
+    diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, clang_diff_files)
+    diff_output = RunGit(diff_cmd)
+
+    stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
+    if opts.diff:
+      sys.stdout.write(stdout)
+    if opts.dry_run and len(stdout) > 0:
+      return_value = 2
+
+  return return_value
+
+
 def MatchingFileType(file_name, extensions):
   """Returns True if the file name ends with one of the given extensions."""
   return bool([ext for ext in extensions if file_name.lower().endswith(ext)])
@@ -5213,45 +5272,8 @@ def CMDformat(parser, args):
   top_dir = os.path.normpath(
       RunGit(["rev-parse", "--show-toplevel"]).rstrip('\n'))
 
-  # Set to 2 to signal to CheckPatchFormatted() that this patch isn't
-  # formatted. This is used to block during the presubmit.
-  return_value = 0
-
-  if clang_diff_files:
-    # Locate the clang-format binary in the checkout
-    try:
-      clang_format_tool = clang_format.FindClangFormatToolInChromiumTree()
-    except clang_format.NotFoundError as e:
-      DieWithError(e)
-
-    if opts.full or settings.GetFormatFullByDefault():
-      cmd = [clang_format_tool]
-      if not opts.dry_run and not opts.diff:
-        cmd.append('-i')
-      stdout = RunCommand(cmd + clang_diff_files, cwd=top_dir)
-      if opts.diff:
-        sys.stdout.write(stdout)
-    else:
-      env = os.environ.copy()
-      env['PATH'] = str(os.path.dirname(clang_format_tool))
-      try:
-        script = clang_format.FindClangFormatScriptInChromiumTree(
-            'clang-format-diff.py')
-      except clang_format.NotFoundError as e:
-        DieWithError(e)
-
-      cmd = [sys.executable, script, '-p0']
-      if not opts.dry_run and not opts.diff:
-        cmd.append('-i')
-
-      diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, clang_diff_files)
-      diff_output = RunGit(diff_cmd)
-
-      stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
-      if opts.diff:
-        sys.stdout.write(stdout)
-      if opts.dry_run and len(stdout) > 0:
-        return_value = 2
+  return_value = _RunClangFormatDiff(opts, clang_diff_files, top_dir,
+                                     upstream_commit)
 
   # Similar code to above, but using yapf on .py files rather than clang-format
   # on C/C++ files
@@ -5336,7 +5358,7 @@ def CMDformat(parser, args):
       stdout = RunCommand(command, cwd=top_dir)
       if opts.dry_run and stdout:
         return_value = 2
-    except dart_format.NotFoundError as e:
+    except dart_format.NotFoundError:
       print('Warning: Unable to check Dart code formatting. Dart SDK not '
             'found in this checkout. Files in other languages are still '
             'formatted.')
