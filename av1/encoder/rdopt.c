@@ -4864,11 +4864,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO best_mbmi = *mbmi;
   av1_zero(x->winner_mode_stats);
   x->winner_mode_count = 0;
-  // Initialize best mode stats for winner mode processing
-  const int txfm_search_done = 1;
-  store_winner_mode_stats(
-      &cpi->common, x, mbmi, NULL, NULL, NULL, 0, NULL, bsize, best_rd,
-      cpi->sf.winner_mode_sf.enable_multiwinner_mode_process, txfm_search_done);
+
   /* Y Search for intra prediction mode */
   for (int mode_idx = INTRA_MODE_START; mode_idx < INTRA_MODE_END; ++mode_idx) {
     RD_STATS this_rd_stats;
@@ -4918,6 +4914,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         intra_mode_info_cost_y(cpi, x, mbmi, bsize, bmode_costs[mbmi->mode]);
     this_rd = RDCOST(x->rdmult, this_rate, this_distortion);
     // Collect mode stats for multiwinner mode processing
+    const int txfm_search_done = 1;
     store_winner_mode_stats(
         &cpi->common, x, mbmi, NULL, NULL, NULL, 0, NULL, bsize, this_rd,
         cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
