@@ -534,6 +534,7 @@ static void set_good_speed_features_framesize_independent(
   if (speed >= 5) {
     sf->tpl_sf.prune_intra_modes = 1;
     sf->tpl_sf.reduce_first_step_size = 6;
+    sf->tpl_sf.skip_repeated_mv_level = 2;
 
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;

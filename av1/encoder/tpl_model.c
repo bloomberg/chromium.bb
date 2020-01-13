@@ -183,7 +183,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
 static int is_duplicate_mv(int_mv candidate_mv, int_mv *center_mvs,
                            int center_mvs_count, int skip_repeated_mv_level) {
   int_mv candidate_mv_full; /* full-pixel value */
-  static int mv_shift_lookup[2] = { 0, 3 };
+  static int mv_shift_lookup[3] = { 0, 3, 3 };
   int shift = mv_shift_lookup[skip_repeated_mv_level];
   int i;
 
@@ -197,6 +197,17 @@ static int is_duplicate_mv(int_mv candidate_mv, int_mv *center_mvs,
 
     if (candidate_mv_full.as_int == center_mv_full.as_int) {
       return 1;
+    }
+
+    // TODO(yunqing): will combine this part with the above checking. May also
+    // modify the name of the speed feature.
+    if (skip_repeated_mv_level == 2) {
+      const int mv_diff_thr = 16;
+      if (abs(center_mv_full.as_mv.col - candidate_mv_full.as_mv.col) <
+              mv_diff_thr &&
+          abs(center_mv_full.as_mv.row - candidate_mv_full.as_mv.row) <
+              mv_diff_thr)
+        return 1;
     }
   }
 
