@@ -349,6 +349,13 @@ public final class ChromePreferenceKeys {
     public static final String START_SURFACE_ENABLED_KEY = "start_surface_enabled";
 
     /**
+     * Whether or not the start surface single pane is enabled.
+     * Default value is false.
+     */
+    public static final String START_SURFACE_SINGLE_PANE_ENABLED_KEY =
+            "Chrome.StartSurface.SinglePaneEnabled";
+
+    /**
      * Whether or not the grid tab switcher is enabled.
      * Default value is false.
      */
@@ -489,6 +496,7 @@ public final class ChromePreferenceKeys {
                 NIGHT_MODE_CCT_AVAILABLE_KEY,
                 COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY,
                 START_SURFACE_ENABLED_KEY,
+                START_SURFACE_SINGLE_PANE_ENABLED_KEY,
                 GRID_TAB_SWITCHER_ENABLED_KEY,
                 TAB_GROUPS_ANDROID_ENABLED_KEY,
                 DUET_TABSTRIP_INTEGRATION_ANDROID_ENABLED_KEY,

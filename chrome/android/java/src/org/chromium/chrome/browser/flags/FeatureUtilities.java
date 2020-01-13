@@ -404,6 +404,11 @@ public class FeatureUtilities {
     private static void cacheStartSurfaceEnabled() {
         cacheFlag(ChromePreferenceKeys.START_SURFACE_ENABLED_KEY,
                 ChromeFeatureList.START_SURFACE_ANDROID);
+        String feature = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.START_SURFACE_ANDROID, "start_surface_variation");
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY,
+                feature.equals("single"));
     }
 
     /**
@@ -413,7 +418,16 @@ public class FeatureUtilities {
         return isFlagEnabled(ChromePreferenceKeys.START_SURFACE_ENABLED_KEY, false);
     }
 
-    private static void cacheGridTabSwitcherEnabled() {
+    /**
+     * @return Whether the Start Surface SinglePane is enabled.
+     */
+    public static boolean isStartSurfaceSinglePaneEnabled() {
+        return isStartSurfaceEnabled()
+                && isFlagEnabled(ChromePreferenceKeys.START_SURFACE_SINGLE_PANE_ENABLED_KEY, false);
+    }
+
+    @VisibleForTesting
+    static void cacheGridTabSwitcherEnabled() {
         SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
         String featureKey = ChromePreferenceKeys.GRID_TAB_SWITCHER_ENABLED_KEY;
         boolean shouldQueryFeatureFlag = !DeviceClassManager.enableAccessibilityLayout();
