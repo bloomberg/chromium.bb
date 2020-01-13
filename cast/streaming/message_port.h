@@ -6,6 +6,7 @@
 #define CAST_STREAMING_MESSAGE_PORT_H_
 
 #include "absl/strings/string_view.h"
+#include "platform/base/error.h"
 
 namespace openscreen {
 namespace cast {
