@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <libvmaf/libvmaf.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "aom_dsp/vmaf.h"
 #include "aom_ports/system_state.h"
@@ -82,4 +83,44 @@ void aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
   aom_clear_system_state();
   *vmaf = vmaf_score;
   if (ret) fatal("Failed to compute VMAF scores.");
+}
+
+void aom_calc_vmaf_multi_frame(
+    void *user_data, const char *model_path,
+    int (*read_frame)(float *ref_data, float *main_data, float *temp_data,
+                      int stride_byte, void *user_data),
+    int frame_width, int frame_height, double *vmaf) {
+  aom_clear_system_state();
+
+  double vmaf_score;
+  const int ret = compute_vmaf(
+      &vmaf_score, (char *)"yuv420p", frame_width, frame_height, read_frame,
+      /*user_data=*/&user_data, (char *)model_path,
+      /*log_path=*/"vmaf_scores.xml", /*log_fmt=*/NULL, /*disable_clip=*/0,
+      /*disable_avx=*/0, /*enable_transform=*/0,
+      /*phone_model=*/0, /*do_psnr=*/0, /*do_ssim=*/0,
+      /*do_ms_ssim=*/0, /*pool_method=*/NULL, /*n_thread=*/0,
+      /*n_subsample=*/1, /*enable_conf_interval=*/0);
+  FILE *vmaf_log = fopen("vmaf_scores.xml", "r");
+  if (vmaf_log == NULL || ret) fatal("Failed to compute VMAF scores.");
+
+  int frame_index = 0;
+  char buf[512];
+  while (fgets(buf, 511, vmaf_log) != NULL) {
+    if (memcmp(buf, "\t\t<frame ", 9) == 0) {
+      char *p = strstr(buf, "vmaf=");
+      if (p != NULL && p[5] == '"') {
+        char *p2 = strstr(&p[6], "\"");
+        *p2 = '\0';
+        const double score = atof(&p[6]);
+        if (score < 0.0 || score > 100.0) {
+          fatal("Failed to compute VMAF scores.");
+        }
+        vmaf[frame_index++] = score;
+      }
+    }
+  }
+  fclose(vmaf_log);
+
+  aom_clear_system_state();
 }
