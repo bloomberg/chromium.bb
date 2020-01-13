@@ -169,10 +169,12 @@ class SdkUpdateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     # No boards and flags False.
     request = self._GetRequest(build_source=False)
     sdk_controller.Update(request, self.response, self.api_config)
-    args_patch.assert_called_with(build_source=False, toolchain_targets=[])
+    args_patch.assert_called_with(
+        build_source=False, toolchain_targets=[], toolchain_changed=False)
 
     # Multiple boards and flags True.
     targets = ['board1', 'board2']
     request = self._GetRequest(build_source=True, targets=targets)
     sdk_controller.Update(request, self.response, self.api_config)
-    args_patch.assert_called_with(build_source=True, toolchain_targets=targets)
+    args_patch.assert_called_with(
+        build_source=True, toolchain_targets=targets, toolchain_changed=False)

@@ -40,7 +40,8 @@ class SetupBoardRunConfig(object):
 
   def __init__(self, set_default=False, force=False, usepkg=True, jobs=None,
                regen_configs=False, quiet=False, update_toolchain=True,
-               upgrade_chroot=True, init_board_pkgs=True, local_build=False):
+               upgrade_chroot=True, init_board_pkgs=True, local_build=False,
+               toolchain_changed=False):
     """Initialize method.
 
     Args:
@@ -54,9 +55,12 @@ class SetupBoardRunConfig(object):
       upgrade_chroot (bool): Upgrade the chroot before building?
       init_board_pkgs (bool): Emerging packages to sysroot?
       local_build (bool): Bootstrap only from local packages?
+      toolchain_changed (bool): Has a toolchain change occurred? Implies
+        'force'.
     """
+
     self.set_default = set_default
-    self.force = force
+    self.force = force or toolchain_changed
     self.usepkg = usepkg
     self.jobs = jobs
     self.regen_configs = regen_configs

@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.phosphorus',
   syntax='proto3',
   serialized_options=_b('ZBgo.chromium.org/chromiumos/infra/proto/go/test_platform/phosphorus'),
-  serialized_pb=_b('\n+test_platform/phosphorus/upload_to_gs.proto\x12\x18test_platform.phosphorus\x1a%test_platform/phosphorus/common.proto\"f\n\x11UploadToGSRequest\x12\x30\n\x06\x63onfig\x18\x01 \x01(\x0b\x32 .test_platform.phosphorus.Config\x12\x0e\n\x06\x62ucket\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\tBDZBgo.chromium.org/chromiumos/infra/proto/go/test_platform/phosphorusb\x06proto3')
+  serialized_pb=_b('\n+test_platform/phosphorus/upload_to_gs.proto\x12\x18test_platform.phosphorus\x1a%test_platform/phosphorus/common.proto\"f\n\x11UploadToGSRequest\x12\x30\n\x06\x63onfig\x18\x01 \x01(\x0b\x32 .test_platform.phosphorus.Config\x12\x0e\n\x06\x62ucket\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\t\"$\n\x12UploadToGSResponse\x12\x0e\n\x06gs_url\x18\x01 \x01(\tBDZBgo.chromium.org/chromiumos/infra/proto/go/test_platform/phosphorusb\x06proto3')
   ,
   dependencies=[test__platform_dot_phosphorus_dot_common__pb2.DESCRIPTOR,])
 
@@ -71,8 +71,40 @@ _UPLOADTOGSREQUEST = _descriptor.Descriptor(
   serialized_end=214,
 )
 
+
+_UPLOADTOGSRESPONSE = _descriptor.Descriptor(
+  name='UploadToGSResponse',
+  full_name='test_platform.phosphorus.UploadToGSResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='gs_url', full_name='test_platform.phosphorus.UploadToGSResponse.gs_url', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=216,
+  serialized_end=252,
+)
+
 _UPLOADTOGSREQUEST.fields_by_name['config'].message_type = test__platform_dot_phosphorus_dot_common__pb2._CONFIG
 DESCRIPTOR.message_types_by_name['UploadToGSRequest'] = _UPLOADTOGSREQUEST
+DESCRIPTOR.message_types_by_name['UploadToGSResponse'] = _UPLOADTOGSRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 UploadToGSRequest = _reflection.GeneratedProtocolMessageType('UploadToGSRequest', (_message.Message,), dict(
@@ -81,6 +113,13 @@ UploadToGSRequest = _reflection.GeneratedProtocolMessageType('UploadToGSRequest'
   # @@protoc_insertion_point(class_scope:test_platform.phosphorus.UploadToGSRequest)
   ))
 _sym_db.RegisterMessage(UploadToGSRequest)
+
+UploadToGSResponse = _reflection.GeneratedProtocolMessageType('UploadToGSResponse', (_message.Message,), dict(
+  DESCRIPTOR = _UPLOADTOGSRESPONSE,
+  __module__ = 'test_platform.phosphorus.upload_to_gs_pb2'
+  # @@protoc_insertion_point(class_scope:test_platform.phosphorus.UploadToGSResponse)
+  ))
+_sym_db.RegisterMessage(UploadToGSResponse)
 
 
 DESCRIPTOR._options = None

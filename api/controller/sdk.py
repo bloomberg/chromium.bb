@@ -72,9 +72,13 @@ def Update(input_proto, output_proto, _config):
   """
   build_source = input_proto.flags.build_source
   targets = [target.name for target in input_proto.toolchain_targets]
+  toolchain_changed = input_proto.flags.toolchain_changed
 
-  args = sdk.UpdateArguments(build_source=build_source,
-                             toolchain_targets=targets)
+  args = sdk.UpdateArguments(
+      build_source=build_source,
+      toolchain_targets=targets,
+      toolchain_changed=toolchain_changed)
+
   version = sdk.Update(args)
 
   if version:

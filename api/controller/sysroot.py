@@ -88,7 +88,8 @@ def _MockFailedPackagesResponse(_input_proto, output_proto, _config):
 @validate.validation_complete
 def InstallToolchain(input_proto, output_proto, _config):
   """Install the toolchain into a sysroot."""
-  compile_source = input_proto.flags.compile_source
+  compile_source = (
+      input_proto.flags.compile_source or input_proto.flags.toolchain_changed)
 
   sysroot_path = input_proto.sysroot.path
   build_target_name = input_proto.sysroot.build_target.name
@@ -120,9 +121,13 @@ def InstallToolchain(input_proto, output_proto, _config):
 @metrics.collect_metrics
 def InstallPackages(input_proto, output_proto, _config):
   """Install packages into a sysroot, building as necessary and permitted."""
-  compile_source = input_proto.flags.compile_source
+  compile_source = (
+      input_proto.flags.compile_source or input_proto.flags.toolchain_changed)
   event_file = input_proto.flags.event_file
-  use_goma = input_proto.flags.use_goma
+  # A new toolchain version will not yet have goma support, so goma must be
+  # disabled when we are testing toolchain changes.
+  use_goma = (
+      input_proto.flags.use_goma and not input_proto.flags.toolchain_changed)
 
   target_sysroot = sysroot_lib.Sysroot(input_proto.sysroot.path)
   build_target = controller_util.ParseBuildTarget(

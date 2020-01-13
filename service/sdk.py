@@ -95,16 +95,22 @@ class CreateArguments(object):
 class UpdateArguments(object):
   """Value object to handle the update arguments."""
 
-  def __init__(self, build_source=False, toolchain_targets=None):
+  def __init__(self,
+               build_source=False,
+               toolchain_targets=None,
+               toolchain_changed=False):
     """Update arguments init.
 
     Args:
       build_source (bool): Whether to build the source or use prebuilts.
       toolchain_targets (list): The list of build targets whose toolchains
         should be updated.
+      toolchain_changed (bool): Whether a toolchain change has occurred. Implies
+        build_source.
     """
     self.build_source = build_source
     self.toolchain_targets = toolchain_targets
+    self.toolchain_changed = toolchain_changed
 
   def GetArgList(self):
     """Get the list of the corresponding command line arguments.
@@ -114,12 +120,12 @@ class UpdateArguments(object):
     """
     args = []
 
-    if self.build_source:
+    if self.build_source or self.toolchain_changed:
       args.append('--nousepkg')
 
     if self.toolchain_targets:
       args.extend(['--toolchain_boards', ','.join(self.toolchain_targets)])
-    else:
+    elif not self.toolchain_changed:
       args.append('--skip_toolchain_update')
 
     return args
