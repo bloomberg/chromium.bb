@@ -196,15 +196,21 @@ inline int32_t RightShiftWithRounding(int64_t value, int bits) {
 }
 
 inline int32_t RightShiftWithRoundingSigned(int32_t value, int bits) {
-  return (value >= 0) ? RightShiftWithRounding(value, bits)
-                      : -RightShiftWithRounding(-value, bits);
+  assert(bits > 0);
+  // The next line is equivalent to:
+  // return (value >= 0) ? RightShiftWithRounding(value, bits)
+  //                     : -RightShiftWithRounding(-value, bits);
+  return RightShiftWithRounding(value + (value >> 31), bits);
 }
 
 // This variant is used when |value| can exceed 32 bits. Although the final
 // result must always fit into int32_t.
 inline int32_t RightShiftWithRoundingSigned(int64_t value, int bits) {
-  return (value >= 0) ? RightShiftWithRounding(value, bits)
-                      : -RightShiftWithRounding(-value, bits);
+  assert(bits > 0);
+  // The next line is equivalent to:
+  // return (value >= 0) ? RightShiftWithRounding(value, bits)
+  //                     : -RightShiftWithRounding(-value, bits);
+  return RightShiftWithRounding(value + (value >> 63), bits);
 }
 
 constexpr int DivideBy2(int n) { return n >> 1; }
