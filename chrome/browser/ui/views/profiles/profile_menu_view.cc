@@ -226,12 +226,6 @@ void ProfileMenuView::OnAvatarMenuChanged(
 }
 
 // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
-void ProfileMenuView::FocusButtonOnKeyboardOpen() {
-  if (first_profile_button_)
-    first_profile_button_->RequestFocus();
-}
-
-// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 void ProfileMenuView::OnWidgetClosing(views::Widget* /*widget*/) {
   // Unsubscribe from everything early so that the updates do not reach the
   // bubble and change its state.
@@ -672,9 +666,12 @@ void ProfileMenuView::BuildSelectableProfiles() {
 
     AddSelectableProfile(
         profile_entry->GetAvatarIcon().AsImageSkia(), profile_entry->GetName(),
+        /*is_guest=*/false,
         base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
                             base::Unretained(this), profile_entry->GetPath()));
   }
+  UMA_HISTOGRAM_BOOLEAN("ProfileChooser.HasProfilesShown",
+                        profile_entries.size() > 1);
 
   PrefService* service = g_browser_process->local_state();
   DCHECK(service);
@@ -683,6 +680,7 @@ void ProfileMenuView::BuildSelectableProfiles() {
     AddSelectableProfile(
         profiles::GetGuestAvatar(),
         l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
+        /*is_guest=*/true,
         base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
                             base::Unretained(this)));
   }
@@ -1041,14 +1039,12 @@ void ProfileMenuView::AddOptionsView(bool display_lock,
           *image.ToImageSkia(), profiles::GetProfileSwitcherTextForItem(item),
           base::BindRepeating(&ProfileMenuView::OnOtherProfileSelected,
                               base::Unretained(this), item.profile_path));
-
-      if (!first_profile_button_)
-        first_profile_button_ = button;
+      SetFirstProfileButtonIfUnset(button);
     }
   }
 
   UMA_HISTOGRAM_BOOLEAN("ProfileChooser.HasProfilesShown",
-                        first_profile_button_);
+                        HasFirstProfileButton());
 
   // Add the "Guest" button for browsing as guest
   if (!is_guest && !browser()->profile()->IsSupervised()) {

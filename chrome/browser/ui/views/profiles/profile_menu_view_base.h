@@ -144,6 +144,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   void SetProfileManagementHeading(const base::string16& heading);
   void AddSelectableProfile(const gfx::ImageSkia& image,
                             const base::string16& name,
+                            bool is_guest,
                             base::RepeatingClosure action);
   void AddProfileManagementShortcutFeatureButton(const gfx::ImageSkia& icon,
                                                  const base::string16& text,
@@ -211,6 +212,12 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
   int GetDefaultIconSize();
 
+ protected:
+  // Sets |first_profile_button_| to |button| if not yet set.
+  // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
+  void SetFirstProfileButtonIfUnset(views::Button* button);
+  bool HasFirstProfileButton();
+
  private:
   friend class ProfileMenuViewExtensionsTest;
 
@@ -218,9 +225,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
   void RepopulateViewFromMenuItems();
 
-  // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
   // Requests focus for a button when opened by keyboard.
-  virtual void FocusButtonOnKeyboardOpen() {}
+  void FocusButtonOnKeyboardOpen();
 
   // views::BubbleDialogDelegateView:
   void Init() final;
@@ -279,6 +285,10 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   views::View* selectable_profiles_container_ = nullptr;
   views::View* profile_mgmt_shortcut_features_container_ = nullptr;
   views::View* profile_mgmt_features_container_ = nullptr;
+
+  // The first profile button that should be focused when the menu is opened
+  // using a key accelerator.
+  views::Button* first_profile_button_ = nullptr;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 

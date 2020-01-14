@@ -470,6 +470,7 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
 
 void ProfileMenuViewBase::AddSelectableProfile(const gfx::ImageSkia& image,
                                                const base::string16& name,
+                                               bool is_guest,
                                                base::RepeatingClosure action) {
   constexpr int kImageSize = 22;
 
@@ -483,6 +484,9 @@ void ProfileMenuViewBase::AddSelectableProfile(const gfx::ImageSkia& image,
   gfx::ImageSkia sized_image = CropCircle(SizeImage(image, kImageSize));
   views::Button* button = selectable_profiles_container_->AddChildView(
       std::make_unique<HoverButton>(this, sized_image, name));
+
+  if (!is_guest && !first_profile_button_)
+    first_profile_button_ = button;
 
   RegisterClickAction(button, std::move(action));
 }
@@ -667,6 +671,7 @@ void ProfileMenuViewBase::Reset() {
       components->AddChildView(std::make_unique<views::View>());
   profile_mgmt_features_container_ =
       components->AddChildView(std::make_unique<views::View>());
+  first_profile_button_ = nullptr;
 
   // Create a scroll view to hold the components.
   auto scroll_view = std::make_unique<views::ScrollView>();
@@ -956,13 +961,29 @@ void ProfileMenuViewBase::RepopulateViewFromMenuItems() {
   }
 }
 
-// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
-gfx::ImageSkia ProfileMenuViewBase::CreateVectorIcon(
-    const gfx::VectorIcon& icon) {
-  return gfx::CreateVectorIcon(icon, kIconSize, GetDefaultIconColor());
+void ProfileMenuViewBase::FocusButtonOnKeyboardOpen() {
+  if (first_profile_button_)
+    first_profile_button_->RequestFocus();
 }
 
 // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
 int ProfileMenuViewBase::GetDefaultIconSize() {
   return kIconSize;
+}
+
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
+void ProfileMenuViewBase::SetFirstProfileButtonIfUnset(views::Button* button) {
+  if (!first_profile_button_)
+    first_profile_button_ = button;
+}
+
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
+bool ProfileMenuViewBase::HasFirstProfileButton() {
+  return first_profile_button_;
+}
+
+// TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
+gfx::ImageSkia ProfileMenuViewBase::CreateVectorIcon(
+    const gfx::VectorIcon& icon) {
+  return gfx::CreateVectorIcon(icon, kIconSize, GetDefaultIconColor());
 }

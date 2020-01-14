@@ -42,10 +42,6 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
  private:
   friend class ProfileMenuViewExtensionsTest;
 
-  // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
-  // ProfileMenuViewBase:
-  void FocusButtonOnKeyboardOpen() override;
-
   // views::BubbleDialogDelegateView:
   void OnWidgetClosing(views::Widget* widget) override;
   base::string16 GetAccessibleWindowTitle() const override;
@@ -161,7 +157,6 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
 
   // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.
   // Button pointers used in tests.
-  views::Button* first_profile_button_ = nullptr;
   views::Button* lock_button_ = nullptr;
 
   // TODO(crbug.com/1021587): Remove after ProfileMenuRevamp.

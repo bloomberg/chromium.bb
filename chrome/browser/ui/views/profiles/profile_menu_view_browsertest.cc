@@ -616,12 +616,12 @@ INSTANTIATE_TEST_SUITE_P(All,
 //   ProfileMenuClickTest_WithPrimaryAccount,
 //   ::testing::Range(0, num_of_actionable_items));
 //
-class ProfileMenuClickTest : public SyncTest,
-                             public testing::WithParamInterface<size_t> {
+class ProfileMenuClickTestBase : public SyncTest {
  public:
-  ProfileMenuClickTest() : SyncTest(SINGLE_CLIENT) {
+  ProfileMenuClickTestBase() : SyncTest(SINGLE_CLIENT) {
     scoped_feature_list_.InitAndEnableFeature(features::kProfileMenuRevamp);
   }
+  ~ProfileMenuClickTestBase() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
     test_signin_client_factory_ =
@@ -639,23 +639,6 @@ class ProfileMenuClickTest : public SyncTest,
         ProfileSyncServiceHarness::SigninType::FAKE_SIGNIN);
   }
 
-  virtual ProfileMenuViewBase::ActionableItem GetExpectedActionableItemAtIndex(
-      size_t index) = 0;
-
-  // This should be called in the test body.
-  void RunTest() {
-    ASSERT_NO_FATAL_FAILURE(OpenProfileMenu());
-    AdvanceFocus(/*count=*/GetParam() + 1);
-    ASSERT_TRUE(GetFocusedItem());
-    Click(GetFocusedItem());
-    LOG(INFO) << "Clicked item at index " << GetParam();
-    base::RunLoop().RunUntilIdle();
-
-    histogram_tester_.ExpectUniqueSample(
-        "Profile.Menu.ClickedActionableItem",
-        GetExpectedActionableItemAtIndex(GetParam()), /*count=*/1);
-  }
-
   void SetTargetBrowser(Browser* browser) { target_browser_ = browser; }
 
   signin::IdentityManager* identity_manager() {
@@ -669,8 +652,8 @@ class ProfileMenuClickTest : public SyncTest,
 
   ProfileSyncServiceHarness* sync_harness() { return sync_harness_.get(); }
 
- private:
-  void OpenProfileMenu() {
+ protected:
+  void OpenProfileMenu(bool use_mouse = true) {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(
         target_browser_ ? target_browser_ : browser());
 
@@ -678,7 +661,15 @@ class ProfileMenuClickTest : public SyncTest,
     views::View* avatar_button =
         browser_view->toolbar_button_provider()->GetAvatarToolbarButton();
     ASSERT_TRUE(avatar_button);
-    Click(avatar_button);
+    if (use_mouse) {
+      Click(avatar_button);
+    } else {
+      avatar_button->RequestFocus();
+      avatar_button->OnKeyPressed(
+          ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_SPACE, ui::EF_NONE));
+      avatar_button->OnKeyReleased(
+          ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_SPACE, ui::EF_NONE));
+    }
 
     ASSERT_TRUE(profile_menu_view());
     profile_menu_view()->set_close_on_deactivate(false);
@@ -733,6 +724,33 @@ class ProfileMenuClickTest : public SyncTest,
   Browser* target_browser_ = nullptr;
   std::unique_ptr<ProfileSyncServiceHarness> sync_harness_;
 
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTestBase);
+};
+
+class ProfileMenuClickTest : public ProfileMenuClickTestBase,
+                             public testing::WithParamInterface<size_t> {
+ public:
+  ProfileMenuClickTest() = default;
+  ~ProfileMenuClickTest() override = default;
+
+  virtual ProfileMenuViewBase::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) = 0;
+
+  // This should be called in the test body.
+  void RunTest() {
+    ASSERT_NO_FATAL_FAILURE(OpenProfileMenu());
+    AdvanceFocus(/*count=*/GetParam() + 1);
+    ASSERT_TRUE(GetFocusedItem());
+    Click(GetFocusedItem());
+    LOG(INFO) << "Clicked item at index " << GetParam();
+    base::RunLoop().RunUntilIdle();
+
+    histogram_tester_.ExpectUniqueSample(
+        "Profile.Menu.ClickedActionableItem",
+        GetExpectedActionableItemAtIndex(GetParam()), /*count=*/1);
+  }
+
+ private:
   DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest);
 };
 
@@ -993,4 +1011,37 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_IncognitoProfile,
   SetTargetBrowser(CreateIncognitoBrowser(browser()->profile()));
 
   RunTest();
+}
+
+class ProfileMenuClickKeyAcceleratorTest : public ProfileMenuClickTestBase {
+ public:
+  ProfileMenuClickKeyAcceleratorTest() = default;
+  ~ProfileMenuClickKeyAcceleratorTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickKeyAcceleratorTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ProfileMenuClickKeyAcceleratorTest, FocusOtherProfile) {
+  // Add an additional profiles.
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  CreateTestingProfile(profile_manager->GenerateNextProfileDirectoryPath());
+
+  // Open the menu using the keyboard.
+  ASSERT_NO_FATAL_FAILURE(OpenProfileMenu(/*use_mouse=*/false));
+
+  // The first other profile menu should be focused when the menu is opened
+  // via a key event.
+  views::View* focused_view = GetFocusedItem();
+  ASSERT_TRUE(focused_view);
+  focused_view->OnKeyPressed(
+      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE));
+  focused_view->OnKeyReleased(
+      ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_RETURN, ui::EF_NONE));
+  base::RunLoop().RunUntilIdle();
+
+  histogram_tester_.ExpectUniqueSample(
+      "Profile.Menu.ClickedActionableItem",
+      ProfileMenuViewBase::ActionableItem::kOtherProfileButton,
+      /*count=*/1);
 }
