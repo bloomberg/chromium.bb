@@ -887,6 +887,36 @@ static int get_active_cq_level(const RATE_CONTROL *rc,
   return active_cq_level;
 }
 
+static int get_q_using_fixed_offsets(const AV1EncoderConfig *const oxcf,
+                                     const GF_GROUP *const gf_group,
+                                     int cq_level, int is_keyframe,
+                                     int frames_to_key) {
+  assert(oxcf->use_fixed_qp_offsets);
+  assert(oxcf->rc_mode == AOM_Q);
+  const int frame_index = gf_group->index;
+  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[frame_index];
+
+  int offset_idx = -1;
+  if (is_keyframe) {
+    // Ignore offsets for image coding.
+    if (frames_to_key == 1) return cq_level;
+    offset_idx = 0;
+  } else if (update_type == ARF_UPDATE || update_type == GF_UPDATE) {
+    offset_idx = 1;
+  } else if (update_type == INTNL_ARF_UPDATE) {
+    offset_idx =
+        AOMMIN(gf_group->layer_depth[frame_index], FIXED_QP_OFFSET_COUNT - 1);
+  } else {  // Leaf level / overlay frame.
+    assert(update_type == LF_UPDATE || update_type == OVERLAY_UPDATE ||
+           update_type == INTNL_OVERLAY_UPDATE);
+    return cq_level;  // Directly Return worst quality allowed.
+  }
+  assert(offset_idx >= 0 && offset_idx < FIXED_QP_OFFSET_COUNT);
+  assert(oxcf->fixed_qp_offsets[offset_idx] >= 0);
+
+  return AOMMAX(cq_level - oxcf->fixed_qp_offsets[offset_idx], 0);
+}
+
 static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
                                              int height, int *bottom_index,
                                              int *top_index) {
@@ -896,6 +926,13 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   const int cq_level = get_active_cq_level(rc, oxcf, frame_is_intra_only(cm),
                                            cm->superres_scale_denominator);
+
+  if (oxcf->use_fixed_qp_offsets) {
+    return get_q_using_fixed_offsets(oxcf, &cpi->gf_group, cq_level,
+                                     frame_is_intra_only(cm),
+                                     rc->frames_to_key);
+  }
+
   int active_best_quality;
   int active_worst_quality = calc_active_worst_quality_one_pass_vbr(cpi);
   int q;
@@ -1341,6 +1378,12 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   const GF_GROUP *gf_group = &cpi->gf_group;
   const int cq_level = get_active_cq_level(rc, oxcf, frame_is_intra_only(cm),
                                            cm->superres_scale_denominator);
+
+  if (oxcf->use_fixed_qp_offsets) {
+    return get_q_using_fixed_offsets(
+        oxcf, gf_group, cq_level, frame_is_intra_only(cm), rc->frames_to_key);
+  }
+
   int active_best_quality = 0;
   int active_worst_quality = rc->active_worst_quality;
   int q;

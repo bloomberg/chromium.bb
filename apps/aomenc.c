@@ -802,6 +802,14 @@ static const arg_def_t set_tier_mask =
             "operating points conforms to. "
             "Bit value 0(defualt): Main Tier; 1: High Tier.");
 
+static const arg_def_t fixed_qp_offsets =
+    ARG_DEF(NULL, "fixed-qp-offsets", 1,
+            "Set fixed QP offsets for frames at different levels of the "
+            "pyramid. Comma-separated list of 5 offsets for keyframe, ALTREF, "
+            "and 3 levels of internal alt-refs. If this option is not "
+            "specified (default), offsets are adaptively chosen by the "
+            "encoder.");
+
 static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &auto_altref,
                                        &sharpness,
@@ -1583,6 +1591,14 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
     } else if (arg_match(&arg, &vmaf_model_path, argi)) {
       config->vmaf_model_path = arg.val;
 #endif
+    } else if (arg_match(&arg, &fixed_qp_offsets, argi)) {
+      const int fixed_qp_offset_count = arg_parse_list(
+          &arg, config->cfg.fixed_qp_offsets, FIXED_QP_OFFSET_COUNT);
+      if (fixed_qp_offset_count < FIXED_QP_OFFSET_COUNT) {
+        die("Option --fixed_qp_offsets requires %d comma-separated values, but "
+            "only %d values were provided.\n",
+            FIXED_QP_OFFSET_COUNT, fixed_qp_offset_count);
+      }
     } else if (global->usage == AOM_USAGE_REALTIME &&
                arg_match(&arg, &enable_restoration, argi)) {
       if (arg_parse_uint(&arg) == 1) {
