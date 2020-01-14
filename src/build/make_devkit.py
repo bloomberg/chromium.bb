@@ -83,11 +83,20 @@ def copyIncludeFilesFrom(destDir, sourceDirs):
     shutil.copyfile(src, dest)
 
 
-def copyIncludeFiles(destDir):
-  copyIncludeFilesFrom(
-      os.path.join(destDir, 'include', 'blpwtk2'),
-      [os.path.join(srcDir, 'blpwtk2', 'public'),
-       os.path.join(srcDir, 'out', 'static_debug', 'gen', 'blpwtk2', 'blpwtk2', 'public')])
+def copyIncludeFiles(destDir, doMakeStaticCRT, doMakeDynamicCRT):
+  if doMakeStaticCRT:
+    copyIncludeFilesFrom(
+        os.path.join(destDir, 'include', 'blpwtk2'),
+        [os.path.join(srcDir, 'blpwtk2', 'public'),
+         os.path.join(srcDir, 'out', 'static_debug', 'gen', 'blpwtk2',
+                      'blpwtk2', 'public')])
+
+  if doMakeDynamicCRT:
+    copyIncludeFilesFrom(
+        os.path.join(destDir, 'include', 'blpwtk2'),
+        [os.path.join(srcDir, 'blpwtk2', 'public'),
+         os.path.join(srcDir, 'out', 'static_debug_md', 'gen', 'blpwtk2',
+                      'blpwtk2', 'public')])
 
   copyIncludeFilesFrom(
       os.path.join(destDir, 'include', 'v8'),
@@ -396,7 +405,7 @@ def main(args):
   if doGenerateMap:
     generateMsvsMapFiles(version, configs)
 
-  copyIncludeFiles(destDir)
+  copyIncludeFiles(destDir, doMakeStaticCRT, doMakeDynamicCRT)
   copyBin(destDir, version, configs, doGenerateMap)
   copyLib(destDir, version, configs)
 
