@@ -710,6 +710,19 @@ def map_and_run(data, constant_run_path):
 
   Returns metadata about the result.
   """
+
+  if data.isolate_cache:
+    download_stats = {
+        #'duration': 0.,
+        'initial_number_items': len(data.isolate_cache),
+        'initial_size': data.isolate_cache.total_size,
+        #'items_cold': '<large.pack()>',
+        #'items_hot': '<large.pack()>',
+    }
+  else:
+    # TODO(tikuta): take stats from state.json in this case too.
+    download_stats = {}
+
   result = {
       'duration': None,
       'exit_code': None,
@@ -721,13 +734,7 @@ def map_and_run(data, constant_run_path):
           #  'get_client_duration': 0.,
           #},
           'isolated': {
-              'download': {
-                  #'duration': 0.,
-                  'initial_number_items': len(data.isolate_cache),
-                  'initial_size': data.isolate_cache.total_size,
-                  #'items_cold': '<large.pack()>',
-                  #'items_hot': '<large.pack()>',
-              },
+              'download': download_stats,
               #'upload': {
               #  'duration': 0.,
               #  'items_cold': '<large.pack()>',
@@ -748,6 +755,8 @@ def map_and_run(data, constant_run_path):
 
   if data.root_dir:
     file_path.ensure_tree(data.root_dir, 0o700)
+  elif data.use_go_isolated:
+    data = data._replace(root_dir=os.path.dirname(data.go_cache_dir))
   elif data.isolate_cache.cache_dir:
     data = data._replace(
         root_dir=os.path.dirname(data.isolate_cache.cache_dir))
@@ -1332,7 +1341,11 @@ def main(args):
 
   # TODO(maruel): CIPD caches should be defined at an higher level here too, so
   # they can be cleaned the same way.
-  isolate_cache = isolateserver.process_cache_options(options, trim=False)
+  if options.use_go_isolated:
+    isolate_cache = None
+  else:
+    isolate_cache = isolateserver.process_cache_options(options, trim=False)
+
   caches = []
   if isolate_cache:
     caches.append(isolate_cache)
