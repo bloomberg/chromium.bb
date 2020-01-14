@@ -45,6 +45,11 @@ import fix_encoding
 import gerrit_util
 
 
+if sys.version_info.major == 2:
+  import urllib as urllib_parse
+else:
+  import urllib.parse as urllib_parse
+
 try:
   import dateutil  # pylint: disable=import-error
   import dateutil.parser
@@ -60,7 +65,7 @@ class DefaultFormatter(Formatter):
     self.default = default
 
   def get_value(self, key, args, kwds):
-    if isinstance(key, basestring) and key not in kwds:
+    if isinstance(key, str) and key not in kwds:
       return self.default
     return Formatter.get_value(self, key, args, kwds)
 
@@ -327,7 +332,7 @@ class MyActivity(object):
     http = self.monorail_get_auth_http()
     url = ('https://monorail-prod.appspot.com/_ah/api/monorail/v1/projects'
            '/%s/issues') % project
-    query_data = urllib.urlencode(query)
+    query_data = urllib_parse.urlencode(query)
     url = url + '?' + query_data
     _, body = http.request(url)
     self.show_progress()
@@ -479,7 +484,6 @@ class MyActivity(object):
                     title, url, author, created, modified,
                     optional_values=None):
     output_format = specific_fmt if specific_fmt is not None else default_fmt
-    output_format = unicode(output_format)
     values = {
         'title': title,
         'url': url,
@@ -489,8 +493,7 @@ class MyActivity(object):
     }
     if optional_values is not None:
       values.update(optional_values)
-    print(DefaultFormatter().format(output_format,
-                                    **values).encode(sys.getdefaultencoding()))
+    print(DefaultFormatter().format(output_format, **values))
 
 
   def filter_issue(self, issue, should_filter_by_user=True):
