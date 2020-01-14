@@ -167,6 +167,8 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/hash_motion.h"
             "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.c"
             "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.h"
+            "${AOM_ROOT}/av1/encoder/interp_search.c"
+            "${AOM_ROOT}/av1/encoder/interp_search.h"
             "${AOM_ROOT}/av1/encoder/level.c"
             "${AOM_ROOT}/av1/encoder/level.h"
             "${AOM_ROOT}/av1/encoder/lookahead.c"
