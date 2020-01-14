@@ -159,6 +159,100 @@ void CopyPlane(const uint8_t* source, int source_stride, const int width,
 
 }  // namespace
 
+PostFilter::PostFilter(
+    const ObuFrameHeader& frame_header,
+    const ObuSequenceHeader& sequence_header, LoopFilterMask* const masks,
+    const Array2D<int16_t>& cdef_index,
+    const Array2D<TransformSize>& inter_transform_sizes,
+    LoopRestorationInfo* const restoration_info,
+    BlockParametersHolder* block_parameters, YuvBuffer* const source_buffer,
+    YuvBuffer* const deblock_buffer, const dsp::Dsp* dsp,
+    ThreadPool* const thread_pool, uint8_t* const threaded_window_buffer,
+    uint8_t* const superres_line_buffer, int do_post_filter_mask)
+    : frame_header_(frame_header),
+      loop_restoration_(frame_header.loop_restoration),
+      dsp_(*dsp),
+      // Deblocking filter always uses 64x64 as step size.
+      num_64x64_blocks_per_row_(DivideBy64(frame_header.width + 63)),
+      upscaled_width_(frame_header.upscaled_width),
+      width_(frame_header.width),
+      height_(frame_header.height),
+      bitdepth_(sequence_header.color_config.bitdepth),
+      subsampling_x_(sequence_header.color_config.subsampling_x),
+      subsampling_y_(sequence_header.color_config.subsampling_y),
+      planes_(sequence_header.color_config.is_monochrome ? kMaxPlanesMonochrome
+                                                         : kMaxPlanes),
+      pixel_size_(static_cast<int>((bitdepth_ == 8) ? sizeof(uint8_t)
+                                                    : sizeof(uint16_t))),
+      horizontal_shift_{0, 0, 0},
+      vertical_shift_{0, 0, 0},
+      masks_(masks),
+      cdef_index_(cdef_index),
+      inter_transform_sizes_(inter_transform_sizes),
+      threaded_window_buffer_(threaded_window_buffer),
+      restoration_info_(restoration_info),
+      window_buffer_width_(GetWindowBufferWidth(thread_pool, frame_header)),
+      window_buffer_height_(GetWindowBufferHeight(thread_pool, frame_header)),
+      superres_line_buffer_(superres_line_buffer),
+      block_parameters_(*block_parameters),
+      source_buffer_(source_buffer),
+      deblock_buffer_(*deblock_buffer),
+      do_post_filter_mask_(do_post_filter_mask),
+      thread_pool_(thread_pool) {
+  const int8_t zero_delta_lf[kFrameLfCount] = {};
+  ComputeDeblockFilterLevels(zero_delta_lf, deblock_filter_levels_);
+  if (DoDeblock()) {
+    InitDeblockFilterParams();
+  }
+  if (DoSuperRes()) {
+    for (int plane = 0; plane < planes_; ++plane) {
+      const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
+      const int downscaled_width =
+          RightShiftWithRounding(width_, subsampling_x);
+      const int upscaled_width =
+          RightShiftWithRounding(upscaled_width_, subsampling_x);
+      const int superres_width = downscaled_width << kSuperResScaleBits;
+      super_res_info_[plane].step =
+          (superres_width + upscaled_width / 2) / upscaled_width;
+      const int error =
+          super_res_info_[plane].step * upscaled_width - superres_width;
+      super_res_info_[plane].initial_subpixel_x =
+          ((-((upscaled_width - downscaled_width) << (kSuperResScaleBits - 1)) +
+            DivideBy2(upscaled_width)) /
+               upscaled_width +
+           (1 << (kSuperResExtraBits - 1)) - error / 2) &
+          kSuperResScaleMask;
+      super_res_info_[plane].upscaled_width = upscaled_width;
+    }
+  }
+  for (int plane = 0; plane < planes_; ++plane) {
+    loop_restoration_buffer_[plane] = source_buffer_->data(plane);
+    cdef_buffer_[plane] = source_buffer_->data(plane);
+  }
+  if (DoCdef() || DoRestoration()) {
+    for (int plane = 0; plane < planes_; ++plane) {
+      if (DoRestoration() &&
+          loop_restoration_.type[plane] != kLoopRestorationTypeNone) {
+        horizontal_shift_[plane] += source_buffer_->alignment();
+        vertical_shift_[plane] += kRestorationBorder;
+        cdef_buffer_[plane] +=
+            vertical_shift_[plane] * source_buffer_->stride(plane) +
+            horizontal_shift_[plane] * pixel_size_;
+      }
+      if (DoCdef()) {
+        horizontal_shift_[plane] += source_buffer_->alignment();
+        vertical_shift_[plane] += kCdefBorder;
+      }
+      // |source_buffer_| will be shifted towards the upper-left corner after
+      // CDEF/loop restoration is applied. Shift |source_buffer_| towards the
+      // lower-right corner now so that |source_buffer_| will be shifted back to
+      // the original position after all post processing filters are applied.
+      source_buffer_->ShiftBuffer(plane, horizontal_shift_[plane],
+                                  vertical_shift_[plane]);
+    }
+  }
+}
+
 // Static data member definitions.
 constexpr int PostFilter::kCdefLargeValue;
 
@@ -204,12 +298,12 @@ void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
       // all the rows of the last superblock row.
       ApplyLoopRestorationForOneSuperBlockRow(row4x4 + sb4x4, 16);
     }
-    // Adjust the frame buffer pointers after CDEF/loop restoration was
-    // applied. For CDEF and loop restoration, we write the filtered output to
-    // the upper-left side of the original source_buffer_->data(). The new
-    // buffer pointer is still guaranteed to be within the original buffer's
-    // data region because of the borders.
-    ShiftSourceBuffer(/*to_upper_left=*/true);
+    // Shift the |source_buffer_| back to its original buffer offsets. This
+    // simply reverses the shift performed in the constructor.
+    for (int plane = 0; plane < planes_; ++plane) {
+      source_buffer_->ShiftBuffer(plane, -horizontal_shift_[plane],
+                                  -vertical_shift_[plane]);
+    }
     ExtendBordersForReferenceFrame();
   }
 }
@@ -237,9 +331,10 @@ void PostFilter::ApplySuperResThreaded() {
     std::array<uint8_t*, kMaxPlanes> buffers;
     std::array<int, kMaxPlanes> strides;
     for (int plane = 0; plane < planes_; ++plane) {
-      buffers[plane] =
-          GetSourceBuffer(static_cast<Plane>(plane), row4x4_start, 0);
       strides[plane] = source_buffer_->stride(plane);
+      buffers[plane] =
+          GetBufferOffset(cdef_buffer_[plane], strides[plane],
+                          static_cast<Plane>(plane), row4x4_start, 0);
     }
     if (i < num_threads - 1) {
       thread_pool_->Schedule([this, buffers, strides, thread_pool_rows4x4,
@@ -268,29 +363,13 @@ void PostFilter::ApplyFilteringThreaded() {
   if (DoCdef()) ApplyCdef();
   if (DoSuperRes()) ApplySuperResThreaded();
   if (DoRestoration()) ApplyLoopRestoration();
-  ExtendBordersForReferenceFrame();
-}
-
-void PostFilter::ShiftSourceBuffer(const bool to_upper_left) {
-  if (!DoCdef() && !DoRestoration()) return;
-  // If |to_upper_left| is true, negative shifts are used to indicate shifting
-  // towards the upper-left corner. Otherwise, positive shifts are used to
-  // indicate shifting towards the lower-right corner. Shifts are in pixels.
-  for (int plane = kPlaneY; plane < planes_; ++plane) {
-    const bool shift_cdef = DoCdef();
-    const bool shift_loop_restoration =
-        DoRestoration() &&
-        loop_restoration_.type[plane] != kLoopRestorationTypeNone;
-    const int horizontal_shift = source_buffer_->alignment() *
-                                 (static_cast<int>(shift_cdef) +
-                                  static_cast<int>(shift_loop_restoration));
-    const int vertical_shift =
-        (shift_cdef ? kCdefBorder : 0) +
-        (shift_loop_restoration ? kRestorationBorder : 0);
-    source_buffer_->ShiftBuffer(
-        plane, to_upper_left ? -horizontal_shift : horizontal_shift,
-        to_upper_left ? -vertical_shift : vertical_shift);
+  // Shift the |source_buffer_| back to its original buffer offsets. This
+  // simply reverses the shift performed in the constructor.
+  for (int plane = 0; plane < planes_; ++plane) {
+    source_buffer_->ShiftBuffer(plane, -horizontal_shift_[plane],
+                                -vertical_shift_[plane]);
   }
+  ExtendBordersForReferenceFrame();
 }
 
 void PostFilter::ExtendBordersForReferenceFrame() {
@@ -566,11 +645,12 @@ void PostFilter::ComputeDeblockFilterLevels(
   }
 }
 
-uint8_t* PostFilter::GetCdefBufferAndStride(
-    const int start_x, const int start_y, const int plane,
-    const int subsampling_x, const int subsampling_y,
-    const int window_buffer_plane_size, const int vertical_shift,
-    const int horizontal_shift, int* cdef_stride) const {
+uint8_t* PostFilter::GetCdefBufferAndStride(const int start_x,
+                                            const int start_y, const int plane,
+                                            const int subsampling_x,
+                                            const int subsampling_y,
+                                            const int window_buffer_plane_size,
+                                            int* cdef_stride) const {
   if (thread_pool_ != nullptr) {
     // write output to threaded_window_buffer.
     *cdef_stride = window_buffer_width_ * pixel_size_;
@@ -579,13 +659,9 @@ uint8_t* PostFilter::GetCdefBufferAndStride(
     return threaded_window_buffer_ + plane * window_buffer_plane_size +
            row_window * (*cdef_stride) + column_window * pixel_size_;
   }
-  // write output to source_buffer_.
+  // write output to |cdef_buffer_|.
   *cdef_stride = source_buffer_->stride(plane);
-  // In-place cdef is applied by writing the output to the top-left corner.
-  const ptrdiff_t buffer_offset =
-      vertical_shift * (*cdef_stride) + horizontal_shift * pixel_size_;
-  return source_buffer_->data(plane) + start_y * (*cdef_stride) +
-         start_x * pixel_size_ + buffer_offset;
+  return cdef_buffer_[plane] + start_y * (*cdef_stride) + start_x * pixel_size_;
 }
 
 template <typename Pixel>
@@ -596,10 +672,6 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
                                      const int column4x4_start) {
   const int coeff_shift = bitdepth_ - 8;
   const int step = kNum4x4BlocksWide[kBlock8x8];
-  // abs(horizontal_shift) must be at least kCdefBorder. Increase it to
-  // preserve buffer alignment.
-  const int horizontal_shift = -source_buffer_->alignment();
-  const int vertical_shift = -kCdefBorder;
   const int window_buffer_plane_size =
       window_buffer_width_ * window_buffer_height_ * pixel_size_;
 
@@ -612,8 +684,7 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
       int cdef_stride;
       uint8_t* const cdef_buffer = GetCdefBufferAndStride(
           start_x, start_y, plane, subsampling_x, subsampling_y,
-          window_buffer_plane_size, vertical_shift, horizontal_shift,
-          &cdef_stride);
+          window_buffer_plane_size, &cdef_stride);
       const int src_stride = source_buffer_->stride(plane);
       uint8_t* const src_buffer = source_buffer_->data(plane) +
                                   start_y * src_stride + start_x * pixel_size_;
@@ -663,8 +734,7 @@ void PostFilter::ApplyCdefForOneUnit(uint16_t* cdef_block, const int index,
         int cdef_stride;
         uint8_t* const cdef_buffer = GetCdefBufferAndStride(
             start_x, start_y, plane, subsampling_x, subsampling_y,
-            window_buffer_plane_size, vertical_shift, horizontal_shift,
-            &cdef_stride);
+            window_buffer_plane_size, &cdef_stride);
         const int src_stride = source_buffer_->stride(plane);
         uint8_t* const src_buffer = source_buffer_->data(plane) +
                                     start_y * src_stride +
@@ -758,10 +828,6 @@ template <typename Pixel>
 void PostFilter::ApplyCdefThreaded() {
   assert((window_buffer_height_ & 63) == 0);
   const int num_workers = thread_pool_->num_threads();
-  // abs(horizontal_shift) must be at least kCdefBorder. Increase it to
-  // preserve buffer alignment.
-  const int horizontal_shift = -source_buffer_->alignment();
-  const int vertical_shift = -kCdefBorder;
   const int window_buffer_plane_size =
       window_buffer_width_ * window_buffer_height_ * pixel_size_;
   const int window_buffer_height4x4 = DivideBy4(window_buffer_height_);
@@ -793,11 +859,9 @@ void PostFilter::ApplyCdefThreaded() {
       }
       pending_jobs.Wait();
 
-      // Copy |threaded_window_buffer_| to |source_buffer_|.
+      // Copy |threaded_window_buffer_| to |cdef_buffer_|.
       for (int plane = kPlaneY; plane < planes_; ++plane) {
         const int src_stride = source_buffer_->stride(plane);
-        const ptrdiff_t buffer_offset =
-            vertical_shift * src_stride + horizontal_shift * pixel_size_;
         const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
         const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
         const int plane_row = MultiplyBy4(row4x4) >> subsampling_y;
@@ -811,35 +875,24 @@ void PostFilter::ApplyCdefThreaded() {
         CopyPlane<Pixel>(
             threaded_window_buffer_ + plane * window_buffer_plane_size,
             window_buffer_width_ * pixel_size_, copy_width, copy_height,
-            source_buffer_->data(plane) + plane_row * src_stride +
-                plane_column * pixel_size_ + buffer_offset,
+            cdef_buffer_[plane] + plane_row * src_stride +
+                plane_column * pixel_size_,
             src_stride);
       }
     }
-  }
-  for (int plane = kPlaneY; plane < planes_; ++plane) {
-    source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift);
   }
 }
 
 void PostFilter::ApplySuperResForOneSuperBlockRow(int row4x4_start, int sb4x4) {
   assert(row4x4_start >= 0);
   assert(DoSuperRes());
-  const int horizontal_shift = -source_buffer_->alignment();
-  const int vertical_shift = -kCdefBorder;
   std::array<uint8_t*, kMaxPlanes> buffers;
   std::array<int, kMaxPlanes> strides;
   for (int plane = 0; plane < planes_; ++plane) {
-    // If cdef is on, then the output of cdef was written with a shift to allow
-    // in-place cdef filtering.
-    const ptrdiff_t cdef_offset =
-        DoCdef() ? vertical_shift * (source_buffer_->stride(plane)) +
-                       horizontal_shift * pixel_size_
-                 : 0;
     const int subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
     const ptrdiff_t row_offset = (MultiplyBy4(row4x4_start) >> subsampling_y) *
                                  source_buffer_->stride(plane);
-    buffers[plane] = source_buffer_->data(plane) + cdef_offset + row_offset;
+    buffers[plane] = cdef_buffer_[plane] + row_offset;
     strides[plane] = source_buffer_->stride(plane);
   }
   const int num_rows4x4 = std::min(sb4x4, frame_header_.rows4x4 - row4x4_start);
@@ -959,16 +1012,9 @@ void PostFilter::CopyBorderForRestoration(int row4x4, int sb4x4) {
         std::min(MultiplyBy4(sb4x4), height_ - MultiplyBy4(row4x4)),
         subsampling_y);
     const bool copy_bottom = row4x4 + sb4x4 >= frame_header_.rows4x4;
-    const int cdef_horizontal_shift = -source_buffer_->alignment();
-    const int cdef_vertical_shift = -kCdefBorder;
-    const ptrdiff_t cdef_buffer_offset =
-        DoCdef() ? cdef_vertical_shift * source_buffer_->stride(plane) +
-                       cdef_horizontal_shift * pixel_size_
-                 : 0;
-    uint8_t* const start =
-        GetSourceBuffer(static_cast<Plane>(plane), row4x4, 0) +
-        cdef_buffer_offset;
-    const ptrdiff_t stride = source_buffer_->stride(plane);
+    const int stride = source_buffer_->stride(plane);
+    uint8_t* const start = GetBufferOffset(
+        cdef_buffer_[plane], stride, static_cast<Plane>(plane), row4x4, 0);
 #if LIBGAV1_MAX_BITDEPTH >= 10
     if (bitdepth_ >= 10) {
       ExtendFrame<uint16_t>(start, plane_width, plane_height, stride,
@@ -1049,18 +1095,7 @@ template <typename Pixel>
 void PostFilter::ApplyLoopRestorationForSuperBlock(
     const Plane plane, const int x, const int y, const int unit_row,
     const int current_process_unit_height, const int process_unit_width) {
-  uint8_t* const src_buffer = source_buffer_->data(plane);
-  const int src_stride = source_buffer_->stride(plane);
-  const int cdef_horizontal_shift = -source_buffer_->alignment();
-  const int cdef_vertical_shift = -kCdefBorder;
-  const ptrdiff_t cdef_buffer_offset =
-      DoCdef() ? cdef_vertical_shift * src_stride +
-                     cdef_horizontal_shift * pixel_size_
-               : 0;
-  // The input to loop restoration is the cdef filtered pixels. If cdef
-  // filtering is on, then the output is written with a shift. So the source
-  // buffer has to be offset by that shift.
-  uint8_t* const cdef_buffer = source_buffer_->data(plane) + cdef_buffer_offset;
+  const int stride = source_buffer_->stride(plane);
   const int plane_unit_size = loop_restoration_.unit_size[plane];
   const int num_horizontal_units =
       restoration_info_->num_horizontal_units(static_cast<Plane>(plane));
@@ -1069,19 +1104,12 @@ void PostFilter::ApplyLoopRestorationForSuperBlock(
   const int plane_width =
       RightShiftWithRounding(upscaled_width_, subsampling_x);
   const int plane_height = RightShiftWithRounding(height_, subsampling_y);
-  const int horizontal_shift = -source_buffer_->alignment();
-  const int vertical_shift = -kRestorationBorder;
-  const ptrdiff_t src_unit_buffer_offset = vertical_shift * src_stride +
-                                           horizontal_shift * pixel_size_ +
-                                           cdef_buffer_offset;
-  // The output of loop restoration is written into the source frame buffer with
-  // a shift to the top left.
   Array2DView<Pixel> loop_restored_window(
-      source_buffer_->aligned_height(plane), src_stride / sizeof(Pixel),
-      reinterpret_cast<Pixel*>(src_buffer + y * src_stride + x * pixel_size_ +
-                               src_unit_buffer_offset));
+      source_buffer_->aligned_height(plane), stride / sizeof(Pixel),
+      reinterpret_cast<Pixel*>(loop_restoration_buffer_[plane] + y * stride +
+                               x * pixel_size_));
   ApplyLoopRestorationForOneUnit<Pixel>(
-      cdef_buffer, src_stride, plane, plane_height, x, y, 0, 0, unit_row,
+      cdef_buffer_[plane], stride, plane, plane_height, x, y, 0, 0, unit_row,
       current_process_unit_height, process_unit_width, plane_unit_size,
       num_horizontal_units, plane_width, &loop_restored_window);
 }
@@ -1193,10 +1221,6 @@ void PostFilter::ApplyLoopRestorationThreaded() {
       kRestorationProcessingUnitSize >> subsampling_y_,
       kRestorationProcessingUnitSize >> subsampling_y_};
 
-  // abs(horizontal_shift) must be at least kRestorationBorder. Increase it to
-  // preserve buffer alignment.
-  const int horizontal_shift = -source_buffer_->alignment();
-  const int vertical_shift = -kRestorationBorder;
   for (int plane = kPlaneY; plane < planes_; ++plane) {
     if (loop_restoration_.type[plane] == kLoopRestorationTypeNone) {
       continue;
@@ -1205,7 +1229,7 @@ void PostFilter::ApplyLoopRestorationThreaded() {
     const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
     const int8_t subsampling_y = (plane == kPlaneY) ? 0 : subsampling_y_;
     const int unit_height_offset = kRestorationUnitOffset >> subsampling_y;
-    uint8_t* const src_buffer = source_buffer_->data(plane);
+    uint8_t* const src_buffer = cdef_buffer_[plane];
     const int src_stride = source_buffer_->stride(plane);
     const int plane_unit_size = loop_restoration_.unit_size[plane];
     const int num_vertical_units =
@@ -1215,8 +1239,6 @@ void PostFilter::ApplyLoopRestorationThreaded() {
     const int plane_width =
         RightShiftWithRounding(upscaled_width_, subsampling_x);
     const int plane_height = RightShiftWithRounding(height_, subsampling_y);
-    const ptrdiff_t src_unit_buffer_offset =
-        vertical_shift * src_stride + horizontal_shift * pixel_size_;
     ExtendFrameBoundary(src_buffer, plane_width, plane_height, src_stride,
                         kRestorationBorder, kRestorationBorder,
                         kRestorationBorder, kRestorationBorder);
@@ -1293,16 +1315,14 @@ void PostFilter::ApplyLoopRestorationThreaded() {
         // Wait for all jobs of current window to finish.
         pending_jobs.Wait();
         // Copy |threaded_window_buffer_| to output frame.
-        CopyPlane<Pixel>(threaded_window_buffer_,
-                         window_buffer_width_ * pixel_size_,
-                         actual_window_width, actual_window_height,
-                         src_buffer + y * src_stride + x * pixel_size_ +
-                             src_unit_buffer_offset,
-                         src_stride);
+        CopyPlane<Pixel>(
+            threaded_window_buffer_, window_buffer_width_ * pixel_size_,
+            actual_window_width, actual_window_height,
+            loop_restoration_buffer_[plane] + y * src_stride + x * pixel_size_,
+            src_stride);
       }
       if (y == 0) y -= unit_height_offset;
     }
-    source_buffer_->ShiftBuffer(plane, horizontal_shift, vertical_shift);
   }
 }
 

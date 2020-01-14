@@ -63,78 +63,36 @@ class PostFilter {
   // Therefore the PostFilter constructor must be called after |source_buffer|
   // has been allocated but before a reconstructed frame is stored into
   // |source_buffer|.
+  //
+  // The overall flow of data in this class (for both single and multi-threaded
+  // cases) is as follows:
+  //   -> Input: |source_buffer_|.
+  //   -> Initialize |cdef_buffer_| and |loop_restoration_buffer_|.
+  //   -> Shift |source_buffer_| forward.
+  //   -> Deblocking:
+  //      * Input: |source_buffer_|
+  //      * Output: |source_buffer_|
+  //   -> CDEF:
+  //      * Input: |source_buffer_|
+  //      * Output: |cdef_buffer_|
+  //   -> SuperRes:
+  //      * Input: |cdef_buffer_|
+  //      * Output: |cdef_buffer_|
+  //   -> Loop Restoration:
+  //      * Input: |cdef_buffer_|
+  //      * Output: |loop_restoration_buffer_|.
+  //   -> Shift |source_buffer_| backward.
+  //   -> Now |source_buffer_| contains the filtered frame (without any changes
+  //      to the plane pointers that were passed into the class).
   PostFilter(const ObuFrameHeader& frame_header,
-             const ObuSequenceHeader& sequence_header,
-             LoopFilterMask* const masks, const Array2D<int16_t>& cdef_index,
+             const ObuSequenceHeader& sequence_header, LoopFilterMask* masks,
+             const Array2D<int16_t>& cdef_index,
              const Array2D<TransformSize>& inter_transform_sizes,
-             LoopRestorationInfo* const restoration_info,
-             BlockParametersHolder* block_parameters,
-             YuvBuffer* const source_buffer, YuvBuffer* const deblock_buffer,
-             const dsp::Dsp* dsp, ThreadPool* const thread_pool,
-             uint8_t* const threaded_window_buffer,
-             uint8_t* const superres_line_buffer, int do_post_filter_mask)
-      : frame_header_(frame_header),
-        loop_restoration_(frame_header.loop_restoration),
-        dsp_(*dsp),
-        // Deblocking filter always uses 64x64 as step size.
-        num_64x64_blocks_per_row_(DivideBy64(frame_header.width + 63)),
-        upscaled_width_(frame_header.upscaled_width),
-        width_(frame_header.width),
-        height_(frame_header.height),
-        bitdepth_(sequence_header.color_config.bitdepth),
-        subsampling_x_(sequence_header.color_config.subsampling_x),
-        subsampling_y_(sequence_header.color_config.subsampling_y),
-        planes_(sequence_header.color_config.is_monochrome
-                    ? kMaxPlanesMonochrome
-                    : kMaxPlanes),
-        pixel_size_(static_cast<int>((bitdepth_ == 8) ? sizeof(uint8_t)
-                                                      : sizeof(uint16_t))),
-        masks_(masks),
-        cdef_index_(cdef_index),
-        inter_transform_sizes_(inter_transform_sizes),
-        threaded_window_buffer_(threaded_window_buffer),
-        restoration_info_(restoration_info),
-        window_buffer_width_(GetWindowBufferWidth(thread_pool, frame_header)),
-        window_buffer_height_(GetWindowBufferHeight(thread_pool, frame_header)),
-        superres_line_buffer_(superres_line_buffer),
-        block_parameters_(*block_parameters),
-        source_buffer_(source_buffer),
-        deblock_buffer_(*deblock_buffer),
-        do_post_filter_mask_(do_post_filter_mask),
-        thread_pool_(thread_pool) {
-    const int8_t zero_delta_lf[kFrameLfCount] = {};
-    ComputeDeblockFilterLevels(zero_delta_lf, deblock_filter_levels_);
-    if (DoDeblock()) {
-      InitDeblockFilterParams();
-    }
-    // |source_buffer_| will be shifted towards the upper-left corner after
-    // CDEF/loop restoration is applied. Shift |source_buffer_| towards the
-    // lower-right corner now so that |source_buffer_| will be shifted back to
-    // the original position after all post processing filtering is applied.
-    ShiftSourceBuffer(/*to_upper_left=*/false);
-    if (DoSuperRes()) {
-      for (int plane = 0; plane < planes_; ++plane) {
-        const int8_t subsampling_x = (plane == kPlaneY) ? 0 : subsampling_x_;
-        const int downscaled_width =
-            RightShiftWithRounding(width_, subsampling_x);
-        const int upscaled_width =
-            RightShiftWithRounding(upscaled_width_, subsampling_x);
-        const int superres_width = downscaled_width << kSuperResScaleBits;
-        super_res_info_[plane].step =
-            (superres_width + upscaled_width / 2) / upscaled_width;
-        const int error =
-            super_res_info_[plane].step * upscaled_width - superres_width;
-        super_res_info_[plane].initial_subpixel_x =
-            ((-((upscaled_width - downscaled_width)
-                << (kSuperResScaleBits - 1)) +
-              DivideBy2(upscaled_width)) /
-                 upscaled_width +
-             (1 << (kSuperResExtraBits - 1)) - error / 2) &
-            kSuperResScaleMask;
-        super_res_info_[plane].upscaled_width = upscaled_width;
-      }
-    }
-  }
+             LoopRestorationInfo* restoration_info,
+             BlockParametersHolder* block_parameters, YuvBuffer* source_buffer,
+             YuvBuffer* deblock_buffer, const dsp::Dsp* dsp,
+             ThreadPool* thread_pool, uint8_t* threaded_window_buffer,
+             uint8_t* superres_line_buffer, int do_post_filter_mask);
 
   // non copyable/movable.
   PostFilter(const PostFilter&) = delete;
@@ -163,13 +121,15 @@ class PostFilter {
   //            specified by |kDeblockedRowsForLoopRestoration|) in every 64x64
   //            block is copied into |deblock_buffer_|.
   // * Cdef: Filtering output is written into |threaded_window_buffer_| and then
-  //         copied into the |source_buffer_| with a shift on the top left.
+  //         copied into the |cdef_buffer_| (which is just |source_buffer_| with
+  //         a shift to the top-left).
   // * SuperRes: Near in-place filtering (with an additional line buffer for
-  //             each row). The output is written to |source_buffer_|.
-  // * Restoration: Uses the |source_buffer_| and |deblock_buffer_| as the input
+  //             each row). The output is written to |cdef_buffer_|.
+  // * Restoration: Uses the |cdef_buffer_| and |deblock_buffer_| as the input
   //                and the output is written into the
   //                |threaded_window_buffer_|. It is then copied to the
-  //                |source_buffer_| with a shift on the top left.
+  //                |loop_restoration_buffer_| (which is just |cdef_buffer_|
+  //                with a shift to the top-left).
   void ApplyFilteringThreaded();
 
   // Does the overall post processing filter for one superblock row (starting at
@@ -181,14 +141,15 @@ class PostFilter {
   //            If cdef and loop restoration are both on, then 4 rows (as
   //            specified by |kDeblockedRowsForLoopRestoration|) in every 64x64
   //            block is copied into |deblock_buffer_|.
-  // * Cdef: In-place filtering. The output is written to |source_buffer_| with
-  //         a shift on the top left.
+  // * Cdef: In-place filtering. The output is written into |cdef_buffer_|
+  //         (which is just |source_buffer_| with a shift to the top-left).
   // * SuperRes: Near in-place filtering (with an additional line buffer for
-  //             each row). The output is written to |source_buffer_|.
+  //             each row). The output is written to |cdef_buffer_|.
   // * Restoration: Near in-place filtering. Uses a local block of size 64x64.
-  //                Uses the |source_buffer_| and |deblock_buffer_| as the input
-  //                and the output is written into |source_buffer_| with a shift
-  //                on the top left.
+  //                Uses the |cdef_buffer_| and |deblock_buffer_| as the input
+  //                and the output is written into |loop_restoration_buffer_|
+  //                (which is just |source_buffer_| with a shift to the
+  //                top-left).
   void ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
                                          bool is_last_row);
 
@@ -241,12 +202,17 @@ class PostFilter {
   }
   LoopFilterMask* masks() const { return masks_; }
   LoopRestorationInfo* restoration_info() const { return restoration_info_; }
-  uint8_t* GetSourceBuffer(Plane plane, int row4x4, int column4x4) const {
-    return source_buffer_->data(plane) +
-           RowOrColumn4x4ToPixel(row4x4, plane, subsampling_y_) *
-               source_buffer_->stride(plane) +
+  uint8_t* GetBufferOffset(uint8_t* base_buffer, int stride, Plane plane,
+                           int row4x4, int column4x4) const {
+    return base_buffer +
+           RowOrColumn4x4ToPixel(row4x4, plane, subsampling_y_) * stride +
            RowOrColumn4x4ToPixel(column4x4, plane, subsampling_x_) *
                pixel_size_;
+  }
+  uint8_t* GetSourceBuffer(Plane plane, int row4x4, int column4x4) const {
+    return GetBufferOffset(source_buffer_->data(plane),
+                           source_buffer_->stride(plane), plane, row4x4,
+                           column4x4);
   }
 
   // Extends frame, sets border pixel values to its closest frame boundary.
@@ -337,7 +303,6 @@ class PostFilter {
   uint8_t* GetCdefBufferAndStride(int start_x, int start_y, int plane,
                                   int subsampling_x, int subsampling_y,
                                   int window_buffer_plane_size,
-                                  int vertical_shift, int horizontal_shift,
                                   int* cdef_stride) const;
   template <typename Pixel>
   void ApplyCdefForOneUnit(uint16_t* cdef_block, int index, int block_width4x4,
@@ -469,11 +434,6 @@ class PostFilter {
   // with a height of 4*|sb4x4|.
   void ApplyLoopRestorationForOneSuperBlockRow(int row4x4_start, int sb4x4);
 
-  // Shifts the frame buffer pointers of |source_buffer_| if CDEF or loop
-  // restoration is enabled. If |to_upper_left| is true, shifts towards the
-  // upper-left corner, otherwise shifts towards the lower-right corner.
-  void ShiftSourceBuffer(bool to_upper_left);
-
   // Extend frame boundary for inter frame convolution and referencing if the
   // frame will be saved as a reference frame.
   void ExtendBordersForReferenceFrame();
@@ -490,6 +450,11 @@ class PostFilter {
   const int8_t subsampling_y_;
   const int8_t planes_;
   const int pixel_size_;
+  // The shifts applied to the |source_buffer_| in the constructor. Once the
+  // post filtering process is complete, all the shifts will be reversed so that
+  // the buffer offsets are the same as when they were passed into this class.
+  int horizontal_shift_[kMaxPlanes];
+  int vertical_shift_[kMaxPlanes];
   // This class does not take ownership of the masks/restoration_info, but it
   // could change their values.
   LoopFilterMask* const masks_;
@@ -527,10 +492,17 @@ class PostFilter {
   const BlockParametersHolder& block_parameters_;
   // Frame buffer to hold cdef filtered frame.
   YuvBuffer cdef_filtered_buffer_;
-  // Input frame buffer. During ApplyFiltering(), it holds the (upscaled)
-  // deblocked frame.
-  // When ApplyFiltering() is done, it holds the final output of PostFilter.
+  // Input frame buffer. The constructor of this class shifts the
+  // |source_buffer_| plane pointers to do in-place Loop Restoration and CDEF if
+  // necessary. Once filtering is complete, the plane pointers are restored back
+  // to their original positions.
   YuvBuffer* const source_buffer_;
+  // A view into |source_buffer_| that points to the output of the CDEF filtered
+  // planes (to facilitate in-place CDEF filtering).
+  uint8_t* cdef_buffer_[kMaxPlanes];
+  // A view into |source_buffer_| that points to the output of the Loop Restored
+  // planes (to facilitate in-place Loop Restoration).
+  uint8_t* loop_restoration_buffer_[kMaxPlanes];
   // Buffer used to store the deblocked pixels that are necessary for loop
   // restoration. This buffer will store 4 rows for every 64x64 block (4 rows
   // for every 32x32 for chroma with subsampling). The indices of the rows that
