@@ -369,7 +369,7 @@ static void set_good_speed_features_framesize_independent(
     sf->lpf_sf.dual_sgr_penalty_level = 1;
     sf->lpf_sf.enable_sgr_ep_pruning = 1;
 
-    sf->tpl_sf.skip_repeated_mv_level = 1;
+    sf->tpl_sf.skip_alike_starting_mv = 1;
   }
 
   if (speed >= 2) {
@@ -442,6 +442,8 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.reuse_compound_type_decision = 1;
 
     sf->intra_sf.prune_palette_search_level = 2;
+
+    sf->tpl_sf.skip_alike_starting_mv = 2;
 
     sf->tx_sf.tx_type_search.use_skip_flag_prediction =
         cm->allow_screen_content_tools ? 1 : 2;
@@ -534,7 +536,6 @@ static void set_good_speed_features_framesize_independent(
   if (speed >= 5) {
     sf->tpl_sf.prune_intra_modes = 1;
     sf->tpl_sf.reduce_first_step_size = 6;
-    sf->tpl_sf.skip_repeated_mv_level = 2;
 
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;
@@ -852,7 +853,7 @@ static AOM_INLINE void init_hl_sf(HIGH_LEVEL_SPEED_FEATURES *hl_sf) {
 static AOM_INLINE void init_tpl_sf(TPL_SPEED_FEATURES *tpl_sf) {
   tpl_sf->prune_intra_modes = 0;
   tpl_sf->reduce_first_step_size = 0;
-  tpl_sf->skip_repeated_mv_level = 0;
+  tpl_sf->skip_alike_starting_mv = 0;
 }
 
 static AOM_INLINE void init_gm_sf(GLOBAL_MOTION_SPEED_FEATURES *gm_sf) {

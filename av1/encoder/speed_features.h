@@ -311,11 +311,13 @@ typedef struct TPL_SPEED_FEATURES {
   int prune_intra_modes;
   // This parameter controls which step in the n-step process we start at.
   int reduce_first_step_size;
-  // Skip motion estimation based on the precision of centre MVs.
-  // If set to 0, motion estimation is skipped for duplicate centre MVs
+  // Skip motion estimation based on the precision of center MVs and the
+  // difference between center MVs.
+  // If set to 0, motion estimation is skipped for duplicate center MVs
   // (default). If set to 1, motion estimation is skipped for duplicate
-  // full-pixel centre MVs.
-  int skip_repeated_mv_level;
+  // full-pixel center MVs. If set to 2, motion estimation is skipped if the
+  // difference between center MVs is less than the threshold.
+  int skip_alike_starting_mv;
 } TPL_SPEED_FEATURES;
 
 typedef struct GLOBAL_MOTION_SPEED_FEATURES {
