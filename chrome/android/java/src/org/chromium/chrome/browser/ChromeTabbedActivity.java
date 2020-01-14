@@ -854,6 +854,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
         super.onResumeWithNative();
 
         if (IncognitoUtils.shouldDestroyIncognitoProfileOnStartup()) {
+            getTabModelSelector().selectModel(false);
             Profile.getLastUsedProfile().getOffTheRecordProfile().destroyWhenAppropriate();
         } else {
             CookiesFetcher.restoreCookies();
