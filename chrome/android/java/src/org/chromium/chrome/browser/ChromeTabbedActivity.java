@@ -696,10 +696,16 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 }
             };
             OnClickListener newTabClickHandler = v -> {
-                getTabModelSelector().getModel(false).commitAllTabClosures();
-                // This assumes that the keyboard can not be seen at the same time as the
-                // newtab button on the toolbar.
-                getCurrentTabCreator().launchNTP();
+                // If Start Surface should be shown as the home page, show the start surface home
+                // page.
+                if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
+                    showOverview(OverviewModeState.SHOWING_HOMEPAGE);
+                } else {
+                    getTabModelSelector().getModel(false).commitAllTabClosures();
+                    // This assumes that the keyboard can not be seen at the same time as the
+                    // newtab button on the toolbar.
+                    getCurrentTabCreator().launchNTP();
+                }
                 mLocaleManager.showSearchEnginePromoIfNeeded(ChromeTabbedActivity.this, null);
                 if (getTabModelSelector().isIncognitoSelected()) {
                     RecordUserAction.record("MobileToolbarStackViewNewIncognitoTab");
@@ -1710,7 +1716,14 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
             RecordUserAction.record("MobileNewTabOpened");
             reportNewTabShortcutUsed(false);
             if (fromMenu) RecordUserAction.record("MobileMenuNewTab.AppMenu");
-            getTabCreator(false).launchNTP();
+
+            // If Start Surface should be shown as the home page, show the start surface home page.
+            if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
+                getTabModelSelector().selectModel(false);
+                showOverview(OverviewModeState.SHOWING_HOMEPAGE);
+            } else {
+                getTabCreator(false).launchNTP();
+            }
 
             mLocaleManager.showSearchEnginePromoIfNeeded(this, null);
         } else if (id == R.id.new_incognito_tab_menu_id) {
@@ -1722,7 +1735,15 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 RecordUserAction.record("MobileNewTabOpened");
                 reportNewTabShortcutUsed(true);
                 if (fromMenu) RecordUserAction.record("MobileMenuNewIncognitoTab.AppMenu");
-                getTabCreator(true).launchNTP();
+
+                // If Start Surface should be shown as the home page, show the start surface home
+                // page.
+                if (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()) {
+                    getTabModelSelector().selectModel(true);
+                    showOverview(OverviewModeState.SHOWING_HOMEPAGE);
+                } else {
+                    getTabCreator(true).launchNTP();
+                }
             }
         } else if (id == R.id.all_bookmarks_menu_id) {
             // Note that 'currentTab' could be null in overview mode when start surface is
