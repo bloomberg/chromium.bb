@@ -638,6 +638,9 @@ class EchoClient(object):
                     self._options.tls_version,
                     self._options.disable_tls_compression)
 
+            self._handshake = ClientHandshakeProcessor(
+                self._socket, self._options)
+
             self._handshake.handshake()
 
             self._logger.info('Connection established')

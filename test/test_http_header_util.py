@@ -34,6 +34,7 @@
 
 
 import unittest
+import six
 
 from mod_pywebsocket import http_header_util
 
@@ -77,11 +78,20 @@ class UnitTest(unittest.TestCase):
         self.assertEqual(None, resource)
 
         host, port, resource = http_header_util.parse_uri('ws://localhost:')
-        self.assertEqual(None, resource)
+        if six.PY3:
+            self.assertEqual(None, resource)
+        else:
+            self.assertEqual('localhost', host)
+            self.assertEqual(80, port)
+            self.assertEqual('/', resource)
 
         host, port, resource = http_header_util.parse_uri('ws://localhost:/ws')
-        self.assertEqual(None, resource)
-
+        if six.PY3:
+            self.assertEqual(None, resource)
+        else:
+            self.assertEqual('localhost', host)
+            self.assertEqual(80, port)
+            self.assertEqual('/ws', resource)
 
 if __name__ == '__main__':
     unittest.main()
