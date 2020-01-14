@@ -45,11 +45,6 @@ Example Usage:
  % PYTHONPATH=$cwd/src python ./src/example/echo_client.py -p 8880 \
      -s localhost \
      -o http://localhost -r /echo -m test
-
-or
-
-# run echo client to test IETF HyBi 00 protocol
- run with --protocol-version=hybi00
 """
 
 
@@ -379,8 +374,7 @@ def _get_permessage_deflate_framer(extension_response):
 
 
 class ClientHandshakeProcessor(ClientHandshakeBase):
-    """WebSocket opening handshake processor for
-    draft-ietf-hybi-thewebsocketprotocol-06 and later.
+    """WebSocket opening handshake processor
     """
 
     def __init__(self, socket, options):
