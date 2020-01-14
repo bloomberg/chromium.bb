@@ -937,12 +937,12 @@ int av1_cost_coeffs_txb(const MACROBLOCK *x, const int plane, const int block,
                                   tx_class, reduced_tx_set_used);
 }
 
-INLINE int av1_cost_coeffs_txb_laplacian(const MACROBLOCK *x, const int plane,
-                                         const int block, const TX_SIZE tx_size,
-                                         const TX_TYPE tx_type,
-                                         const TXB_CTX *const txb_ctx,
-                                         const int reduced_tx_set_used,
-                                         const int adjust_eob) {
+int av1_cost_coeffs_txb_laplacian(const MACROBLOCK *x, const int plane,
+                                  const int block, const TX_SIZE tx_size,
+                                  const TX_TYPE tx_type,
+                                  const TXB_CTX *const txb_ctx,
+                                  const int reduced_tx_set_used,
+                                  const int adjust_eob) {
   const struct macroblock_plane *p = &x->plane[plane];
   int eob = p->eobs[block];
 
