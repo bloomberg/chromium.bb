@@ -701,7 +701,11 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
                 // newtab button on the toolbar.
                 getCurrentTabCreator().launchNTP();
                 mLocaleManager.showSearchEnginePromoIfNeeded(ChromeTabbedActivity.this, null);
-                RecordUserAction.record("MobileToolbarStackViewNewTab");
+                if (getTabModelSelector().isIncognitoSelected()) {
+                    RecordUserAction.record("MobileToolbarStackViewNewIncognitoTab");
+                } else {
+                    RecordUserAction.record("MobileToolbarStackViewNewTab");
+                }
                 if (getToolbarManager().isBottomToolbarVisible()) {
                     RecordUserAction.record("MobileBottomToolbarNewTabButton");
                 } else {

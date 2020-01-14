@@ -13844,6 +13844,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileToolbarStackViewNewIncognitoTab">
+  <owner>gogerald@chromium.org</owner>
+  <description>
+    The user taps the new tab button '+' on the tab switcher toolbar to create a
+    new incognito tab.
+  </description>
+</action>
+
 <action name="MobileToolbarStackViewNewTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
