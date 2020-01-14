@@ -82,14 +82,14 @@ while (( "$#" )); do
   esac
 done
 
-if [ ${string_data} ] && [ ${count_data} ]; then
+if [[ ! -z ${string_data} ]] && [[ ! -z ${count_data} ]]; then
   echo "Specifying both -s and -c is not allowed."
   print_usage
 fi
 
 # If a count was requested, build and execute the query. This code path is
 # separate because it is much simpler than search queries.
-if [ ${count_data} ]; then
+if [[ ! -z ${count_data} ]]; then
   query="SELECT count(stdout) AS Count FROM
   chromeos_ci_eng.analysis_event_log.${when}
   WHERE stdout LIKE \"%${count_data}%\";"
@@ -101,7 +101,7 @@ if [ ${count_data} ]; then
   exit 0
 fi
 
-if [ -z "${string_data}" ]
+if [[ -z "${string_data}" ]]
 then
   echo "No search string specified. -s|--string <search_string> is required."
   print_usage
