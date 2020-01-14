@@ -20,6 +20,7 @@ const char kGetVmEnterpriseReportingInfoMethod[] =
     "GetVmEnterpriseReportingInfo";
 const char kCreateDiskImageMethod[] = "CreateDiskImage";
 const char kDestroyDiskImageMethod[] = "DestroyDiskImage";
+const char kResizeDiskImageMethod[] = "ResizeDiskImage";
 const char kExportDiskImageMethod[] = "ExportDiskImage";
 const char kImportDiskImageMethod[] = "ImportDiskImage";
 const char kCancelDiskImageMethod[] = "CancelDiskImageOperation";
