@@ -1045,15 +1045,13 @@ static void alloc_altref_frame_buffer(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   const SequenceHeader *const seq_params = &cm->seq_params;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  int is_scale = (oxcf->resize_mode || oxcf->superres_mode);
 
   // TODO(agrange) Check if ARF is enabled and skip allocation if not.
   // (yunqing)Here use same border as lookahead buffers.
   if (aom_realloc_frame_buffer(
           &cpi->alt_ref_buffer, oxcf->width, oxcf->height,
           seq_params->subsampling_x, seq_params->subsampling_y,
-          seq_params->use_highbitdepth,
-          is_scale ? oxcf->border_in_pixels : AOM_ENC_LOOKAHEAD_BORDER,
+          seq_params->use_highbitdepth, AOM_ENC_NO_SCALE_BORDER,
           cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate altref buffer");
@@ -3183,7 +3181,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf, BufferPool *const pool,
             &cpi->tpl_stats_buffer[frame].rec_picture_buf, cm->width,
             cm->height, cm->seq_params.subsampling_x,
             cm->seq_params.subsampling_y, cm->seq_params.use_highbitdepth,
-            cpi->oxcf.border_in_pixels, cm->byte_alignment))
+            AOM_ENC_NO_SCALE_BORDER, cm->byte_alignment))
       aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                          "Failed to allocate frame buffer");
   }

@@ -135,12 +135,6 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   uint32_t sse;
   int cost_list[5];
   const MvLimits tmp_mv_limits = x->mv_limits;
-  // We hash the ss_cfgs based on the reference's stride to avoid having to to
-  // compute ss_cfg everytime this function is called.
-  // TODO(chiyotsai@google.com): Make this non-static to prepare for tpl
-  // multi-threading.
-  static search_site_config ss_cfgs[11];
-
   MV best_ref_mv1_full; /* full-pixel value of best_ref_mv1 */
 
   best_ref_mv1_full.col = center_mv.col >> 3;
@@ -157,10 +151,11 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_set_mv_search_range(&x->mv_limits, &center_mv);
 
-  search_site_config *ss_cfg = &ss_cfgs[stride_ref % 11];
-  if (ss_cfg->stride != stride_ref) {
-    av1_init3smotion_compensation(ss_cfg, stride_ref);
-  }
+  search_site_config *ss_cfg = &cpi->ss_cfg[SS_CFG_SRC];
+  if (ss_cfg->stride != stride_ref) ss_cfg = &cpi->ss_cfg[SS_CFG_LOOKAHEAD];
+
+  assert(ss_cfg->stride == stride_ref);
+
   av1_full_pixel_search(cpi, x, bsize, &best_ref_mv1_full, step_param, 1,
                         search_method, 0, sadpb, cond_cost_list(cpi, cost_list),
                         &center_mv, INT_MAX, 0, (MI_SIZE * mi_col),
@@ -1013,6 +1008,8 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
   GF_GROUP *gf_group = &cpi->gf_group;
   int bottom_index, top_index;
   EncodeFrameParams this_frame_params = *frame_params;
+
+  if (cpi->oxcf.superres_mode != SUPERRES_NONE) return;
 
   cm->current_frame.frame_type = frame_params->frame_type;
   for (int gf_index = gf_group->index; gf_index < gf_group->size; ++gf_index) {
