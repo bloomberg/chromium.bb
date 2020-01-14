@@ -1412,13 +1412,9 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 150m interval',
   )
 
-  _nyc_hwtest_boards = frozenset([
-      'gandof',
-  ])
+  _nyc_hwtest_boards = frozenset([])
   _nyc_hwtest_skylab_boards = frozenset([])
-  _nyc_no_hwtest_boards = frozenset([
-      'veyron_tiger',
-  ])
+  _nyc_no_hwtest_boards = frozenset([])
   _nyc_no_hwtest_experimental_boards = frozenset([])
   _nyc_vmtest_boards = frozenset([
       'betty',
