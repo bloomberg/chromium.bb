@@ -1356,7 +1356,7 @@
           "experimental": false,
           "leader_board": false,
           "board_group": "veyron",
-          "arch": "ARM_INTERNAL"
+          "arch": "UNKNOWN"
         }
       ]
     },
