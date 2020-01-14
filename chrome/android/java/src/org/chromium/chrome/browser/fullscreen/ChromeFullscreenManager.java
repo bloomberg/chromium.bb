@@ -367,7 +367,7 @@ public class ChromeFullscreenManager extends FullscreenManager
             }
         }
 
-        if (tab == null && !mBrowserVisibilityDelegate.canAutoHideBrowserControls()) {
+        if (tab == null && mBrowserVisibilityDelegate.canShowBrowserControls()) {
             setPositionsForTabToNonFullscreen();
         }
     }
