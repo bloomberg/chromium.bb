@@ -503,7 +503,7 @@
 <translation id="1701062906490865540">إزالة هذا الشخص</translation>
 <translation id="1703331064825191675">لا داعي للقلق مطلقًا بشأن كلمات المرور</translation>
 <translation id="1706586824377653884">تمت الإضافة من قبل المشرف</translation>
-<translation id="1706625117072057435">مستويات التكبير/التصغير</translation>
+<translation id="1706625117072057435">مستويات التكبير أو التصغير</translation>
 <translation id="1708338024780164500">(غير نشطة)</translation>
 <translation id="1708713382908678956"><ph name="NAME_PH" /> (رقم التعريف: <ph name="ID_PH" />)</translation>
 <translation id="1709106626015023981">‏<ph name="WIDTH" /> x <ph name="HEIGHT" /> (الأصلي)</translation>
@@ -752,7 +752,7 @@
 <translation id="205560151218727633">‏شعار مساعد Google</translation>
 <translation id="2058456167109518507">تم رصد جهاز للاتصال</translation>
 <translation id="2059913712424898428">المنطقة الزمنية</translation>
-<translation id="2065405795449409761">‏يتم التحكم في Chrome من خلال برامج اختبار تلقائية.</translation>
+<translation id="2065405795449409761">‏يتم التحكم في Chrome من خلال برامج اختبار مبرمجة.</translation>
 <translation id="2071393345806050157">ليس هناك ملف سجل محلي.</translation>
 <translation id="2075474481720804517">البطارية <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="2075959085554270910">تتيح لك تفعيل ميزة الضغط للنقر وميزة السحب بالنقر أو إيقافهما.</translation>
@@ -3626,7 +3626,7 @@
 <translation id="6198252989419008588">تغيير رقم التعريف الشخصي</translation>
 <translation id="6202304368170870640">يمكنك استخدام رقم تعريفك الشخصي لتسجيل الدخول أو فتح قفل جهازك.</translation>
 <translation id="6206311232642889873">نس&amp;خ صورة</translation>
-<translation id="6207200176136643843">إعادة الضبط على مستوى التكبير/التصغير التلقائي</translation>
+<translation id="6207200176136643843">إعادة الضبط على مستوى التكبير أو التصغير التلقائي</translation>
 <translation id="6207282396926186323">‏تثبيت <ph name="APP_NAME" /> (تطبيق Linux)</translation>
 <translation id="6207937957461833379">البلد/المنطقة</translation>
 <translation id="6208521041562685716">جارٍ تفعيل بيانات الجوّال</translation>
@@ -5571,7 +5571,7 @@
 <translation id="8968766641738584599">حفظ البطاقة</translation>
 <translation id="89720367119469899">خروج</translation>
 <translation id="8972513834460200407">‏يُرجى التحقق مع مشرف الشبكة للتأكد من عدم حظر الجدار الناري للتنزيلات من خوادم Google.</translation>
-<translation id="8973557916016709913">إزالة مستوى التكبير/التصغير</translation>
+<translation id="8973557916016709913">إزالة مستوى التكبير أو التصغير</translation>
 <translation id="8973596347849323817">يمكنك تخصيص هذا الجهاز للتوافق مع احتياجاتك. ويمكن تغيير ميزات إمكانية الوصول هذه لاحقًا من خلال الإعدادات.</translation>
 <translation id="897414447285476047">ملف الوجهة غير مكتمل بسبب حدوث مشكلة في الاتصال.</translation>
 <translation id="897525204902889653">خدمة وحدة العزل</translation>

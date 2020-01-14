@@ -585,7 +585,7 @@
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{ဖွင့်ထားသောတဘ် <ph name="OPEN_TABS_ONE" /> ခု၊ တဘ်များပြောင်းရန် တို့ပါ}other{ဖွင့်ထားသောတဘ် <ph name="OPEN_TABS_MANY" /> ခု၊ တဘ်များပြောင်းရန် တို့ပါ}}</translation>
 <translation id="5391532827096253100">ဤဝဘ်ဆိုက်သို့ သင်၏ချိတ်ဆက်မှုသည် လုံခြုံမှုမရှိပါ။ ဝဘ်ဆိုက် အချက်အလက်</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ နောက်ထပ် ၁ ခု)}other{(+ နောက်ထပ် # ခု)}}</translation>
-<translation id="5400569084694353794">ဤအပလီကေးရှင်းကို သုံးခြင်းအားဖြင့်၊<ph name="BEGIN_LINK1" />ဝန်ဆောင်မှုဆိုင်ရာ စည်းမျဉ်းများ<ph name="END_LINK1" /> နှင့် <ph name="BEGIN_LINK2" />ကိုယ်ရေးကိုယ်တာ သတိပေးချက်ကို သဘောတူပါသည်။<ph name="END_LINK2" /></translation>
+<translation id="5400569084694353794">ဤအပလီကေးရှင်းကို သုံးခြင်းအားဖြင့်၊<ph name="BEGIN_LINK1" />ဝန်ဆောင်မှု စည်းမျဉ်းများ<ph name="END_LINK1" /> နှင့် <ph name="BEGIN_LINK2" />ကိုယ်ရေးကိုယ်တာ သတိပေးချက်ကို သဘောတူပါသည်။<ph name="END_LINK2" /></translation>
 <translation id="5403592356182871684">အမည်များ</translation>
 <translation id="5403644198645076998">ဆိုက်အချို့ကိုသာ ခွင့်ပြုပါ</translation>
 <translation id="5414836363063783498">စိစစ်နေ…</translation>

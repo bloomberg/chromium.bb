@@ -2552,7 +2552,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4633003931260532286">Tiện ích yêu cầu "<ph name="IMPORT_NAME" />" có phiên bản tối thiểu "<ph name="IMPORT_VERSION" />" nhưng mới chỉ cài đặt được phiên bản "<ph name="INSTALLED_VERSION" />"</translation>
 <translation id="4634771451598206121">Đăng nhập lại...</translation>
 <translation id="4635398712689569051">Người dùng khách không thể sử dụng <ph name="PAGE_NAME" />.</translation>
-<translation id="4637083375689622795">Hành động khác, <ph name="EMAIL" /></translation>
+<translation id="4637083375689622795">Thao tác khác, <ph name="EMAIL" /></translation>
 <translation id="4638930039313743000">Bật tùy chọn gỡ lỗi ADB</translation>
 <translation id="4641539339823703554">Chrome đã không thể đặt giờ hệ thống. Vui lòng kiểm tra giờ bên dưới và sửa giờ nếu cần thiết.</translation>
 <translation id="4643612240819915418">&amp;Mở Video trong Tab Mới</translation>

@@ -1080,7 +1080,7 @@
 <translation id="6080696365213338172">Мазмунду администратор берген тастыктама аркылуу колдондуңуз. <ph name="DOMAIN" /> тапшырылган дайындарыңызды ортодон администраторуңуз кармап калышы мүмкүн.</translation>
 <translation id="6094273045989040137">Аннотация режимин иштетүү</translation>
 <translation id="6104072995492677441">JIS B6 (128mm x 182mm)</translation>
-<translation id="610911394827799129">Google каттоо эсебиңиздин серептөө таржымалынын башка түрлөрү <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
+<translation id="610911394827799129">Google аккаунтуңуздун серептөө таржымалынын башка түрлөрү <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> дарегинде болушу мүмкүн.</translation>
 <translation id="6132597952260690497">Орнотулган кеңейтүүлөр жана плагиндер тууралуу маалымат</translation>
 <translation id="6146055958333702838">Колдонулуп жаткан кабелдерди текшерип, роутер, модем жана башка
     тармак түзмөктөрүн өчүрүп-күйгүзүңүз.</translation>
@@ -1558,7 +1558,7 @@
 <translation id="8466379296835108687">{COUNT,plural, =1{1 насыя карта}other{# насыя карта}}</translation>
 <translation id="8473863474539038330">Даректер жана башкалар</translation>
 <translation id="8479754468255770962">Төмөнкү сол жагын илмек менен бекитүү</translation>
-<translation id="8483780878231876732">Google каттоо эсебиңиздеги насыя карточкаларын колдонуу үчүн Chrome'го кириңиз</translation>
+<translation id="8483780878231876732">Google аккаунтуңуздагы насыя карточкаларын колдонуу үчүн Chrome'го кириңиз</translation>
 <translation id="8488350697529856933">Төмөнкүгө колдонулат</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> өтө узактан кийин жооп берди.</translation>
 <translation id="8503559462189395349">Chrome сырсөздөрү</translation>
