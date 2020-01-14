@@ -9,15 +9,46 @@
 namespace openscreen {
 namespace discovery {
 
+// static
+bool DnsSdTxtRecord::IsValidTxtValue(const std::string& key,
+                                     const std::vector<uint8_t>& value) {
+  // The max length of any individual TXT record is 255 bytes.
+  if (key.size() + value.size() + 1 /* for equals */ > 255) {
+    return false;
+  }
+
+  return IsKeyValid(key);
+}
+
+// static
+bool DnsSdTxtRecord::IsValidTxtValue(const std::string& key, uint8_t value) {
+  return IsValidTxtValue(key, std::vector<uint8_t>{value});
+}
+
+// static
+bool DnsSdTxtRecord::IsValidTxtValue(const std::string& key,
+                                     const std::string& value) {
+  return IsValidTxtValue(key, std::vector<uint8_t>(value.begin(), value.end()));
+}
+
 Error DnsSdTxtRecord::SetValue(const std::string& key,
                                std::vector<uint8_t> value) {
-  if (!IsKeyValuePairValid(key, value)) {
+  if (!IsValidTxtValue(key, value)) {
     return Error::Code::kParameterInvalid;
   }
 
   key_value_txt_[key] = std::move(value);
   ClearFlag(key);
   return Error::None();
+}
+
+Error DnsSdTxtRecord::SetValue(const std::string& key, uint8_t value) {
+  return SetValue(key, std::vector<uint8_t>{value});
+}
+
+Error DnsSdTxtRecord::SetValue(const std::string& key,
+                               const std::string& value) {
+  return SetValue(key, std::vector<uint8_t>(value.begin(), value.end()));
 }
 
 Error DnsSdTxtRecord::SetFlag(const std::string& key, bool value) {
@@ -74,7 +105,8 @@ Error DnsSdTxtRecord::ClearFlag(const std::string& key) {
   return Error::None();
 }
 
-bool DnsSdTxtRecord::IsKeyValid(const std::string& key) const {
+// static
+bool DnsSdTxtRecord::IsKeyValid(const std::string& key) {
   // The max length of any individual TXT record is 255 bytes.
   if (key.size() > 255) {
     return false;
@@ -113,17 +145,6 @@ std::vector<std::vector<uint8_t>> DnsSdTxtRecord::GetData() const {
   }
 
   return data;
-}
-
-bool DnsSdTxtRecord::IsKeyValuePairValid(
-    const std::string& key,
-    const std::vector<uint8_t>& value) const {
-  // The max length of any individual TXT record is 255 bytes.
-  if (key.size() + value.size() + 1 /* for equals */ > 255) {
-    return false;
-  }
-
-  return IsKeyValid(key);
 }
 
 bool DnsSdTxtRecord::CaseInsensitiveComparison::operator()(

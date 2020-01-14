@@ -161,6 +161,7 @@ include_rules = [
   '+absl/strings/numbers.h',
   '+absl/strings/str_cat.h',
   '+absl/strings/str_join.h',
+  '+absl/strings/str_replace.h',
   '+absl/strings/str_split.h',
   '+absl/strings/string_view.h',
   '+absl/strings/substitute.h',

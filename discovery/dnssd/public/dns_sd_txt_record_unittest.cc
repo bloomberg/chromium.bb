@@ -24,9 +24,13 @@ TEST(TxtRecordTest, TestCaseInsensitivity) {
 
 TEST(TxtRecordTest, TestEmptyValue) {
   DnsSdTxtRecord txt;
-  EXPECT_TRUE(txt.SetValue("key", {}).ok());
+  EXPECT_TRUE(txt.SetValue("key", std::vector<uint8_t>{}).ok());
   ASSERT_TRUE(txt.GetValue("key").is_value());
   EXPECT_EQ(txt.GetValue("key").value().get().size(), size_t{0});
+
+  EXPECT_TRUE(txt.SetValue("key2", "").ok());
+  ASSERT_TRUE(txt.GetValue("key2").is_value());
+  EXPECT_EQ(txt.GetValue("key2").value().get().size(), size_t{0});
 }
 
 TEST(TxtRecordTest, TestSetAndGetValue) {
@@ -47,6 +51,21 @@ TEST(TxtRecordTest, TestSetAndGetValue) {
   EXPECT_EQ(value2.size(), size_t{2});
   EXPECT_EQ(value2[0], 'a');
   EXPECT_EQ(value2[1], 'b');
+
+  EXPECT_TRUE(txt.SetValue("key", "abc").ok());
+  ASSERT_TRUE(txt.GetValue("key").is_value());
+  const std::vector<uint8_t>& value3 = txt.GetValue("key").value();
+  ASSERT_EQ(value.size(), size_t{3});
+  EXPECT_EQ(value3[0], 'a');
+  EXPECT_EQ(value3[1], 'b');
+  EXPECT_EQ(value3[2], 'c');
+
+  EXPECT_TRUE(txt.SetValue("key", "ab").ok());
+  ASSERT_TRUE(txt.GetValue("key").is_value());
+  const std::vector<uint8_t>& value4 = txt.GetValue("key").value();
+  EXPECT_EQ(value4.size(), size_t{2});
+  EXPECT_EQ(value4[0], 'a');
+  EXPECT_EQ(value4[1], 'b');
 }
 
 TEST(TxtRecordTest, TestClearValue) {

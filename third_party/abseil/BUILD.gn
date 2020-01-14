@@ -72,6 +72,8 @@ if (build_with_chromium) {
       "src/absl/strings/str_cat.cc",
       "src/absl/strings/str_cat.h",
       "src/absl/strings/str_join.h",
+      "src/absl/strings/str_replace.cc",
+      "src/absl/strings/str_replace.h",
       "src/absl/strings/str_split.cc",
       "src/absl/strings/str_split.h",
       "src/absl/strings/string_view.cc",

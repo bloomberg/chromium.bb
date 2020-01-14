@@ -20,6 +20,12 @@ class DnsSdTxtRecord {
  public:
   using ValueRef = std::reference_wrapper<const std::vector<uint8_t>>;
 
+  // Returns whether the provided key value pair is valid for a TXT record.
+  static bool IsValidTxtValue(const std::string& key,
+                              const std::vector<uint8_t>& value);
+  static bool IsValidTxtValue(const std::string& key, const std::string& value);
+  static bool IsValidTxtValue(const std::string& key, uint8_t value);
+
   // Sets the value currently stored in this DNS-SD TXT record. Returns error
   // if the provided key is already set or if either the key or value is
   // invalid, and Error::None() otherwise. Keys are case-insensitive. Setting a
@@ -27,6 +33,8 @@ class DnsSdTxtRecord {
   // setting a value with a key which was previously associated with a flag
   // erases the flag's value and vice versa.
   Error SetValue(const std::string& key, std::vector<uint8_t> value);
+  Error SetValue(const std::string& key, uint8_t value);
+  Error SetValue(const std::string& key, const std::string& value);
   Error SetFlag(const std::string& key, bool value);
 
   // Reads the value associated with the provided key, or an error if the key
@@ -63,9 +71,7 @@ class DnsSdTxtRecord {
   };
 
   // Validations for keys and (key, value) pairs.
-  bool IsKeyValid(const std::string& key) const;
-  bool IsKeyValuePairValid(const std::string& key,
-                           const std::vector<uint8_t>& value) const;
+  static bool IsKeyValid(const std::string& key);
 
   // Set of (key, value) pairs associated with this TXT record.
   // NOTE: The same string name can only occur in one of key_value_txt_,

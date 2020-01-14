@@ -4,7 +4,6 @@ include_rules = [
   # OSP code is strictly verboten.
   '-api',
   '-demo',
-  '-discovery',
   '-go',
   '-msgs',
 
@@ -13,5 +12,5 @@ include_rules = [
 
   # All libcast code can use platform and cast/third_party.
   '+cast/third_party',
-  '+platform'
+  '+platform',
 ]

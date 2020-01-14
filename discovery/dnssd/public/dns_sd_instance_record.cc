@@ -76,10 +76,10 @@ DnsSdInstanceRecord::DnsSdInstanceRecord(std::string instance_id,
                           std::move(service_id),
                           std::move(domain_id),
                           std::move(txt)) {
-  OSP_DCHECK(ipv4_endpoint);
-  OSP_DCHECK(ipv4_endpoint);
-  OSP_DCHECK(ipv4_endpoint.address.IsV4());
-  OSP_DCHECK(ipv6_endpoint.address.IsV6());
+  OSP_CHECK(ipv4_endpoint);
+  OSP_CHECK(ipv6_endpoint);
+  OSP_CHECK(ipv4_endpoint.address.IsV4());
+  OSP_CHECK(ipv6_endpoint.address.IsV6());
 
   address_v4_ = std::move(ipv4_endpoint);
   address_v6_ = std::move(ipv6_endpoint);
