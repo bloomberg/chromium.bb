@@ -26,6 +26,7 @@
 #include "src/dsp/dsp.h"
 #include "src/loop_filter_mask.h"
 #include "src/loop_restoration_info.h"
+#include "src/obu_parser.h"
 #include "src/post_filter.h"
 #include "src/prediction_mask.h"
 #include "src/quantizer.h"
@@ -365,66 +366,62 @@ void DecoderImpl::ReleaseOutputFrame() {
 }
 
 StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
-  if (PostFilter::DoDeblock(obu->frame_header(), settings_.post_filter_mask)) {
+  const ObuSequenceHeader& sequence_header = obu->sequence_header();
+  const ObuFrameHeader& frame_header = obu->frame_header();
+  if (PostFilter::DoDeblock(frame_header, settings_.post_filter_mask)) {
     if (kDeblockFilterBitMask &&
-        !loop_filter_mask_.Reset(obu->frame_header().width,
-                                 obu->frame_header().height)) {
+        !loop_filter_mask_.Reset(frame_header.width, frame_header.height)) {
       LIBGAV1_DLOG(ERROR, "Failed to allocate memory for loop filter masks.");
       return kLibgav1StatusOutOfMemory;
     }
   }
   LoopRestorationInfo loop_restoration_info(
-      obu->frame_header().loop_restoration, obu->frame_header().upscaled_width,
-      obu->frame_header().height,
-      obu->sequence_header().color_config.subsampling_x,
-      obu->sequence_header().color_config.subsampling_y,
-      obu->sequence_header().color_config.is_monochrome);
+      frame_header.loop_restoration, frame_header.upscaled_width,
+      frame_header.height, sequence_header.color_config.subsampling_x,
+      sequence_header.color_config.subsampling_y,
+      sequence_header.color_config.is_monochrome);
   if (!loop_restoration_info.Allocate()) {
     LIBGAV1_DLOG(ERROR,
                  "Failed to allocate memory for loop restoration info units.");
     return kLibgav1StatusOutOfMemory;
   }
   const bool do_cdef =
-      PostFilter::DoCdef(obu->frame_header(), settings_.post_filter_mask);
-  const int num_planes = obu->sequence_header().color_config.is_monochrome
+      PostFilter::DoCdef(frame_header, settings_.post_filter_mask);
+  const int num_planes = sequence_header.color_config.is_monochrome
                              ? kMaxPlanesMonochrome
                              : kMaxPlanes;
-  const bool do_restoration =
-      PostFilter::DoRestoration(obu->frame_header().loop_restoration,
-                                settings_.post_filter_mask, num_planes);
+  const bool do_restoration = PostFilter::DoRestoration(
+      frame_header.loop_restoration, settings_.post_filter_mask, num_planes);
   int border = kBorderPixels;
   // If CDEF or loop restoration is enabled, add extra border pixels to
   // compensate for the buffer shift in the PostFilter constructor.
   if (do_cdef) border += 2 * kCdefBorder;
   if (do_restoration) border += 2 * kRestorationBorder;
-  if (!AllocateCurrentFrame(obu->frame_header(), border, border, border,
-                            border)) {
+  if (!AllocateCurrentFrame(frame_header, border, border, border, border)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");
     return kLibgav1StatusOutOfMemory;
   }
-  if (obu->sequence_header().enable_cdef) {
+  if (sequence_header.enable_cdef) {
     if (!cdef_index_.Reset(
-            DivideBy16(obu->frame_header().rows4x4 + kMaxBlockHeight4x4),
-            DivideBy16(obu->frame_header().columns4x4 + kMaxBlockWidth4x4),
+            DivideBy16(frame_header.rows4x4 + kMaxBlockHeight4x4),
+            DivideBy16(frame_header.columns4x4 + kMaxBlockWidth4x4),
             /*zero_initialize=*/false)) {
       LIBGAV1_DLOG(ERROR, "Failed to allocate memory for cdef index.");
       return kLibgav1StatusOutOfMemory;
     }
   }
-  if (!inter_transform_sizes_.Reset(
-          obu->frame_header().rows4x4 + kMaxBlockHeight4x4,
-          obu->frame_header().columns4x4 + kMaxBlockWidth4x4,
-          /*zero_initialize=*/false)) {
+  if (!inter_transform_sizes_.Reset(frame_header.rows4x4 + kMaxBlockHeight4x4,
+                                    frame_header.columns4x4 + kMaxBlockWidth4x4,
+                                    /*zero_initialize=*/false)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for inter_transform_sizes.");
     return kLibgav1StatusOutOfMemory;
   }
-  if (obu->frame_header().use_ref_frame_mvs) {
-    if (!state_.motion_field.mv.Reset(DivideBy2(obu->frame_header().rows4x4),
-                                      DivideBy2(obu->frame_header().columns4x4),
+  if (frame_header.use_ref_frame_mvs) {
+    if (!state_.motion_field.mv.Reset(DivideBy2(frame_header.rows4x4),
+                                      DivideBy2(frame_header.columns4x4),
                                       /*zero_initialize=*/false) ||
         !state_.motion_field.reference_offset.Reset(
-            DivideBy2(obu->frame_header().rows4x4),
-            DivideBy2(obu->frame_header().columns4x4),
+            DivideBy2(frame_header.rows4x4), DivideBy2(frame_header.columns4x4),
             /*zero_initialize=*/false)) {
       LIBGAV1_DLOG(ERROR,
                    "Failed to allocate memory for temporal motion vectors.");
@@ -446,39 +443,38 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   // that the block parameters cache can be filled in for the last row/column
   // without having to check for boundary conditions.
   BlockParametersHolder block_parameters_holder(
-      obu->frame_header().rows4x4 + kMaxBlockHeight4x4,
-      obu->frame_header().columns4x4 + kMaxBlockWidth4x4,
-      obu->sequence_header().use_128x128_superblock);
+      frame_header.rows4x4 + kMaxBlockHeight4x4,
+      frame_header.columns4x4 + kMaxBlockWidth4x4,
+      sequence_header.use_128x128_superblock);
   if (!block_parameters_holder.Init()) {
     return kLibgav1StatusOutOfMemory;
   }
   const dsp::Dsp* const dsp =
-      dsp::GetDspTable(obu->sequence_header().color_config.bitdepth);
+      dsp::GetDspTable(sequence_header.color_config.bitdepth);
   if (dsp == nullptr) {
     LIBGAV1_DLOG(ERROR, "Failed to get the dsp table for bitdepth %d.",
-                 obu->sequence_header().color_config.bitdepth);
+                 sequence_header.color_config.bitdepth);
     return kLibgav1StatusInternalError;
   }
   // If prev_segment_ids is a null pointer, it is treated as if it pointed to
   // a segmentation map containing all 0s.
   const SegmentationMap* prev_segment_ids = nullptr;
-  if (obu->frame_header().primary_reference_frame == kPrimaryReferenceNone) {
-    symbol_decoder_context_.Initialize(
-        obu->frame_header().quantizer.base_index);
+  if (frame_header.primary_reference_frame == kPrimaryReferenceNone) {
+    symbol_decoder_context_.Initialize(frame_header.quantizer.base_index);
   } else {
     const int index =
-        obu->frame_header()
-            .reference_frame_index[obu->frame_header().primary_reference_frame];
+        frame_header
+            .reference_frame_index[frame_header.primary_reference_frame];
     const RefCountedBuffer* prev_frame = state_.reference_frame[index].get();
     symbol_decoder_context_ = prev_frame->FrameContext();
-    if (obu->frame_header().segmentation.enabled &&
-        prev_frame->columns4x4() == obu->frame_header().columns4x4 &&
-        prev_frame->rows4x4() == obu->frame_header().rows4x4) {
+    if (frame_header.segmentation.enabled &&
+        prev_frame->columns4x4() == frame_header.columns4x4 &&
+        prev_frame->rows4x4() == frame_header.rows4x4) {
       prev_segment_ids = prev_frame->segmentation_map();
     }
   }
 
-  const uint8_t tile_size_bytes = obu->frame_header().tile_info.tile_size_bytes;
+  const uint8_t tile_size_bytes = frame_header.tile_info.tile_size_bytes;
   const int tile_count = obu->tile_groups().back().end + 1;
   assert(tile_count >= 1);
   Vector<std::unique_ptr<Tile>> tiles;
@@ -486,43 +482,42 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     LIBGAV1_DLOG(ERROR, "tiles.reserve(%d) failed.\n", tile_count);
     return kLibgav1StatusOutOfMemory;
   }
-  if (!threading_strategy_.Reset(obu->frame_header(), settings_.threads)) {
+  if (!threading_strategy_.Reset(frame_header, settings_.threads)) {
     return kLibgav1StatusOutOfMemory;
   }
 
   if (threading_strategy_.row_thread_pool(0) != nullptr) {
     if (residual_buffer_pool_ == nullptr) {
       residual_buffer_pool_.reset(new (std::nothrow) ResidualBufferPool(
-          obu->sequence_header().use_128x128_superblock,
-          obu->sequence_header().color_config.subsampling_x,
-          obu->sequence_header().color_config.subsampling_y,
-          obu->sequence_header().color_config.bitdepth == 8 ? sizeof(int16_t)
-                                                            : sizeof(int32_t)));
+          sequence_header.use_128x128_superblock,
+          sequence_header.color_config.subsampling_x,
+          sequence_header.color_config.subsampling_y,
+          sequence_header.color_config.bitdepth == 8 ? sizeof(int16_t)
+                                                     : sizeof(int32_t)));
       if (residual_buffer_pool_ == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate residual buffer.\n");
         return kLibgav1StatusOutOfMemory;
       }
     } else {
-      residual_buffer_pool_->Reset(
-          obu->sequence_header().use_128x128_superblock,
-          obu->sequence_header().color_config.subsampling_x,
-          obu->sequence_header().color_config.subsampling_y,
-          obu->sequence_header().color_config.bitdepth == 8 ? sizeof(int16_t)
-                                                            : sizeof(int32_t));
+      residual_buffer_pool_->Reset(sequence_header.use_128x128_superblock,
+                                   sequence_header.color_config.subsampling_x,
+                                   sequence_header.color_config.subsampling_y,
+                                   sequence_header.color_config.bitdepth == 8
+                                       ? sizeof(int16_t)
+                                       : sizeof(int32_t));
     }
   }
 
   if (threading_strategy_.post_filter_thread_pool() != nullptr &&
       (do_cdef || do_restoration)) {
     const int window_buffer_width = PostFilter::GetWindowBufferWidth(
-        threading_strategy_.post_filter_thread_pool(), obu->frame_header());
+        threading_strategy_.post_filter_thread_pool(), frame_header);
     size_t threaded_window_buffer_size =
         window_buffer_width *
         PostFilter::GetWindowBufferHeight(
-            threading_strategy_.post_filter_thread_pool(),
-            obu->frame_header()) *
-        (obu->sequence_header().color_config.bitdepth == 8 ? sizeof(uint8_t)
-                                                           : sizeof(uint16_t));
+            threading_strategy_.post_filter_thread_pool(), frame_header) *
+        (sequence_header.color_config.bitdepth == 8 ? sizeof(uint8_t)
+                                                    : sizeof(uint16_t));
     if (do_cdef) {
       // TODO(chengchen): for cdef U, V planes, if there's subsampling, we can
       // use smaller buffer.
@@ -564,33 +559,32 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   if (do_cdef && do_restoration) {
     // We need to store 4 rows per 64x64 unit.
     const int num_deblock_units =
-        4 + MultiplyBy4(Ceil(obu->frame_header().rows4x4, 16));
+        4 + MultiplyBy4(Ceil(frame_header.rows4x4, 16));
     // subsampling_y is set to zero irrespective of the actual frame's
     // subsampling since we need to store exactly |num_deblock_units| rows of
     // the deblocked pixels.
-    if (!deblock_buffer_.Realloc(
-            obu->sequence_header().color_config.bitdepth,
-            obu->sequence_header().color_config.is_monochrome,
-            obu->frame_header().upscaled_width, num_deblock_units,
-            obu->sequence_header().color_config.subsampling_x,
-            /*subsampling_y=*/0, kBorderPixels, kBorderPixels, kBorderPixels,
-            kBorderPixels, nullptr, nullptr, nullptr)) {
+    if (!deblock_buffer_.Realloc(sequence_header.color_config.bitdepth,
+                                 sequence_header.color_config.is_monochrome,
+                                 frame_header.upscaled_width, num_deblock_units,
+                                 sequence_header.color_config.subsampling_x,
+                                 /*subsampling_y=*/0, kBorderPixels,
+                                 kBorderPixels, kBorderPixels, kBorderPixels,
+                                 nullptr, nullptr, nullptr)) {
       return kLibgav1StatusOutOfMemory;
     }
   }
 
-  if (PostFilter::DoSuperRes(obu->frame_header(), settings_.post_filter_mask)) {
+  if (PostFilter::DoSuperRes(frame_header, settings_.post_filter_mask)) {
     const int num_threads =
         1 +
         ((threading_strategy_.post_filter_thread_pool() == nullptr)
              ? 0
              : threading_strategy_.post_filter_thread_pool()->num_threads());
     const size_t superres_line_buffer_size =
-        num_threads * ((MultiplyBy4(obu->frame_header().columns4x4) +
-                        MultiplyBy2(kSuperResBorder)) *
-                       (obu->sequence_header().color_config.bitdepth == 8
-                            ? sizeof(uint8_t)
-                            : sizeof(uint16_t)));
+        num_threads *
+        ((MultiplyBy4(frame_header.columns4x4) + MultiplyBy2(kSuperResBorder)) *
+         (sequence_header.color_config.bitdepth == 8 ? sizeof(uint8_t)
+                                                     : sizeof(uint16_t)));
     if (superres_line_buffer_size_ < superres_line_buffer_size) {
       superres_line_buffer_ =
           MakeAlignedUniquePtr<uint8_t>(16, superres_line_buffer_size);
@@ -604,10 +598,10 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   }
 
   PostFilter post_filter(
-      obu->frame_header(), obu->sequence_header(), &loop_filter_mask_,
-      cdef_index_, inter_transform_sizes_, &loop_restoration_info,
-      &block_parameters_holder, state_.current_frame->buffer(),
-      &deblock_buffer_, dsp, threading_strategy_.post_filter_thread_pool(),
+      frame_header, sequence_header, &loop_filter_mask_, cdef_index_,
+      inter_transform_sizes_, &loop_restoration_info, &block_parameters_holder,
+      state_.current_frame->buffer(), &deblock_buffer_, dsp,
+      threading_strategy_.post_filter_thread_pool(),
       threaded_window_buffer_.get(), superres_line_buffer_.get(),
       settings_.post_filter_mask);
   SymbolDecoderContext saved_symbol_decoder_context;
@@ -641,10 +635,9 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
 
       std::unique_ptr<Tile> tile(new (std::nothrow) Tile(
           tile_number, tile_group.data + byte_offset, tile_size,
-          obu->sequence_header(), obu->frame_header(),
-          state_.current_frame.get(), state_.reference_frame_sign_bias,
-          state_.reference_frame, &state_.motion_field,
-          state_.reference_order_hint, state_.wedge_masks,
+          sequence_header, frame_header, state_.current_frame.get(),
+          state_.reference_frame_sign_bias, state_.reference_frame,
+          &state_.motion_field, state_.reference_order_hint, state_.wedge_masks,
           symbol_decoder_context_, &saved_symbol_decoder_context,
           prev_segment_ids, &post_filter, &block_parameters_holder,
           &cdef_index_, &inter_transform_sizes_, dsp,
@@ -666,13 +659,12 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   if (settings_.threads == 1) {
     bool ok = true;
     // Decode in superblock row order.
-    const int block_width4x4 =
-        obu->sequence_header().use_128x128_superblock ? 32 : 16;
+    const int block_width4x4 = sequence_header.use_128x128_superblock ? 32 : 16;
     std::unique_ptr<DecoderScratchBuffer> scratch_buffer =
         decoder_scratch_buffer_pool_.Get();
     if (scratch_buffer != nullptr) {
       int row4x4;
-      for (row4x4 = 0; row4x4 < obu->frame_header().rows4x4;
+      for (row4x4 = 0; row4x4 < frame_header.rows4x4;
            row4x4 += block_width4x4) {
         for (const auto& tile_ptr : tiles) {
           if (!tile_ptr->DecodeSuperBlockRow(row4x4, scratch_buffer.get())) {
@@ -749,12 +741,12 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   // threadpool will be empty.
   if (tile_decoding_failed) return kLibgav1StatusUnknownError;
 
-  if (obu->frame_header().enable_frame_end_update_cdf) {
+  if (frame_header.enable_frame_end_update_cdf) {
     symbol_decoder_context_ = saved_symbol_decoder_context;
   }
   state_.current_frame->SetFrameContext(symbol_decoder_context_);
   if (post_filter.DoDeblock() && kDeblockFilterBitMask) {
-    loop_filter_mask_.Build(obu->sequence_header(), obu->frame_header(),
+    loop_filter_mask_.Build(sequence_header, frame_header,
                             obu->tile_groups().front().start,
                             obu->tile_groups().back().end,
                             block_parameters_holder, inter_transform_sizes_);
@@ -762,7 +754,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   if (threading_strategy_.post_filter_thread_pool() != nullptr) {
     post_filter.ApplyFilteringThreaded();
   }
-  SetCurrentFrameSegmentationMap(obu->frame_header(), prev_segment_ids);
+  SetCurrentFrameSegmentationMap(frame_header, prev_segment_ids);
   return kLibgav1StatusOk;
 }
 
