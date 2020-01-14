@@ -76,16 +76,20 @@ namespace internal {
 void BindUnhandledTapWebContentsObserver(
     content::RenderFrameHost* const host,
     mojo::PendingReceiver<blink::mojom::UnhandledTapNotifier> receiver) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(host);
+  if (!web_contents)
+    return;
+
   auto* unhandled_tap_notifier_observer =
       contextual_search::UnhandledTapWebContentsObserver::FromWebContents(
-          content::WebContents::FromRenderFrameHost(host));
+          web_contents);
+  if (!unhandled_tap_notifier_observer)
+    return;
 
-  if (unhandled_tap_notifier_observer) {
-    contextual_search::CreateUnhandledTapNotifierImpl(
-        unhandled_tap_notifier_observer->device_scale_factor(),
-        unhandled_tap_notifier_observer->unhandled_tap_callback(),
-        std::move(receiver));
-  }
+  contextual_search::CreateUnhandledTapNotifierImpl(
+      unhandled_tap_notifier_observer->device_scale_factor(),
+      unhandled_tap_notifier_observer->unhandled_tap_callback(),
+      std::move(receiver));
 }
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
@@ -123,9 +127,12 @@ void BindDistillabilityService(
     content::RenderFrameHost* const frame_host,
     mojo::PendingReceiver<dom_distiller::mojom::DistillabilityService>
         receiver) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents)
+    return;
+
   dom_distiller::DistillabilityDriver* driver =
-      dom_distiller::DistillabilityDriver::FromWebContents(
-          content::WebContents::FromRenderFrameHost(frame_host));
+      dom_distiller::DistillabilityDriver::FromWebContents(web_contents);
   if (!driver)
     return;
   driver->CreateDistillabilityService(std::move(receiver));
@@ -135,10 +142,13 @@ void BindDistillerJavaScriptService(
     content::RenderFrameHost* const frame_host,
     mojo::PendingReceiver<dom_distiller::mojom::DistillerJavaScriptService>
         receiver) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents)
+    return;
+
   dom_distiller::DomDistillerService* dom_distiller_service =
       dom_distiller::DomDistillerServiceFactory::GetForBrowserContext(
-          content::WebContents::FromRenderFrameHost(frame_host)
-              ->GetBrowserContext());
+          web_contents->GetBrowserContext());
   auto* distiller_ui_handle = dom_distiller_service->GetDistillerUIHandle();
 #if defined(OS_ANDROID)
   static_cast<dom_distiller::android::DistillerUIHandleAndroid*>(
@@ -151,8 +161,12 @@ void BindDistillerJavaScriptService(
 void BindPrerenderCanceler(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<mojom::PrerenderCanceler> receiver) {
-  auto* prerender_contents = prerender::PrerenderContents::FromWebContents(
-      content::WebContents::FromRenderFrameHost(frame_host));
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents)
+    return;
+
+  auto* prerender_contents =
+      prerender::PrerenderContents::FromWebContents(web_contents);
   if (!prerender_contents)
     return;
   prerender_contents->OnPrerenderCancelerReceiver(std::move(receiver));
@@ -199,10 +213,12 @@ void BindMimeHandlerService(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<extensions::mime_handler::MimeHandlerService>
         receiver) {
-  content::WebContents* contents =
-      content::WebContents::FromRenderFrameHost(frame_host);
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents)
+    return;
+
   auto* guest_view =
-      extensions::MimeHandlerViewGuest::FromWebContents(contents);
+      extensions::MimeHandlerViewGuest::FromWebContents(web_contents);
   if (!guest_view)
     return;
   extensions::MimeHandlerServiceImpl::Create(guest_view->GetStreamWeakPtr(),
@@ -213,10 +229,12 @@ void BindBeforeUnloadControl(
     content::RenderFrameHost* frame_host,
     mojo::PendingReceiver<extensions::mime_handler::BeforeUnloadControl>
         receiver) {
-  content::WebContents* contents =
-      content::WebContents::FromRenderFrameHost(frame_host);
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents)
+    return;
+
   auto* guest_view =
-      extensions::MimeHandlerViewGuest::FromWebContents(contents);
+      extensions::MimeHandlerViewGuest::FromWebContents(web_contents);
   if (!guest_view)
     return;
   guest_view->FuseBeforeUnloadControl(std::move(receiver));
