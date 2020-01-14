@@ -39,6 +39,11 @@ bool HasValidDnsRecordAddress(const DomainName& domain);
 // Returns the Domain Name associated with this InstanceKey.
 DomainName GetDomainName(const InstanceKey& key);
 
+// Returns the domain name associated with this MdnsRecord. In the case of a PTR
+// record, this is the target domain, and it is the named domain in all other
+// cases.
+DomainName GetDomainName(const MdnsRecord& record);
+
 // Returns the query required to get all instance information about the service
 // instances described by the provided InstanceKey.
 DnsQueryInfo GetInstanceQueryInfo(const InstanceKey& key);

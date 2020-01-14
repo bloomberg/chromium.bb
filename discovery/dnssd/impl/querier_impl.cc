@@ -83,7 +83,7 @@ void QuerierImpl::ReinitializeQueries(const std::string& service) {
   // Restart instance-specific queries and erase all instance data received so
   // far.
   for (auto it = received_records_.begin(); it != received_records_.end();) {
-    if (it->first.IsInstanceOf(key)) {
+    if (it->first == key) {
       const DomainName query_id = GetInstanceQueryInfo(it->first).name;
       it = received_records_.erase(it);
       mdns_querier_->ReinitializeQueries(query_id);
@@ -217,7 +217,7 @@ std::vector<InstanceKey> QuerierImpl::GetMatchingInstances(
   std::vector<InstanceKey> keys;
   for (auto it = received_records_.begin(); it != received_records_.end();
        it++) {
-    if (it->first.IsInstanceOf(key)) {
+    if (it->first == key) {
       keys.push_back(it->first);
     }
   }

@@ -150,6 +150,12 @@ DomainName GetDomainName(const InstanceKey& key) {
                                key.domain_id());
 }
 
+DomainName GetDomainName(const MdnsRecord& record) {
+  return IsPtrRecord(record)
+             ? absl::get<PtrRecordRdata>(record.rdata()).ptr_domain()
+             : record.name();
+}
+
 DnsQueryInfo GetInstanceQueryInfo(const InstanceKey& key) {
   return {GetDomainName(key), DnsType::kANY, DnsClass::kANY};
 }
@@ -160,11 +166,12 @@ DnsQueryInfo GetPtrQueryInfo(const ServiceKey& key) {
 }
 
 bool HasValidDnsRecordAddress(const MdnsRecord& record) {
-  return InstanceKey::TryCreate(record).is_value();
+  return HasValidDnsRecordAddress(GetDomainName(record));
 }
 
 bool HasValidDnsRecordAddress(const DomainName& domain) {
-  return InstanceKey::TryCreate(domain).is_value();
+  return InstanceKey::TryCreate(domain).is_value() &&
+         IsInstanceValid(domain.labels()[0]);
 }
 
 bool IsPtrRecord(const MdnsRecord& record) {
