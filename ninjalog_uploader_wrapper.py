@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -6,11 +6,11 @@
 from __future__ import print_function
 
 import os
-import subprocess
 import json
 import sys
 
 import ninjalog_uploader
+import subprocess2
 
 THIS_DIR = os.path.dirname(__file__)
 UPLOADER = os.path.join(THIS_DIR, 'ninjalog_uploader.py')
@@ -110,8 +110,8 @@ def main():
 
     # Run upload script without wait.
     devnull = open(os.devnull, "w")
-    subprocess.Popen([sys.executable, UPLOADER] + sys.argv[1:],
-                     stdout=devnull, stderr=devnull)
+    subprocess2.Popen(['vpython', UPLOADER] + sys.argv[1:],
+                      stdout=devnull, stderr=devnull)
 
 
 if __name__ == '__main__':
