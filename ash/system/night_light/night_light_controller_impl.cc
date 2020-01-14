@@ -568,10 +568,7 @@ void NightLightControllerImpl::SetAmbientColorEnabled(bool enabled) {
 }
 
 bool NightLightControllerImpl::GetAmbientColorEnabled() const {
-  const bool ambient_eq_supported =
-      ash::features::IsAllowAmbientEQEnabled() &&
-      chromeos::PowerManagerClient::Get()->SupportsAmbientColor();
-  return ambient_eq_supported && active_user_pref_service_ &&
+  return features::IsAllowAmbientEQEnabled() && active_user_pref_service_ &&
          active_user_pref_service_->GetBoolean(prefs::kAmbientColorEnabled);
 }
 
