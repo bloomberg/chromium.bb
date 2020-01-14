@@ -1635,6 +1635,92 @@ TEST_F(AutoNightLightOnFirstLogin, NotifyOnFirstLogin) {
   EXPECT_TRUE(controller->GetAutoNightLightNotificationForTesting());
 }
 
+// Fixture for testing Ambient EQ.
+class AmbientEQTest : public NightLightTest {
+ public:
+  AmbientEQTest() = default;
+  ~AmbientEQTest() override = default;
+  AmbientEQTest(const AmbientEQTest& other) = delete;
+  AmbientEQTest& operator=(const AmbientEQTest& rhs) = delete;
+
+  static constexpr gfx::Vector3dF kDefaultScalingFactors{1.0f, 1.0f, 1.0f};
+
+  // NightLightTest:
+  void SetUp() override {
+    NightLightTest::SetUp();
+    features_.InitAndEnableFeature(features::kAllowAmbientEQ);
+    controller_ = GetController();
+  }
+
+ protected:
+  base::test::ScopedFeatureList features_;
+  NightLightControllerImpl* controller_;  // Not owned.
+};
+
+// static
+constexpr gfx::Vector3dF AmbientEQTest::kDefaultScalingFactors;
+
+TEST_F(AmbientEQTest, TestAmbientRgbScalingUpdatesOnPrefChanged) {
+  // Start with the pref disabled.
+  controller_->SetAmbientColorEnabled(false);
+
+  // Shift to the coolest temperature and the temperature updates even with the
+  // pref disabled but the scaling factors don't.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+
+  // Enabling the pref and the scaling factors update.
+  controller_->SetAmbientColorEnabled(true);
+  const auto coolest_scaling_factors =
+      controller_->ambient_rgb_scaling_factors();
+  EXPECT_NE(kDefaultScalingFactors, coolest_scaling_factors);
+
+  // Shift to the warmest temp and the the scaling factors should update along
+  // with the temperature while the pref is enabled.
+  ambient_temperature = SimulateAmbientColorFromPowerd(2700, 5800.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  const auto warmest_scaling_factors =
+      controller_->ambient_rgb_scaling_factors();
+  EXPECT_NE(warmest_scaling_factors, coolest_scaling_factors);
+  EXPECT_NE(warmest_scaling_factors, kDefaultScalingFactors);
+}
+
+TEST_F(AmbientEQTest, TestAmbientRgbScalingUpdatesOnUserChangedToEnabled) {
+  // Start with user1 logged in with pref disabled.
+  controller_->SetAmbientColorEnabled(false);
+
+  // Shift to the coolest temperature and the temperature updates even with the
+  // pref disabled but the scaling factors don't.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+
+  // Enable the pref for user 2 then switch to user2 and the factors update.
+  user2_pref_service()->SetBoolean(prefs::kAmbientColorEnabled, true);
+  SwitchActiveUser(kUser2Email);
+  const auto coolest_scaling_factors =
+      controller_->ambient_rgb_scaling_factors();
+  EXPECT_NE(kDefaultScalingFactors, coolest_scaling_factors);
+}
+
+TEST_F(AmbientEQTest, TestAmbientRgbScalingUpdatesOnUserChangedBothDisabled) {
+  // Start with user1 logged in with pref disabled.
+  controller_->SetAmbientColorEnabled(false);
+
+  // Shift to the coolest temperature and the temperature updates even with the
+  // pref disabled but the scaling factors don't.
+  float ambient_temperature = SimulateAmbientColorFromPowerd(8000, 7350.0f);
+  EXPECT_EQ(ambient_temperature, controller_->ambient_temperature());
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+
+  // Disable the pref for user 2 then switch to user2 and the factors still
+  // shouldn't update.
+  user2_pref_service()->SetBoolean(prefs::kAmbientColorEnabled, false);
+  SwitchActiveUser(kUser2Email);
+  EXPECT_EQ(kDefaultScalingFactors, controller_->ambient_rgb_scaling_factors());
+}
+
 }  // namespace
 
 }  // namespace ash
