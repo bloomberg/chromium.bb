@@ -234,6 +234,19 @@ class _Deflater(object):
     def __init__(self, window_bits):
         self._logger = get_class_logger(self)
 
+        # Using the smallest window bits of 9 for generating input frames.
+        # On WebSocket spec, the smallest window bit is 8. However, zlib does
+        # not accept window_bit = 8.
+        #
+        # Because of a zlib deflate quirk, back-references will not use the
+        # entire range of 1 << window_bits, but will instead use a restricted
+        # range of (1 << window_bits) - 262. With an increased window_bits = 9,
+        # back-references will be within a range of 250. These can still be
+        # decompressed with window_bits = 8 and the 256-byte window used there.
+        #
+        # Similar disscussions can be found in https://crbug.com/691074
+        window_bits = max(window_bits, 9)
+
         self._compress = zlib.compressobj(
             zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -window_bits)
 
