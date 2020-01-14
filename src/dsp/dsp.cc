@@ -92,6 +92,7 @@ void DspInit() {
       LoopRestorationInit_SSE4_1();
       MaskBlendInit_SSE4_1();
       ObmcInit_SSE4_1();
+      SuperResInit_SSE4_1();
     }
 #endif  // LIBGAV1_ENABLE_SSE4_1
 #if LIBGAV1_ENABLE_NEON

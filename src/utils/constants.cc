@@ -195,7 +195,7 @@ const int8_t kWienerTapsMin[3] = {-5, -23, -17};
 const int8_t kWienerTapsMax[3] = {10, 8, 46};
 
 // This was modified from Upscale_Filter as defined in AV1 Section 7.16, in
-// order to support 16-bit packed SIMD operations.
+// order to support 16-bit packed NEON operations.
 // The sign of each tap is: - + - + + - + -
 alignas(16) const uint8_t
     kUpscaleFilterUnsigned[kSuperResFilterShifts][kSuperResFilterTaps] = {
