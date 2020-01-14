@@ -1025,9 +1025,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements ScreenshotMo
     }
 
     private boolean shouldShowTabSwitcherOnStart() {
+        if (!isMainIntentFromLauncher(getIntent())) return false;
+
         long lastBackgroundedTimeMillis = mInactivityTracker.getLastBackgroundedTimeMs();
-        return ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis)
-                && isMainIntentFromLauncher(getIntent());
+        return (ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
+                       && getTabModelSelector().getTotalTabCount() <= 0)
+                || ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(lastBackgroundedTimeMillis);
     }
 
     private boolean isMainIntentFromLauncher(Intent intent) {
