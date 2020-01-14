@@ -7,7 +7,6 @@
 
 #include <openssl/ssl.h>
 
-#include <atomic>
 #include <memory>
 
 #include "platform/api/tls_connection.h"
@@ -21,8 +20,7 @@ namespace openscreen {
 class TaskRunner;
 class TlsConnectionFactoryPosix;
 
-class TlsConnectionPosix : public TlsConnection,
-                           public TlsWriteBuffer::Observer {
+class TlsConnectionPosix : public TlsConnection {
  public:
   ~TlsConnectionPosix() override;
 
@@ -35,12 +33,9 @@ class TlsConnectionPosix : public TlsConnection,
 
   // TlsConnection overrides.
   void SetClient(Client* client) override;
-  void Write(const void* data, size_t len) override;
+  bool Send(const void* data, size_t len) override;
   IPEndpoint GetLocalEndpoint() const override;
   IPEndpoint GetRemoteEndpoint() const override;
-
-  // TlsWriteBuffer::Observer overrides.
-  void NotifyWriteBufferFill(double fraction) override;
 
  protected:
   friend class TlsConnectionFactoryPosix;
@@ -63,12 +58,6 @@ class TlsConnectionPosix : public TlsConnection,
   // has occurred.
   void DispatchError(Error error);
 
-  // Helper to call OnWriteBlocked() or OnWriteUnblocked(). If this is not
-  // called within a task run by |task_runner_|, it trampolines by posting a
-  // task to call itself back via |task_runner_|. See comments in implementation
-  // of NotifyWriteBufferFill() for further details.
-  void NotifyClientOfWriteBlockStatusSequentially(bool is_blocked);
-
   TaskRunner* const task_runner_;
   PlatformClientPosix* const platform_client_;
 
@@ -77,7 +66,6 @@ class TlsConnectionPosix : public TlsConnection,
   std::unique_ptr<StreamSocket> socket_;
   bssl::UniquePtr<SSL> ssl_;
 
-  std::atomic_bool notified_client_buffer_is_blocked_{false};
   TlsWriteBuffer buffer_;
 
   WeakPtrFactory<TlsConnectionPosix> weak_factory_{this};

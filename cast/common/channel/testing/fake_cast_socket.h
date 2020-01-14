@@ -65,17 +65,19 @@ struct FakeCastSocketPair {
     peer_socket = std::make_unique<CastSocket>(std::move(moved_peer),
                                                &mock_peer_client, 2);
 
-    ON_CALL(*connection, Write(_, _))
+    ON_CALL(*connection, Send(_, _))
         .WillByDefault(Invoke([this](const void* data, size_t len) {
           peer_connection->OnRead(std::vector<uint8_t>(
               reinterpret_cast<const uint8_t*>(data),
               reinterpret_cast<const uint8_t*>(data) + len));
+          return true;
         }));
-    ON_CALL(*peer_connection, Write(_, _))
+    ON_CALL(*peer_connection, Send(_, _))
         .WillByDefault(Invoke([this](const void* data, size_t len) {
           connection->OnRead(std::vector<uint8_t>(
               reinterpret_cast<const uint8_t*>(data),
               reinterpret_cast<const uint8_t*>(data) + len));
+          return true;
         }));
   }
   ~FakeCastSocketPair() = default;

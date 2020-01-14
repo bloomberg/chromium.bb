@@ -58,14 +58,14 @@ TEST_F(VirtualConnectionRouterTest, LocalIdHandler) {
   message.set_payload_type(CastMessage::STRING);
   message.set_payload_utf8("cnlybnq");
   EXPECT_CALL(mock_message_handler_, OnMessage(_, socket_, _));
-  peer_socket().SendMessage(message);
+  EXPECT_TRUE(peer_socket().SendMessage(message).ok());
 
   EXPECT_CALL(mock_message_handler_, OnMessage(_, socket_, _));
-  peer_socket().SendMessage(message);
+  EXPECT_TRUE(peer_socket().SendMessage(message).ok());
 
   message.set_destination_id("receiver-4321");
   EXPECT_CALL(mock_message_handler_, OnMessage(_, _, _)).Times(0);
-  peer_socket().SendMessage(message);
+  EXPECT_TRUE(peer_socket().SendMessage(message).ok());
 }
 
 TEST_F(VirtualConnectionRouterTest, RemoveLocalIdHandler) {
@@ -83,12 +83,12 @@ TEST_F(VirtualConnectionRouterTest, RemoveLocalIdHandler) {
   message.set_payload_type(CastMessage::STRING);
   message.set_payload_utf8("cnlybnq");
   EXPECT_CALL(mock_message_handler_, OnMessage(_, socket_, _));
-  peer_socket().SendMessage(message);
+  EXPECT_TRUE(peer_socket().SendMessage(message).ok());
 
   router_.RemoveHandlerForLocalId("receiver-1234");
 
   EXPECT_CALL(mock_message_handler_, OnMessage(_, socket_, _)).Times(0);
-  peer_socket().SendMessage(message);
+  EXPECT_TRUE(peer_socket().SendMessage(message).ok());
 }
 
 TEST_F(VirtualConnectionRouterTest, SendMessage) {

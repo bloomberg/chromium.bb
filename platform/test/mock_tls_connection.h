@@ -22,21 +22,11 @@ class MockTlsConnection : public TlsConnection {
   using TlsConnection::Client;
   void SetClient(Client* client) override { client_ = client; }
 
-  MOCK_METHOD(void, Write, (const void* data, size_t len), (override));
+  MOCK_METHOD(bool, Send, (const void* data, size_t len), (override));
 
   IPEndpoint GetLocalEndpoint() const override { return local_address_; }
   IPEndpoint GetRemoteEndpoint() const override { return remote_address_; }
 
-  void OnWriteBlocked() {
-    if (client_) {
-      client_->OnWriteBlocked(this);
-    }
-  }
-  void OnWriteUnblocked() {
-    if (client_) {
-      client_->OnWriteUnblocked(this);
-    }
-  }
   void OnError(Error error) {
     if (client_) {
       client_->OnError(this, std::move(error));

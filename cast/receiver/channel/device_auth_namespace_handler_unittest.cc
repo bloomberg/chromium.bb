@@ -85,7 +85,9 @@ TEST_F(DeviceAuthNamespaceHandlerTest, AuthResponse) {
           Invoke([&challenge_reply](CastSocket* socket, CastMessage message) {
             challenge_reply = std::move(message);
           }));
-  fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge));
+  ASSERT_TRUE(
+      fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge))
+          .ok());
 
   const std::string auth_response_string =
       ReadEntireFileToString(TEST_DATA_PREFIX "auth_response.pb");
@@ -147,7 +149,9 @@ TEST_F(DeviceAuthNamespaceHandlerTest, BadNonce) {
           Invoke([&challenge_reply](CastSocket* socket, CastMessage message) {
             challenge_reply = std::move(message);
           }));
-  fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge));
+  ASSERT_TRUE(
+      fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge))
+          .ok());
 
   const std::string auth_response_string =
       ReadEntireFileToString(TEST_DATA_PREFIX "auth_response.pb");
@@ -197,7 +201,9 @@ TEST_F(DeviceAuthNamespaceHandlerTest, UnsupportedSignatureAlgorithm) {
           Invoke([&challenge_reply](CastSocket* socket, CastMessage message) {
             challenge_reply = std::move(message);
           }));
-  fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge));
+  ASSERT_TRUE(
+      fake_cast_socket_pair_.peer_socket->SendMessage(std::move(auth_challenge))
+          .ok());
 
   DeviceAuthMessage auth_message;
   ASSERT_EQ(challenge_reply.payload_type(),

@@ -34,8 +34,7 @@ TlsConnectionPosix::TlsConnectionPosix(IPEndpoint local_address,
                                        PlatformClientPosix* platform_client)
     : task_runner_(task_runner),
       platform_client_(platform_client),
-      socket_(std::make_unique<StreamSocketPosix>(local_address)),
-      buffer_(this) {
+      socket_(std::make_unique<StreamSocketPosix>(local_address)) {
   OSP_DCHECK(task_runner_);
   if (platform_client_) {
     platform_client_->tls_data_router()->RegisterConnection(this);
@@ -47,8 +46,7 @@ TlsConnectionPosix::TlsConnectionPosix(IPAddress::Version version,
                                        PlatformClientPosix* platform_client)
     : task_runner_(task_runner),
       platform_client_(platform_client),
-      socket_(std::make_unique<StreamSocketPosix>(version)),
-      buffer_(this) {
+      socket_(std::make_unique<StreamSocketPosix>(version)) {
   OSP_DCHECK(task_runner_);
   if (platform_client_) {
     platform_client_->tls_data_router()->RegisterConnection(this);
@@ -60,8 +58,7 @@ TlsConnectionPosix::TlsConnectionPosix(std::unique_ptr<StreamSocket> socket,
                                        PlatformClientPosix* platform_client)
     : task_runner_(task_runner),
       platform_client_(platform_client),
-      socket_(std::move(socket)),
-      buffer_(this) {
+      socket_(std::move(socket)) {
   OSP_DCHECK(task_runner_);
   if (platform_client_) {
     platform_client_->tls_data_router()->RegisterConnection(this);
@@ -110,12 +107,11 @@ void TlsConnectionPosix::TryReceiveMessage() {
 void TlsConnectionPosix::SetClient(Client* client) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   client_ = client;
-  notified_client_buffer_is_blocked_ = false;
 }
 
-void TlsConnectionPosix::Write(const void* data, size_t len) {
+bool TlsConnectionPosix::Send(const void* data, size_t len) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-  buffer_.Write(data, len);
+  return buffer_.Push(data, len);
 }
 
 IPEndpoint TlsConnectionPosix::GetLocalEndpoint() const {
@@ -132,31 +128,6 @@ IPEndpoint TlsConnectionPosix::GetRemoteEndpoint() const {
   absl::optional<IPEndpoint> endpoint = socket_->remote_address();
   OSP_DCHECK(endpoint.has_value());
   return endpoint.value();
-}
-
-void TlsConnectionPosix::NotifyWriteBufferFill(double fraction) {
-  // WARNING: This method is called on multiple threads.
-  //
-  // The following is very subtle/complex behavior: Only "writes" can increase
-  // the buffer fill, so we expect transitions into the "blocked" state to occur
-  // on the |task_runner_| thread, and |client_| will be notified
-  // *synchronously* when that happens. Likewise, only "reads" can cause
-  // transitions to the "unblocked" state; but these will not occur on the
-  // |task_runner_| thread. Thus, when unblocking, the |client_| will be
-  // notified *asynchronously*; but, that should be acceptable because it's only
-  // a race towards a buffer overrun that is of concern.
-  //
-  // TODO(rwkeane): Have Write() return a bool, and then none of this is needed.
-  constexpr double kBlockBufferPercentage = 0.5;
-  if (fraction > kBlockBufferPercentage &&
-      !notified_client_buffer_is_blocked_) {
-    NotifyClientOfWriteBlockStatusSequentially(true);
-  } else if (fraction < kBlockBufferPercentage &&
-             notified_client_buffer_is_blocked_) {
-    NotifyClientOfWriteBlockStatusSequentially(false);
-  } else if (fraction >= 0.99) {
-    DispatchError(Error::Code::kInsufficientBuffer);
-  }
 }
 
 void TlsConnectionPosix::SendAvailableBytes() {
@@ -186,39 +157,6 @@ void TlsConnectionPosix::DispatchError(Error error) {
       }
     }
   });
-}
-
-void TlsConnectionPosix::NotifyClientOfWriteBlockStatusSequentially(
-    bool is_blocked) {
-  if (!task_runner_->IsRunningOnTaskRunner()) {
-    task_runner_->PostTask(
-        [weak_this = weak_factory_.GetWeakPtr(), is_blocked = is_blocked] {
-          if (auto* self = weak_this.get()) {
-            OSP_DCHECK(self->task_runner_->IsRunningOnTaskRunner());
-            self->NotifyClientOfWriteBlockStatusSequentially(is_blocked);
-          }
-        });
-    return;
-  }
-
-  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
-
-  if (!client_) {
-    return;
-  }
-
-  // Check again, now that the block/unblock state change is happening
-  // in-sequence (it originated from parallel executions).
-  if (notified_client_buffer_is_blocked_ == is_blocked) {
-    return;
-  }
-
-  notified_client_buffer_is_blocked_ = is_blocked;
-  if (is_blocked) {
-    client_->OnWriteBlocked(this);
-  } else {
-    client_->OnWriteUnblocked(this);
-  }
 }
 
 }  // namespace openscreen

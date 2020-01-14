@@ -19,6 +19,7 @@ namespace {
 
 using ::testing::_;
 using ::testing::Invoke;
+using ::testing::Return;
 
 class CastSocketTest : public ::testing::Test {
  public:
@@ -48,14 +49,34 @@ class CastSocketTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(CastSocketTest, SendMessage) {
-  EXPECT_CALL(connection(), Write(_, _))
+  EXPECT_CALL(connection(), Send(_, _))
       .WillOnce(Invoke([this](const void* data, size_t len) {
         EXPECT_EQ(
             frame_serial_,
             std::vector<uint8_t>(reinterpret_cast<const uint8_t*>(data),
                                  reinterpret_cast<const uint8_t*>(data) + len));
+        return true;
       }));
   ASSERT_TRUE(socket().SendMessage(message_).ok());
+}
+
+TEST_F(CastSocketTest, SendMessageEventuallyBlocks) {
+  EXPECT_CALL(connection(), Send(_, _))
+      .Times(3)
+      .WillRepeatedly(Invoke([this](const void* data, size_t len) {
+        EXPECT_EQ(
+            frame_serial_,
+            std::vector<uint8_t>(reinterpret_cast<const uint8_t*>(data),
+                                 reinterpret_cast<const uint8_t*>(data) + len));
+        return true;
+      }))
+      .RetiresOnSaturation();
+  ASSERT_TRUE(socket().SendMessage(message_).ok());
+  ASSERT_TRUE(socket().SendMessage(message_).ok());
+  ASSERT_TRUE(socket().SendMessage(message_).ok());
+
+  EXPECT_CALL(connection(), Send(_, _)).WillOnce(Return(false));
+  ASSERT_EQ(socket().SendMessage(message_).code(), Error::Code::kAgain);
 }
 
 TEST_F(CastSocketTest, ReadCompleteMessage) {
@@ -98,44 +119,6 @@ TEST_F(CastSocketTest, ReadChunkedMessage) {
       }));
   connection().OnRead(std::vector<uint8_t>(data + frame_serial_.size() + 10,
                                            data + double_message.size()));
-}
-
-TEST_F(CastSocketTest, SendMessageWhileBlocked) {
-  connection().OnWriteBlocked();
-  EXPECT_CALL(connection(), Write(_, _)).Times(0);
-  ASSERT_TRUE(socket().SendMessage(message_).ok());
-
-  EXPECT_CALL(connection(), Write(_, _))
-      .WillOnce(Invoke([this](const void* data, size_t len) {
-        EXPECT_EQ(
-            frame_serial_,
-            std::vector<uint8_t>(reinterpret_cast<const uint8_t*>(data),
-                                 reinterpret_cast<const uint8_t*>(data) + len));
-      }));
-  connection().OnWriteUnblocked();
-
-  EXPECT_CALL(connection(), Write(_, _)).Times(0);
-  connection().OnWriteBlocked();
-  connection().OnWriteUnblocked();
-}
-
-TEST_F(CastSocketTest, ErrorWhileEmptyingQueue) {
-  connection().OnWriteBlocked();
-  EXPECT_CALL(connection(), Write(_, _)).Times(0);
-  ASSERT_TRUE(socket().SendMessage(message_).ok());
-
-  EXPECT_CALL(connection(), Write(_, _))
-      .WillOnce(Invoke([this](const void* data, size_t len) {
-        EXPECT_EQ(
-            frame_serial_,
-            std::vector<uint8_t>(reinterpret_cast<const uint8_t*>(data),
-                                 reinterpret_cast<const uint8_t*>(data) + len));
-        connection().OnError(Error::Code::kUnknownError);
-      }));
-  connection().OnWriteUnblocked();
-
-  EXPECT_CALL(connection(), Write(_, _)).Times(0);
-  ASSERT_FALSE(socket().SendMessage(message_).ok());
 }
 
 TEST_F(CastSocketTest, SanitizedAddress) {
