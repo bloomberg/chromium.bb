@@ -252,9 +252,15 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
   const AV1_COMMON *const cm = &cpi->common;
   const int is_720p_or_larger = AOMMIN(cm->width, cm->height) >= 720;
   const int is_480p_or_larger = AOMMIN(cm->width, cm->height) >= 480;
+  const int is_360p_or_larger = AOMMIN(cm->width, cm->height) >= 360;
 
   (void)is_720p_or_larger;  // Not used so far
 
+  if (is_360p_or_larger) {
+    if (speed >= 7) {
+      sf->interp_sf.disable_filter_search_var_thresh = 0;
+    }
+  }
   if (!is_480p_or_larger) {
     if (speed >= 8) {
       sf->mv_sf.subpel_search_method = SUBPEL_TREE;
