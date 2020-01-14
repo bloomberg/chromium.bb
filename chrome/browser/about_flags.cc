@@ -1315,7 +1315,8 @@ const FeatureEntry::FeatureParam
         {QuietNotificationPermissionUiConfig::kEnableAdaptiveActivation,
          "true"},
         {QuietNotificationPermissionUiConfig::kEnableCrowdDenyTriggering,
-         "true"}};
+         "true"},
+        {QuietNotificationPermissionUiConfig::kCrowdDenyHoldBackChance, "0"}};
 
 // The default "Enabled" option has the semantics of showing the quiet UI
 // (animated location bar indicator on Desktop, and mini-infobars on Android),
