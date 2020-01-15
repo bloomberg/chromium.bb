@@ -126,6 +126,7 @@ struct CollectUserDataOptions {
 
   bool require_billing_postal_code = false;
   std::string billing_postal_code_missing_text;
+  std::string credit_card_expired_text;
 
   // If empty, terms and conditions should not be shown.
   std::string accept_terms_and_conditions_text;
