@@ -71,7 +71,7 @@ class VersionException(Exception):
 
         Args:
             supported_version: a str object to show supported hybi versions.
-                               (e.g. '8, 13')
+                               (e.g. '13')
         """
         super(VersionException, self).__init__(name)
         self.supported_versions = supported_versions

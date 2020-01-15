@@ -43,10 +43,10 @@ import threading
 
 
 # Export Exception symbols from msgutil for backward compatibility
-from mod_pywebsocket._stream_base import ConnectionTerminatedException
-from mod_pywebsocket._stream_base import InvalidFrameException
-from mod_pywebsocket._stream_base import BadOperationException
-from mod_pywebsocket._stream_base import UnsupportedFrameException
+from mod_pywebsocket._stream_exceptions import ConnectionTerminatedException
+from mod_pywebsocket._stream_exceptions import InvalidFrameException
+from mod_pywebsocket._stream_exceptions import BadOperationException
+from mod_pywebsocket._stream_exceptions import UnsupportedFrameException
 
 
 # An API for handler to send/receive WebSocket messages.
