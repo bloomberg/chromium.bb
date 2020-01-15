@@ -57,7 +57,7 @@ std::ostream &operator<<(std::ostream &os, const TestVideoParam &test_arg) {
   return os << "TestVideoParam { filename:" << test_arg.filename
             << " input_bit_depth:" << test_arg.input_bit_depth
             << " fmt:" << test_arg.fmt << " bit_depth:" << test_arg.bit_depth
-            << " profile:" << test_arg.profile << "}";
+            << " profile:" << test_arg.profile << " }";
 }
 
 const TestVideoParam kTestVectors[] = {

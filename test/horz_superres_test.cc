@@ -40,6 +40,14 @@ typedef struct {
   double psnr_threshold;
 } TestVideoParam;
 
+std::ostream &operator<<(std::ostream &os, const TestVideoParam &test_arg) {
+  return os << "TestVideoParam { filename:" << test_arg.filename
+            << " fmt:" << test_arg.fmt << " bit_depth:" << test_arg.bit_depth
+            << " profile:" << test_arg.profile << " limit:" << test_arg.limit
+            << " screen_content:" << test_arg.screen_content
+            << " psnr_threshold:" << test_arg.psnr_threshold << " }";
+}
+
 const TestVideoParam kTestVideoVectors[] = {
   { "park_joy_90p_8_420.y4m", AOM_IMG_FMT_I420, AOM_BITS_8, 0, 5, 0, 25.5 },
 #if CONFIG_AV1_HIGHBITDEPTH
