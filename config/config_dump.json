@@ -25999,7 +25999,6 @@
         "boards": [
             "puff"
         ],
-        "important": false,
         "sign_types": [
             "recovery",
             "factory"
