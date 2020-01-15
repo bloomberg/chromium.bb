@@ -16,7 +16,6 @@
 <translation id="5073204694187207510">Fshih rrjetën me ekran të plotë</translation>
 <translation id="5082793167783849073">Krahaso me shpejtësi faqet duke krijuar një grup. Për të filluar, prek dhe mbaj të shtypur një lidhje.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> skeda të grupuara</translation>
-<translation id="5792534911093536736">Më shumë skeda</translation>
 <translation id="58326064309361797">Zvarriti skedat për t'i grupuar</translation>
 <translation id="6040143037577758943">Mbyll</translation>
 <translation id="6193448654517602979">Zgjidh skedat</translation>
@@ -26,6 +25,7 @@
 <translation id="7559245342362162951">Shfaq skedat e grupit në rrjetën me ekran të plotë</translation>
 <translation id="7792771145871471484">Rishiko sugjerimet.</translation>
 <translation id="7966321538264951561">Largo sugjerimet.</translation>
+<translation id="814503310257431685">Shiko të gjitha</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Mbyll <ph name="TABS_COUNT_ONE" /> skedë të zgjedhur}other{Mbyll <ph name="TABS_COUNT_MANY" /> skeda të zgjedhura}}</translation>
 <translation id="9150694013019234766">Kalo mes skedave në grupin e skedave pranë fundit të ekranit</translation>
 <translation id="9169594135889675189">Shto skedë të re te grupi</translation>

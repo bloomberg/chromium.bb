@@ -16,7 +16,6 @@
 <translation id="5073204694187207510">Hætta að sýna á öllum skjánum</translation>
 <translation id="5082793167783849073">Berðu síður saman á fljótlegan hátt með því að búa til hóp. Haltu fingri á tengli til að byrja.</translation>
 <translation id="5580090775658607195"><ph name="TAB_COUNT" /> flipar sameinaðir.</translation>
-<translation id="5792534911093536736">Fleiri flipar</translation>
 <translation id="58326064309361797">Dragðu flipa til að sameina þá</translation>
 <translation id="6040143037577758943">Loka</translation>
 <translation id="6193448654517602979">Velja flipa</translation>
@@ -26,6 +25,7 @@
 <translation id="7559245342362162951">Sýna flipa hóps á öllum skjánum</translation>
 <translation id="7792771145871471484">Skoða tillögurnar.</translation>
 <translation id="7966321538264951561">Hunsa tillögurnar.</translation>
+<translation id="814503310257431685">Sjá allt</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Loka <ph name="TABS_COUNT_ONE" /> völdum flipa}one{Loka <ph name="TABS_COUNT_MANY" /> völdum flipa}other{Loka <ph name="TABS_COUNT_MANY" /> völdum flipum}}</translation>
 <translation id="9150694013019234766">Flettu á milli flipa í flipahópnum neðarlega á skjánum</translation>
 <translation id="9169594135889675189">Bæta nýjum flipa við hóp</translation>

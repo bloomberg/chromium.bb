@@ -16,7 +16,6 @@
 <translation id="5073204694187207510">Ezkutatu pantaila osoko sareta</translation>
 <translation id="5082793167783849073">Egin talde bat orriak azkar alderatzeko. Hasteko, eduki sakatuta esteka bat.</translation>
 <translation id="5580090775658607195">Taldekatu dira <ph name="TAB_COUNT" /> fitxa</translation>
-<translation id="5792534911093536736">Fitxa gehiago</translation>
 <translation id="58326064309361797">Fitxak taldekatzeko, arrasta itzazu</translation>
 <translation id="6040143037577758943">Itxi</translation>
 <translation id="6193448654517602979">Hautatu fitxak</translation>
@@ -26,6 +25,7 @@
 <translation id="7559245342362162951">Erakutsi taldearen fitxak pantaila osoko saretan</translation>
 <translation id="7792771145871471484">Berrikusi iradokizunak.</translation>
 <translation id="7966321538264951561">Baztertu iradokizunak.</translation>
+<translation id="814503310257431685">Ikusi guztiak</translation>
 <translation id="83556505225171773">{TABS_COUNT,plural, =1{Itxi hautatutako <ph name="TABS_COUNT_ONE" /> fitxa}other{Itxi hautatutako <ph name="TABS_COUNT_MANY" /> fitxa}}</translation>
 <translation id="9150694013019234766">Fitxa batetik bestera joateko, erabili pantailaren behealdean dagoen fitxa taldea</translation>
 <translation id="9169594135889675189">Gehitu beste fitxa bat taldean</translation>
