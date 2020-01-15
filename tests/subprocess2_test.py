@@ -81,6 +81,14 @@ class DefaultsTest(unittest.TestCase):
     mockCommunicate.assert_called_with(
         ['foo'], a=True, stdin=subprocess2.VOID_INPUT, stdout=subprocess2.PIPE)
 
+  @mock.patch('subprocess.Popen.__init__')
+  def test_env_type(self, mockPopen):
+    if sys.version_info.major != 2:
+      subprocess2.Popen(['foo'], env={b'key': b'value'})
+      mockPopen.assert_called_with(['foo'],
+                                   env={'key': 'value'},
+                                   shell=mock.ANY)
+
 
 def _run_test(with_subprocess=True):
   """Runs a tests in 12 combinations:

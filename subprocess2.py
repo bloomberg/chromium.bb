@@ -121,6 +121,17 @@ class Popen(subprocess.Popen):
     env = get_english_env(kwargs.get('env'))
     if env:
       kwargs['env'] = env
+    if kwargs.get('env') is not None and sys.version_info.major != 2:
+      # Subprocess expects environment variables to be strings in Python 3.
+      def ensure_str(value):
+        if isinstance(value, bytes):
+          return value.decode()
+        return value
+
+      kwargs['env'] = {
+          ensure_str(k): ensure_str(v)
+          for k, v in kwargs['env'].items()
+      }
     if kwargs.get('shell') is None:
       # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for
       # the executable, but shell=True makes subprocess on Linux fail when it's
