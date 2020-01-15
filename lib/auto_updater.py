@@ -716,23 +716,19 @@ class ChromiumOSUpdater(BaseUpdater):
     will fail. We empty the payload's AppID so nebraska can do partial APP ID
     matching.
     """
-    if not self.device.app_id:
-      logging.warn('Device does not a proper APP ID!')
-      return
-
     content = json.loads(osutils.ReadFile(prop_file))
-    payload_app_id = content.get('appid', '')
-    if not payload_app_id:
-      # Payload's App ID is empty, we don't care, it is already partial match.
+    payload_app_id = content.get('appid')
+
+    if ((self.device.app_id and self.device.app_id == payload_app_id) or
+        payload_app_id == ''):
       return
 
-    if self.device.app_id != payload_app_id:
-      logging.warn('You are installing an image with a different release '
-                   'App ID than the device (%s vs %s), we are forcing the '
-                   'install!', payload_app_id, self.device.app_id)
-      # Override the properties file with the new empty APP ID.
-      content['appid'] = ''
-      osutils.WriteFile(prop_file, json.dumps(content))
+    logging.warn('You are installing an image with a different release '
+                 'App ID than the device (%s vs %s), we are forcing the '
+                 'install!', payload_app_id, self.device.app_id)
+    # Override the properties file with the new empty APP ID.
+    content['appid'] = ''
+    osutils.WriteFile(prop_file, json.dumps(content))
 
   def RunUpdate(self):
     """Update the device with image of specific version."""
