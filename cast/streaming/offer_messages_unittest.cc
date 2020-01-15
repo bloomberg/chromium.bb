@@ -247,6 +247,27 @@ TEST(OfferTest, CanParseValidButMinimalAudioOffer) {
   EXPECT_TRUE(Offer::Parse(std::move(root.value())).is_value());
 }
 
+TEST(OfferTest, CanParseValidZeroBitRateAudioOffer) {
+  ErrorOr<Json::Value> root = json::Parse(R"({
+    "castMode": "mirroring",
+    "supportedStreams": [{
+      "index": 2,
+      "type": "audio_source",
+      "codecName": "opus",
+      "rtpProfile": "cast",
+      "rtpPayloadType": 96,
+      "ssrc": 19088743,
+      "bitRate": 0,
+      "timeBase": "1/96000",
+      "channels": 5,
+      "aesKey": "51029e4e2347cbcb49d57ef10177aebd",
+      "aesIvMask": "7f12a19be62a36c04ae4116caaeff5d2"
+    }]
+  })");
+  ASSERT_TRUE(root.is_value());
+  EXPECT_TRUE(Offer::Parse(std::move(root.value())).is_value());
+}
+
 TEST(OfferTest, ErrorOnMissingVideoStreamMandatoryField) {
   ExpectFailureOnParse(R"({
     "castMode": "mirroring",

@@ -196,7 +196,8 @@ ErrorOr<AudioStream> ParseAudioStream(const Json::Value& value) {
   if (!bit_rate) {
     return bit_rate.error();
   }
-  if (bit_rate.value() <= 0) {
+  // A bit rate of 0 is valid for some codec types, so we don't enforce here.
+  if (bit_rate.value() < 0) {
     return CreateParameterError("bit rate");
   }
   return AudioStream{stream.value(), bit_rate.value()};
@@ -332,7 +333,8 @@ std::string CastMode::ToString() const {
 }
 
 ErrorOr<Json::Value> AudioStream::ToJson() const {
-  if (bit_rate <= 0) {
+  // A bit rate of 0 is valid for some codec types, so we don't enforce here.
+  if (bit_rate < 0) {
     return CreateParameterError("AudioStream");
   }
 
