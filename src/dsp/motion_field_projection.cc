@@ -30,34 +30,10 @@ namespace {
 
 // Silence unused function warnings when MotionFieldProjectionKernel_C is
 // not used.
-#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||                       \
-    (!defined(LIBGAV1_Dsp8bpp_MotionFieldProjectionKernel) && \
+#if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||                      \
+    !defined(LIBGAV1_Dsp8bpp_MotionFieldProjectionKernel) || \
+    (LIBGAV1_MAX_BITDEPTH >= 10 &&                           \
      !defined(LIBGAV1_Dsp10bpp_MotionFieldProjectionKernel))
-
-constexpr int kProjectionMvMaxHorizontalOffset = 8;
-
-// 7.9.3. (without the clamp for numerator and denominator).
-void GetMvProjectionNoClamp(const MotionVector& mv, int numerator,
-                            int denominator, MotionVector* projection_mv) {
-  // Allow numerator and denominator to be 0 so that this function can be called
-  // unconditionally. When either numerator or denominator is 0, |projection_mv|
-  // will be 0, and this is what we want.
-  assert(std::abs(numerator) <= kMaxFrameDistance);
-  assert(denominator >= 0);
-  assert(denominator <= kMaxFrameDistance);
-  for (int i = 0; i < 2; ++i) {
-    projection_mv->mv[i] = Clip3(
-        RightShiftWithRoundingSigned(
-            mv.mv[i] * numerator * kProjectionMvDivisionLookup[denominator],
-            14),
-        -kProjectionMvClamp, kProjectionMvClamp);
-  }
-}
-
-// 7.9.4.
-constexpr int Project(int value, int delta, int dst_sign) {
-  return value + ApplySign(delta / 64, dst_sign);
-}
 
 // 7.9.2.
 void MotionFieldProjectionKernel_C(
@@ -130,7 +106,8 @@ void MotionFieldProjectionKernel_C(
 }
 
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS ||
-        // (!defined(LIBGAV1_Dsp8bpp_MotionFieldProjectionKernel) &&
+        // !defined(LIBGAV1_Dsp8bpp_MotionFieldProjectionKernel) ||
+        // (LIBGAV1_MAX_BITDEPTH >= 10 &&
         //  !defined(LIBGAV1_Dsp10bpp_MotionFieldProjectionKernel))
 
 void Init8bpp() {

@@ -14,27 +14,26 @@
  * limitations under the License.
  */
 
-#ifndef LIBGAV1_SRC_DSP_MOTION_FIELD_PROJECTION_H_
-#define LIBGAV1_SRC_DSP_MOTION_FIELD_PROJECTION_H_
+#ifndef LIBGAV1_SRC_DSP_MOTION_FIELD_PROJECTION_NEON_H_
+#define LIBGAV1_SRC_DSP_MOTION_FIELD_PROJECTION_NEON_H_
 
-// Pull in LIBGAV1_DspXXX defines representing the implementation status
-// of each function. The resulting value of each can be used by each module to
-// determine whether an implementation is needed at compile time.
-// IWYU pragma: begin_exports
-
-// ARM:
-#include "src/dsp/arm/motion_field_projection_neon.h"
-
-// IWYU pragma: end_exports
+#include "src/dsp/dsp.h"
+#include "src/utils/cpu.h"
 
 namespace libgav1 {
 namespace dsp {
 
 // Initializes Dsp::motion_field_projection_kernel. This function is not
 // thread-safe.
-void MotionFieldProjectionInit_C();
+void MotionFieldProjectionInit_NEON();
 
 }  // namespace dsp
 }  // namespace libgav1
 
-#endif  // LIBGAV1_SRC_DSP_MOTION_FIELD_PROJECTION_H_
+#if LIBGAV1_ENABLE_NEON
+
+#define LIBGAV1_Dsp8bpp_MotionFieldProjectionKernel LIBGAV1_CPU_NEON
+
+#endif  // LIBGAV1_ENABLE_NEON
+
+#endif  // LIBGAV1_SRC_DSP_MOTION_FIELD_PROJECTION_NEON_H_

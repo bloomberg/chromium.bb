@@ -96,7 +96,8 @@ enum {
   kMaxScaledSuperBlockSizeInPixels = 128 * 2,
   kMaxSuperBlockSizeSquareInPixels = 128 * 128,
   kNum4x4InLoopFilterMaskUnit = 16,
-  kProjectionMvClamp = 16383,
+  kProjectionMvClamp = (1 << 14) - 1,  // == 16383
+  kProjectionMvMaxHorizontalOffset = 8,
   kRestorationUnitOffset = 8,
   // 2 pixel padding for 5x5 box sum on each side.
   kRestorationPadding = 4,

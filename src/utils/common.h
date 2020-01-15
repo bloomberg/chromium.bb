@@ -30,9 +30,11 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 
 #include "src/utils/bit_mask_set.h"
 #include "src/utils/constants.h"
+#include "src/utils/types.h"
 
 namespace libgav1 {
 
@@ -327,6 +329,30 @@ inline int GetRelativeDistance(const unsigned int a, const unsigned int b,
 //   return (sign == 0) ? value : -value;
 // and does so without a branch.
 constexpr int ApplySign(int value, int sign) { return (value ^ sign) - sign; }
+
+// 7.9.3. (without the clamp for numerator and denominator).
+inline void GetMvProjectionNoClamp(const MotionVector& mv, int numerator,
+                                   int denominator,
+                                   MotionVector* projection_mv) {
+  // Allow numerator and denominator to be 0 so that this function can be called
+  // unconditionally. When either numerator or denominator is 0, |projection_mv|
+  // will be 0, and this is what we want.
+  assert(std::abs(numerator) <= kMaxFrameDistance);
+  assert(denominator >= 0);
+  assert(denominator <= kMaxFrameDistance);
+  for (int i = 0; i < 2; ++i) {
+    projection_mv->mv[i] = Clip3(
+        RightShiftWithRoundingSigned(
+            mv.mv[i] * numerator * kProjectionMvDivisionLookup[denominator],
+            14),
+        -kProjectionMvClamp, kProjectionMvClamp);
+  }
+}
+
+// 7.9.4.
+constexpr int Project(int value, int delta, int dst_sign) {
+  return value + ApplySign(delta / 64, dst_sign);
+}
 
 inline bool IsBlockSmallerThan8x8(BlockSize size) {
   return size < kBlock8x8 && size != kBlock4x16;
