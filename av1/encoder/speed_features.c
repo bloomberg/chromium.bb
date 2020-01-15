@@ -375,6 +375,7 @@ static void set_good_speed_features_framesize_independent(
     sf->lpf_sf.dual_sgr_penalty_level = 1;
     sf->lpf_sf.enable_sgr_ep_pruning = 1;
 
+    // TODO(any, yunqing): move this feature to speed 0.
     sf->tpl_sf.skip_alike_starting_mv = 1;
   }
 
