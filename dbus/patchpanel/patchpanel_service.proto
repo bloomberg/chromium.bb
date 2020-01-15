@@ -172,3 +172,41 @@ message SetVpnIntentRequest {
 message SetVpnIntentResponse {
   bool success = 1;
 }
+
+// Request for connecting and routing a network namespace. The client must
+// append a valid file descriptor immediately after the serialized
+// ConnectNamespaceRequest proto. This file descriptor must remain valid for as
+// long as the client namespace needs to remain connected. Invalidating the file
+// descriptor explicitly by closing it or implicitly when the client exits will
+// trigger the teardown of the routing setup, the veth setup, and the release
+// of the IPv4 subnet assigned to the namespace.
+message ConnectNamespaceRequest {
+  // The pid of the client network namespace.
+  int32 pid = 1;
+
+  // If the client sets this field to the name of a physical network device
+  // managed by shill, the namespace egress traffic routed outside the device
+  // will be routed using the routing table specific to that physical device.
+  // If left empty, the namespace will be routed through the system highest
+  // priority interface (physical or virtual).
+  string outbound_physical_device = 2;
+
+  // If true, traffic originated from managed OSs (Crostini, ARC, PluginVMs) and
+  // from Chrome can be routed to this namespace, and traffic originated from
+  // this namespace can be routed to these other privilege domains.
+  bool allow_user_traffic = 3;
+}
+
+// Response to a ConnectNamespaceRequest.
+// |ifname| and |ipv4_subnet| are empty if the operation failed.
+message ConnectNamespaceResponse {
+  // Name of the veth interface moved into the client namespace.
+  string ifname = 1;
+
+  // The subnet allocated to the client namespace.
+  IPv4Subnet ipv4_subnet = 2;
+
+  // The IPv4 address in network order assigned to the interface inside the
+  // client namespace.
+  uint32 ipv4_address = 3;
+}
