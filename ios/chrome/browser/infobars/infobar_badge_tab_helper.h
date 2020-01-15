@@ -56,6 +56,8 @@ class InfobarBadgeTabHelper
   __weak id<InfobarBadgeTabHelperDelegate> delegate_ = nil;
   // Holds the state of each displaying badge keyed by its InfobarType.
   NSMutableDictionary<NSNumber*, InfobarBadgeModel*>* infobar_badge_models_;
+  // The WebState this TabHelper is scoped to.
+  web::WebState* web_state_;
 
  private:
   friend class web::WebStateUserData<InfobarBadgeTabHelper>;

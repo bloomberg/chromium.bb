@@ -84,7 +84,13 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 
 #pragma mark - InfobarBadgeTabHelperDelegate
 
-- (void)addInfobarBadge:(id<BadgeItem>)badgeItem {
+- (void)addInfobarBadge:(id<BadgeItem>)badgeItem
+            forWebState:(web::WebState*)webState {
+  if (webState != self.webStateList->GetActiveWebState()) {
+    // Don't add badge if |badgeItem| is not coming from the currently active
+    // WebState.
+    return;
+  }
   if (!self.badges) {
     self.badges = [NSMutableArray array];
   }
@@ -92,7 +98,13 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   [self updateBadgesShown];
 }
 
-- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem {
+- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem
+               forWebState:(web::WebState*)webState {
+  if (webState != self.webStateList->GetActiveWebState()) {
+    // Don't add badge if |badgeItem| is not coming from the currently active
+    // WebState.
+    return;
+  }
   for (id<BadgeItem> item in self.badges) {
     if (item.badgeType == badgeItem.badgeType) {
       [self.badges removeObject:item];
@@ -102,7 +114,13 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   }
 }
 
-- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem {
+- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem
+               forWebState:(web::WebState*)webState {
+  if (webState != self.webStateList->GetActiveWebState()) {
+    // Don't add badge if |badgeItem| is not coming from the currently active
+    // WebState.
+    return;
+  }
   for (id<BadgeItem> item in self.badges) {
     if (item.badgeType == badgeItem.badgeType) {
       item.badgeState = badgeItem.badgeState;

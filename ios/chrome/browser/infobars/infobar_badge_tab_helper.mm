@@ -36,28 +36,32 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted(
   NSNumber* infobar_type_key = GetNumberKeyForInfobarType(infobar_type);
   infobar_badge_models_[infobar_type_key].badgeState |=
       BadgeStateAccepted | BadgeStateRead;
-  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type_key]];
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type_key]
+                    forWebState:web_state_];
 }
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarReverted(
     InfobarType infobar_type) {
   NSNumber* infobar_type_key = GetNumberKeyForInfobarType(infobar_type);
   infobar_badge_models_[infobar_type_key].badgeState &= ~BadgeStateAccepted;
-  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type_key]];
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type_key]
+                    forWebState:web_state_];
 }
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerPresented(
     InfobarType infobar_type) {
   NSNumber* infobar_type_key = GetNumberKeyForInfobarType(infobar_type);
   infobar_badge_models_[infobar_type_key].badgeState |= BadgeStatePresented;
-  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type_key]];
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type_key]
+                    forWebState:web_state_];
 }
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed(
     InfobarType infobar_type) {
   NSNumber* infobar_type_key = GetNumberKeyForInfobarType(infobar_type);
   infobar_badge_models_[infobar_type_key].badgeState &= ~BadgeStatePresented;
-  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type_key]];
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type_key]
+                    forWebState:web_state_];
 }
 
 NSArray<id<BadgeItem>>* InfobarBadgeTabHelper::GetInfobarBadgeItems() {
@@ -69,7 +73,7 @@ InfobarBadgeTabHelper::~InfobarBadgeTabHelper() = default;
 #pragma mark - Private
 
 InfobarBadgeTabHelper::InfobarBadgeTabHelper(web::WebState* web_state)
-    : infobar_observer_(this) {
+    : web_state_(web_state), infobar_observer_(this) {
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(web_state);
   if (infoBarManager) {
@@ -116,13 +120,13 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobar(infobars::InfoBar* infobar,
           [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type];
       NSNumber* infobar_type_key = [NSNumber numberWithInt:(int)infobar_type];
       infobar_badge_models_[infobar_type_key] = new_badge;
-      [delegate_ addInfobarBadge:new_badge];
+      [delegate_ addInfobarBadge:new_badge forWebState:web_state_];
     } else {
       NSNumber* infobar_type_key = [NSNumber numberWithInt:(int)infobar_type];
       InfobarBadgeModel* removed_badge =
           infobar_badge_models_[infobar_type_key];
       [infobar_badge_models_ removeObjectForKey:infobar_type_key];
-      [delegate_ removeInfobarBadge:removed_badge];
+      [delegate_ removeInfobarBadge:removed_badge forWebState:web_state_];
     }
   }
 }

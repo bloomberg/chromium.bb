@@ -41,18 +41,21 @@
 @end
 
 @implementation InfobarBadgeTabHelperTestDelegate
-- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem {
+- (void)updateInfobarBadge:(id<BadgeItem>)badgeItem
+               forWebState:(web::WebState*)webState {
   self.badgeIsTappable = badgeItem.isTappable;
   self.badgeState = badgeItem.badgeState;
   self.badgeType = badgeItem.badgeType;
 }
-- (void)addInfobarBadge:(id<BadgeItem>)badgeItem {
+- (void)addInfobarBadge:(id<BadgeItem>)badgeItem
+            forWebState:(web::WebState*)webState {
   self.displayingBadge = YES;
   self.badgeIsTappable = badgeItem.isTappable;
   self.badgeState = badgeItem.badgeState;
   self.badgeType = badgeItem.badgeType;
 }
-- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem {
+- (void)removeInfobarBadge:(id<BadgeItem>)badgeItem
+               forWebState:(web::WebState*)webState {
   self.displayingBadge = NO;
 }
 @end

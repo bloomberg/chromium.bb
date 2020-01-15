@@ -42,13 +42,13 @@ class FakeInfobarBadgeTabHelper : public InfobarBadgeTabHelper {
     InfobarBadgeModel* new_badge =
         [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type];
     infobar_badge_models_[infobar_type_key] = new_badge;
-    [delegate_ addInfobarBadge:new_badge];
+    [delegate_ addInfobarBadge:new_badge forWebState:web_state_];
   }
   void RemoveInfobar(InfobarType infobar_type) {
     NSNumber* infobar_type_key = [NSNumber numberWithInt:(int)infobar_type];
     InfobarBadgeModel* removed_badge = infobar_badge_models_[infobar_type_key];
     [infobar_badge_models_ removeObjectForKey:infobar_type_key];
-    [delegate_ removeInfobarBadge:removed_badge];
+    [delegate_ removeInfobarBadge:removed_badge forWebState:web_state_];
   }
 
  private:
