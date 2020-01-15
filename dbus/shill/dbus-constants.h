@@ -538,6 +538,7 @@ const char kRemoveAllWakeOnPacketConnectionsFunction[] =
     "RemoveAllWakeOnPacketConnections";
 const char kGetLoadableProfileEntriesFunction[] = "GetLoadableProfileEntries";
 const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
+const char kGetWiFiPassphraseFunction[] = "GetWiFiPassphrase";
 const char kPerformTDLSOperationFunction[] = "PerformTDLSOperation";
 const char kRefreshFunction[] = "Refresh";
 const char kResetFunction[] = "Reset";
