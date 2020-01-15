@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.toolbar.top;
 
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.ACCESSIBILITY_ENABLED;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.APP_MENU_BUTTON_HELPER;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.BUTTONS_CLICKABLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_STATE_PROVIDER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_VISIBLE;
@@ -130,6 +131,16 @@ class StartSurfaceToolbarMediator {
                     mPropertyModel.set(LOGO_IS_VISIBLE, !isShownTabswitcherState);
                     mPropertyModel.set(NEW_TAB_BUTTON_IS_VISIBLE, isShownTabswitcherState);
                 }
+                @Override
+                public void onOverviewModeFinishedShowing() {
+                    mPropertyModel.set(BUTTONS_CLICKABLE, true);
+                }
+                @Override
+                public void onOverviewModeStartedHiding(
+                        boolean showToolbar, boolean delayAnimation) {
+                    mPropertyModel.set(BUTTONS_CLICKABLE, false);
+                }
+
             };
         }
         mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
