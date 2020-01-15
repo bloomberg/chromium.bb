@@ -40,10 +40,14 @@ class StartSurfaceToolbarMediator {
     private TabModelSelectorObserver mTabModelSelectorObserver;
     private OverviewModeBehavior mOverviewModeBehavior;
     private OverviewModeObserver mOverviewModeObserver;
+    @OverviewModeState
+    private int mOverviewModeState;
+    private boolean mIsGoogleSearchEngine;
 
     StartSurfaceToolbarMediator(PropertyModel model) {
         mPropertyModel = model;
         mPropertyModel.set(MENU_IS_VISIBLE, !FeatureUtilities.isBottomToolbarEnabled());
+        mOverviewModeState = OverviewModeState.NOT_SHOWN;
     }
 
     void onNativeLibraryReady() {
@@ -52,14 +56,15 @@ class StartSurfaceToolbarMediator {
         mTemplateUrlObserver = new TemplateUrlServiceObserver() {
             @Override
             public void onTemplateURLServiceChanged() {
-                mPropertyModel.set(LOGO_IS_VISIBLE,
+                updateLogoVisibility(mOverviewModeState,
                         TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
             }
         };
 
         TemplateUrlServiceFactory.get().addObserver(mTemplateUrlObserver);
-        mPropertyModel.set(
-                LOGO_IS_VISIBLE, TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
+        mIsGoogleSearchEngine = TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle();
+        updateLogoVisibility(
+                mOverviewModeState, TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
     }
 
     void destroy() {
@@ -128,8 +133,8 @@ class StartSurfaceToolbarMediator {
                         @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
                     boolean isShownTabswitcherState =
                             overviewModeState == OverviewModeState.SHOWN_TABSWITCHER;
-                    mPropertyModel.set(LOGO_IS_VISIBLE, !isShownTabswitcherState);
                     mPropertyModel.set(NEW_TAB_BUTTON_IS_VISIBLE, isShownTabswitcherState);
+                    updateLogoVisibility(overviewModeState, mIsGoogleSearchEngine);
                 }
                 @Override
                 public void onOverviewModeFinishedShowing() {
@@ -144,5 +149,16 @@ class StartSurfaceToolbarMediator {
             };
         }
         mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+    }
+
+    private void updateLogoVisibility(
+            @OverviewModeState int overviewModeState, boolean isGoogleSearchEngine) {
+        mOverviewModeState = overviewModeState;
+        mIsGoogleSearchEngine = isGoogleSearchEngine;
+        boolean shouldShowLogo =
+                (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
+                        || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY)
+                && mIsGoogleSearchEngine;
+        mPropertyModel.set(LOGO_IS_VISIBLE, shouldShowLogo);
     }
 }
