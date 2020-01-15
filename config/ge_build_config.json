@@ -494,18 +494,6 @@
       ]
     },
     {
-      "name": "endeavour",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "enguarde",
       "configs": [
         {
@@ -1852,6 +1840,23 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 402,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "endeavour",
+      "reference_board_name": "endeavour",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "endeavour",
+          "name": "endeavour",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 428,
           "is_active": true
         }
       ]
