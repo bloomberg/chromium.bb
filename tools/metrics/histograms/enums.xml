@@ -68038,6 +68038,34 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WinGetLastError">
+  <int value="-2146893820" label="NTE_BAD_LEN"/>
+  <int value="-2146893818" label="NTE_BAD_SIGNATURE"/>
+  <int value="-2146893815" label="NTE_BAD_FLAGS"/>
+  <int value="-2146893813" label="NTE_BAD_KEY_STATE">
+    The user password has changed since the private keys were encrypted.
+  </int>
+  <int value="-2146893810" label="NTE_NO_MEMORY"/>
+  <int value="-2146893809" label="NTE_EXISTS"/>
+  <int value="-2146893804" label="NTE_BAD_PROV_TYPE"/>
+  <int value="-2146893802" label="NTE_BAD_KEYSET"/>
+  <int value="-2146893801" label="NTE_PROV_TYPE_NOT_DEF"/>
+  <int value="-2146893800" label="NTE_PROV_TYPE_ENTRY_BAD"/>
+  <int value="-2146893799" label="NTE_KEYSET_NOT_DEF"/>
+  <int value="-2146893798" label="NTE_KEYSET_ENTRY_BAD"/>
+  <int value="-2146893797" label="NTE_PROV_TYPE_NO_MATCH"/>
+  <int value="-2146893796" label="NTE_SIGNATURE_FILE_BAD"/>
+  <int value="-2146893795" label="NTE_PROVIDER_DLL_FAIL"/>
+  <int value="-2146893794" label="NTE_PROV_DLL_NOT_FOUND"/>
+  <int value="-2146893793" label="NTE_BAD_KEYSET_PARAM"/>
+  <int value="-2146892987" label="SEC_E_DELEGATION_REQUIRED"/>
+  <int value="-1073741819" label="STATUS_ACCESS_VIOLATION"/>
+  <int value="-1073741818" label="STATUS_IN_PAGE_ERROR"/>
+  <int value="-1073741790" label="STATUS_ACCESS_DENIED"/>
+  <int value="-1073741766" label="STATUS_OBJECT_PATH_NOT_FOUND"/>
+  <int value="-1073741674" label="STATUS_PRIVILEGED_INSTRUCTION"/>
+  <int value="-1073741670" label="STATUS_INSUFFICIENT_RESOURCES"/>
+  <int value="-1073741634" label="STATUS_BAD_NETWORK_PATH"/>
+  <int value="-1073741566" label="STATUS_FILE_CORRUPT_ERROR"/>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="INVALID_FUNCTION"/>
   <int value="2" label="FILE_NOT_FOUND"/>
@@ -68554,8 +68582,23 @@ Full version information for the fingerprint enum values:
   <int value="997" label="IO_PENDING"/>
   <int value="998" label="NOACCESS"/>
   <int value="999" label="SWAPERROR"/>
+  <int value="1011" label="ERROR_CANTOPEN"/>
+  <int value="1223" label="ERROR_CANCELLED"/>
+  <int value="1346" label="ERROR_BAD_IMPERSONATION_LEVEL"/>
+  <int value="1392" label="ERROR_FILE_CORRUPT"/>
+  <int value="1450" label="ERROR_NO_SYSTEM_RESOURCES"/>
+  <int value="1453" label="ERROR_WORKING_SET_QUOTA"/>
+  <int value="1717" label="RPC_S_UNKNOWN_IF"/>
+  <int value="1721" label="RPC_S_OUT_OF_RESOURCES"/>
+  <int value="1722" label="RPC_S_SERVER_UNAVAILABLE"/>
+  <int value="1723" label="RPC_S_SERVER_TOO_BUSY"/>
+  <int value="1726" label="RPC_S_CALL_FAILED"/>
   <int value="1784" label="INVALID_USER_BUFFER"/>
   <int value="1816" label="NOT_ENOUGH_QUOTA"/>
+  <int value="1818" label="RPC_S_CALL_CANCELLED"/>
+  <int value="6000" label="ERROR_ENCRYPTION_FAILED"/>
+  <int value="6001" label="ERROR_DECRYPTION_FAILED"/>
+  <int value="7041" label="ERROR_CTX_CONSOLE_DISCONNECT"/>
 </enum>
 
 <enum name="WinIFileOperationError">
