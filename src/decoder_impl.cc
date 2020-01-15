@@ -392,12 +392,15 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
                              : kMaxPlanes;
   const bool do_restoration = PostFilter::DoRestoration(
       frame_header.loop_restoration, settings_.post_filter_mask, num_planes);
-  int border = kBorderPixels;
+  // Use kBorderPixels for the left, right, and top borders. Only the bottom
+  // border may need to be bigger.
+  int bottom_border = kBorderPixels;
   // If CDEF or loop restoration is enabled, add extra border pixels to
   // compensate for the buffer shift in the PostFilter constructor.
-  if (do_cdef) border += 2 * kCdefBorder;
-  if (do_restoration) border += 2 * kRestorationBorder;
-  if (!AllocateCurrentFrame(frame_header, border, border, border, border)) {
+  if (do_cdef) bottom_border += 2 * kCdefBorder;
+  if (do_restoration) bottom_border += 2 * kRestorationBorder;
+  if (!AllocateCurrentFrame(frame_header, kBorderPixels, kBorderPixels,
+                            kBorderPixels, bottom_border)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");
     return kLibgav1StatusOutOfMemory;
   }
