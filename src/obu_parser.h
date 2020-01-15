@@ -513,7 +513,7 @@ class ObuParser : public Allocable {
   // valid, updates next_tile_group_start_ and returns true. Otherwise,
   // returns false.
   bool ValidateTileGroup();
-  void SetTileDataOffset(size_t total_size, size_t tg_header_size,
+  bool SetTileDataOffset(size_t total_size, size_t tg_header_size,
                          size_t bytes_consumed_so_far);
   bool ParseTileGroup(size_t size, size_t bytes_consumed_so_far);  // 5.11.1.
 

@@ -2389,12 +2389,18 @@ bool ObuParser::ValidateTileGroup() {
   return true;
 }
 
-void ObuParser::SetTileDataOffset(size_t total_size, size_t tg_header_size,
+bool ObuParser::SetTileDataOffset(size_t total_size, size_t tg_header_size,
                                   size_t bytes_consumed_so_far) {
+  if (total_size < tg_header_size) {
+    LIBGAV1_DLOG(ERROR, "total_size (%zu) is less than tg_header_size (%zu).)",
+                 total_size, tg_header_size);
+    return false;
+  }
   auto& tile_group = tile_groups_.back();
   tile_group.data_size = total_size - tg_header_size;
   tile_group.data_offset = bytes_consumed_so_far + tg_header_size;
   tile_group.data = data_ + tile_group.data_offset;
+  return true;
 }
 
 bool ObuParser::ParseTileGroup(size_t size, size_t bytes_consumed_so_far) {
@@ -2411,8 +2417,7 @@ bool ObuParser::ParseTileGroup(size_t size, size_t bytes_consumed_so_far) {
     tile_group.start = 0;
     tile_group.end = 0;
     if (!ValidateTileGroup()) return false;
-    SetTileDataOffset(size, 0, bytes_consumed_so_far);
-    return true;
+    return SetTileDataOffset(size, 0, bytes_consumed_so_far);
   }
   int64_t scratch;
   OBU_READ_BIT_OR_FAIL;
@@ -2425,8 +2430,7 @@ bool ObuParser::ParseTileGroup(size_t size, size_t bytes_consumed_so_far) {
       LIBGAV1_DLOG(ERROR, "Byte alignment has non zero bits.");
       return false;
     }
-    SetTileDataOffset(size, 1, bytes_consumed_so_far);
-    return true;
+    return SetTileDataOffset(size, 1, bytes_consumed_so_far);
   }
   if (obu_headers_.back().type == kObuFrame) {
     // 6.10.1: If obu_type is equal to OBU_FRAME, it is a requirement of
@@ -2446,8 +2450,7 @@ bool ObuParser::ParseTileGroup(size_t size, size_t bytes_consumed_so_far) {
     return false;
   }
   const size_t tg_header_size = bit_reader_->byte_offset() - start_offset;
-  SetTileDataOffset(size, tg_header_size, bytes_consumed_so_far);
-  return true;
+  return SetTileDataOffset(size, tg_header_size, bytes_consumed_so_far);
 }
 
 bool ObuParser::ParseHeader() {
