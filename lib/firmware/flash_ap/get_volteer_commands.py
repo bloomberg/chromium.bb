@@ -6,6 +6,10 @@
 """Volteer specific functions to get flash commands"""
 
 from __future__ import print_function
+from chromite.lib import cros_logging as logging
+
+# TODO: Remove this line once VBoot is working on Volteer.
+__use_flashrom__ = True
 
 def is_fast_required(use_futility, servo_version):
   """Returns true if --fast is necessary to flash successfully.
@@ -51,43 +55,27 @@ def get_commands(servo_version, serial):
       flashrom_cmd=command to flash via flashrom
       futility_cmd=command to flash via futility
   """
-  dut_control_on = []
-  dut_control_off = []
+  dut_control_on = [['cpu_fw_spi:on']]
+  dut_control_off = [['cpu_fw_spi:off']]
   flashrom_cmd = []
   futility_cmd = []
   if servo_version == 'servo_v2':
-    dut_control_on.append(['spi2_vref:pp3300', 'spi2_buf_en:on',
-                           'spi2_buf_on_flex_en:on',
-                           'cold_reset:on'])
-    dut_control_off.append(['spi2_vref:off', 'spi2_buf_en:off',
-                            'spi2_buf_on_flex_en:off',
-                            'cold_reset:off'])
     programmer = 'ft2232_spi:type=servo-v2,serial=%s' % serial
-    flashrom_cmd = ['sudo', 'flashrom', '-p', programmer, '-w']
-    futility_cmd = ['sudo', 'futility', 'update', '-p',
-                    programmer, '-i']
   elif (servo_version == 'servo_micro'
         or servo_version == 'servo_v4_with_servo_micro'):
-    dut_control_on.append(['spi2_vref:pp3300', 'spi2_buf_en:on',
-                           'spi2_buf_on_flex_en:on',
-                           'cold_reset:on'])
-    dut_control_off.append(['spi2_vref:off', 'spi2_buf_en:off',
-                            'spi2_buf_on_flex_en:off',
-                            'cold_reset:off'])
+    # TODO (jacobraz): remove warning once http://b/147679336 is resolved
+    logging.warning('WARNING: servo_micro has not be functioning properly'
+                    'consider using a different servo if this fails')
     programmer = 'raiden_debug_spi:serial=%s' % serial
-    flashrom_cmd = ['sudo', 'flashrom', '-p', programmer,
-                    '-w']
-    futility_cmd = ['sudo', 'futility', 'update', '-p', programmer,
-                    '-i']
   elif (servo_version == 'ccd_cr50' or
         servo_version == 'servo_v4_with_ccd_cr50'):
     # Note nothing listed for flashing with ccd_cr50 on go/volteer-care.
     # These commands were based off the commands for other boards.
     programmer = 'raiden_debug_spi:target=AP,serial=%s' % serial
-    futility_cmd = ['sudo', 'futility', 'update', '-p',
-                    programmer, '-i']
-    flashrom_cmd = ['sudo', 'flashrom', '-p', programmer,
-                    '-w']
   else:
     raise Exception(servo_version, 'not recognized')
+  futility_cmd = ['sudo', 'futility', 'update', '-p',
+                  programmer, '-i']
+  flashrom_cmd = ['sudo', 'flashrom', '-p', programmer,
+                  '-w']
   return [dut_control_on, dut_control_off, flashrom_cmd, futility_cmd]

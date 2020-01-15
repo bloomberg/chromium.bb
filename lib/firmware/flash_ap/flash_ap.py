@@ -38,11 +38,11 @@ class MissingBuildTargetCommandsError(Error):
 def _dut_control_value(dut_ctrl_out):
   """Helper function to return meaningful part of dut-control command output
 
-  Args:
-    dut_ctrl_out (string): output from dut-control command
-  Returns:
-    string: substring of output from ':' to the end with any whitespace
-      removed
+    Args:
+      dut_ctrl_out (string): output from dut-control command
+    Returns:
+      string: substring of output from ':' to the end with any whitespace
+        removed
   """
 
   return dut_ctrl_out[dut_ctrl_out.find(':') + 1:].strip()
@@ -51,19 +51,19 @@ def _dut_control_value(dut_ctrl_out):
 def _build_ssh_cmds(futility, ip, path, tmp_file_name, fast, verbose):
   """Helper function to build commands for flashing over ssh
 
-  Args:
-    futility (bool): if True then flash with futility, otherwise flash
-      with flashrom.
-    ip (string): ip address of dut to flash.
-    path (string): path to BIOS image to be flashed.
-    tmp_file_name (string): name of tempfile with copy of testing_rsa
-      keys.
-    fast (bool): if True pass through --fast (-n for flashrom) to
-      flashing command.
-    verbose (bool): if True set -v flag in flash command.
-  Returns:
-    scp_cmd ([string]):
-    flash_cmd ([string]):
+    Args:
+      futility (bool): if True then flash with futility, otherwise flash
+        with flashrom.
+      ip (string): ip address of dut to flash.
+      path (string): path to BIOS image to be flashed.
+      tmp_file_name (string): name of tempfile with copy of testing_rsa
+        keys.
+      fast (bool): if True pass through --fast (-n for flashrom) to
+        flashing command.
+      verbose (bool): if True set -v flag in flash command.
+    Returns:
+      scp_cmd ([string]):
+      flash_cmd ([string]):
   """
   ssh_parameters = [
       '-o', 'UserKnownHostsFile=/dev/null', '-o', 'StrictHostKeyChecking=no',
@@ -103,35 +103,41 @@ def _ssh_flash(futility, path, verbose, ip, fast):
   file to be flashed is copied over to the DUT then flashed using either
   futility or flashrom.
 
-  Args:
-    futility (bool): if True then flash with futility, otherwise flash
-      with flashrom.
-    path (str): path to the BIOS image to be flashed.
-    verbose (bool): if True to set -v flag in flash command and
-      print other debug info, if False do nothing.
-    ip (str): ip address of dut to flash.
-    fast (bool): if True pass through --fast (-n for flashrom) to
-      flashing command.
-  Returns:
-    bool: True on success, False on fail
+    Args:
+      futility (bool): if True then flash with futility, otherwise flash
+        with flashrom.
+      path (str): path to the BIOS image to be flashed.
+      verbose (bool): if True to set -v flag in flash command and
+        print other debug info, if False do nothing.
+      ip (str): ip address of dut to flash.
+      fast (bool): if True pass through --fast (-n for flashrom) to
+        flashing command.
+    Returns:
+      bool: True on success, False on fail
   """
   logging.info('connecting to: %s\n', ip)
   id_filename = '/mnt/host/source/chromite/ssh_keys/testing_rsa'
   tmpfile = tempfile.NamedTemporaryFile()
   copy_cmd = ['cp', id_filename, tmpfile.name]
   try:
+    if verbose:
+      logging.info('Executing: ' + ' '.join(copy_cmd))
     subprocess.run(copy_cmd, check=True)
   except subprocess.CalledProcessError as e:
     logging.error('Copying failed with message:\n%s', e.output)
   scp_cmd, flash_cmd = _build_ssh_cmds(futility, ip, path, tmpfile.name, fast,
                                        verbose)
   try:
+    if verbose:
+      logging.info('Executing: ' + ' '.join(scp_cmd))
     subprocess.run(scp_cmd, check=True)
   except subprocess.CalledProcessError:
     logging.error('Could not copy image to dut.')
     return False
   logging.info('Flashing now, may take several minutes.')
   try:
+    if verbose:
+      logging.info('Executing: ' + ' '.join(flash_cmd))
     subprocess.run(flash_cmd, check=True)
   except subprocess.CalledProcessError as e:
     logging.error('Flashing failed with output:\n%s', e.output)
@@ -139,34 +145,43 @@ def _ssh_flash(futility, path, verbose, ip, fast):
   return True
 
 
-def _flash(dut_cmd_on, dut_cmd_off, flash_cmd):
+def _flash(dut_cmd_on, dut_cmd_off, flash_cmd, verbose):
   """Runs subprocesses for setting dut controls and flashing the AP fw.
 
-  Args:
-    dut_cmd_on ([[str]]): 2d array of dut-control commands
-      in the form [['dut-control', 'cmd1', 'cmd2'...],
-      ['dut-control', 'cmd3'...]]
-      that get executed before the flashing.
-    dut_cmd_off ([[str]]): 2d array of dut-control commands
-      in the same form that get executed after flashing.
-    flash_cmd ([str]): array containing all arguments for
-      the flash command.
-  Returns:
-    bool: True if flash was successful, otherwise False.
+    Args:
+      dut_cmd_on ([[str]]): 2d array of dut-control commands
+        in the form [['dut-control', 'cmd1', 'cmd2'...],
+        ['dut-control', 'cmd3'...]]
+        that get executed before the flashing.
+      dut_cmd_off ([[str]]): 2d array of dut-control commands
+        in the same form that get executed after flashing.
+      flash_cmd ([str]): array containing all arguments for
+        the flash command.
+      verbose (bool): if True then print out the various
+        commands before running them.
+    Returns:
+      bool: True if flash was successful, otherwise False.
   """
   try:
     for cmd in dut_cmd_on:
+      if verbose:
+        logging.info('Executing: ' + ' '.join(cmd))
       subprocess.run(cmd, check=True)
     # Need to wait for SPI chip power to stabilize (for some designs)
     time.sleep(1)
+    if verbose:
+      logging.info('Executing: ' + ' '.join(flash_cmd))
     subprocess.run(flash_cmd, check=True)
   except subprocess.CalledProcessError as e:
     logging.error('Flashing failed with output:\n%s', e.output)
     return False
   finally:
     # Run the dut off commands to clean up state if possible.
+
     try:
       for cmd in dut_cmd_off:
+        if verbose:
+          logging.info('Executing: ' + ' '.join(cmd))
         subprocess.run(cmd, check=True)
     except subprocess.CalledProcessError as e:
       logging.error('Dut cmd off failed with output:\n%s', e.output)
@@ -182,15 +197,15 @@ def _get_servo_info(dut_control):
   of that device, throws error if no device or the
   device is not supported.
 
-  Args:
-    dut_control ([str]): either just ['dut-control']
-      or ['dut-control', '--port=$PORT'] if the
-      port being used is not 9999.
-  Returns:
-    serial (str): serial number of servo device
-      listening on the specified port.
-    servo_version (str): name of servo version
-      being used.
+    Args:
+      dut_control ([str]): either just ['dut-control']
+        or ['dut-control', '--port=$PORT'] if the
+        port being used is not 9999.
+    Returns:
+      serial (str): serial number of servo device
+        listening on the specified port.
+      servo_version (str): name of servo version
+        being used.
   """
   try:
     out = subprocess.check_output(
@@ -271,13 +286,13 @@ def deploy(opts):
     flashrom_cmd += ['-V']
     futility_cmd += ['-v']
   if not flashrom:
-    if _flash(dut_ctrl_on, dut_ctrl_off, futility_cmd):
+    if _flash(dut_ctrl_on, dut_ctrl_off, futility_cmd, opts.verbose):
       logging.info('SUCCESS. Exiting flash_ap.')
     else:
       logging.error('Unable to complete flash, verify servo connection is '
                     'correct and servod is running in the background.')
   else:
-    if _flash(dut_ctrl_on, dut_ctrl_off, flashrom_cmd):
+    if _flash(dut_ctrl_on, dut_ctrl_off, flashrom_cmd, opts.verbose):
       logging.info('SUCCESS. Exiting flash_ap.')
     else:
       logging.error('Unable to complete flash, verify servo connection '
