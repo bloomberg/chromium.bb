@@ -314,6 +314,14 @@ enum class ResponseType {
   kUnicast = 1,
 };
 
+// These are the default TTL values for supported DNS Record types  as specified
+// by RFC 6762 section 10.
+constexpr std::chrono::seconds kPtrRecordTtl(120);
+constexpr std::chrono::seconds kSrvRecordTtl(120);
+constexpr std::chrono::seconds kARecordTtl(120);
+constexpr std::chrono::seconds kAAAARecordTtl(120);
+constexpr std::chrono::seconds kTXTRecordTtl(120);
+
 // DNS CLASS masks and values.
 // In mDNS the most significant bit of the RRCLASS for response records is
 // designated as the "cache-flush bit", as described in

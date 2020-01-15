@@ -10,6 +10,7 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_join.h"
+#include "discovery/mdns/mdns_writer.h"
 
 namespace openscreen {
 namespace discovery {
@@ -31,6 +32,54 @@ inline int CompareIgnoreCase(const std::string& x, const std::string& y) {
     }
   }
   return i == y.size() ? 0 : -1;
+}
+
+template <typename RDataType>
+bool IsGreaterThan(const Rdata& lhs, const Rdata& rhs) {
+  const RDataType& lhs_cast = absl::get<RDataType>(lhs);
+  const RDataType& rhs_cast = absl::get<RDataType>(rhs);
+
+  size_t lhs_size = lhs_cast.MaxWireSize();
+  size_t rhs_size = rhs_cast.MaxWireSize();
+  size_t min_size = std::min(lhs_size, rhs_size);
+
+  uint8_t lhs_bytes[lhs_size];
+  uint8_t rhs_bytes[rhs_size];
+  MdnsWriter lhs_writer(lhs_bytes, lhs_size);
+  MdnsWriter rhs_writer(rhs_bytes, rhs_size);
+
+  lhs_writer.Write(lhs_cast);
+  rhs_writer.Write(rhs_cast);
+  for (size_t i = 0; i < min_size; i++) {
+    if (lhs_bytes[i] != rhs_bytes[i]) {
+      return lhs_bytes[i] > rhs_bytes[i];
+    }
+  }
+
+  if (lhs_size == rhs_size) {
+    return false;
+  }
+
+  return lhs_size > rhs_size;
+}
+
+bool IsGreaterThan(DnsType type, const Rdata& lhs, const Rdata& rhs) {
+  switch (type) {
+    case DnsType::kA:
+      return IsGreaterThan<ARecordRdata>(lhs, rhs);
+    case DnsType::kPTR:
+      return IsGreaterThan<PtrRecordRdata>(lhs, rhs);
+    case DnsType::kTXT:
+      return IsGreaterThan<TxtRecordRdata>(lhs, rhs);
+    case DnsType::kAAAA:
+      return IsGreaterThan<AAAARecordRdata>(lhs, rhs);
+    case DnsType::kSRV:
+      return IsGreaterThan<SrvRecordRdata>(lhs, rhs);
+    case DnsType::kNSEC:
+      return IsGreaterThan<NsecRecordRdata>(lhs, rhs);
+    default:
+      return IsGreaterThan<RawRecordRdata>(lhs, rhs);
+  }
 }
 
 }  // namespace
@@ -417,6 +466,36 @@ bool MdnsRecord::operator!=(const MdnsRecord& rhs) const {
   return !(*this == rhs);
 }
 
+bool MdnsRecord::operator>(const MdnsRecord& rhs) const {
+  // Returns the record which is lexicographically later. The determination of
+  // "lexicographically later" is performed by first comparing the record class,
+  // then the record type, then raw comparison of the binary content of the
+  // rdata without regard for meaning or structure.
+  if (dns_class() != rhs.dns_class()) {
+    return dns_class() > rhs.dns_class();
+  }
+
+  uint16_t this_type = static_cast<uint16_t>(dns_type()) & kClassMask;
+  uint16_t other_type = static_cast<uint16_t>(rhs.dns_type()) & kClassMask;
+  if (this_type != other_type) {
+    return this_type > other_type;
+  }
+
+  return IsGreaterThan(dns_type(), rdata(), rhs.rdata());
+}
+
+bool MdnsRecord::operator<(const MdnsRecord& rhs) const {
+  return rhs > *this;
+}
+
+bool MdnsRecord::operator<=(const MdnsRecord& rhs) const {
+  return !(*this > rhs);
+}
+
+bool MdnsRecord::operator>=(const MdnsRecord& rhs) const {
+  return !(*this < rhs);
+}
+
 size_t MdnsRecord::MaxWireSize() const {
   auto wire_size_visitor = [](auto&& arg) { return arg.MaxWireSize(); };
   // NAME size, 2-byte TYPE, 2-byte CLASS, 4-byte TTL, RDATA size
@@ -494,7 +573,24 @@ bool MdnsMessage::operator!=(const MdnsMessage& rhs) const {
 }
 
 bool MdnsMessage::IsProbeQuery() const {
-  // TODO(rwkeane): Implement this method.
+  // A message is a probe query if it contains records in the authority section
+  // which answer the question being asked.
+  if (questions().empty() || authority_records().empty()) {
+    return false;
+  }
+
+  for (const MdnsQuestion& question : questions_) {
+    for (const MdnsRecord& record : authority_records_) {
+      if (question.name() == record.name() &&
+          ((question.dns_type() == record.dns_type()) ||
+           (question.dns_type() == DnsType::kANY)) &&
+          ((question.dns_class() == record.dns_class()) ||
+           (question.dns_class() == DnsClass::kANY))) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 

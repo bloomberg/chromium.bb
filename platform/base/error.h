@@ -168,6 +168,7 @@ class Error {
     kItemAlreadyExists,
     kItemNotFound,
     kOperationInvalid,
+    kOperationInProgress,
     kOperationCancelled,
   };
 

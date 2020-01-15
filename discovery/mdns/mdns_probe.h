@@ -51,25 +51,41 @@ class MdnsProbe {
     virtual void OnProbeFailure(MdnsProbe* probe) = 0;
   };
 
-  // |sender|, |querier|, |random_delay|, |task_runner|, and |observer| must all
-  // persist for the duration of this object's lifetime.
-  MdnsProbe(MdnsSender* sender,
-            MdnsQuerier* querier,
-            MdnsRandom* random_delay,
-            TaskRunner* task_runner,
-            Observer* observer,
-            DomainName target_name,
-            IPEndpoint endpoint);
-  MdnsProbe(const MdnsProbe& other) = delete;
-  MdnsProbe(MdnsProbe&& other) = delete;
-  ~MdnsProbe();
+  MdnsProbe(DomainName target_name, IPEndpoint endpoint);
+  virtual ~MdnsProbe();
 
-  MdnsProbe& operator=(const MdnsProbe& other) = delete;
-  MdnsProbe& operator=(MdnsProbe&& other) = delete;
+  // Postpones the current probe operation by |delay|, after which the probing
+  // process is re-initialized.
+  virtual void Postpone(std::chrono::seconds delay) = 0;
 
   const DomainName& target_name() const { return target_name_; }
-
   const IPEndpoint& endpoint() const { return endpoint_; }
+
+ private:
+  const DomainName target_name_;
+  const IPEndpoint endpoint_;
+};
+
+class MdnsProbeImpl : public MdnsProbe {
+ public:
+  // |sender|, |querier|, |random_delay|, |task_runner|, and |observer| must all
+  // persist for the duration of this object's lifetime.
+  MdnsProbeImpl(MdnsSender* sender,
+                MdnsQuerier* querier,
+                MdnsRandom* random_delay,
+                TaskRunner* task_runner,
+                Observer* observer,
+                DomainName target_name,
+                IPEndpoint endpoint);
+  MdnsProbeImpl(const MdnsProbeImpl& other) = delete;
+  MdnsProbeImpl(MdnsProbeImpl&& other) = delete;
+  ~MdnsProbeImpl() override;
+
+  MdnsProbeImpl& operator=(const MdnsProbeImpl& other) = delete;
+  MdnsProbeImpl& operator=(MdnsProbeImpl&& other) = delete;
+
+  // MdnsProbe overrides.
+  void Postpone(std::chrono::seconds delay) override;
 
  private:
   // Performs the probe query as described in the class-level comment.
@@ -80,8 +96,6 @@ class MdnsProbe {
   MdnsRandom* const random_delay_;
   TaskRunner* const task_runner_;
   Observer* const observer_;
-  DomainName target_name_;
-  IPEndpoint endpoint_;
 };
 
 }  // namespace discovery

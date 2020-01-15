@@ -33,15 +33,16 @@ class MdnsProbeManager {
   // mDNS Probe Manager.
   virtual bool IsDomainClaimed(const DomainName& domain) const = 0;
 
-  // |message| is a considered a probe query for a specific domain if it
-  // contains a query for a specific domain which is answered by mDNS Records in
-  // the 'authority records' section of |message|. If a probe for the provided
-  // domain name is ongoing, an MdnsMessage is sent to the provided endpoint as
-  // described in RFC 6762 section 8.2 to allow for conflict resolution. If the
-  // requested name has already been claimed, a message to specify this will be
-  // sent as described in RFC 6762 section 8.1. The |src| argument is the
-  // address from which the message was originally sent, so that the response
-  // message may be sent as a unicast response.
+  // |message| is a message received from another host which contains a query
+  // from some domain. It is a considered a probe query for a specific domain if
+  // it contains a query for a specific domain which is answered by mDNS Records
+  // in the 'authority records' section of |message|. If a probe for the
+  // provided domain name is ongoing, an MdnsMessage is sent to the provided
+  // endpoint as described in RFC 6762 section 8.2 to allow for conflict
+  // resolution. If the requested name has already been claimed, a message to
+  // specify this will be sent as described in RFC 6762 section 8.1. The |src|
+  // argument is the address from which the message was originally sent, so that
+  // the response message may be sent as a unicast response.
   virtual void RespondToProbeQuery(const MdnsMessage& message,
                                    const IPEndpoint& src) = 0;
 };
@@ -87,12 +88,26 @@ class MdnsProbeManagerImpl : public MdnsProbe::Observer,
                            const IPEndpoint& src) override;
 
  private:
-  std::unique_ptr<MdnsProbe> CreateProbe(DomainName name, IPEndpoint endpoint) {
-    return std::make_unique<MdnsProbe>(sender_, querier_, random_delay_,
-                                       task_runner_, this, std::move(name),
-                                       std::move(endpoint));
+  friend class TestMdnsProbeManager;
+
+  // Creates an A or AAAA record as appropriate for the provided parameters.
+  MdnsRecord CreateAddressRecord(DomainName name, const IPEndpoint& endpoint);
+
+  // Resolves simultaneous probe queries as described in RFC 6762 section 8.2.
+  void TiebreakSimultaneousProbes(const MdnsMessage& message);
+
+  virtual std::unique_ptr<MdnsProbe> CreateProbe(DomainName name,
+                                                 IPEndpoint endpoint) {
+    return std::make_unique<MdnsProbeImpl>(sender_, querier_, random_delay_,
+                                           task_runner_, this, std::move(name),
+                                           std::move(endpoint));
   }
 
+  // Owns an in-progress MdnsProbe. When the probe starts, an instance of this
+  // struct is created. Upon successful completion of the probe, this instance
+  // is deleted and the owned |probe| instance is moved to |completed_probes|.
+  // Upon failure, the instance is updated with a new MdnsProbe object and this
+  // process is repeated.
   struct OngoingProbe {
     OngoingProbe(std::unique_ptr<MdnsProbe> probe,
                  DomainName name,
@@ -103,11 +118,18 @@ class MdnsProbeManagerImpl : public MdnsProbe::Observer,
     std::unique_ptr<MdnsProbe> probe;
     DomainName requested_name;
     MdnsDomainConfirmedProvider* callback;
+    int num_probes_failed = 0;
   };
 
   // MdnsProbe::Observer overrides.
   void OnProbeSuccess(MdnsProbe* probe) override;
   void OnProbeFailure(MdnsProbe* probe) override;
+
+  // Helpers to find ongoing and completed probes.
+  std::vector<std::unique_ptr<MdnsProbe>>::const_iterator FindCompletedProbe(
+      const DomainName& name) const;
+  std::vector<OngoingProbe>::iterator FindOngoingProbe(const DomainName& name);
+  std::vector<OngoingProbe>::iterator FindOngoingProbe(MdnsProbe* probe);
 
   MdnsSender* const sender_;
   MdnsQuerier* const querier_;

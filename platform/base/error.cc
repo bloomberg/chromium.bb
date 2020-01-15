@@ -166,6 +166,8 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: ItemNotFound";
     case Error::Code::kOperationInvalid:
       return os << "Failure: OperationInvalid";
+    case Error::Code::kOperationInProgress:
+      return os << "Failure: OperationInProgress";
     case Error::Code::kOperationCancelled:
       return os << "Failure: OperationCancelled";
     case Error::Code::kCastV2PeerCertEmpty:

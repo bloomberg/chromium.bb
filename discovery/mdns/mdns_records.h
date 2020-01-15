@@ -352,6 +352,10 @@ class MdnsRecord {
   MdnsRecord& operator=(MdnsRecord&& rhs);
   bool operator==(const MdnsRecord& other) const;
   bool operator!=(const MdnsRecord& other) const;
+  bool operator<(const MdnsRecord& other) const;
+  bool operator>(const MdnsRecord& other) const;
+  bool operator<=(const MdnsRecord& other) const;
+  bool operator>=(const MdnsRecord& other) const;
 
   size_t MaxWireSize() const;
   const DomainName& name() const { return name_; }

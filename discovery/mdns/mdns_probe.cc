@@ -11,22 +11,26 @@
 namespace openscreen {
 namespace discovery {
 
-MdnsProbe::Observer::~Observer() = default;
+MdnsProbe::MdnsProbe(DomainName target_name, IPEndpoint endpoint)
+    : target_name_(std::move(target_name)), endpoint_(std::move(endpoint)) {}
 
-MdnsProbe::MdnsProbe(MdnsSender* sender,
-                     MdnsQuerier* querier,
-                     MdnsRandom* random_delay,
-                     TaskRunner* task_runner,
-                     Observer* observer,
-                     DomainName target_name,
-                     IPEndpoint endpoint)
-    : sender_(sender),
+MdnsProbe::~MdnsProbe() = default;
+
+MdnsProbeImpl::Observer::~Observer() = default;
+
+MdnsProbeImpl::MdnsProbeImpl(MdnsSender* sender,
+                             MdnsQuerier* querier,
+                             MdnsRandom* random_delay,
+                             TaskRunner* task_runner,
+                             Observer* observer,
+                             DomainName target_name,
+                             IPEndpoint endpoint)
+    : MdnsProbe(std::move(target_name), std::move(endpoint)),
+      sender_(sender),
       querier_(querier),
       random_delay_(random_delay),
       task_runner_(task_runner),
-      observer_(observer),
-      target_name_(std::move(target_name)),
-      endpoint_(std::move(endpoint)) {
+      observer_(observer) {
   OSP_DCHECK(querier_);
   OSP_DCHECK(sender_);
   OSP_DCHECK(task_runner_);
@@ -36,12 +40,16 @@ MdnsProbe::MdnsProbe(MdnsSender* sender,
   ProbeOnce();
 }
 
-MdnsProbe::~MdnsProbe() = default;
+MdnsProbeImpl::~MdnsProbeImpl() = default;
 
-void MdnsProbe::ProbeOnce() {
+void MdnsProbeImpl::ProbeOnce() {
   // TODO(rwkeane): Implement this method.
 
   task_runner_->PostTask([this]() { observer_->OnProbeSuccess(this); });
+}
+
+void MdnsProbeImpl::Postpone(std::chrono::seconds delay) {
+  // TODO(rwkeane): Implement this method.
 }
 
 }  // namespace discovery
