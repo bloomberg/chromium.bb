@@ -154,7 +154,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   }
 
   // Send to display.
-  if (query_field_.is_focusable) {
+  if (query_field_.is_focusable && GetAutofillDriver()->CanShowAutofillUi()) {
     manager_->client()->ShowAutofillPopup(
         element_bounds_, query_field_.text_direction, suggestions,
         autoselect_first_suggestion, popup_type_, GetWeakPtr());
