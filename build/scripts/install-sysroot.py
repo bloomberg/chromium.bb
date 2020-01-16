@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -40,8 +40,8 @@ except ImportError:
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(SCRIPT_DIR)
-URL_PREFIX = 'https://commondatastorage.googleapis.com'
-URL_PATH = 'chrome-linux-sysroot/toolchain'
+URL_PREFIX = 'https://storage.googleapis.com'
+URL_PATH = 'openscreen-sysroots'
 
 VALID_ARCHS = ('arm', 'arm64')
 
@@ -120,6 +120,7 @@ def InstallSysroot(target_platform, target_arch):
     if os.path.exists(stamp):
         with open(stamp) as s:
             if s.read() == url:
+                print("Sysroot image already installed...")
                 return
 
     print('Installing Debian %s %s root image: %s' % \
@@ -171,5 +172,5 @@ if __name__ == '__main__':
     try:
         sys.exit(main(sys.argv[1:]))
     except Error as e:
-        sys.stderr.write('Installing sysroot error: {}\n' % e)
+        sys.stderr.write('Installing sysroot error: {}\n'.format(e))
         sys.exit(1)
