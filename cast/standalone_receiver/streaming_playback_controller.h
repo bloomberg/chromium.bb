@@ -10,13 +10,13 @@
 #include "cast/streaming/receiver_session.h"
 #include "platform/impl/task_runner.h"
 
-#if defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 #include "cast/standalone_receiver/sdl_audio_player.h"
 #include "cast/standalone_receiver/sdl_glue.h"
 #include "cast/standalone_receiver/sdl_video_player.h"
 #else
 #include "cast/standalone_receiver/dummy_player.h"
-#endif  // defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 
 namespace openscreen {
 namespace cast {
@@ -36,7 +36,7 @@ class StreamingPlaybackController : public ReceiverSession::Client {
  private:
   TaskRunnerImpl* const task_runner_;
 
-#if defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
   // NOTE: member ordering is important, since the sub systems must be
   // first-constructed, last-destroyed. Make sure any new SDL related
   // members are added below the sub systems.
@@ -51,7 +51,7 @@ class StreamingPlaybackController : public ReceiverSession::Client {
 #else
   std::unique_ptr<DummyPlayer> audio_player_;
   std::unique_ptr<DummyPlayer> video_player_;
-#endif  // defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 };
 
 }  // namespace cast

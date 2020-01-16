@@ -4,18 +4,18 @@
 
 #include "cast/standalone_receiver/streaming_playback_controller.h"
 
-#if defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 #include "cast/standalone_receiver/sdl_audio_player.h"
 #include "cast/standalone_receiver/sdl_glue.h"
 #include "cast/standalone_receiver/sdl_video_player.h"
 #else
 #include "cast/standalone_receiver/dummy_player.h"
-#endif  // defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 
 namespace openscreen {
 namespace cast {
 
-#if defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 StreamingPlaybackController::StreamingPlaybackController(
     TaskRunnerImpl* task_runner)
     : task_runner_(task_runner),
@@ -37,12 +37,12 @@ StreamingPlaybackController::StreamingPlaybackController(
     : task_runner_(task_runner) {
   OSP_DCHECK(task_runner_ != nullptr);
 }
-#endif  // defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 
 void StreamingPlaybackController::OnNegotiated(
     const ReceiverSession* session,
     ReceiverSession::ConfiguredReceivers receivers) {
-#if defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
   if (receivers.audio) {
     audio_player_ = std::make_unique<SDLAudioPlayer>(
         &Clock::now, task_runner_, receivers.audio.value().receiver, [&] {
@@ -68,7 +68,7 @@ void StreamingPlaybackController::OnNegotiated(
     video_player_ =
         std::make_unique<DummyPlayer>(receivers.video.value().receiver);
   }
-#endif  // defined(CAST_STREAMING_HAVE_EXTERNAL_LIBS_FOR_DEMO_APPS)
+#endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 }
 
 void StreamingPlaybackController::OnReceiversDestroyed(
