@@ -438,6 +438,10 @@ inline int GetFilterIndex(const int filter_index, const int length) {
   return filter_index;
 }
 
+constexpr int SubsampledValue(int value, int subsampling) {
+  return (subsampling == 0) ? value : DivideBy2(value + 1);
+}
+
 }  // namespace libgav1
 
 #endif  // LIBGAV1_SRC_UTILS_COMMON_H_

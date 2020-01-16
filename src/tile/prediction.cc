@@ -1044,10 +1044,16 @@ void Tile::BlockInterPrediction(
           : reference_frames_[reference_frame_index]->frame_height();
   const int ref_start_x = 0;
   const int ref_last_x =
-      ((reference_upscaled_width + subsampling_x) >> subsampling_x) - 1;
+      SubsampledValue(
+          reference_upscaled_width,
+          (plane == kPlaneY) ? 0 : reference_buffer->subsampling_x()) -
+      1;
   const int ref_start_y = 0;
   const int ref_last_y =
-      ((reference_height + subsampling_y) >> subsampling_y) - 1;
+      SubsampledValue(
+          reference_height,
+          (plane == kPlaneY) ? 0 : reference_buffer->subsampling_y()) -
+      1;
 
   const bool is_scaled = (reference_frame_index != -1) &&
                          (frame_header_.width != reference_upscaled_width ||

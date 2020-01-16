@@ -45,10 +45,6 @@ constexpr uint8_t kCdefUvDirection[2][2][8] = {
 constexpr int kDeblockedRowsForLoopRestoration[2][4] = {{54, 55, 56, 57},
                                                         {26, 27, 28, 29}};
 
-constexpr int SubsampledValue(int value, int subsampling) {
-  return (subsampling == 0) ? value : DivideBy2(value + 1);
-}
-
 // The following example illustrates how ExtendFrame() extends a frame.
 // Suppose the frame width is 8 and height is 4, and left, right, top, and
 // bottom are all equal to 3.
