@@ -1463,6 +1463,21 @@ static INLINE void sort_probability(float prob[], int txk[], int len) {
   }
 }
 
+static INLINE float get_adaptive_thresholds(TX_SIZE tx_size,
+                                            TxSetType tx_set_type,
+                                            TX_TYPE_PRUNE_MODE prune_mode) {
+  const int prune_aggr_table[4][2] = { { 4, 1 }, { 6, 3 }, { 9, 6 }, { 9, 6 } };
+  int pruning_aggressiveness = 0;
+  if (tx_set_type == EXT_TX_SET_ALL16)
+    pruning_aggressiveness =
+        prune_aggr_table[prune_mode - PRUNE_2D_ACCURATE][0];
+  else if (tx_set_type == EXT_TX_SET_DTT9_IDTX_1DDCT)
+    pruning_aggressiveness =
+        prune_aggr_table[prune_mode - PRUNE_2D_ACCURATE][1];
+
+  return prune_2D_adaptive_thresholds[tx_size][pruning_aggressiveness];
+}
+
 static void prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
                         int blk_row, int blk_col, TxSetType tx_set_type,
                         TX_TYPE_PRUNE_MODE prune_mode, int *txk_map,
@@ -1525,15 +1540,8 @@ static void prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
 
   av1_nn_softmax(scores_2D_raw, scores_2D, 16);
 
-  const int prune_aggr_table[4][2] = { { 4, 1 }, { 6, 3 }, { 9, 6 }, { 9, 6 } };
-  int pruning_aggressiveness = 0;
-  if (tx_set_type == EXT_TX_SET_ALL16) {
-    pruning_aggressiveness =
-        prune_aggr_table[prune_mode - PRUNE_2D_ACCURATE][0];
-  } else if (tx_set_type == EXT_TX_SET_DTT9_IDTX_1DDCT) {
-    pruning_aggressiveness =
-        prune_aggr_table[prune_mode - PRUNE_2D_ACCURATE][1];
-  }
+  const float score_thresh =
+      get_adaptive_thresholds(tx_size, tx_set_type, prune_mode);
 
   // Always keep the TX type with the highest score, prune all others with
   // score below score_thresh.
@@ -1546,9 +1554,6 @@ static void prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
       max_score_i = i;
     }
   }
-
-  const float score_thresh =
-      prune_2D_adaptive_thresholds[tx_size][pruning_aggressiveness];
 
   uint16_t allow_bitmask = 0;
   float sum_score = 0.0;
