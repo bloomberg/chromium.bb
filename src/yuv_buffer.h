@@ -22,7 +22,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "src/gav1/frame_buffer.h"
+#include "src/frame_buffer2.h"
 #include "src/utils/constants.h"
 
 namespace libgav1 {
@@ -40,8 +40,8 @@ class YuvBuffer {
   //   multiple of 2.
   // * If |get_frame_buffer| is not null, it is invoked to allocate the memory.
   //   If |get_frame_buffer| is null, YuvBuffer allocates the memory directly
-  //   and ignores the |private_data| and |frame_buffer| parameters, which
-  //   should be null.
+  //   and ignores the |callback_private_data| and |buffer_private_data|
+  //   parameters, which should be null.
   //
   // NOTE: The strides are a multiple of 16. Since the first row in each plane
   // is 16-byte aligned, subsequent rows are also 16-byte aligned.
@@ -93,8 +93,8 @@ class YuvBuffer {
   bool Realloc(int bitdepth, bool is_monochrome, int width, int height,
                int8_t subsampling_x, int8_t subsampling_y, int left_border,
                int right_border, int top_border, int bottom_border,
-               GetFrameBufferCallback get_frame_buffer, void* private_data,
-               FrameBuffer* frame_buffer);
+               GetFrameBufferCallback2 get_frame_buffer,
+               void* callback_private_data, void** buffer_private_data);
 
   int bitdepth() const { return bitdepth_; }
 

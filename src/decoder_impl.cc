@@ -63,6 +63,16 @@ class RefCountedBufferPtrCleanup {
   RefCountedBufferPtr& frame_;
 };
 
+// Computes the bottom border size in pixels. If CDEF or loop restoration is
+// enabled, adds extra border pixels to compensate for the buffer shift in the
+// PostFilter constructor.
+int GetBottomBorderPixels(const bool do_cdef, const bool do_restoration) {
+  int border = kBorderPixels;
+  if (do_cdef) border += 2 * kCdefBorder;
+  if (do_restoration) border += 2 * kRestorationBorder;
+  return border;
+}
+
 }  // namespace
 
 // static
@@ -89,8 +99,14 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
 }
 
 DecoderImpl::DecoderImpl(const DecoderSettings* settings)
-    : buffer_pool_(settings->get, settings->release,
-                   settings->callback_private_data),
+    : v1_callbacks_(settings->get, settings->release,
+                    settings->callback_private_data),
+      buffer_pool_(
+          (settings->get != nullptr) ? OnFrameBufferSizeChangedAdaptor
+                                     : nullptr,
+          (settings->get != nullptr) ? GetFrameBufferAdaptor : nullptr,
+          (settings->get != nullptr) ? ReleaseFrameBufferAdaptor : nullptr,
+          (settings->get != nullptr) ? &v1_callbacks_ : nullptr),
       settings_(*settings) {
   dsp::DspInit();
 }
@@ -179,10 +195,37 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
                      [](const ObuHeader& obu_header) {
                        return obu_header.type == kObuSequenceHeader;
                      }) != obu->obu_headers().end()) {
-      state_.sequence_header = obu->sequence_header();
+      const ObuSequenceHeader& sequence_header = obu->sequence_header();
+      if (!state_.has_sequence_header ||
+          state_.sequence_header.color_config.bitdepth !=
+              sequence_header.color_config.bitdepth ||
+          state_.sequence_header.color_config.is_monochrome !=
+              sequence_header.color_config.is_monochrome ||
+          state_.sequence_header.color_config.subsampling_x !=
+              sequence_header.color_config.subsampling_x ||
+          state_.sequence_header.color_config.subsampling_y !=
+              sequence_header.color_config.subsampling_y ||
+          state_.sequence_header.max_frame_width !=
+              sequence_header.max_frame_width ||
+          state_.sequence_header.max_frame_height !=
+              sequence_header.max_frame_height) {
+        const int max_bottom_border =
+            GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true);
+        if (!buffer_pool_.OnFrameBufferSizeChanged(
+                sequence_header.color_config.bitdepth,
+                sequence_header.color_config.is_monochrome,
+                sequence_header.color_config.subsampling_x,
+                sequence_header.color_config.subsampling_y,
+                sequence_header.max_frame_width,
+                sequence_header.max_frame_height, kBorderPixels, kBorderPixels,
+                kBorderPixels, max_bottom_border)) {
+          LIBGAV1_DLOG(ERROR, "buffer_pool_.OnFrameBufferSizeChanged failed.");
+          return kLibgav1StatusUnknownError;
+        }
+      }
+      state_.sequence_header = sequence_header;
       state_.has_sequence_header = true;
-      decoder_scratch_buffer_pool_.Reset(
-          obu->sequence_header().color_config.bitdepth);
+      decoder_scratch_buffer_pool_.Reset(sequence_header.color_config.bitdepth);
     }
     if (!obu->frame_header().show_existing_frame) {
       if (obu->tile_groups().empty()) {
@@ -394,11 +437,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
       frame_header.loop_restoration, settings_.post_filter_mask, num_planes);
   // Use kBorderPixels for the left, right, and top borders. Only the bottom
   // border may need to be bigger.
-  int bottom_border = kBorderPixels;
-  // If CDEF or loop restoration is enabled, add extra border pixels to
-  // compensate for the buffer shift in the PostFilter constructor.
-  if (do_cdef) bottom_border += 2 * kCdefBorder;
-  if (do_restoration) bottom_border += 2 * kRestorationBorder;
+  const int bottom_border = GetBottomBorderPixels(do_cdef, do_restoration);
   if (!AllocateCurrentFrame(frame_header, kBorderPixels, kBorderPixels,
                             kBorderPixels, bottom_border)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");

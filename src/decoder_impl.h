@@ -24,6 +24,7 @@
 
 #include "src/buffer_pool.h"
 #include "src/dsp/constants.h"
+#include "src/frame_buffer_callback_adaptor.h"
 #include "src/gav1/decoder_buffer.h"
 #include "src/gav1/decoder_settings.h"
 #include "src/gav1/status_code.h"
@@ -146,6 +147,10 @@ class DecoderImpl : public Allocable {
   DecoderBuffer buffer_ = {};
   // output_frame_ holds a reference to the output frame on behalf of buffer_.
   RefCountedBufferPtr output_frame_;
+
+  // Only used by the adaptors for the version 1 frame buffer callbacks.
+  // TODO(wtc): Remove this when we drop support for the version 1 callbacks.
+  V1FrameBufferCallbacks v1_callbacks_;
 
   BufferPool buffer_pool_;
   std::unique_ptr<ResidualBufferPool> residual_buffer_pool_;

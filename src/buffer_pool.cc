@@ -36,9 +36,7 @@ void CopySegmentationParameters(const Segmentation& from, Segmentation* to) {
 
 }  // namespace
 
-RefCountedBuffer::RefCountedBuffer() {
-  memset(&raw_frame_buffer_, 0, sizeof(raw_frame_buffer_));
-}
+RefCountedBuffer::RefCountedBuffer() = default;
 
 RefCountedBuffer::~RefCountedBuffer() = default;
 
@@ -46,11 +44,16 @@ bool RefCountedBuffer::Realloc(int bitdepth, bool is_monochrome, int width,
                                int height, int subsampling_x, int subsampling_y,
                                int left_border, int right_border,
                                int top_border, int bottom_border) {
-  return yuv_buffer_.Realloc(bitdepth, is_monochrome, width, height,
-                             subsampling_x, subsampling_y, left_border,
-                             right_border, top_border, bottom_border,
-                             pool_->get_frame_buffer_,
-                             pool_->callback_private_data_, &raw_frame_buffer_);
+  assert(!buffer_private_data_valid_);
+  if (!yuv_buffer_.Realloc(
+          bitdepth, is_monochrome, width, height, subsampling_x, subsampling_y,
+          left_border, right_border, top_border, bottom_border,
+          pool_->get_frame_buffer_, pool_->callback_private_data_,
+          &buffer_private_data_)) {
+    return false;
+  }
+  buffer_private_data_valid_ = true;
+  return true;
 }
 
 bool RefCountedBuffer::SetFrameDimensions(const ObuFrameHeader& frame_header) {
@@ -108,18 +111,24 @@ void RefCountedBuffer::ReturnToBufferPool(RefCountedBuffer* ptr) {
 // static
 constexpr int BufferPool::kNumBuffers;
 
-BufferPool::BufferPool(GetFrameBufferCallback get_frame_buffer,
-                       ReleaseFrameBufferCallback release_frame_buffer,
-                       void* callback_private_data) {
+BufferPool::BufferPool(
+    FrameBufferSizeChangedCallback on_frame_buffer_size_changed,
+    GetFrameBufferCallback2 get_frame_buffer,
+    ReleaseFrameBufferCallback2 release_frame_buffer,
+    void* callback_private_data) {
   if (get_frame_buffer != nullptr) {
+    assert(on_frame_buffer_size_changed != nullptr);
     assert(release_frame_buffer != nullptr);
+    on_frame_buffer_size_changed_ = on_frame_buffer_size_changed;
     get_frame_buffer_ = get_frame_buffer;
     release_frame_buffer_ = release_frame_buffer;
     callback_private_data_ = callback_private_data;
   } else {
     internal_frame_buffers_ = InternalFrameBufferList::Create(kNumBuffers);
-    // GetInternalFrameBuffer checks whether its private_data argument is null,
-    // so we don't need to check whether internal_frame_buffers_ is null here.
+    // OnInternalFrameBufferSizeChanged and GetInternalFrameBuffer check
+    // whether their private_data argument is null, so we don't need to check
+    // whether internal_frame_buffers_ is null here.
+    on_frame_buffer_size_changed_ = OnInternalFrameBufferSizeChanged;
     get_frame_buffer_ = GetInternalFrameBuffer;
     release_frame_buffer_ = ReleaseInternalFrameBuffer;
     callback_private_data_ = internal_frame_buffers_.get();
@@ -138,6 +147,21 @@ BufferPool::~BufferPool() {
   }
 }
 
+bool BufferPool::OnFrameBufferSizeChanged(int bitdepth, bool is_monochrome,
+                                          int8_t subsampling_x,
+                                          int8_t subsampling_y, int width,
+                                          int height, int left_border,
+                                          int right_border, int top_border,
+                                          int bottom_border) {
+  const int aligned_width = Align(width, 8);
+  const int aligned_height = Align(height, 8);
+  return on_frame_buffer_size_changed_(
+             callback_private_data_, bitdepth, is_monochrome, subsampling_x,
+             subsampling_y, aligned_width, aligned_height, left_border,
+             right_border, top_border, bottom_border,
+             /*stride_alignment=*/16) == 0;
+}
+
 RefCountedBufferPtr BufferPool::GetFreeBuffer() {
   for (RefCountedBuffer& buffer : buffers_) {
     if (!buffer.in_use_) {
@@ -154,9 +178,9 @@ RefCountedBufferPtr BufferPool::GetFreeBuffer() {
 void BufferPool::ReturnUnusedBuffer(RefCountedBuffer* buffer) {
   assert(buffer->in_use_);
   buffer->in_use_ = false;
-  if (buffer->raw_frame_buffer_.data[0] != nullptr) {
-    release_frame_buffer_(callback_private_data_, &buffer->raw_frame_buffer_);
-    memset(&buffer->raw_frame_buffer_, 0, sizeof(buffer->raw_frame_buffer_));
+  if (buffer->buffer_private_data_valid_) {
+    release_frame_buffer_(callback_private_data_, buffer->buffer_private_data_);
+    buffer->buffer_private_data_valid_ = false;
   }
 }
 

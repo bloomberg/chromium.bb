@@ -18,6 +18,7 @@
 #define LIBGAV1_SRC_BUFFER_POOL_H_
 
 #include <array>
+#include <cassert>
 #include <cstdint>
 #include <memory>
 
@@ -28,6 +29,7 @@
 #include "src/obu_parser.h"
 #include "src/symbol_decoder_context.h"
 #include "src/utils/array_2d.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 #include "src/utils/segmentation.h"
 #include "src/utils/segmentation_map.h"
@@ -66,7 +68,10 @@ class RefCountedBuffer {
 
   // Returns the buffer private data set by the get frame buffer callback when
   // it allocated the YUV buffer.
-  void* buffer_private_data() const { return raw_frame_buffer_.private_data; }
+  void* buffer_private_data() const {
+    assert(buffer_private_data_valid_);
+    return buffer_private_data_;
+  }
 
   // NOTE: In the current frame, this is the frame_type syntax element in the
   // frame header. In a reference frame, this implements the RefFrameType array
@@ -198,7 +203,8 @@ class RefCountedBuffer {
   static void ReturnToBufferPool(RefCountedBuffer* ptr);
 
   BufferPool* pool_ = nullptr;
-  FrameBuffer raw_frame_buffer_;
+  bool buffer_private_data_valid_ = false;
+  void* buffer_private_data_ = nullptr;
   YuvBuffer yuv_buffer_;
   bool in_use_ = false;  // Only used by BufferPool.
 
@@ -254,8 +260,9 @@ using RefCountedBufferPtr = std::shared_ptr<RefCountedBuffer>;
 // BufferPool maintains a pool of RefCountedBuffers.
 class BufferPool {
  public:
-  BufferPool(GetFrameBufferCallback get_frame_buffer,
-             ReleaseFrameBufferCallback release_frame_buffer,
+  BufferPool(FrameBufferSizeChangedCallback on_frame_buffer_size_changed,
+             GetFrameBufferCallback2 get_frame_buffer,
+             ReleaseFrameBufferCallback2 release_frame_buffer,
              void* callback_private_data);
 
   // Not copyable or movable.
@@ -263,6 +270,11 @@ class BufferPool {
   BufferPool& operator=(const BufferPool&) = delete;
 
   ~BufferPool();
+
+  LIBGAV1_MUST_USE_RESULT bool OnFrameBufferSizeChanged(
+      int bitdepth, bool is_monochrome, int8_t subsampling_x,
+      int8_t subsampling_y, int width, int height, int left_border,
+      int right_border, int top_border, int bottom_border);
 
   // Finds a free buffer in the buffer pool and returns a reference to the
   // free buffer. If there is no free buffer, returns a null pointer.
@@ -284,8 +296,9 @@ class BufferPool {
   std::unique_ptr<InternalFrameBufferList> internal_frame_buffers_;
 
   // Frame buffer callbacks.
-  GetFrameBufferCallback get_frame_buffer_;
-  ReleaseFrameBufferCallback release_frame_buffer_;
+  FrameBufferSizeChangedCallback on_frame_buffer_size_changed_;
+  GetFrameBufferCallback2 get_frame_buffer_;
+  ReleaseFrameBufferCallback2 release_frame_buffer_;
   // Private data associated with the frame buffer callbacks.
   void* callback_private_data_;
 };

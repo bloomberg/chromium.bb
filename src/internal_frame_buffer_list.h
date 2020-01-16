@@ -21,18 +21,36 @@
 #include <cstdint>
 #include <memory>
 
+#include "src/frame_buffer2.h"
 #include "src/gav1/frame_buffer.h"
 #include "src/utils/memory.h"
 
 namespace libgav1 {
 
-extern "C" int GetInternalFrameBuffer(void* private_data,
-                                      size_t y_plane_min_size,
-                                      size_t uv_plane_min_size,
-                                      FrameBuffer* frame_buffer);
+extern "C" int OnInternalFrameBufferSizeChanged(
+    void* callback_private_data, int bitdepth, bool is_monochrome,
+    int8_t subsampling_x, int8_t subsampling_y, int width, int height,
+    int left_border, int right_border, int top_border, int bottom_border,
+    int stride_alignment);
 
-extern "C" int ReleaseInternalFrameBuffer(void* private_data,
-                                          FrameBuffer* frame_buffer);
+extern "C" int GetInternalFrameBuffer(void* callback_private_data, int bitdepth,
+                                      bool is_monochrome, int8_t subsampling_x,
+                                      int8_t subsampling_y, int width,
+                                      int height, int left_border,
+                                      int right_border, int top_border,
+                                      int bottom_border, int stride_alignment,
+                                      Libgav1FrameBuffer2* frame_buffer);
+
+extern "C" int ReleaseInternalFrameBuffer(void* callback_private_data,
+                                          void* buffer_private_data);
+
+extern "C" int V1GetInternalFrameBuffer(void* private_data,
+                                        size_t y_plane_min_size,
+                                        size_t uv_plane_min_size,
+                                        FrameBuffer* frame_buffer);
+
+extern "C" int V1ReleaseInternalFrameBuffer(void* private_data,
+                                            FrameBuffer* frame_buffer);
 
 class InternalFrameBufferList : public Allocable {
  public:
@@ -44,9 +62,23 @@ class InternalFrameBufferList : public Allocable {
 
   ~InternalFrameBufferList() = default;
 
-  int GetFrameBuffer(size_t y_plane_min_size, size_t uv_plane_min_size,
-                     FrameBuffer* frame_buffer);
-  int ReleaseFrameBuffer(FrameBuffer* frame_buffer);
+  int OnFrameBufferSizeChanged(int bitdepth, bool is_monochrome,
+                               int8_t subsampling_x, int8_t subsampling_y,
+                               int width, int height, int left_border,
+                               int right_border, int top_border,
+                               int bottom_border, int stride_alignment);
+
+  int GetFrameBuffer(int bitdepth, bool is_monochrome, int8_t subsampling_x,
+                     int8_t subsampling_y, int width, int height,
+                     int left_border, int right_border, int top_border,
+                     int bottom_border, int stride_alignment,
+                     Libgav1FrameBuffer2* frame_buffer);
+
+  int ReleaseFrameBuffer(void* buffer_private_data);
+
+  int V1GetFrameBuffer(size_t y_plane_min_size, size_t uv_plane_min_size,
+                       FrameBuffer* frame_buffer);
+  int V1ReleaseFrameBuffer(FrameBuffer* frame_buffer);
 
  private:
   struct Buffer : public Allocable {
