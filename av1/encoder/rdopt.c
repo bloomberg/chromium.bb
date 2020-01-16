@@ -2422,6 +2422,7 @@ uint16_t prune_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 
     txk_map[num_cand] = tx_type;
     rds[num_cand] = RDCOST(x->rdmult, rate_cost, dist);
+    if (rds[num_cand] == 0) rds[num_cand] = 1;
     num_cand++;
   }
 
@@ -2555,6 +2556,7 @@ uint16_t prune_txk_type_separ(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     } else {
       txk_map[num_cand] = tx_type;
       rds[num_cand] = rds_v[i_v] + rds_h[i_h];
+      if (rds[num_cand] == 0) rds[num_cand] = 1;
       num_cand++;
     }
   }
