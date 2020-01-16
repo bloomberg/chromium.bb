@@ -3,7 +3,7 @@ createPipelineLayout validation tests.
 `;
 
 import { TestGroup, pcombine, poptions } from '../../../framework/index.js';
-import { bindingTypeInfo, bindingTypes, shaderStageCombinations } from '../format_info.js';
+import { kBindingTypeInfo, kBindingTypes, kShaderStageCombinations } from '../capability_info.js';
 
 import { ValidationTest } from './validation_test.js';
 
@@ -15,7 +15,7 @@ export const g = new TestGroup(ValidationTest);
 
 g.test('number of dynamic buffers exceeds the maximum value', async t => {
   const { type, visibility } = t.params;
-  const maxDynamicCount = bindingTypeInfo[type as GPUBindingType].maxDynamicCount;
+  const maxDynamicCount = kBindingTypeInfo[type as GPUBindingType].maxDynamicCount;
 
   const maxDynamicBufferBindings: GPUBindGroupLayoutBinding[] = [];
   for (let binding = 0; binding < maxDynamicCount; binding++) {
@@ -63,7 +63,7 @@ g.test('number of dynamic buffers exceeds the maximum value', async t => {
 
 g.test('dynamic offsets are only allowed on buffers', t => {
   const { type, visibility } = t.params;
-  const info = bindingTypeInfo[type as GPUBindingType];
+  const info = kBindingTypeInfo[type as GPUBindingType];
 
   const goodDescriptor = {
     bindings: [{ binding: 0, visibility, type, hasDynamicOffset: false }],
@@ -84,8 +84,8 @@ g.test('dynamic offsets are only allowed on buffers', t => {
   }, !success);
 }).params(
   pcombine(
-    poptions('visibility', shaderStageCombinations), //
-    poptions('type', bindingTypes)
+    poptions('visibility', kShaderStageCombinations), //
+    poptions('type', kBindingTypes)
   )
 );
 
@@ -120,5 +120,5 @@ g.test('number of bind group layouts exceeds the maximum value', async t => {
     t.device.createPipelineLayout(badPipelineLayoutDescriptor);
   });
 }).params(
-  pcombine(poptions('visibility', shaderStageCombinations), poptions('type', bindingTypes))
+  pcombine(poptions('visibility', kShaderStageCombinations), poptions('type', kBindingTypes))
 );
