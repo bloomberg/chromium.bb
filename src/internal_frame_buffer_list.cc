@@ -23,16 +23,6 @@
 #include "src/utils/common.h"
 
 namespace libgav1 {
-namespace {
-
-// |align| must be a power of 2.
-uint8_t* AlignAddr(uint8_t* const addr, const size_t align) {
-  const auto value = reinterpret_cast<size_t>(addr);
-  return reinterpret_cast<uint8_t*>(Align(value, align));
-}
-
-}  // namespace
-
 extern "C" {
 
 int OnInternalFrameBufferSizeChanged(void* callback_private_data, int bitdepth,

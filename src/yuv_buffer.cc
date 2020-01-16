@@ -22,15 +22,6 @@
 #include "src/utils/logging.h"
 
 namespace libgav1 {
-namespace {
-
-// |align| must be a power of 2.
-uint8_t* AlignAddr(uint8_t* const addr, const size_t align) {
-  const auto value = reinterpret_cast<size_t>(addr);
-  return reinterpret_cast<uint8_t*>(Align(value, align));
-}
-
-}  // namespace
 
 // Size conventions:
 // * Widths, heights, and border sizes are in pixels.

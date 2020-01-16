@@ -46,6 +46,12 @@ inline T Align(T value, T alignment) {
   return (value + alignment_mask) & ~alignment_mask;
 }
 
+// Aligns |addr| to the desired |alignment|. |alignment| must be a power of 2.
+inline uint8_t* AlignAddr(uint8_t* const addr, const size_t alignment) {
+  const auto value = reinterpret_cast<size_t>(addr);
+  return reinterpret_cast<uint8_t*>(Align(value, alignment));
+}
+
 inline int32_t Clip3(int32_t value, int32_t low, int32_t high) {
   return value < low ? low : (value > high ? high : value);
 }
