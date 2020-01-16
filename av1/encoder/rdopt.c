@@ -2574,6 +2574,36 @@ uint16_t prune_txk_type_separ(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   return prune;
 }
 
+static INLINE int is_intra_hash_match(
+    const AV1_COMP *cpi, MACROBLOCK *x, int plane, int blk_row, int blk_col,
+    BLOCK_SIZE plane_bsize, TX_SIZE tx_size, const TXB_CTX *const txb_ctx,
+    TXB_RD_INFO **intra_txb_rd_info, int within_border,
+    const int tx_type_map_idx, uint16_t *cur_joint_ctx) {
+  const AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = xd->mi[0];
+  const int is_inter = is_inter_block(mbmi);
+  if (within_border && cpi->sf.tx_sf.use_intra_txb_hash &&
+      frame_is_intra_only(cm) && !is_inter && plane == 0 &&
+      tx_size_wide[tx_size] == tx_size_high[tx_size]) {
+    const uint32_t intra_hash =
+        get_intra_txb_hash(x, plane, blk_row, blk_col, plane_bsize, tx_size);
+    const int intra_hash_idx =
+        find_tx_size_rd_info(&x->txb_rd_record_intra, intra_hash);
+    *intra_txb_rd_info = &x->txb_rd_record_intra.tx_rd_info[intra_hash_idx];
+    *cur_joint_ctx = (txb_ctx->dc_sign_ctx << 8) + txb_ctx->txb_skip_ctx;
+    if ((*intra_txb_rd_info)->entropy_context == *cur_joint_ctx &&
+        x->txb_rd_record_intra.tx_rd_info[intra_hash_idx].valid) {
+      xd->tx_type_map[tx_type_map_idx] = (*intra_txb_rd_info)->tx_type;
+      const TX_TYPE ref_tx_type =
+          av1_get_tx_type(xd, get_plane_type(plane), blk_row, blk_col, tx_size,
+                          cpi->common.reduced_tx_set_used);
+      return (ref_tx_type == (*intra_txb_rd_info)->tx_type);
+    }
+  }
+  return 0;
+}
+
 static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
@@ -2613,39 +2643,22 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   skip_trellis |=
       cpi->optimize_seg_arr[mbmi->segment_id] == NO_TRELLIS_OPT ||
       cpi->optimize_seg_arr[mbmi->segment_id] == FINAL_PASS_TRELLIS_OPT;
-  if (within_border && cpi->sf.tx_sf.use_intra_txb_hash &&
-      frame_is_intra_only(cm) && !is_inter && plane == 0 &&
-      tx_size_wide[tx_size] == tx_size_high[tx_size]) {
-    const uint32_t intra_hash =
-        get_intra_txb_hash(x, plane, blk_row, blk_col, plane_bsize, tx_size);
-    const int intra_hash_idx =
-        find_tx_size_rd_info(&x->txb_rd_record_intra, intra_hash);
-    intra_txb_rd_info = &x->txb_rd_record_intra.tx_rd_info[intra_hash_idx];
-
-    cur_joint_ctx = (txb_ctx->dc_sign_ctx << 8) + txb_ctx->txb_skip_ctx;
-    if (intra_txb_rd_info->entropy_context == cur_joint_ctx &&
-        x->txb_rd_record_intra.tx_rd_info[intra_hash_idx].valid) {
-      xd->tx_type_map[tx_type_map_idx] = intra_txb_rd_info->tx_type;
-      const TX_TYPE ref_tx_type =
-          av1_get_tx_type(xd, get_plane_type(plane), blk_row, blk_col, tx_size,
-                          cpi->common.reduced_tx_set_used);
-      if (ref_tx_type == intra_txb_rd_info->tx_type) {
-        best_rd_stats->rate = intra_txb_rd_info->rate;
-        best_rd_stats->dist = intra_txb_rd_info->dist;
-        best_rd_stats->sse = intra_txb_rd_info->sse;
-        best_rd_stats->skip = intra_txb_rd_info->eob == 0;
-        x->plane[plane].eobs[block] = intra_txb_rd_info->eob;
-        x->plane[plane].txb_entropy_ctx[block] =
-            intra_txb_rd_info->txb_entropy_ctx;
-        best_rd = RDCOST(x->rdmult, best_rd_stats->rate, best_rd_stats->dist);
-        best_eob = intra_txb_rd_info->eob;
-        best_tx_type = intra_txb_rd_info->tx_type;
-        perform_block_coeff_opt = intra_txb_rd_info->perform_block_coeff_opt;
-        skip_trellis |= !perform_block_coeff_opt;
-        update_txk_array(xd, blk_row, blk_col, tx_size, best_tx_type);
-        goto RECON_INTRA;
-      }
-    }
+  if (is_intra_hash_match(cpi, x, plane, blk_row, blk_col, plane_bsize, tx_size,
+                          txb_ctx, &intra_txb_rd_info, within_border,
+                          tx_type_map_idx, &cur_joint_ctx)) {
+    best_rd_stats->rate = intra_txb_rd_info->rate;
+    best_rd_stats->dist = intra_txb_rd_info->dist;
+    best_rd_stats->sse = intra_txb_rd_info->sse;
+    best_rd_stats->skip = intra_txb_rd_info->eob == 0;
+    x->plane[plane].eobs[block] = intra_txb_rd_info->eob;
+    x->plane[plane].txb_entropy_ctx[block] = intra_txb_rd_info->txb_entropy_ctx;
+    best_rd = RDCOST(x->rdmult, best_rd_stats->rate, best_rd_stats->dist);
+    best_eob = intra_txb_rd_info->eob;
+    best_tx_type = intra_txb_rd_info->tx_type;
+    perform_block_coeff_opt = intra_txb_rd_info->perform_block_coeff_opt;
+    skip_trellis |= !perform_block_coeff_opt;
+    update_txk_array(xd, blk_row, blk_col, tx_size, best_tx_type);
+    goto RECON_INTRA;
   }
 
   int rate_cost = 0;
