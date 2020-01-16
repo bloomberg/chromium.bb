@@ -420,19 +420,6 @@ void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *ref_frame,
   aom_free(square_diff);
 }
 
-// Applies temporal filter to YUV planes (high bit-depth video).
-// NOTE: This function is now merged to `av1_apply_temporal_filter_yuv_c()`.
-void av1_highbd_apply_temporal_filter_yuv_c(
-    const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
-    const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
-    const int strength, const int use_subblock,
-    const int *subblock_filter_weights, const uint8_t *pred, uint32_t *accum,
-    uint16_t *count) {
-  av1_apply_temporal_filter_yuv_c(ref_frame, mbd, block_size, mb_row, mb_col,
-                                  strength, use_subblock,
-                                  subblock_filter_weights, pred, accum, count);
-}
-
 // Only used in single plane case
 void av1_temporal_filter_apply_c(uint8_t *frame1, unsigned int stride,
                                  uint8_t *frame2, unsigned int block_width,
@@ -700,9 +687,9 @@ void apply_temporal_filter_block(
             BH, adj_strength, blk_fw, use_32x32, accumulator, count);
       } else {
         // Process 3 planes together.
-        av1_highbd_apply_temporal_filter_yuv(
-            frame, mbd, TF_BLOCK, mb_row, mb_col, adj_strength, !(use_32x32),
-            blk_fw, predictor, accumulator, count);
+        av1_apply_temporal_filter_yuv(frame, mbd, TF_BLOCK, mb_row, mb_col,
+                                      adj_strength, !(use_32x32), blk_fw,
+                                      predictor, accumulator, count);
       }
     }
     return;
@@ -1088,7 +1075,7 @@ static FRAME_DIFF temporal_filter_iterate_c(
                     BH, adj_strength, blk_fw, use_32x32, accumulator, count);
               } else {
                 // Process 3 planes together.
-                av1_highbd_apply_temporal_filter_yuv(
+                av1_apply_temporal_filter_yuv(
                     frame, mbd, TF_BLOCK, mb_row, mb_col, adj_strength,
                     !(use_32x32), blk_fw, predictor, accumulator, count);
               }

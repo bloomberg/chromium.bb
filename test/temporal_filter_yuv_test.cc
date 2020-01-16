@@ -26,17 +26,17 @@ using ::libaom_test::ACMRandom;
 const int MAX_WIDTH = 32;
 const int MAX_HEIGHT = 32;
 
-typedef void (*YUVTemporalFilterFunc)(
+typedef void (*TemporalFilterYUVFunc)(
     const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
     const int strength, const int use_subblock, const int *blk_fw,
     const uint8_t *pred, uint32_t *accum, uint16_t *count);
 
 struct TemporalFilterWithBd {
-  TemporalFilterWithBd(YUVTemporalFilterFunc func, int bitdepth)
+  TemporalFilterWithBd(TemporalFilterYUVFunc func, int bitdepth)
       : temporal_filter(func), bd(bitdepth) {}
 
-  YUVTemporalFilterFunc temporal_filter;
+  TemporalFilterYUVFunc temporal_filter;
   int bd;
 };
 
@@ -353,7 +353,7 @@ void ApplyReferenceFilter(const PixelType *y_src, const PixelType *y_pre,
   }
 }
 
-class YUVTemporalFilterTest
+class TemporalFilterYUVTest
     : public ::testing::TestWithParam<TemporalFilterWithBd> {
  public:
   virtual void SetUp() {
@@ -389,7 +389,7 @@ class YUVTemporalFilterTest
                        uint32_t *u_accumu, uint16_t *u_count, uint32_t *v_accum,
                        uint16_t *v_count);
 
-  YUVTemporalFilterFunc filter_func_;
+  TemporalFilterYUVFunc filter_func_;
   ACMRandom rnd_;
   int saturate_test_;
   int num_repeats_;
@@ -398,7 +398,7 @@ class YUVTemporalFilterTest
 };
 
 template <>
-void YUVTemporalFilterTest::ApplyTestFilter<uint8_t>(
+void TemporalFilterYUVTest::ApplyTestFilter<uint8_t>(
     const uint8_t *y_src, int y_src_stride, const uint8_t *y_pre,
     int y_pre_stride, const uint8_t *u_src, const uint8_t *v_src,
     int uv_src_stride, const uint8_t *u_pre, const uint8_t *v_pre,
@@ -471,7 +471,7 @@ void YUVTemporalFilterTest::ApplyTestFilter<uint8_t>(
 }
 
 template <>
-void YUVTemporalFilterTest::ApplyTestFilter<uint16_t>(
+void TemporalFilterYUVTest::ApplyTestFilter<uint16_t>(
     const uint16_t *y_src, int y_src_stride, const uint16_t *y_pre,
     int y_pre_stride, const uint16_t *u_src, const uint16_t *v_src,
     int uv_src_stride, const uint16_t *u_pre, const uint16_t *v_pre,
@@ -545,7 +545,7 @@ void YUVTemporalFilterTest::ApplyTestFilter<uint16_t>(
 }
 
 template <typename PixelType>
-void YUVTemporalFilterTest::CompareTestWithParam(int width, int height,
+void TemporalFilterYUVTest::CompareTestWithParam(int width, int height,
                                                  int ss_x, int ss_y,
                                                  int filter_strength,
                                                  int use_32x32,
@@ -646,7 +646,7 @@ void YUVTemporalFilterTest::CompareTestWithParam(int width, int height,
 }
 
 template <typename PixelType>
-void YUVTemporalFilterTest::RunTestFilterWithParam(int width, int height,
+void TemporalFilterYUVTest::RunTestFilterWithParam(int width, int height,
                                                    int ss_x, int ss_y,
                                                    int filter_strength,
                                                    int use_32x32,
@@ -681,7 +681,7 @@ void YUVTemporalFilterTest::RunTestFilterWithParam(int width, int height,
   }
 }
 
-TEST_P(YUVTemporalFilterTest, Use32x32) {
+TEST_P(TemporalFilterYUVTest, Use32x32) {
   const int width = 32, height = 32;
   const int use_32x32 = 1;
 
@@ -707,7 +707,7 @@ TEST_P(YUVTemporalFilterTest, Use32x32) {
   }
 }
 
-TEST_P(YUVTemporalFilterTest, Use16x16) {
+TEST_P(TemporalFilterYUVTest, Use16x16) {
   const int width = 32, height = 32;
   const int use_32x32 = 0;
 
@@ -743,7 +743,7 @@ TEST_P(YUVTemporalFilterTest, Use16x16) {
   }
 }
 
-TEST_P(YUVTemporalFilterTest, SaturationTest) {
+TEST_P(TemporalFilterYUVTest, SaturationTest) {
   const int width = 32, height = 32;
   const int use_32x32 = 1;
   const int filter_weight = 1;
@@ -770,7 +770,7 @@ TEST_P(YUVTemporalFilterTest, SaturationTest) {
   }
 }
 
-TEST_P(YUVTemporalFilterTest, DISABLED_Speed) {
+TEST_P(TemporalFilterYUVTest, DISABLED_Speed) {
   const int width = 32, height = 32;
   num_repeats_ = 1000;
 
@@ -821,20 +821,19 @@ TEST_P(YUVTemporalFilterTest, DISABLED_Speed) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    C, YUVTemporalFilterTest,
+    C, TemporalFilterYUVTest,
     ::testing::Values(
         TemporalFilterWithBd(&av1_apply_temporal_filter_yuv_c, 8),
-        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_yuv_c, 10),
-        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_yuv_c, 12)));
+        TemporalFilterWithBd(&av1_apply_temporal_filter_yuv_c, 10),
+        TemporalFilterWithBd(&av1_apply_temporal_filter_yuv_c, 12)));
 
 #if HAVE_SSE4_1
 INSTANTIATE_TEST_CASE_P(
-    SSE4_1, YUVTemporalFilterTest,
+    SSE4_1, TemporalFilterYUVTest,
     ::testing::Values(
         TemporalFilterWithBd(&av1_apply_temporal_filter_yuv_sse4_1, 8),
-        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_yuv_sse4_1, 10),
-        TemporalFilterWithBd(&av1_highbd_apply_temporal_filter_yuv_sse4_1,
-                             12)));
+        TemporalFilterWithBd(&av1_apply_temporal_filter_yuv_sse4_1, 10),
+        TemporalFilterWithBd(&av1_apply_temporal_filter_yuv_sse4_1, 12)));
 #endif  // HAVE_SSE4_1
 
 }  // namespace
