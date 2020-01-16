@@ -58,7 +58,7 @@ constexpr char kValidOffer[] = R"({
       "codecName": "vp8",
       "rtpProfile": "cast",
       "rtpPayloadType": 100,
-      "ssrc": 19088743,
+      "ssrc": 19088744,
       "maxFrameRate": "30000/1001",
       "targetDelay": 1000,
       "timeBase": "1/90000",
@@ -75,7 +75,7 @@ constexpr char kValidOffer[] = R"({
       "targetDelay": 300,
       "rtpProfile": "cast",
       "rtpPayloadType": 96,
-      "ssrc": 19088743,
+      "ssrc": 4294967295,
       "bitRate": 124000,
       "timeBase": "1/48000",
       "channels": 2,
@@ -140,7 +140,7 @@ void ExpectEqualsValidOffer(const Offer& offer) {
   EXPECT_EQ(Stream::Type::kVideoSource, vs_two.stream.type);
   EXPECT_EQ("vp8", vs_two.stream.codec_name);
   EXPECT_EQ(RtpPayloadType::kVideoVp8, vs_two.stream.rtp_payload_type);
-  EXPECT_EQ(19088743u, vs_two.stream.ssrc);
+  EXPECT_EQ(19088744u, vs_two.stream.ssrc);
   EXPECT_EQ((SimpleFraction{30000, 1001}), vs_two.max_frame_rate);
   EXPECT_EQ(90000, vs_two.stream.rtp_timebase);
   EXPECT_EQ(5000000, vs_two.max_bit_rate);
@@ -163,7 +163,7 @@ void ExpectEqualsValidOffer(const Offer& offer) {
   EXPECT_EQ(Stream::Type::kAudioSource, as.stream.type);
   EXPECT_EQ("opus", as.stream.codec_name);
   EXPECT_EQ(RtpPayloadType::kAudioOpus, as.stream.rtp_payload_type);
-  EXPECT_EQ(19088743u, as.stream.ssrc);
+  EXPECT_EQ(std::numeric_limits<Ssrc>::max(), as.stream.ssrc);
   EXPECT_EQ(124000, as.bit_rate);
   EXPECT_EQ(2, as.stream.channels);
 
