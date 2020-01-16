@@ -2649,13 +2649,13 @@ static INLINE void recon_intra(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
 }
 
-static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                               int block, int blk_row, int blk_col,
-                               BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                               const TXB_CTX *const txb_ctx,
-                               FAST_TX_SEARCH_MODE ftxs_mode,
-                               int use_fast_coef_costing, int skip_trellis,
-                               int64_t ref_best_rd, RD_STATS *best_rd_stats) {
+static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+                            int block, int blk_row, int blk_col,
+                            BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                            const TXB_CTX *const txb_ctx,
+                            FAST_TX_SEARCH_MODE ftxs_mode,
+                            int use_fast_coef_costing, int skip_trellis,
+                            int64_t ref_best_rd, RD_STATS *best_rd_stats) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
   struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -2698,7 +2698,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     best_rd_stats->skip = intra_txb_rd_info->eob == 0;
     x->plane[plane].eobs[block] = intra_txb_rd_info->eob;
     x->plane[plane].txb_entropy_ctx[block] = intra_txb_rd_info->txb_entropy_ctx;
-    best_rd = RDCOST(x->rdmult, best_rd_stats->rate, best_rd_stats->dist);
     best_eob = intra_txb_rd_info->eob;
     best_tx_type = intra_txb_rd_info->tx_type;
     perform_block_coeff_opt = intra_txb_rd_info->perform_block_coeff_opt;
@@ -2708,7 +2707,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                 txb_ctx, skip_trellis, best_tx_type, last_tx_type, &rate_cost,
                 best_eob);
     pd->dqcoeff = orig_dqcoeff;
-    return best_rd;
+    return;
   }
 
   // if txk_allowed = TX_TYPES, >1 tx types are allowed, else, if txk_allowed <
@@ -3067,8 +3066,6 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
               txb_ctx, skip_trellis, best_tx_type, last_tx_type, &rate_cost,
               best_eob);
   pd->dqcoeff = orig_dqcoeff;
-
-  return best_rd;
 }
 
 static AOM_INLINE void block_rd_txfm(int plane, int block, int blk_row,
