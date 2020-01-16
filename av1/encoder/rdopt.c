@@ -2604,6 +2604,57 @@ static INLINE int is_intra_hash_match(
   return 0;
 }
 
+static INLINE void recon_intra(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+                               int block, int blk_row, int blk_col,
+                               BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                               const TXB_CTX *const txb_ctx, int skip_trellis,
+                               TX_TYPE best_tx_type, TX_TYPE last_tx_type,
+                               int *rate_cost, uint16_t best_eob) {
+  const AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = xd->mi[0];
+  const int is_inter = is_inter_block(mbmi);
+  if (!is_inter && best_eob &&
+      (blk_row + tx_size_high_unit[tx_size] < mi_size_high[plane_bsize] ||
+       blk_col + tx_size_wide_unit[tx_size] < mi_size_wide[plane_bsize])) {
+    // intra mode needs decoded result such that the next transform block
+    // can use it for prediction.
+    // if the last search tx_type is the best tx_type, we don't need to
+    // do this again
+    if (best_tx_type != last_tx_type) {
+      TxfmParam txfm_param_intra;
+      QUANT_PARAM quant_param_intra;
+      av1_setup_xform(cm, x, tx_size, best_tx_type, &txfm_param_intra);
+      av1_setup_quant(cm, tx_size, !skip_trellis,
+                      skip_trellis
+                          ? (USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B
+                                                    : AV1_XFORM_QUANT_FP)
+                          : AV1_XFORM_QUANT_FP,
+                      &quant_param_intra);
+      av1_setup_qmatrix(cm, x, plane, tx_size, best_tx_type,
+                        &quant_param_intra);
+      av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize,
+                      &txfm_param_intra, &quant_param_intra);
+      if (quant_param_intra.use_optimize_b) {
+        av1_optimize_b(cpi, x, plane, block, tx_size, best_tx_type, txb_ctx,
+                       cpi->sf.rd_sf.trellis_eob_fast, rate_cost);
+      }
+    }
+
+    inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
+                                   x->plane[plane].eobs[block],
+                                   cm->reduced_tx_set_used);
+
+    // This may happen because of hash collision. The eob stored in the hash
+    // table is non-zero, but the real eob is zero. We need to make sure tx_type
+    // is DCT_DCT in this case.
+    if (plane == 0 && x->plane[plane].eobs[block] == 0 &&
+        best_tx_type != DCT_DCT) {
+      update_txk_array(xd, blk_row, blk_col, tx_size, DCT_DCT);
+    }
+  }
+}
+
 static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                                int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
@@ -2620,6 +2671,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   uint16_t best_eob = 0;
   TX_TYPE best_tx_type = DCT_DCT;
   TX_TYPE last_tx_type = TX_TYPES;
+  int rate_cost = 0;
   const int fast_tx_search = ftxs_mode & FTXS_DCT_AND_1D_DCT_ONLY;
   // The buffer used to swap dqcoeff in macroblockd_plane so we can keep dqcoeff
   // of the best tx_type
@@ -2658,10 +2710,13 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     perform_block_coeff_opt = intra_txb_rd_info->perform_block_coeff_opt;
     skip_trellis |= !perform_block_coeff_opt;
     update_txk_array(xd, blk_row, blk_col, tx_size, best_tx_type);
-    goto RECON_INTRA;
+    recon_intra(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                txb_ctx, skip_trellis, best_tx_type, last_tx_type, &rate_cost,
+                best_eob);
+    pd->dqcoeff = orig_dqcoeff;
+    return best_rd;
   }
 
-  int rate_cost = 0;
   // if txk_allowed = TX_TYPES, >1 tx types are allowed, else, if txk_allowed <
   // TX_TYPES, only that specific tx type is allowed.
   TX_TYPE txk_allowed = TX_TYPES;
@@ -3014,46 +3069,9 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (plane == 0) intra_txb_rd_info->tx_type = best_tx_type;
   }
 
-RECON_INTRA:
-  if (!is_inter && best_eob &&
-      (blk_row + tx_size_high_unit[tx_size] < mi_size_high[plane_bsize] ||
-       blk_col + tx_size_wide_unit[tx_size] < mi_size_wide[plane_bsize])) {
-    // intra mode needs decoded result such that the next transform block
-    // can use it for prediction.
-    // if the last search tx_type is the best tx_type, we don't need to
-    // do this again
-    if (best_tx_type != last_tx_type) {
-      TxfmParam txfm_param_intra;
-      QUANT_PARAM quant_param_intra;
-      av1_setup_xform(cm, x, tx_size, best_tx_type, &txfm_param_intra);
-      av1_setup_quant(cm, tx_size, !skip_trellis,
-                      skip_trellis
-                          ? (USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B
-                                                    : AV1_XFORM_QUANT_FP)
-                          : AV1_XFORM_QUANT_FP,
-                      &quant_param_intra);
-      av1_setup_qmatrix(cm, x, plane, tx_size, best_tx_type,
-                        &quant_param_intra);
-      av1_xform_quant(x, plane, block, blk_row, blk_col, plane_bsize,
-                      &txfm_param_intra, &quant_param_intra);
-      if (quant_param_intra.use_optimize_b) {
-        av1_optimize_b(cpi, x, plane, block, tx_size, best_tx_type, txb_ctx,
-                       cpi->sf.rd_sf.trellis_eob_fast, &rate_cost);
-      }
-    }
-
-    inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
-                                   x->plane[plane].eobs[block],
-                                   cm->reduced_tx_set_used);
-
-    // This may happen because of hash collision. The eob stored in the hash
-    // table is non-zero, but the real eob is zero. We need to make sure tx_type
-    // is DCT_DCT in this case.
-    if (plane == 0 && x->plane[plane].eobs[block] == 0 &&
-        best_tx_type != DCT_DCT) {
-      update_txk_array(xd, blk_row, blk_col, tx_size, DCT_DCT);
-    }
-  }
+  recon_intra(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+              txb_ctx, skip_trellis, best_tx_type, last_tx_type, &rate_cost,
+              best_eob);
   pd->dqcoeff = orig_dqcoeff;
 
   return best_rd;
