@@ -1547,28 +1547,28 @@ static void prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   // score below score_thresh.
   int max_score_i = 0;
   float max_score = 0.0f;
-  for (int i = 0; i < 16; i++) {
-    if (scores_2D[i] > max_score &&
-        (*allowed_tx_mask & (1 << tx_type_table_2D[i]))) {
-      max_score = scores_2D[i];
-      max_score_i = i;
-    }
-  }
-
   uint16_t allow_bitmask = 0;
   float sum_score = 0.0;
   // Calculate sum of allowed tx type score and Populate allow bit mask based
   // on score_thresh and allowed_tx_mask
   for (int tx_idx = 0; tx_idx < TX_TYPES; tx_idx++) {
     int allow_tx_type = *allowed_tx_mask & (1 << tx_type_table_2D[tx_idx]);
-    if ((scores_2D[tx_idx] >= score_thresh && allow_tx_type) ||
-        tx_idx == max_score_i) {
-      // Set allow mask based on score_thresh and tx type with max score
+    if (scores_2D[tx_idx] > max_score && allow_tx_type) {
+      max_score = scores_2D[tx_idx];
+      max_score_i = tx_idx;
+    }
+    if (scores_2D[tx_idx] >= score_thresh && allow_tx_type) {
+      // Set allow mask based on score_thresh
       allow_bitmask |= (1 << tx_type_table_2D[tx_idx]);
 
       // Accumulate score of allowed tx type
       sum_score += scores_2D[tx_idx];
     }
+  }
+  if (!((allow_bitmask >> max_score_i) & 0x01)) {
+    // Set allow mask based on tx type with max score
+    allow_bitmask |= (1 << tx_type_table_2D[max_score_i]);
+    sum_score += scores_2D[max_score_i];
   }
   // Sort tx type probability of all types
   sort_probability(scores_2D, tx_type_table_2D, TX_TYPES);
