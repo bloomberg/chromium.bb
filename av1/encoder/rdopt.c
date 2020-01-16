@@ -7209,14 +7209,6 @@ static AOM_INLINE void single_motion_search(const AV1_COMP *const cpi,
     x->pred_mv[ref] = x->best_mv.as_mv;
 }
 
-static INLINE void restore_dst_buf(MACROBLOCKD *xd, const BUFFER_SET dst,
-                                   const int num_planes) {
-  for (int i = 0; i < num_planes; i++) {
-    xd->plane[i].dst.buf = dst.plane[i];
-    xd->plane[i].dst.stride = dst.stride[i];
-  }
-}
-
 static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
                                                MACROBLOCK *x, BLOCK_SIZE bsize,
                                                const MV *other_mv, int ref_idx,

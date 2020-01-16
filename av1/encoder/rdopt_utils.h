@@ -20,11 +20,19 @@
 extern "C" {
 #endif
 
+static AOM_INLINE void restore_dst_buf(MACROBLOCKD *xd, const BUFFER_SET dst,
+                                       const int num_planes) {
+  for (int i = 0; i < num_planes; i++) {
+    xd->plane[i].dst.buf = dst.plane[i];
+    xd->plane[i].dst.stride = dst.stride[i];
+  }
+}
+
 /* clang-format on */
 // Calculate rd threshold based on ref best rd and relevant scaling factors
-static INLINE int64_t get_rd_thresh_from_best_rd(int64_t ref_best_rd,
-                                                 int mul_factor,
-                                                 int div_factor) {
+static AOM_INLINE int64_t get_rd_thresh_from_best_rd(int64_t ref_best_rd,
+                                                     int mul_factor,
+                                                     int div_factor) {
   int64_t rd_thresh = ref_best_rd;
   if (div_factor != 0) {
     rd_thresh = ref_best_rd < (div_factor * (INT64_MAX / mul_factor))
@@ -34,9 +42,9 @@ static INLINE int64_t get_rd_thresh_from_best_rd(int64_t ref_best_rd,
   return rd_thresh;
 }
 
-static THR_MODES get_prediction_mode_idx(PREDICTION_MODE this_mode,
-                                         MV_REFERENCE_FRAME ref_frame,
-                                         MV_REFERENCE_FRAME second_ref_frame) {
+static AOM_INLINE THR_MODES
+get_prediction_mode_idx(PREDICTION_MODE this_mode, MV_REFERENCE_FRAME ref_frame,
+                        MV_REFERENCE_FRAME second_ref_frame) {
   if (this_mode < INTRA_MODE_END) {
     assert(ref_frame == INTRA_FRAME);
     assert(second_ref_frame == NONE_FRAME);
@@ -59,7 +67,7 @@ static THR_MODES get_prediction_mode_idx(PREDICTION_MODE this_mode,
   return THR_INVALID;
 }
 
-static int inter_mode_data_block_idx(BLOCK_SIZE bsize) {
+static AOM_INLINE int inter_mode_data_block_idx(BLOCK_SIZE bsize) {
   if (bsize == BLOCK_4X4 || bsize == BLOCK_4X8 || bsize == BLOCK_8X4 ||
       bsize == BLOCK_4X16 || bsize == BLOCK_16X4) {
     return -1;
@@ -104,7 +112,7 @@ static AOM_INLINE void get_txb_dimensions(const MACROBLOCKD *xd, int plane,
   if (width) *width = txb_width;
 }
 
-static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
+static AOM_INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
   int num_blk = 1 << (num_pels_log2_lookup[bsize] - 2 * MI_SIZE_LOG2);
   return num_blk;
 }
