@@ -307,6 +307,23 @@ void SetTransformType(const Tile::Block& block, int x4, int y4, int w4, int h4,
   }
 }
 
+void StoreMotionFieldMvs(const MotionVector& mv_to_store,
+                         ReferenceFrameType reference_frame_to_store,
+                         ptrdiff_t stride, int rows, int columns,
+                         ReferenceFrameType* reference_frame_row_start,
+                         MotionVector* mv) {
+  static_assert(sizeof(*reference_frame_row_start) == sizeof(int8_t), "");
+  do {
+    // Don't switch the following two memory setting functions. This is the
+    // natural memory visiting order, and some ARM CPUs are quite sensitive to
+    // it.
+    memset(reference_frame_row_start, reference_frame_to_store, columns);
+    std::fill(mv, mv + columns, mv_to_store);
+    reference_frame_row_start += stride;
+    mv += stride;
+  } while (--rows != 0);
+}
+
 }  // namespace
 
 Tile::Tile(
@@ -2407,49 +2424,86 @@ void Tile::BuildBitMaskHelper(const Block& block, int row4x4, int column4x4,
 }
 
 void Tile::StoreMotionFieldMvsIntoCurrentFrame(const Block& block) {
-  // The largest reference MV component that can be saved.
-  constexpr int kRefMvsLimit = (1 << 12) - 1;
-  const BlockParameters& bp = *block.bp;
-  // Set to kReferenceFrameIntra instead of kReferenceFrameNone to simplify
-  // branch conditions in projection.
-  ReferenceFrameType reference_frame_to_store = kReferenceFrameIntra;
-  MotionVector mv_to_store = {};
-  for (int i = 1; i >= 0; --i) {
-    if (bp.reference_frame[i] > kReferenceFrameIntra &&
-        std::abs(bp.mv[i].mv[MotionVector::kRow]) <= kRefMvsLimit &&
-        std::abs(bp.mv[i].mv[MotionVector::kColumn]) <= kRefMvsLimit &&
-        GetRelativeDistance(
-            reference_order_hint_
-                [frame_header_.reference_frame_index[bp.reference_frame[i] -
-                                                     kReferenceFrameLast]],
-            frame_header_.order_hint, sequence_header_.order_hint_range) < 0) {
-      reference_frame_to_store = bp.reference_frame[i];
-      mv_to_store = bp.mv[i];
-      break;
-    }
-  }
+  if (frame_header_.refresh_frame_flags == 0) return;
   // Iterate over odd rows/columns beginning at the first odd row/column for the
   // block. It is done this way because motion field mvs are only needed at a
   // 8x8 granularity.
-  const int row_start = block.row4x4 | 1;
-  const int row_limit = std::min(block.row4x4 + kNum4x4BlocksHigh[block.size],
-                                 frame_header_.rows4x4);
-  const int column_start = block.column4x4 | 1;
-  const int column_limit =
+  const int row_start4x4 = block.row4x4 | 1;
+  const int row_limit4x4 = std::min(
+      block.row4x4 + kNum4x4BlocksHigh[block.size], frame_header_.rows4x4);
+  if (row_start4x4 >= row_limit4x4) return;
+  const int column_start4x4 = block.column4x4 | 1;
+  const int column_limit4x4 =
       std::min(block.column4x4 + block.width4x4, frame_header_.columns4x4);
-  for (int row = row_start; row < row_limit; row += 2) {
-    const int row_index = DivideBy2(row);
-    ReferenceFrameType* const reference_frame_row_start =
-        current_frame_.motion_field_reference_frame(row_index,
-                                                    DivideBy2(column_start));
-    static_assert(sizeof(reference_frame_to_store) == sizeof(int8_t), "");
-    memset(reference_frame_row_start, reference_frame_to_store,
-           DivideBy2(column_limit - column_start + 1));
-    if (reference_frame_to_store <= kReferenceFrameIntra) continue;
-    for (int column = column_start; column < column_limit; column += 2) {
+  if (column_start4x4 >= column_limit4x4) return;
+
+  // The largest reference MV component that can be saved.
+  constexpr int kRefMvsLimit = (1 << 12) - 1;
+  const BlockParameters& bp = *block.bp;
+  for (int i = 1; i >= 0; --i) {
+    const ReferenceFrameType reference_frame_to_store = bp.reference_frame[i];
+    // Must make a local copy so that StoreMotionFieldMvs() knows there is no
+    // overlap between load and store.
+    const MotionVector mv_to_store = bp.mv[i];
+    if (reference_frame_to_store > kReferenceFrameIntra &&
+        // kRefMvsLimit equals 0x07FF, so we can first bitwise OR the two
+        // absolute values and then compare with kRefMvsLimit to save a branch.
+        // The next two lines are equivalent to:
+        // std::abs(mv_to_store.mv[MotionVector::kRow]) <= kRefMvsLimit &&
+        // std::abs(mv_to_store.mv[MotionVector::kColumn]) <= kRefMvsLimit &&
+        (std::abs(mv_to_store.mv[MotionVector::kRow]) |
+         std::abs(mv_to_store.mv[MotionVector::kColumn])) <= kRefMvsLimit &&
+        GetRelativeDistance(
+            reference_order_hint_
+                [frame_header_.reference_frame_index[reference_frame_to_store -
+                                                     kReferenceFrameLast]],
+            frame_header_.order_hint, sequence_header_.order_hint_range) < 0) {
+      const int row_start8x8 = DivideBy2(row_start4x4);
+      const int row_limit8x8 = DivideBy2(row_limit4x4);
+      const int column_start8x8 = DivideBy2(column_start4x4);
+      const int column_limit8x8 = DivideBy2(column_limit4x4);
+      const int rows = row_limit8x8 - row_start8x8;
+      const int columns = column_limit8x8 - column_start8x8;
+      const ptrdiff_t stride = DivideBy2(current_frame_.columns4x4());
+      ReferenceFrameType* const reference_frame_row_start =
+          current_frame_.motion_field_reference_frame(row_start8x8,
+                                                      column_start8x8);
       MotionVector* const mv =
-          current_frame_.motion_field_mv(row_index, DivideBy2(column));
-      mv->mv32 = mv_to_store.mv32;
+          current_frame_.motion_field_mv(row_start8x8, column_start8x8);
+
+      // Specialize columns cases 1, 2, 4, 8 and 16. This makes memset() inlined
+      // and simplifies std::fill() for these cases.
+      if (columns <= 1) {
+        // Don't change the above condition to (columns == 1).
+        // Condition (columns <= 1) may help the compiler simplify the inlining
+        // of the general case of StoreMotionFieldMvs() by eliminating the
+        // (columns == 0) case.
+        assert(columns == 1);
+        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+                            1, reference_frame_row_start, mv);
+      } else if (columns == 2) {
+        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+                            2, reference_frame_row_start, mv);
+      } else if (columns == 4) {
+        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+                            4, reference_frame_row_start, mv);
+      } else if (columns == 8) {
+        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+                            8, reference_frame_row_start, mv);
+      } else if (columns == 16) {
+        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+                            16, reference_frame_row_start, mv);
+      } else if (columns < 16) {
+        // This always true condition (columns < 16) may help the compiler
+        // simplify the inlining of the following function.
+        // This general case is rare and usually only happens to the blocks
+        // which contain the right boundary of the frame.
+        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+                            columns, reference_frame_row_start, mv);
+      } else {
+        assert(false);
+      }
+      return;
     }
   }
 }

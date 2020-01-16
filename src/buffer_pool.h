@@ -20,6 +20,7 @@
 #include <array>
 #include <cassert>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 
 #include "src/dsp/common.h"
@@ -132,6 +133,16 @@ class RefCountedBuffer {
   const ReferenceFrameType* motion_field_reference_frame(int row,
                                                          int column) const {
     return &motion_field_reference_frame_[row][column];
+  }
+
+  void ClearMotionFieldReferenceFrame() {
+    static_assert(sizeof(motion_field_reference_frame_[0][0]) == sizeof(int8_t),
+                  "");
+    // Set to kReferenceFrameIntra instead of kReferenceFrameNone to simplify
+    // branch conditions in motion field projection.
+    memset(motion_field_reference_frame_.data(), kReferenceFrameIntra,
+           sizeof(motion_field_reference_frame_[0][0]) *
+               motion_field_reference_frame_.size());
   }
 
   // Entry at |row|, |column| corresponds to

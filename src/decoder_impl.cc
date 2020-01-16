@@ -473,12 +473,24 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     // For each motion vector, only mv[0] needs to be initialized to
     // kInvalidMvValue, mv[1] is not necessary to be initialized and can be
     // set to an arbitrary value. For simplicity, mv[1] is set to 0.
+    // The following memory initialization of contiguous memory is very fast. It
+    // is not recommended to make the initialization multi-threaded, unless the
+    // memory which needs to be initialized in each thread is still contiguous.
     MotionVector invalid_mv;
     invalid_mv.mv[0] = kInvalidMvValue;
     invalid_mv.mv[1] = 0;
     MotionVector* const motion_field_mv = &state_.motion_field.mv[0][0];
     std::fill(motion_field_mv, motion_field_mv + state_.motion_field.mv.size(),
               invalid_mv);
+  }
+
+  // Initialize so that Tile::StoreMotionFieldMvsIntoCurrentFrame() can skip
+  // some updates when the updates are the same as the initialized value.
+  // The following memory initialization of contiguous memory is very fast. It
+  // is not recommended to make the initialization multi-threaded, unless the
+  // memory which needs to be initialized in each thread is still contiguous.
+  if (frame_header.refresh_frame_flags != 0) {
+    state_.current_frame->ClearMotionFieldReferenceFrame();
   }
 
   // The addition of kMaxBlockHeight4x4 and kMaxBlockWidth4x4 is necessary so
