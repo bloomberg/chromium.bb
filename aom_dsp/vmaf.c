@@ -74,7 +74,7 @@ void aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
   const int ret =
       compute_vmaf(&vmaf_score, (char *)"yuv420p", width, height, read_frame,
                    /*user_data=*/&frames, (char *)model_path,
-                   /*log_path=*/NULL, /*log_fmt=*/NULL, /*disable_clip=*/0,
+                   /*log_path=*/NULL, /*log_fmt=*/NULL, /*disable_clip=*/1,
                    /*disable_avx=*/0, /*enable_transform=*/0,
                    /*phone_model=*/0, /*do_psnr=*/0, /*do_ssim=*/0,
                    /*do_ms_ssim=*/0, /*pool_method=*/NULL, /*n_thread=*/0,

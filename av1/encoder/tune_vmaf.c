@@ -125,44 +125,22 @@ static double find_best_frame_unsharp_amount(
                          cm->seq_params.use_highbitdepth,
                          cpi->oxcf.border_in_pixels, cm->byte_alignment);
 
-  double unsharp_amount = 0.0;
+  double best_vmaf, new_vmaf, unsharp_amount = 0.0;
+  aom_calc_vmaf(cpi->oxcf.vmaf_model_path, source, source, &new_vmaf);
+
   const double step_size = 0.05;
-  const double max_vmaf_score = 100.0;
-
-  double best_vmaf;
-  aom_calc_vmaf(cpi->oxcf.vmaf_model_path, source, source, &best_vmaf);
-
-  // We may get the same best VMAF scores for different unsharp_amount values.
-  // We pick the average value in this case.
-  double best_unsharp_amount_begin = best_vmaf == max_vmaf_score ? 0.0 : -1.0;
-  bool exit_loop = false;
-
-  int loop_count = 0;
   const int max_loop_count = 20;
-  while (!exit_loop) {
+  int loop_count = 0;
+  do {
+    best_vmaf = new_vmaf;
     unsharp_amount += step_size;
     unsharp(source, blurred, &sharpened, unsharp_amount);
-    double new_vmaf;
     aom_calc_vmaf(cpi->oxcf.vmaf_model_path, source, &sharpened, &new_vmaf);
-    if (new_vmaf < best_vmaf || loop_count == max_loop_count) {
-      exit_loop = true;
-    } else {
-      if (new_vmaf == max_vmaf_score && best_unsharp_amount_begin < 0.0) {
-        best_unsharp_amount_begin = unsharp_amount;
-      }
-      best_vmaf = new_vmaf;
-    }
     loop_count++;
-  }
+  } while (new_vmaf > best_vmaf && loop_count < max_loop_count);
 
   aom_free_frame_buffer(&sharpened);
-
-  unsharp_amount -= step_size;
-  if (best_unsharp_amount_begin >= 0.0) {
-    unsharp_amount = (unsharp_amount + best_unsharp_amount_begin) / 2.0;
-  }
-
-  return unsharp_amount;
+  return unsharp_amount - step_size;
 }
 
 void av1_vmaf_preprocessing(const AV1_COMP *const cpi,
