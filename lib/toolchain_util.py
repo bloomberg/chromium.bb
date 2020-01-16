@@ -105,8 +105,8 @@ AFDO_ALERT_RECIPIENTS = [
 CHROOT_ROOT = os.path.join('%(build_root)s', constants.DEFAULT_CHROOT_DIR)
 CHROOT_TMP_DIR = os.path.join('%(root)s', 'tmp')
 AFDO_VARIABLE_REGEX = r'AFDO_FILE\["%s"\]'
-AFDO_ARTIFACT_EBUILD_REGEX = r'^(?P<bef>%s=")(?P<name>.*)(?P<aft>")'
-AFDO_ARTIFACT_EBUILD_REPL = r'\g<bef>%s\g<aft>'
+AFDO_ARTIFACT_EBUILD_REGEX = r'^(?P<bef>%s=)(?P<name>("[^"]*"|.*))(?P<aft>.*)'
+AFDO_ARTIFACT_EBUILD_REPL = r'\g<bef>"%s"\g<aft>'
 
 BENCHMARK_PROFILE_NAME_REGEX = r"""
        ^chromeos-chrome-amd64-
@@ -363,7 +363,10 @@ def _GetArtifactVersionInEbuild(package, variable, buildroot=None):
     for line in f:
       matched = pattern.match(line)
       if matched:
-        return matched.group('name')
+        ret = matched.group('name')
+        if ret.startswith('"') and ret.endswith('"'):
+          return ret[1:-1]
+        return ret
 
   logging.info('%s is not found in the ebuild: %s', variable, ebuild_file)
   return None

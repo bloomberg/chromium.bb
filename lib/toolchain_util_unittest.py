@@ -528,7 +528,7 @@ class UpdateEbuildWithAFDOArtifactsTest(cros_test_lib.MockTempDirTestCase):
         matched = pattern.match(line)
         if matched:
           found = True
-          self.assertEqual(matched.group('name'), self.variable_value)
+          self.assertEqual(matched.group('name')[1:-1], self.variable_value)
 
     self.assertTrue(found)
 
@@ -569,7 +569,8 @@ class UpdateEbuildWithAFDOArtifactsTest(cros_test_lib.MockTempDirTestCase):
           matched = p.match(line)
           if matched:
             found += 1
-            self.assertEqual(matched.group('name'), values[patterns.index(p)])
+            self.assertEqual(
+                matched.group('name')[1:-1], values[patterns.index(p)])
             break
 
     self.assertEqual(found, len(patterns))
