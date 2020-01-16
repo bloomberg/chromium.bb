@@ -123,7 +123,6 @@ struct DecoderModelInfo {
 };
 
 struct OperatingParameters {
-  uint8_t initial_display_delay[kMaxOperatingPoints];
   uint32_t decoder_buffer_delay[kMaxOperatingPoints];
   uint32_t encoder_buffer_delay[kMaxOperatingPoints];
   bool low_delay_mode_flag[kMaxOperatingPoints];
@@ -173,6 +172,7 @@ struct ObuSequenceHeader {
   bool decoder_model_present_for_operating_point[kMaxOperatingPoints];
   OperatingParameters operating_parameters;
   bool initial_display_delay_present_flag;
+  uint8_t initial_display_delay[kMaxOperatingPoints];
   bool film_grain_params_present;
 };
 

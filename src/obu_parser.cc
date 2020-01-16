@@ -335,8 +335,7 @@ bool ObuParser::ParseSequenceHeader() {
         OBU_READ_BIT_OR_FAIL;
         if (static_cast<bool>(scratch)) {
           OBU_READ_LITERAL_OR_FAIL(4);
-          sequence_header.operating_parameters.initial_display_delay[i] =
-              1 + scratch;
+          sequence_header.initial_display_delay[i] = 1 + scratch;
         }
       }
     }
