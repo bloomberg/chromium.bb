@@ -726,6 +726,7 @@ _CONFIG = [
             'webrtc::EchoCanceller3Config',
             'webrtc::EchoCanceller3Factory',
             'webrtc::ExperimentalAgc',
+            'webrtc::ExperimentalNs',
             'webrtc::MediaStreamTrackInterface',
             'webrtc::ObserverInterface',
             'webrtc::StreamConfig',
