@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <complex>
+#include <ostream>
 #include <vector>
 
 #include "aom_dsp/fft_common.h"

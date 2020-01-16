@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
+#include <ostream>
+
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "config/av1_rtcd.h"
