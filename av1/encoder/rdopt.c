@@ -7794,6 +7794,31 @@ static INLINE bool enable_wedge_interintra_search(MACROBLOCK *const x,
          !cpi->sf.inter_sf.disable_wedge_interintra_search;
 }
 
+// Computes the rd cost for the given interintra mode and updates the best
+static INLINE void compute_best_interintra_mode(
+    const AV1_COMP *const cpi, MB_MODE_INFO *mbmi, MACROBLOCKD *xd,
+    MACROBLOCK *const x, const int *const interintra_mode_cost,
+    const BUFFER_SET *orig_dst, uint8_t *intrapred, const uint8_t *tmp_buf,
+    INTERINTRA_MODE *best_interintra_mode, int64_t *best_interintra_rd,
+    INTERINTRA_MODE interintra_mode, BLOCK_SIZE bsize) {
+  const AV1_COMMON *const cm = &cpi->common;
+  int rate, skip_txfm_sb;
+  int64_t dist, skip_sse_sb;
+  const int bw = block_size_wide[bsize];
+  mbmi->interintra_mode = interintra_mode;
+  int rmode = interintra_mode_cost[interintra_mode];
+  av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
+                                            intrapred, bw);
+  av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
+  model_rd_sb_fn[MODELRD_TYPE_INTERINTRA](cpi, bsize, x, xd, 0, 0, &rate, &dist,
+                                          &skip_txfm_sb, &skip_sse_sb, NULL,
+                                          NULL, NULL);
+  int64_t rd = RDCOST(x->rdmult, rate + rmode, dist);
+  if (rd < *best_interintra_rd) {
+    *best_interintra_rd = rd;
+    *best_interintra_mode = mbmi->interintra_mode;
+  }
+}
 static int handle_inter_intra_mode(const AV1_COMP *const cpi,
                                    MACROBLOCK *const x, BLOCK_SIZE bsize,
                                    MB_MODE_INFO *mbmi,
@@ -7839,27 +7864,19 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
   int64_t best_interintra_rd_nowedge = INT64_MAX;
   if (try_smooth_interintra) {
     mbmi->use_wedge_interintra = 0;
-    int j = 0;
+    INTERINTRA_MODE cur_mode = 0;
     if (cpi->sf.inter_sf.reuse_inter_intra_mode == 0 ||
         best_interintra_mode == INTERINTRA_MODES) {
-      for (j = 0; j < INTERINTRA_MODES; ++j) {
+      int64_t best_interintra_rd = INT64_MAX;
+      for (cur_mode = 0; cur_mode < INTERINTRA_MODES; ++cur_mode) {
         if ((!cpi->oxcf.enable_smooth_intra ||
              cpi->sf.intra_sf.disable_smooth_intra) &&
-            (INTERINTRA_MODE)j == II_SMOOTH_PRED)
+            cur_mode == II_SMOOTH_PRED)
           continue;
-        mbmi->interintra_mode = (INTERINTRA_MODE)j;
-        rmode = interintra_mode_cost[mbmi->interintra_mode];
-        av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
-                                                  intrapred, bw);
-        av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
-        model_rd_sb_fn[MODELRD_TYPE_INTERINTRA](
-            cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
-            &tmp_skip_sse_sb, NULL, NULL, NULL);
-        rd = RDCOST(x->rdmult, tmp_rate_mv + rate_sum + rmode, dist_sum);
-        if (rd < best_interintra_rd_nowedge) {
-          best_interintra_rd_nowedge = rd;
-          best_interintra_mode = mbmi->interintra_mode;
-        }
+        compute_best_interintra_mode(cpi, mbmi, xd, x, interintra_mode_cost,
+                                     orig_dst, intrapred, tmp_buf,
+                                     &best_interintra_mode, &best_interintra_rd,
+                                     cur_mode, bsize);
       }
       args->inter_intra_mode[mbmi->ref_frame[0]] = best_interintra_mode;
     }
@@ -7867,7 +7884,7 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
                        cpi->sf.inter_sf.disable_smooth_interintra,
                    best_interintra_mode != II_SMOOTH_PRED));
     rmode = interintra_mode_cost[best_interintra_mode];
-    if (j == 0 || best_interintra_mode != INTERINTRA_MODES - 1) {
+    if (cur_mode == 0 || best_interintra_mode != INTERINTRA_MODES - 1) {
       mbmi->interintra_mode = best_interintra_mode;
       av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
                                                 intrapred, bw);
@@ -7936,20 +7953,12 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
         best_interintra_rd_wedge =
             pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
 
-        for (int j = 0; j < INTERINTRA_MODES; ++j) {
-          mbmi->interintra_mode = (INTERINTRA_MODE)j;
-          rmode = interintra_mode_cost[mbmi->interintra_mode];
-          av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
-                                                    intrapred, bw);
-          av1_combine_interintra(xd, bsize, 0, tmp_buf, bw, intrapred, bw);
-          model_rd_sb_fn[MODELRD_TYPE_INTERINTRA](
-              cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum, &tmp_skip_txfm_sb,
-              &tmp_skip_sse_sb, NULL, NULL, NULL);
-          rd = RDCOST(x->rdmult, tmp_rate_mv + rate_sum + rmode, dist_sum);
-          if (rd < best_interintra_rd_wedge) {
-            best_interintra_rd_wedge = rd;
-            best_interintra_mode = mbmi->interintra_mode;
-          }
+        for (INTERINTRA_MODE cur_mode = 0; cur_mode < INTERINTRA_MODES;
+             ++cur_mode) {
+          compute_best_interintra_mode(
+              cpi, mbmi, xd, x, interintra_mode_cost, orig_dst, intrapred,
+              tmp_buf, &best_interintra_mode, &best_interintra_rd_wedge,
+              cur_mode, bsize);
         }
         args->inter_intra_mode[mbmi->ref_frame[0]] = best_interintra_mode;
         mbmi->interintra_mode = best_interintra_mode;
