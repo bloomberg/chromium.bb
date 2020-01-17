@@ -209,6 +209,15 @@ void BeginFirstWebContentsProfiling() {
     // The active WebContents may be hidden when the window height is small.
     content::WebContents* contents =
         browser->tab_strip_model()->GetActiveWebContents();
+
+#if defined(OS_MACOSX)
+    // TODO(https://crbug.com/1032348): It is incorrect to have a visible
+    // browser window with no active WebContents, but reports on Mac show that
+    // it happens.
+    if (!contents)
+      continue;
+#endif  // defined(OS_MACOSX)
+
     if (contents->GetVisibility() != content::Visibility::VISIBLE)
       continue;
 
