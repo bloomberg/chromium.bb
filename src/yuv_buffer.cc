@@ -56,8 +56,6 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
   // buffers 16-byte aligned.
   const int plane_align = 16;
 
-  // aligned_width and aligned_height are width and height padded to a
-  // multiple of 8 pixels.
   const int aligned_width = Align(width, 8);
   const int aligned_height = Align(height, 8);
 
@@ -84,7 +82,7 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
     if (frame_buffer.plane[0] == nullptr ||
         (!is_monochrome && frame_buffer.plane[1] == nullptr) ||
         (!is_monochrome && frame_buffer.plane[2] == nullptr)) {
-      assert(0 && "The get_frame_buffer callback malfunctioned.");
+      assert(false && "The get_frame_buffer callback malfunctioned.");
       LIBGAV1_DLOG(ERROR, "The get_frame_buffer callback malfunctioned.");
       return false;
     }
@@ -196,6 +194,8 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
 
   bitdepth_ = bitdepth;
   is_monochrome_ = is_monochrome;
+  assert(!is_monochrome || stride_[kPlaneU] == 0);
+  assert(!is_monochrome || stride_[kPlaneV] == 0);
   assert(!is_monochrome || buffer_[kPlaneU] == nullptr);
   assert(!is_monochrome || buffer_[kPlaneV] == nullptr);
 

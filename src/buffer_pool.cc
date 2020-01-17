@@ -141,7 +141,7 @@ BufferPool::BufferPool(
 BufferPool::~BufferPool() {
   for (const RefCountedBuffer& buffer : buffers_) {
     if (buffer.in_use_) {
-      assert(0 && "RefCountedBuffer still in use at destruction time.");
+      assert(false && "RefCountedBuffer still in use at destruction time.");
       LIBGAV1_DLOG(ERROR, "RefCountedBuffer still in use at destruction time.");
     }
   }

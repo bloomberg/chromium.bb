@@ -67,8 +67,11 @@ typedef int (*Libgav1FrameBufferSizeChangedCallback)(
 //
 // The callback must set |frame_buffer->plane[i]| to point to the data buffers
 // of the planes, and set |frame_buffer->stride[i]| to the row strides of the
-// planes. The callback may set |frame_buffer->private_data| to a value that
-// will be useful to the release frame buffer callback and the consumer of a
+// planes. If |is_monochrome| is true, the callback should set
+// |frame_buffer->plane[1]| and |frame_buffer->plane[2]| to a null pointer and
+// set |frame_buffer->stride[1]| and |frame_buffer->stride[2]| to 0. The
+// callback may set |frame_buffer->private_data| to a value that will be
+// useful to the release frame buffer callback and the consumer of a
 // DecoderBuffer.
 //
 // Returns 0 on success, -1 on failure.
