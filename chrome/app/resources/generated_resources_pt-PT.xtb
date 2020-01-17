@@ -362,7 +362,7 @@
 <translation id="150962533380566081">PUK inválido.</translation>
 <translation id="1510030919967934016">Esta página foi bloqueada de monitorizar a sua localização.</translation>
 <translation id="1510055949674985293">Gerar código QR para esta imagem</translation>
-<translation id="1510238584712386396">Iniciador</translation>
+<translation id="1510238584712386396">Launcher</translation>
 <translation id="1510581003097415337">Gerar código QR para esta página</translation>
 <translation id="1510785804673676069">Se utilizar um servidor proxy, verifique as definições de proxy ou
     contacte o gestor de rede para se certificar de que o servidor
@@ -2275,7 +2275,7 @@ Pretende pará-lo?</translation>
 <translation id="4194570336751258953">Ativar tocar para clicar</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="4195814663415092787">Continuar onde deixou</translation>
-<translation id="4198146608511578238">Basta premir sem soltar o ícone do Iniciador para falar com o seu Assistente Google.</translation>
+<translation id="4198146608511578238">Basta premir sem soltar o ícone do Launcher para falar com o seu Assistente Google.</translation>
 <translation id="4200689466366162458">Palavras personalizadas</translation>
 <translation id="4200983522494130825">Novo &amp;separador</translation>
 <translation id="4201546031411513170">Pode sempre escolher o que pretende sincronizar nas definições.</translation>
@@ -2333,7 +2333,7 @@ Pretende pará-lo?</translation>
 <translation id="428565720843367874">O software antivírus falhou inesperadamente enquanto analisava este ficheiro.</translation>
 <translation id="4287502004382794929">Não tem licenças de software suficientes para inscrever este dispositivo. Entre em contacto com as vendas para comprar mais. Se considera que recebeu esta mensagem por engano, contacte o suporte.</translation>
 <translation id="4289540628985791613">Vista geral</translation>
-<translation id="4295072614469448764">A aplicação está disponível no terminal. Também pode existir um ícone no Iniciador.</translation>
+<translation id="4295072614469448764">A aplicação está disponível no terminal. Também pode existir um ícone no Launcher.</translation>
 <translation id="4295979599050707005">Inicie sessão novamente para confirmar que a sua conta <ph name="USER_EMAIL" /> pode ser utilizada com Websites, aplicações e extensões no Chrome e no Google Play. Também pode remover esta conta. <ph name="LINK_BEGIN" />Saiba mais<ph name="LINK_END" /></translation>
 <translation id="4296575653627536209">Adicionar utilizador supervisionado</translation>
 <translation id="4297219207642690536">Reiniciar e repor</translation>
@@ -3097,7 +3097,7 @@ Pretende pará-lo?</translation>
 <translation id="5457599981699367932">Navegar como convidado</translation>
 <translation id="5457991019809708398">Ativado, sem roaming</translation>
 <translation id="5458998536542739734">Notas no ecrã de bloqueio</translation>
-<translation id="546322474339998983">Utilizado pelo navegador Chrome e pelo Iniciador do <ph name="DEVICE_TYPE" />.</translation>
+<translation id="546322474339998983">Utilizado pelo navegador Chrome e pelo Launcher do <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5463231940765244860">Introduzir</translation>
 <translation id="5463275305984126951">Índice de <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu com marcadores ocultos</translation>
@@ -4383,7 +4383,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7305123176580523628">Impressora USB ligada</translation>
 <translation id="730515362922783851">Trocar dados com qualquer dispositivo na rede local ou na Internet</translation>
 <translation id="7307129035224081534">Em pausa</translation>
-<translation id="7308002049209013926">Utilize o Iniciador para aceder rapidamente a novas aplicações e atividades. Para chegar aqui através do teclado, prima Alt + Shift + L.</translation>
+<translation id="7308002049209013926">Utilize o Launcher para aceder rapidamente a novas aplicações e atividades. Para chegar aqui através do teclado, prima Alt + Shift + L.</translation>
 <translation id="7309257895202129721">Mostrar &amp;controlos</translation>
 <translation id="7310598146671372464">Não é possível iniciar sessão. O servidor não suporta os tipos de encriptação Kerberos especificados. Contacte o administrador.</translation>
 <translation id="7311079019872751559">Acesso de plug-in sem isolamento de processos</translation>
