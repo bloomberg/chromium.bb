@@ -56,6 +56,9 @@
 extern "C" {
 #endif
 
+// Number of frames required to test for scene cut detection
+#define SCENE_CUT_KEY_TEST_INTERVAL 16
+
 // Rational number with an int64 numerator
 // This structure holds a fractional value
 typedef struct aom_rational64 {
@@ -1178,6 +1181,7 @@ struct AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
                                        FIRSTPASS_STATS *frame_stats_buf,
                                        COMPRESSOR_STAGE stage,
                                        int num_lap_buffers,
+                                       int lap_lag_in_frames,
                                        STATS_BUFFER_CTX *stats_buf_context);
 void av1_remove_compressor(AV1_COMP *cpi);
 

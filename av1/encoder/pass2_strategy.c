@@ -1354,7 +1354,7 @@ static int test_candidate_kf(TWO_PASS *twopass,
     double decay_accumulator = 1.0;
 
     // Examine how well the key frame predicts subsequent frames.
-    for (i = 0; i < 16; ++i) {
+    for (i = 0; i < SCENE_CUT_KEY_TEST_INTERVAL; ++i) {
       double next_iiratio = (BOOST_FACTOR * local_next_frame.intra_error /
                              DOUBLE_DIVIDE_CHECK(local_next_frame.coded_error));
 
