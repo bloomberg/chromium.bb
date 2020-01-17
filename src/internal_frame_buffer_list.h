@@ -28,15 +28,13 @@
 namespace libgav1 {
 
 extern "C" int OnInternalFrameBufferSizeChanged(
-    void* callback_private_data, int bitdepth, bool is_monochrome,
-    int8_t subsampling_x, int8_t subsampling_y, int width, int height,
-    int left_border, int right_border, int top_border, int bottom_border,
-    int stride_alignment);
+    void* callback_private_data, int bitdepth, Libgav1ImageFormat image_format,
+    int width, int height, int left_border, int right_border, int top_border,
+    int bottom_border, int stride_alignment);
 
 extern "C" int GetInternalFrameBuffer(void* callback_private_data, int bitdepth,
-                                      bool is_monochrome, int8_t subsampling_x,
-                                      int8_t subsampling_y, int width,
-                                      int height, int left_border,
+                                      Libgav1ImageFormat image_format,
+                                      int width, int height, int left_border,
                                       int right_border, int top_border,
                                       int bottom_border, int stride_alignment,
                                       Libgav1FrameBuffer2* frame_buffer);
@@ -62,16 +60,14 @@ class InternalFrameBufferList : public Allocable {
 
   ~InternalFrameBufferList() = default;
 
-  int OnFrameBufferSizeChanged(int bitdepth, bool is_monochrome,
-                               int8_t subsampling_x, int8_t subsampling_y,
+  int OnFrameBufferSizeChanged(int bitdepth, Libgav1ImageFormat image_format,
                                int width, int height, int left_border,
                                int right_border, int top_border,
                                int bottom_border, int stride_alignment);
 
-  int GetFrameBuffer(int bitdepth, bool is_monochrome, int8_t subsampling_x,
-                     int8_t subsampling_y, int width, int height,
-                     int left_border, int right_border, int top_border,
-                     int bottom_border, int stride_alignment,
+  int GetFrameBuffer(int bitdepth, Libgav1ImageFormat image_format, int width,
+                     int height, int left_border, int right_border,
+                     int top_border, int bottom_border, int stride_alignment,
                      Libgav1FrameBuffer2* frame_buffer);
 
   int ReleaseFrameBuffer(void* buffer_private_data);

@@ -19,21 +19,19 @@
 #include <memory>
 #include <new>
 
+#include "src/frame_buffer_utils.h"
 #include "src/utils/common.h"
 #include "src/utils/logging.h"
 
 namespace libgav1 {
 
 extern "C" int OnFrameBufferSizeChangedAdaptor(
-    void* callback_private_data, int bitdepth, bool is_monochrome,
-    int8_t subsampling_x, int8_t subsampling_y, int width, int height,
-    int left_border, int right_border, int top_border, int bottom_border,
-    int stride_alignment) {
+    void* callback_private_data, int bitdepth, Libgav1ImageFormat image_format,
+    int width, int height, int left_border, int right_border, int top_border,
+    int bottom_border, int stride_alignment) {
   static_cast<void>(callback_private_data);
   static_cast<void>(bitdepth);
-  static_cast<void>(is_monochrome);
-  static_cast<void>(subsampling_x);
-  static_cast<void>(subsampling_y);
+  static_cast<void>(image_format);
   static_cast<void>(width);
   static_cast<void>(height);
   static_cast<void>(left_border);
@@ -48,8 +46,7 @@ extern "C" int OnFrameBufferSizeChangedAdaptor(
 // * Widths, heights, and border sizes are in pixels.
 // * Strides and plane sizes are in bytes.
 extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
-                                     bool is_monochrome, int8_t subsampling_x,
-                                     int8_t subsampling_y, int width,
+                                     Libgav1ImageFormat image_format, int width,
                                      int height, int left_border,
                                      int right_border, int top_border,
                                      int bottom_border, int stride_alignment,
@@ -61,6 +58,12 @@ extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
       static_cast<V1FrameBufferCallbacks*>(callback_private_data);
   // stride_alignment must be a power of 2.
   assert((stride_alignment & (stride_alignment - 1)) == 0);
+
+  bool is_monochrome;
+  int8_t subsampling_x;
+  int8_t subsampling_y;
+  DecomposeImageFormat(image_format, &is_monochrome, &subsampling_x,
+                       &subsampling_y);
 
   // Calculate y_stride (in bytes). It is padded to a multiple of
   // |stride_alignment| bytes.

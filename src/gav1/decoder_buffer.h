@@ -17,16 +17,26 @@
 #ifndef LIBGAV1_SRC_GAV1_DECODER_BUFFER_H_
 #define LIBGAV1_SRC_GAV1_DECODER_BUFFER_H_
 
+#if defined(__cplusplus)
 #include <cstdint>
 
 #include "gav1/symbol_visibility.h"
+#endif  // defined(__cplusplus)
 
 // All the declarations in this file are part of the public ABI.
 
-namespace libgav1 {
-
 // The documentation for the enum values in this file can be found in Section
 // 6.4.2 of the AV1 spec.
+
+typedef enum Libgav1ImageFormat {
+  kLibgav1ImageFormatYuv420,
+  kLibgav1ImageFormatYuv422,
+  kLibgav1ImageFormatYuv444,
+  kLibgav1ImageFormatMonochrome400
+} Libgav1ImageFormat;
+
+#if defined(__cplusplus)
+namespace libgav1 {
 
 enum ChromaSamplePosition : uint8_t {
   kChromaSamplePositionUnknown,
@@ -35,12 +45,12 @@ enum ChromaSamplePosition : uint8_t {
   kChromaSamplePositionReserved
 };
 
-enum ImageFormat : uint8_t {
-  kImageFormatYuv420,
-  kImageFormatYuv422,
-  kImageFormatYuv444,
-  kImageFormatMonochrome400
-};
+using ImageFormat = Libgav1ImageFormat;
+constexpr ImageFormat kImageFormatYuv420 = kLibgav1ImageFormatYuv420;
+constexpr ImageFormat kImageFormatYuv422 = kLibgav1ImageFormatYuv422;
+constexpr ImageFormat kImageFormatYuv444 = kLibgav1ImageFormatYuv444;
+constexpr ImageFormat kImageFormatMonochrome400 =
+    kLibgav1ImageFormatMonochrome400;
 
 enum ColorPrimary : uint8_t {
   // 0 is reserved.
@@ -152,5 +162,6 @@ struct LIBGAV1_PUBLIC DecoderBuffer {
 };
 
 }  // namespace libgav1
+#endif  // defined(__cplusplus)
 
 #endif  // LIBGAV1_SRC_GAV1_DECODER_BUFFER_H_

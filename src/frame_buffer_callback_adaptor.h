@@ -48,14 +48,12 @@ struct V1FrameBufferCallbacks {
 };
 
 extern "C" int OnFrameBufferSizeChangedAdaptor(
-    void* callback_private_data, int bitdepth, bool is_monochrome,
-    int8_t subsampling_x, int8_t subsampling_y, int width, int height,
-    int left_border, int right_border, int top_border, int bottom_border,
-    int stride_alignment);
+    void* callback_private_data, int bitdepth, Libgav1ImageFormat image_format,
+    int width, int height, int left_border, int right_border, int top_border,
+    int bottom_border, int stride_alignment);
 
 extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
-                                     bool is_monochrome, int8_t subsampling_x,
-                                     int8_t subsampling_y, int width,
+                                     Libgav1ImageFormat image_format, int width,
                                      int height, int left_border,
                                      int right_border, int top_border,
                                      int bottom_border, int stride_alignment,

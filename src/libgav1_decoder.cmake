@@ -27,6 +27,7 @@ list(APPEND libgav1_decoder_sources
             "${libgav1_source}/frame_buffer2.h"
             "${libgav1_source}/frame_buffer_callback_adaptor.cc"
             "${libgav1_source}/frame_buffer_callback_adaptor.h"
+            "${libgav1_source}/frame_buffer_utils.h"
             "${libgav1_source}/inter_intra_masks.inc"
             "${libgav1_source}/internal_frame_buffer_list.cc"
             "${libgav1_source}/internal_frame_buffer_list.h"

@@ -273,9 +273,8 @@ class BufferPool {
   ~BufferPool();
 
   LIBGAV1_MUST_USE_RESULT bool OnFrameBufferSizeChanged(
-      int bitdepth, bool is_monochrome, int8_t subsampling_x,
-      int8_t subsampling_y, int width, int height, int left_border,
-      int right_border, int top_border, int bottom_border);
+      int bitdepth, Libgav1ImageFormat image_format, int width, int height,
+      int left_border, int right_border, int top_border, int bottom_border);
 
   // Finds a free buffer in the buffer pool and returns a reference to the
   // free buffer. If there is no free buffer, returns a null pointer.

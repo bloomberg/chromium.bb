@@ -18,6 +18,7 @@
 #include <cstddef>
 #include <new>
 
+#include "src/frame_buffer_utils.h"
 #include "src/utils/common.h"
 #include "src/utils/logging.h"
 
@@ -70,12 +71,13 @@ bool YuvBuffer::Realloc(int bitdepth, bool is_monochrome, int width, int height,
   if (get_frame_buffer != nullptr) {
     assert(buffer_private_data != nullptr);
 
+    const Libgav1ImageFormat image_format =
+        ComposeImageFormat(is_monochrome, subsampling_x, subsampling_y);
     FrameBuffer2 frame_buffer;
-    if (get_frame_buffer(callback_private_data, bitdepth, is_monochrome,
-                         subsampling_x, subsampling_y, aligned_width,
-                         aligned_height, left_border, right_border, top_border,
-                         bottom_border, /*stride_alignment=*/16,
-                         &frame_buffer) < 0) {
+    if (get_frame_buffer(callback_private_data, bitdepth, image_format,
+                         aligned_width, aligned_height, left_border,
+                         right_border, top_border, bottom_border,
+                         /*stride_alignment=*/16, &frame_buffer) < 0) {
       return false;
     }
 

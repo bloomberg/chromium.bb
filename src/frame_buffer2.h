@@ -24,8 +24,9 @@
 // All the declarations in this file are part of the public ABI. This file may
 // be included by both C and C++ files.
 
-#include <stddef.h>
 #include <stdint.h>
+
+#include "src/gav1/decoder_buffer.h"
 
 // The callback functions use the C linkage conventions.
 #if defined(__cplusplus)
@@ -48,45 +49,39 @@ struct Libgav1FrameBuffer2 {
 // subsequent frames in the video, until the next invocation of this callback
 // or the end of the video.
 //
-// |bitdepth|, |is_monochrome|, |subsampling_x|, and |subsampling_y| can be
-// used to deduce the pixel format type. |width| and |height| are the maximum
-// frame width and height in pixels. |left_border|, |right_border|,
-// |top_border|, and |bottom_border| are the maximum left, right, top, and
-// bottom border sizes in pixels. |stride_alignment| specifies the alignment
-// of the row stride in bytes.
+// |width| and |height| are the maximum frame width and height in pixels.
+// |left_border|, |right_border|, |top_border|, and |bottom_border| are the
+// maximum left, right, top, and bottom border sizes in pixels.
+// |stride_alignment| specifies the alignment of the row stride in bytes.
 //
 // NOTE: The callback may ignore the information if it is not useful.
 typedef int (*Libgav1FrameBufferSizeChangedCallback)(
-    void* callback_private_data, int bitdepth, bool is_monochrome,
-    int8_t subsampling_x, int8_t subsampling_y, int width, int height,
-    int left_border, int right_border, int top_border, int bottom_border,
-    int stride_alignment);
+    void* callback_private_data, int bitdepth, Libgav1ImageFormat image_format,
+    int width, int height, int left_border, int right_border, int top_border,
+    int bottom_border, int stride_alignment);
 
 // This callback is invoked by the decoder to allocate a frame buffer, which
 // consists of three data buffers, for the Y, U, and V planes, respectively.
 //
 // The callback must set |frame_buffer->plane[i]| to point to the data buffers
 // of the planes, and set |frame_buffer->stride[i]| to the row strides of the
-// planes. If |is_monochrome| is true, the callback should set
-// |frame_buffer->plane[1]| and |frame_buffer->plane[2]| to a null pointer and
-// set |frame_buffer->stride[1]| and |frame_buffer->stride[2]| to 0. The
-// callback may set |frame_buffer->private_data| to a value that will be
-// useful to the release frame buffer callback and the consumer of a
+// planes. If |image_format| is kLibgav1ImageFormatMonochrome400, the callback
+// should set |frame_buffer->plane[1]| and |frame_buffer->plane[2]| to a null
+// pointer and set |frame_buffer->stride[1]| and |frame_buffer->stride[2]| to
+// 0. The callback may set |frame_buffer->private_data| to a value that will
+// be useful to the release frame buffer callback and the consumer of a
 // DecoderBuffer.
 //
 // Returns 0 on success, -1 on failure.
 
-// |bitdepth|, |is_monochrome|, |subsampling_x|, and |subsampling_y| can be
-// used to deduce the pixel format type. |width| and |height| are the frame
-// width and height in pixels. |left_border|, |right_border|, |top_border|,
-// and |bottom_border| are the left, right, top, and bottom border sizes in
-// pixels. |stride_alignment| specifies the alignment of the row stride in
-// bytes.
+// |width| and |height| are the frame width and height in pixels.
+// |left_border|, |right_border|, |top_border|, and |bottom_border| are the
+// left, right, top, and bottom border sizes in pixels. |stride_alignment|
+// specifies the alignment of the row stride in bytes.
 typedef int (*Libgav1GetFrameBufferCallback2)(
-    void* callback_private_data, int bitdepth, bool is_monochrome,
-    int8_t subsampling_x, int8_t subsampling_y, int width, int height,
-    int left_border, int right_border, int top_border, int bottom_border,
-    int stride_alignment, Libgav1FrameBuffer2* frame_buffer);
+    void* callback_private_data, int bitdepth, Libgav1ImageFormat image_format,
+    int width, int height, int left_border, int right_border, int top_border,
+    int bottom_border, int stride_alignment, Libgav1FrameBuffer2* frame_buffer);
 
 // After a frame buffer is allocated, the decoder starts to write decoded video
 // to the frame buffer. When the frame buffer is ready for consumption, it is

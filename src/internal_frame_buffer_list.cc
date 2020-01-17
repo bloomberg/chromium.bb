@@ -20,14 +20,14 @@
 #include <new>
 #include <utility>
 
+#include "src/frame_buffer_utils.h"
 #include "src/utils/common.h"
 
 namespace libgav1 {
 extern "C" {
 
 int OnInternalFrameBufferSizeChanged(void* callback_private_data, int bitdepth,
-                                     bool is_monochrome, int8_t subsampling_x,
-                                     int8_t subsampling_y, int width,
+                                     Libgav1ImageFormat image_format, int width,
                                      int height, int left_border,
                                      int right_border, int top_border,
                                      int bottom_border, int stride_alignment) {
@@ -38,15 +38,15 @@ int OnInternalFrameBufferSizeChanged(void* callback_private_data, int bitdepth,
   // InternalFrameBufferList::Create() here, rather than at the call sites.
   if (buffer_list == nullptr) return -1;
   return buffer_list->OnFrameBufferSizeChanged(
-      bitdepth, is_monochrome, subsampling_x, subsampling_y, width, height,
-      left_border, right_border, top_border, bottom_border, stride_alignment);
+      bitdepth, image_format, width, height, left_border, right_border,
+      top_border, bottom_border, stride_alignment);
 }
 
 int GetInternalFrameBuffer(void* callback_private_data, int bitdepth,
-                           bool is_monochrome, int8_t subsampling_x,
-                           int8_t subsampling_y, int width, int height,
-                           int left_border, int right_border, int top_border,
-                           int bottom_border, int stride_alignment,
+                           Libgav1ImageFormat image_format, int width,
+                           int height, int left_border, int right_border,
+                           int top_border, int bottom_border,
+                           int stride_alignment,
                            Libgav1FrameBuffer2* frame_buffer) {
   auto* buffer_list =
       static_cast<InternalFrameBufferList*>(callback_private_data);
@@ -54,10 +54,9 @@ int GetInternalFrameBuffer(void* callback_private_data, int bitdepth,
   // call fails. For simplicity, we handle the unlikely failure of
   // InternalFrameBufferList::Create() here, rather than at the call sites.
   if (buffer_list == nullptr) return -1;
-  return buffer_list->GetFrameBuffer(bitdepth, is_monochrome, subsampling_x,
-                                     subsampling_y, width, height, left_border,
-                                     right_border, top_border, bottom_border,
-                                     stride_alignment, frame_buffer);
+  return buffer_list->GetFrameBuffer(
+      bitdepth, image_format, width, height, left_border, right_border,
+      top_border, bottom_border, stride_alignment, frame_buffer);
 }
 
 int ReleaseInternalFrameBuffer(void* callback_private_data,
@@ -104,13 +103,11 @@ InternalFrameBufferList::InternalFrameBufferList(
     : buffers_(std::move(buffers)), num_buffers_(num_buffers) {}
 
 int InternalFrameBufferList::OnFrameBufferSizeChanged(
-    int bitdepth, bool is_monochrome, int8_t subsampling_x,
-    int8_t subsampling_y, int width, int height, int left_border,
-    int right_border, int top_border, int bottom_border, int stride_alignment) {
+    int bitdepth, Libgav1ImageFormat image_format, int width, int height,
+    int left_border, int right_border, int top_border, int bottom_border,
+    int stride_alignment) {
   static_cast<void>(bitdepth);
-  static_cast<void>(is_monochrome);
-  static_cast<void>(subsampling_x);
-  static_cast<void>(subsampling_y);
+  static_cast<void>(image_format);
   static_cast<void>(width);
   static_cast<void>(height);
   static_cast<void>(left_border);
@@ -122,15 +119,20 @@ int InternalFrameBufferList::OnFrameBufferSizeChanged(
 }
 
 int InternalFrameBufferList::GetFrameBuffer(
-    int bitdepth, bool is_monochrome, int8_t subsampling_x,
-    int8_t subsampling_y, int width, int height, int left_border,
-    int right_border, int top_border, int bottom_border, int stride_alignment,
-    Libgav1FrameBuffer2* frame_buffer) {
+    int bitdepth, Libgav1ImageFormat image_format, int width, int height,
+    int left_border, int right_border, int top_border, int bottom_border,
+    int stride_alignment, Libgav1FrameBuffer2* frame_buffer) {
 #if LIBGAV1_MAX_BITDEPTH < 10
   static_cast<void>(bitdepth);
 #endif
   // stride_alignment must be a power of 2.
   assert((stride_alignment & (stride_alignment - 1)) == 0);
+
+  bool is_monochrome;
+  int8_t subsampling_x;
+  int8_t subsampling_y;
+  DecomposeImageFormat(image_format, &is_monochrome, &subsampling_x,
+                       &subsampling_y);
 
   // Calculate y_stride (in bytes). It is padded to a multiple of
   // |stride_alignment| bytes.

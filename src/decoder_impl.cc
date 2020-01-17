@@ -24,6 +24,7 @@
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
+#include "src/frame_buffer_utils.h"
 #include "src/loop_filter_mask.h"
 #include "src/loop_restoration_info.h"
 #include "src/obu_parser.h"
@@ -209,13 +210,14 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
               sequence_header.max_frame_width ||
           state_.sequence_header.max_frame_height !=
               sequence_header.max_frame_height) {
+        const Libgav1ImageFormat image_format =
+            ComposeImageFormat(sequence_header.color_config.is_monochrome,
+                               sequence_header.color_config.subsampling_x,
+                               sequence_header.color_config.subsampling_y);
         const int max_bottom_border =
             GetBottomBorderPixels(/*do_cdef=*/true, /*do_restoration=*/true);
         if (!buffer_pool_.OnFrameBufferSizeChanged(
-                sequence_header.color_config.bitdepth,
-                sequence_header.color_config.is_monochrome,
-                sequence_header.color_config.subsampling_x,
-                sequence_header.color_config.subsampling_y,
+                sequence_header.color_config.bitdepth, image_format,
                 sequence_header.max_frame_width,
                 sequence_header.max_frame_height, kBorderPixels, kBorderPixels,
                 kBorderPixels, max_bottom_border)) {
