@@ -42,7 +42,7 @@ class MockMdnsService : public MdnsService {
 
   // Unused.
   MOCK_METHOD3(StartProbe,
-               Error(MdnsDomainConfirmedProvider*, DomainName, IPEndpoint));
+               Error(MdnsDomainConfirmedProvider*, DomainName, IPAddress));
   MOCK_METHOD1(RegisterRecord, Error(const MdnsRecord&));
   MOCK_METHOD1(UnregisterRecord, Error(const MdnsRecord&));
   MOCK_METHOD2(UpdateRegisteredRecord,

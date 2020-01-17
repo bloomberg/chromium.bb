@@ -87,7 +87,7 @@ Error PublisherImpl::Register(const DnsSdInstanceRecord& record) {
   IPEndpoint endpoint =
       record.address_v4() ? record.address_v4() : record.address_v6();
   pending_records_.push_back(record);
-  mdns_publisher_->StartProbe(this, GetDomainName(key), endpoint);
+  mdns_publisher_->StartProbe(this, GetDomainName(key), endpoint.address);
   return Error::None();
 }
 

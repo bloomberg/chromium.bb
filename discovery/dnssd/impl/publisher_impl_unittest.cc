@@ -35,7 +35,7 @@ class MockMdnsService : public MdnsService {
   void ReinitializeQueries(const DomainName& name) override { FAIL(); }
 
   MOCK_METHOD3(StartProbe,
-               Error(MdnsDomainConfirmedProvider*, DomainName, IPEndpoint));
+               Error(MdnsDomainConfirmedProvider*, DomainName, IPAddress));
   MOCK_METHOD2(UpdateRegisteredRecord,
                Error(const MdnsRecord&, const MdnsRecord&));
   MOCK_METHOD1(RegisterRecord, Error(const MdnsRecord& record));

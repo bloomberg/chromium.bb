@@ -55,7 +55,7 @@ class MdnsService {
   // until that call is received.
   virtual Error StartProbe(MdnsDomainConfirmedProvider* callback,
                            DomainName requested_name,
-                           IPEndpoint endpoint) = 0;
+                           IPAddress address) = 0;
 
   // Registers a new mDNS record for advertisement by this service. For A, AAAA,
   // SRV, and TXT records, the domain name must have already been claimed by the

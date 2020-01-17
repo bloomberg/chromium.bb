@@ -16,6 +16,13 @@ class MdnsMessage;
 
 class MdnsReceiver : UdpSocket::Client {
  public:
+  class ResponseClient {
+   public:
+    virtual ~ResponseClient();
+
+    virtual void OnMessageReceived(const MdnsMessage& message) = 0;
+  };
+
   // MdnsReceiver does not own |socket| and |delegate|
   // and expects that the lifetime of these objects exceeds the lifetime of
   // MdnsReceiver.
@@ -28,7 +35,8 @@ class MdnsReceiver : UdpSocket::Client {
 
   void SetQueryCallback(
       std::function<void(const MdnsMessage&, const IPEndpoint& src)> callback);
-  void SetResponseCallback(std::function<void(const MdnsMessage&)> callback);
+  void AddResponseCallback(ResponseClient* callback);
+  void RemoveResponseCallback(ResponseClient* callback);
 
   // The receiver can be started and stopped multiple times.
   // Start and Stop are both synchronous calls. When MdnsReceiver has not yet
@@ -51,8 +59,9 @@ class MdnsReceiver : UdpSocket::Client {
   UdpSocket* const socket_;
   std::function<void(const MdnsMessage&, const IPEndpoint& src)>
       query_callback_;
-  std::function<void(const MdnsMessage&)> response_callback_;
   State state_ = State::kStopped;
+
+  std::vector<ResponseClient*> response_clients_;
 };
 
 }  // namespace discovery

@@ -66,7 +66,11 @@ MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
                task_runner_,
                now_function_,
                &random_delay_),
-      probe_manager_(&sender_, &querier_, &random_delay_, task_runner_),
+      probe_manager_(&sender_,
+                     &receiver_,
+                     &random_delay_,
+                     task_runner_,
+                     Clock::now),
       publisher_(&sender_, &probe_manager_, task_runner_, now_function_),
       responder_(&publisher_,
                  &probe_manager_,
@@ -101,9 +105,9 @@ void MdnsServiceImpl::ReinitializeQueries(const DomainName& name) {
 
 Error MdnsServiceImpl::StartProbe(MdnsDomainConfirmedProvider* callback,
                                   DomainName requested_name,
-                                  IPEndpoint endpoint) {
+                                  IPAddress address) {
   return probe_manager_.StartProbe(callback, std::move(requested_name),
-                                   std::move(endpoint));
+                                   std::move(address));
 }
 
 Error MdnsServiceImpl::RegisterRecord(const MdnsRecord& record) {

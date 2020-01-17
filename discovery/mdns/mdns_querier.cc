@@ -50,12 +50,11 @@ MdnsQuerier::MdnsQuerier(MdnsSender* sender,
   OSP_DCHECK(now_function_);
   OSP_DCHECK(random_delay_);
 
-  receiver_->SetResponseCallback(
-      [this](const MdnsMessage& message) { OnMessageReceived(message); });
+  receiver_->AddResponseCallback(this);
 }
 
 MdnsQuerier::~MdnsQuerier() {
-  receiver_->SetResponseCallback(nullptr);
+  receiver_->RemoveResponseCallback(this);
 }
 
 // NOTE: The code below is range loops instead of std:find_if, for better

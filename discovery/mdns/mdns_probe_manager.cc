@@ -38,15 +38,17 @@ DomainName CreateRetryDomainName(const DomainName& name, int attempt) {
 MdnsProbeManager::~MdnsProbeManager() = default;
 
 MdnsProbeManagerImpl::MdnsProbeManagerImpl(MdnsSender* sender,
-                                           MdnsQuerier* querier,
+                                           MdnsReceiver* receiver,
                                            MdnsRandom* random_delay,
-                                           TaskRunner* task_runner)
+                                           TaskRunner* task_runner,
+                                           ClockNowFunctionPtr now_function)
     : sender_(sender),
-      querier_(querier),
+      receiver_(receiver),
       random_delay_(random_delay),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      now_function_(now_function) {
   OSP_DCHECK(sender_);
-  OSP_DCHECK(querier_);
+  OSP_DCHECK(receiver_);
   OSP_DCHECK(task_runner_);
   OSP_DCHECK(random_delay_);
 }
@@ -55,7 +57,7 @@ MdnsProbeManagerImpl::~MdnsProbeManagerImpl() = default;
 
 Error MdnsProbeManagerImpl::StartProbe(MdnsDomainConfirmedProvider* callback,
                                        DomainName requested_name,
-                                       IPEndpoint endpoint) {
+                                       IPAddress address) {
   // Check if |requested_name| is already being queried for.
   if (FindOngoingProbe(requested_name) != ongoing_probes_.end()) {
     return Error::Code::kOperationInProgress;
@@ -67,7 +69,7 @@ Error MdnsProbeManagerImpl::StartProbe(MdnsDomainConfirmedProvider* callback,
   }
 
   // Begin a new probe.
-  auto probe = CreateProbe(requested_name, std::move(endpoint));
+  auto probe = CreateProbe(requested_name, std::move(address));
   ongoing_probes_.emplace_back(std::move(probe), std::move(requested_name),
                                callback);
   return Error::None();
@@ -102,8 +104,7 @@ void MdnsProbeManagerImpl::RespondToProbeQuery(const MdnsMessage& message,
     for (auto it = completed_probes_.begin(); it != completed_probes_.end();
          it++) {
       if (question.name() == (*it)->target_name()) {
-        send_message.AddAnswer(
-            CreateAddressRecord((*it)->target_name(), (*it)->endpoint()));
+        send_message.AddAnswer((*it)->address_record());
         break;
       }
     }
@@ -143,16 +144,7 @@ void MdnsProbeManagerImpl::TiebreakSimultaneousProbes(
         // simply ignores the other host's probe. The other host will have
         // receive this host's probe simultaneously, and will reject its own
         // probe through this same calculation.
-        //
-        // Otherwise, it defers to the winning host by waiting one second, and
-        // then begins probing for this record again. See RFC 6762 section 8.2
-        // for the logic behind waiting one second.
-        MdnsRecord probe_record = CreateAddressRecord(it->probe->target_name(),
-                                                      it->probe->endpoint());
-
-        // If the address record associated with the IpAddress for this probe is
-        // greater than than the lowest record in the query's probe, this probe
-        // never needs to be postponed.
+        const MdnsRecord& probe_record = it->probe->address_record();
         if (probe_record > *lowest_record_it) {
           break;
         }
@@ -169,32 +161,15 @@ void MdnsProbeManagerImpl::TiebreakSimultaneousProbes(
         // - The query's lowest record is greater than this probe's record
         // - The query's lowest record equals this probe's record but it also
         //   has additional records.
-        // In either case, the query must take priority over this probe.
+        // In either case, the query must take priority over this probe. This
+        // host defers to the winning host by waiting one second, and then
+        // begins probing for this record again. See RFC 6762 section 8.2 for
+        // the logic behind waiting one second.
         it->probe->Postpone(kSimultaneousProbeDelay);
         break;
       }
     }
   }
-}
-
-MdnsRecord MdnsProbeManagerImpl::CreateAddressRecord(
-    DomainName name,
-    const IPEndpoint& endpoint) {
-  Rdata rdata;
-  DnsType type;
-  std::chrono::seconds ttl;
-  if (endpoint.address.IsV4()) {
-    type = DnsType::kA;
-    rdata = ARecordRdata(endpoint.address);
-    ttl = kARecordTtl;
-  } else {
-    type = DnsType::kAAAA;
-    rdata = AAAARecordRdata(endpoint.address);
-    ttl = kAAAARecordTtl;
-  }
-
-  return MdnsRecord(std::move(name), type, DnsClass::kIN, RecordType::kUnique,
-                    ttl, std::move(rdata));
 }
 
 void MdnsProbeManagerImpl::OnProbeSuccess(MdnsProbe* probe) {
@@ -230,7 +205,7 @@ void MdnsProbeManagerImpl::OnProbeFailure(MdnsProbe* probe) {
     callback->OnDomainFound(requested_name, (*completed_it)->target_name());
   } else {
     std::unique_ptr<MdnsProbe> new_probe =
-        CreateProbe(std::move(new_name), ongoing_it->probe->endpoint());
+        CreateProbe(std::move(new_name), ongoing_it->probe->address());
     ongoing_it->probe = std::move(new_probe);
   }
 }

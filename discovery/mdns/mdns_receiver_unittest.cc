@@ -20,7 +20,7 @@ namespace discovery {
 using testing::_;
 using testing::Return;
 
-class MockMdnsReceiverDelegate {
+class MockMdnsReceiverDelegate : public MdnsReceiver::ResponseClient {
  public:
   MOCK_METHOD(void, OnMessageReceived, (const MdnsMessage&));
 };
@@ -102,9 +102,7 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
       FakeUdpSocket::CreateDefault(IPAddress::Version::kV6);
   MockMdnsReceiverDelegate delegate;
   MdnsReceiver receiver(socket_info.get());
-  receiver.SetResponseCallback([&delegate](const MdnsMessage& message) {
-    delegate.OnMessageReceived(message);
-  });
+  receiver.AddResponseCallback(&delegate);
   receiver.Start();
 
   MdnsRecord record(DomainName{"testing", "local"}, DnsType::kA, DnsClass::kIN,
@@ -127,6 +125,7 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   receiver.OnRead(socket_info.get(), std::move(packet));
 
   receiver.Stop();
+  receiver.RemoveResponseCallback(&delegate);
 }
 
 }  // namespace discovery

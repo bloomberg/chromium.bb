@@ -58,7 +58,7 @@ class MdnsServiceImpl : public MdnsService {
 
   Error StartProbe(MdnsDomainConfirmedProvider* callback,
                    DomainName requested_name,
-                   IPEndpoint endpoint) override;
+                   IPAddress address) override;
 
   Error RegisterRecord(const MdnsRecord& record) override;
 

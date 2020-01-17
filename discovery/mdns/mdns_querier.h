@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "discovery/mdns/mdns_receiver.h"
 #include "discovery/mdns/mdns_record_changed_callback.h"
 #include "discovery/mdns/mdns_records.h"
 #include "platform/api/task_runner.h"
@@ -15,12 +16,11 @@ namespace openscreen {
 namespace discovery {
 
 class MdnsRandom;
-class MdnsReceiver;
 class MdnsSender;
 class MdnsQuestionTracker;
 class MdnsRecordTracker;
 
-class MdnsQuerier {
+class MdnsQuerier : public MdnsReceiver::ResponseClient {
  public:
   MdnsQuerier(MdnsSender* sender,
               MdnsReceiver* receiver,
@@ -31,7 +31,7 @@ class MdnsQuerier {
   MdnsQuerier(MdnsQuerier&& other) noexcept = delete;
   MdnsQuerier& operator=(const MdnsQuerier& other) = delete;
   MdnsQuerier& operator=(MdnsQuerier&& other) noexcept = delete;
-  ~MdnsQuerier();
+  ~MdnsQuerier() override;
 
   // Starts an mDNS query with the given name, DNS type, and DNS class.  Updated
   // records are passed to |callback|.  The caller must ensure |callback|
@@ -64,8 +64,8 @@ class MdnsQuerier {
 
   friend class MdnsQuerierTest;
 
-  // Callback passed to MdnsReceiver
-  void OnMessageReceived(const MdnsMessage& message);
+  // MdnsReceiver::ResponseClient overrides.
+  void OnMessageReceived(const MdnsMessage& message) override;
 
   // Callback passed to owned MdnsRecordTrackers
   void OnRecordExpired(const MdnsRecord& record);

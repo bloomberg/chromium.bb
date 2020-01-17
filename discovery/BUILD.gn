@@ -116,6 +116,7 @@ source_set("unittests") {
     "dnssd/public/dns_sd_instance_record_unittest.cc",
     "dnssd/public/dns_sd_txt_record_unittest.cc",
     "mdns/mdns_probe_manager_unittest.cc",
+    "mdns/mdns_probe_unittest.cc",
     "mdns/mdns_publisher_unittest.cc",
     "mdns/mdns_querier_unittest.cc",
     "mdns/mdns_random_unittest.cc",

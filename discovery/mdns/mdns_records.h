@@ -383,6 +383,9 @@ class MdnsRecord {
   Rdata rdata_;
 };
 
+// Creates an A or AAAA record as appropriate for the provided parameters.
+MdnsRecord CreateAddressRecord(DomainName name, const IPAddress& address);
+
 // Question top level format (http://www.ietf.org/rfc/rfc1035.txt):
 // name: a domain name which identifies the target resource set.
 // type: 2 bytes network-order RR TYPE code.

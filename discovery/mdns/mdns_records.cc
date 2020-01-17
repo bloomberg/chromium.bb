@@ -502,6 +502,24 @@ size_t MdnsRecord::MaxWireSize() const {
   return name_.MaxWireSize() + absl::visit(wire_size_visitor, rdata_) + 8;
 }
 
+MdnsRecord CreateAddressRecord(DomainName name, const IPAddress& address) {
+  Rdata rdata;
+  DnsType type;
+  std::chrono::seconds ttl;
+  if (address.IsV4()) {
+    type = DnsType::kA;
+    rdata = ARecordRdata(address);
+    ttl = kARecordTtl;
+  } else {
+    type = DnsType::kAAAA;
+    rdata = AAAARecordRdata(address);
+    ttl = kAAAARecordTtl;
+  }
+
+  return MdnsRecord(std::move(name), type, DnsClass::kIN, RecordType::kUnique,
+                    ttl, std::move(rdata));
+}
+
 MdnsQuestion::MdnsQuestion(DomainName name,
                            DnsType dns_type,
                            DnsClass dns_class,
