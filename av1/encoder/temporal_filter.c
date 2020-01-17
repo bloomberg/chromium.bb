@@ -67,11 +67,11 @@ static void tf_build_predictors_mb_c(
   const int mb_y = mb_height * mb_row;                // Y-coord (Top-left).
   const int mb_x = mb_width * mb_col;                 // X-coord (Top-left).
   const int bit_depth = mbd->bd;                      // Bit depth.
-  const int is_high_bitdepth = is_cur_buf_hbd(mbd);   // Is high bit-depth?
   const int is_intrabc = 0;                           // Is intra-copied?
   const int mb_mv_row = mbd->mi[0]->mv[0].as_mv.row;  // Motion vector (y).
   const int mb_mv_col = mbd->mi[0]->mv[0].as_mv.col;  // Motion vector (x).
   const MV mb_mv = { (int16_t)mb_mv_row, (int16_t)mb_mv_col };
+  const int is_high_bitdepth = ref_frame->flags & YV12_FLAG_HIGHBITDEPTH;
 
   // Information of each sub-block (actually in use).
   const int num_blocks = use_subblock ? 2 : 1;  // Num of blocks on each side.
@@ -315,8 +315,7 @@ void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *ref_frame,
   const int mb_height = block_size_high[block_size];
   const int mb_width = block_size_wide[block_size];
   const int mb_pels = mb_height * mb_width;
-  // TODO(yjshen): Not sure if this is equivalent to is_cur_buf_hbd(mbd).
-  const int is_high_bitdepth = (mbd->bd > 8);
+  const int is_high_bitdepth = ref_frame->flags & YV12_FLAG_HIGHBITDEPTH;
   const uint16_t *pred16 = CONVERT_TO_SHORTPTR(pred);
 
   // Allocate memory for pixel-wise squared differences for Y, U, V planes. All

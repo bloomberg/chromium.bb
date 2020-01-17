@@ -429,9 +429,9 @@ void YUVTemporalFilterTest::ApplyTestFilter<uint8_t>(
   ref_frame->buffers[0] = ref_frame->buffer_alloc + 0 * mb_pels;
   ref_frame->buffers[1] = ref_frame->buffer_alloc + 1 * mb_pels;
   ref_frame->buffers[2] = ref_frame->buffer_alloc + 2 * mb_pels;
+  ref_frame->flags = bd_ > 8 ? YV12_FLAG_HIGHBITDEPTH : 0;
 
   MACROBLOCKD *mbd = (MACROBLOCKD *)malloc(sizeof(MACROBLOCKD));
-  mbd->bd = bd_;
   mbd->plane[0].subsampling_y = 0;
   mbd->plane[0].subsampling_x = 0;
   mbd->plane[1].subsampling_y = ss_y;
@@ -502,9 +502,9 @@ void YUVTemporalFilterTest::ApplyTestFilter<uint16_t>(
   ref_frame->buffers[0] = ref_frame->buffer_alloc + 0 * mb_pels;
   ref_frame->buffers[1] = ref_frame->buffer_alloc + 1 * mb_pels;
   ref_frame->buffers[2] = ref_frame->buffer_alloc + 2 * mb_pels;
+  ref_frame->flags = bd_ > 8 ? YV12_FLAG_HIGHBITDEPTH : 0;
 
   MACROBLOCKD *mbd = (MACROBLOCKD *)malloc(sizeof(MACROBLOCKD));
-  mbd->bd = bd_;
   mbd->plane[0].subsampling_y = 0;
   mbd->plane[0].subsampling_x = 0;
   mbd->plane[1].subsampling_y = ss_y;
