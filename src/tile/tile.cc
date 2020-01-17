@@ -490,7 +490,7 @@ bool Tile::Init() {
   if (frame_header_.use_ref_frame_mvs) {
     assert(sequence_header_.enable_order_hint);
     SetupMotionField(frame_header_, current_frame_, reference_frames_,
-                     sequence_header_.order_hint_range, row4x4_start_,
+                     sequence_header_.order_hint_shift_bits, row4x4_start_,
                      row4x4_end_, column4x4_start_, column4x4_end_,
                      &motion_field_);
   }
@@ -2468,7 +2468,8 @@ void Tile::StoreMotionFieldMvsIntoCurrentFrame(const Block& block) {
             reference_order_hint_
                 [frame_header_.reference_frame_index[reference_frame_to_store -
                                                      kReferenceFrameLast]],
-            frame_header_.order_hint, sequence_header_.order_hint_range) < 0) {
+            frame_header_.order_hint,
+            sequence_header_.order_hint_shift_bits) < 0) {
       const int row_start8x8 = DivideBy2(row_start4x4);
       const int row_limit8x8 = DivideBy2(row_limit4x4);
       const int column_start8x8 = DivideBy2(column_start4x4);

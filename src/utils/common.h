@@ -287,48 +287,81 @@ constexpr bool IsDirectionalMode(PredictionMode mode) {
 // 5.9.3.
 //
 // |a| and |b| are order hints, treated as unsigned order_hint_bits-bit
-// integers. |order_hint_range| equals (1 << order_hint_bits) >> 1.
+// integers. |order_hint_shift_bits| equals (32 - order_hint_bits) % 32.
+// order_hint_bits is at most 8, so |order_hint_shift_bits| is zero or a
+// value between 24 and 31 (inclusive).
 //
-// If |order_hint_range| is zero, |a| and |b| are both zeros, and the result is
-// zero. If |order_hint_range| is not zero, returns the signed difference |a| -
-// |b| using "modular arithmetic". More precisely, the signed difference |a| -
-// |b| is treated as a signed order_hint_bits-bit integer and cast to an int.
-// The returned difference is between -|order_hint_range| and |order_hint_range|
-// - 1 (inclusive).
+// If |order_hint_shift_bits| is zero, |a| and |b| are both zeros, and the
+// result is zero. If |order_hint_shift_bits| is not zero, returns the
+// signed difference |a| - |b| using "modular arithmetic". More precisely, the
+// signed difference |a| - |b| is treated as a signed order_hint_bits-bit
+// integer and cast to an int. The returned difference is between
+// -(1 << (order_hint_bits - 1)) and (1 << (order_hint_bits - 1)) - 1
+// (inclusive).
 //
 // NOTE: |a| and |b| are the order_hint_bits least significant bits of the
 // actual values. This function returns the signed difference between the
 // actual values. The returned difference is correct as long as the actual
-// values are not more than |order_hint_range| - 1 apart.
+// values are not more than 1 << (order_hint_bits - 1) - 1 apart.
 //
-// Example: Suppose order_hint_bits is 4 and |order_hint_range| is 8. Then |a|
-// and |b| are in the range [0, 15], and the actual values for |a| and |b| must
-// not be more than 7 apart. (If the actual values for |a| and |b| are exactly 8
-// apart, this function cannot tell whether the actual value for |a| is before
-// or after the actual value for |b|.)
+// Example: Suppose order_hint_bits is 4 and |order_hint_shift_bits|
+// is 28. Then |a| and |b| are in the range [0, 15], and the actual values for
+// |a| and |b| must not be more than 7 apart. (If the actual values for |a| and
+// |b| are exactly 8 apart, this function cannot tell whether the actual value
+// for |a| is before or after the actual value for |b|.)
 //
 // First, consider the order hints 2 and 6. For this simple case, we have
-//   GetRelativeDistance(2, 6, 8) = 2 - 6 = -4, and
-//   GetRelativeDistance(6, 2, 8) = 6 - 2 = 4.
+//   GetRelativeDistance(2, 6, 28) = 2 - 6 = -4, and
+//   GetRelativeDistance(6, 2, 28) = 6 - 2 = 4.
 //
 // On the other hand, consider the order hints 2 and 14. The order hints are
 // 12 (> 7) apart, so we need to use the actual values instead. The actual
 // values may be 34 (= 2 mod 16) and 30 (= 14 mod 16), respectively. Therefore
 // we have
-//   GetRelativeDistance(2, 14, 8) = 34 - 30 = 4, and
-//   GetRelativeDistance(14, 2, 8) = 30 - 34 = -4.
+//   GetRelativeDistance(2, 14, 28) = 34 - 30 = 4, and
+//   GetRelativeDistance(14, 2, 28) = 30 - 34 = -4.
+//
+// The following comments apply only to specific CPUs' SIMD implementations,
+// such as intrinsics code.
+// For the 2 shift operations in this function, if the SIMD packed data is
+// 16-bit wide, try to use |order_hint_shift_bits| - 16 as the number of bits to
+// shift; If the SIMD packed data is 8-bit wide, try to use
+// |order_hint_shift_bits| - 24 as as the number of bits to shift.
+// |order_hint_shift_bits| - 16 and |order_hint_shift_bits| - 24 could be -16 or
+// -24. In these cases diff is 0, and the behavior of left or right shifting -16
+// or -24 bits is defined for x86 SIMD instructions and ARM NEON instructions,
+// and the result of shifting 0 is still 0. There is no guarantee that this
+// behavior and result apply to other CPUs' SIMD instructions.
 inline int GetRelativeDistance(const unsigned int a, const unsigned int b,
-                               const unsigned int order_hint_range) {
-  assert(order_hint_range <= 128);
-  if (order_hint_range == 0) {
+                               const unsigned int order_hint_shift_bits) {
+  const int diff = a - b;
+  assert(order_hint_shift_bits <= 31);
+  if (order_hint_shift_bits == 0) {
     assert(a == 0);
     assert(b == 0);
   } else {
-    assert(a < 2 * order_hint_range);
-    assert(b < 2 * order_hint_range);
+    assert(order_hint_shift_bits >= 24);  // i.e., order_hint_bits <= 8
+    assert(a < (1 << (32 - order_hint_shift_bits)));
+    assert(b < (1 << (32 - order_hint_shift_bits)));
+    assert(diff < (1 << (32 - order_hint_shift_bits)));
+    assert(diff >= -(1 << (32 - order_hint_shift_bits)));
   }
-  const int diff = a - b;
-  return (diff & (order_hint_range - 1)) - (diff & order_hint_range);
+  // Sign extend the result of subtracting the values.
+  // Cast to unsigned int and then left shift to avoid undefined behavior with
+  // negative values. Cast to int to do the sign extension through right shift.
+  // This requires the right shift of a signed integer be an arithmetic shift,
+  // which is true for clang, gcc, and Visual C++.
+  // These two casts do not generate extra instructions.
+  // Don't use LeftShift(diff) since a valid diff may fail its assertions.
+  // For example, GetRelativeDistance(2, 14, 28), diff equals -12 and is less
+  // than the minimum allowed value of LeftShift() which is -8.
+  // The next 3 lines are equivalent to:
+  // const int order_hint_bits = Mod32(32 - order_hint_shift_bits);
+  // const int m = (1 << order_hint_bits) >> 1;
+  // return (diff & (m - 1)) - (diff & m);
+  return static_cast<int>(static_cast<unsigned int>(diff)
+                          << order_hint_shift_bits) >>
+         order_hint_shift_bits;
 }
 
 // Applies |sign| (must be 0 or -1) to |value|, i.e.,

@@ -769,6 +769,7 @@ struct FilmGrainFuncs {
 // for reference frames.
 // |current_frame_order_hint| specifies OrderHintBits least significant bits of
 // the expected output order for this frame.
+// |order_hint_shift_bits| equals (32 - OrderHintBits) % 32.
 // |reference_to_current_with_sign| is the precalculated reference frame id
 // distance from current frame.
 // |dst_sign| is -1 for LAST_FRAME and LAST2_FRAME, or 0 (1 in spec) for others.
@@ -780,7 +781,7 @@ struct FilmGrainFuncs {
 using MotionFieldProjectionKernelFunc = void (*)(
     const ReferenceFrameType* source_reference_type, const MotionVector* mv,
     const uint8_t order_hint[kNumReferenceFrameTypes],
-    unsigned int current_frame_order_hint, unsigned int order_hint_range,
+    unsigned int current_frame_order_hint, unsigned int order_hint_shift_bits,
     int reference_to_current_with_sign, int dst_sign, int y8_start, int y8_end,
     int x8_start, int x8_end, TemporalMotionField* motion_field);
 

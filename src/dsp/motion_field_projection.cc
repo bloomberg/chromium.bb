@@ -39,7 +39,7 @@ namespace {
 void MotionFieldProjectionKernel_C(
     const ReferenceFrameType* source_reference_type, const MotionVector* mv,
     const uint8_t order_hint[kNumReferenceFrameTypes],
-    unsigned int current_frame_order_hint, unsigned int order_hint_range,
+    unsigned int current_frame_order_hint, unsigned int order_hint_shift_bits,
     int reference_to_current_with_sign, int dst_sign, int y8_start, int y8_end,
     int x8_start, int x8_end, TemporalMotionField* motion_field) {
   const ptrdiff_t stride = motion_field->mv.columns();
@@ -62,8 +62,9 @@ void MotionFieldProjectionKernel_C(
   skip_reference[kReferenceFrameIntra] = true;
   for (int reference_type = kReferenceFrameLast;
        reference_type <= kNumInterReferenceFrameTypes; ++reference_type) {
-    const int reference_offset = GetRelativeDistance(
-        current_frame_order_hint, order_hint[reference_type], order_hint_range);
+    const int reference_offset =
+        GetRelativeDistance(current_frame_order_hint,
+                            order_hint[reference_type], order_hint_shift_bits);
     skip_reference[reference_type] =
         reference_offset > kMaxFrameDistance || reference_offset <= 0;
     reference_offsets[reference_type] = reference_offset;

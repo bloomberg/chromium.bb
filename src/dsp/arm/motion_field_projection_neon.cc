@@ -154,7 +154,7 @@ inline void CheckStore(const int8_t* skips, const int16x8_t position,
 void MotionFieldProjectionKernel_NEON(
     const ReferenceFrameType* source_reference_type, const MotionVector* mv,
     const uint8_t order_hint[kNumReferenceFrameTypes],
-    unsigned int current_frame_order_hint, unsigned int order_hint_range,
+    unsigned int current_frame_order_hint, unsigned int order_hint_shift_bits,
     int reference_to_current_with_sign, int dst_sign, int y8_start, int y8_end,
     int x8_start, int x8_end, TemporalMotionField* motion_field) {
   const ptrdiff_t stride = motion_field->mv.columns();
@@ -193,11 +193,12 @@ void MotionFieldProjectionKernel_NEON(
   const int8x8_t current_order_hints = vdup_n_s8(current_frame_order_hint);
   const int8x8_t order_hints = vreinterpret_s8_u8(vld1_u8(order_hint));
   const int8x8_t diff = vsub_s8(current_order_hints, order_hints);
-  const int8x8_t order_hint_ranges = vdup_n_s8(order_hint_range);
-  const int8x8_t order_hint_range_minus_1 = vdup_n_s8(order_hint_range - 1);
-  const int8x8_t diff_low = vand_s8(diff, order_hint_range_minus_1);
-  const int8x8_t diff_high = vand_s8(diff, order_hint_ranges);
-  const int8x8_t r_offsets = vsub_s8(diff_low, diff_high);
+  // |order_hint_shift_bits| - 24 could be -24. In this case diff is 0,
+  // and the behavior of left or right shifting -24 bits is defined for ARM NEON
+  // instructions, and the result of shifting 0 is still 0.
+  const int8x8_t left_shift_bits = vdup_n_s8(order_hint_shift_bits - 24);
+  const int8x8_t diff_shift_left = vshl_s8(diff, left_shift_bits);
+  const int8x8_t r_offsets = vshl_s8(diff_shift_left, vneg_s8(left_shift_bits));
   const uint8x8_t overflow = vcgt_s8(r_offsets, vdup_n_s8(kMaxFrameDistance));
   const uint8x8_t underflow = vcle_s8(r_offsets, vdup_n_s8(0));
   const int8x8_t sk = vreinterpret_s8_u8(vorr_u8(overflow, underflow));

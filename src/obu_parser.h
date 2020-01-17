@@ -154,7 +154,9 @@ struct ObuSequenceHeader {
   // If enable_order_hint is true, order_hint_bits is in the range [1, 8].
   // If enable_order_hint is false, order_hint_bits is 0.
   int8_t order_hint_bits;
-  uint8_t order_hint_range;  // = (1 << order_hint_bits) >> 1
+  // order_hint_shift_bits equals (32 - order_hint_bits) % 32.
+  // This is used frequently in GetRelativeDistance().
+  uint8_t order_hint_shift_bits;
   bool enable_jnt_comp;
   bool enable_ref_frame_mvs;
   bool choose_screen_content_tools;

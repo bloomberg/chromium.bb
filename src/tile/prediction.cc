@@ -892,7 +892,7 @@ void Tile::DistanceWeightedPrediction(
     // between current frame and reference frame [1] and [0], respectively.
     distance[1 - reference] = Clip3(
         std::abs(GetRelativeDistance(reference_hint, frame_header_.order_hint,
-                                     sequence_header_.order_hint_range)),
+                                     sequence_header_.order_hint_shift_bits)),
         0, kMaxFrameDistance);
   }
   GetDistanceWeights(distance, weight);
