@@ -1770,6 +1770,21 @@ def main(argv=None):
 
   options = parser.parse_args(argv)
 
+  gerrit_obj = None
+  if options.gerrit_url:
+    gerrit_obj = GerritAccessor(urlparse.urlparse(options.gerrit_url).netloc)
+  if options.gerrit_fetch:
+    if not options.gerrit_url or not options.issue or not options.patchset:
+      parser.error(
+          '--gerrit_fetch requires --gerrit_url, --issue and --patchset.')
+
+    options.author = gerrit_obj.GetChangeOwner(options.issue)
+    options.description = gerrit_obj.GetChangeDescription(
+        options.issue, options.patchset)
+
+    logging.info('Got author: "%s"', options.author)
+    logging.info('Got description: """\n%s\n"""', options.description)
+
   if options.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
   elif options.verbose:
@@ -1781,16 +1796,6 @@ def main(argv=None):
   if not change_class:
     parser.error('For unversioned directory, <files> is not optional.')
   logging.info('Found %d file(s).', len(files))
-
-  gerrit_obj = None
-  if options.gerrit_url and options.gerrit_fetch:
-    assert options.issue and options.patchset
-    gerrit_obj = GerritAccessor(urlparse.urlparse(options.gerrit_url).netloc)
-    options.author = gerrit_obj.GetChangeOwner(options.issue)
-    options.description = gerrit_obj.GetChangeDescription(options.issue,
-                                                          options.patchset)
-    logging.info('Got author: "%s"', options.author)
-    logging.info('Got description: """\n%s\n"""', options.description)
 
   try:
     with canned_check_filter(options.skip_canned):
