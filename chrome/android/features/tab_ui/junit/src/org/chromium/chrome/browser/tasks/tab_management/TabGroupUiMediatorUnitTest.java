@@ -504,6 +504,21 @@ public class TabGroupUiMediatorUnitTest {
     }
 
     @Test
+    public void restoreCompleted_OverviewModeVisible() {
+        // Assume mTab2 is selected, and it has related tabs mTab2 and mTab3. Also, the overview
+        // mode is visible when restoring completed.
+        initAndAssertProperties(mTab2);
+        doReturn(POSITION2).when(mTabModel).index();
+        doReturn(mTab2).when(mTabModelSelector).getCurrentTab();
+        doReturn(true).when(mOverviewModeBehavior).overviewVisible();
+        // Simulate restore finished.
+        mTabModelObserverArgumentCaptor.getValue().restoreCompleted();
+
+        mVisibilityControllerInOrder.verify(mVisibilityController, never())
+                .setBottomControlsVisible(anyBoolean());
+    }
+
+    @Test
     public void tabClosureUndone_UiVisible_NotShowingOverviewMode() {
         // Assume mTab2 is selected, and it has related tabs mTab2 and mTab3.
         initAndAssertProperties(mTab2);
