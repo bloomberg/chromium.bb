@@ -123,7 +123,7 @@ class VolumeManagerImpl extends cr.EventTarget {
     chrome.fileManagerPrivate.onMountCompleted.addListener(
         this.onMountCompleted_.bind(this));
 
-    console.debug('Getting volumes');
+    console.warn('Getting volumes');
     const volumeMetadataList = await new Promise(
         resolve => chrome.fileManagerPrivate.getVolumeMetadataList(resolve));
     if (!volumeMetadataList) {
@@ -151,7 +151,7 @@ class VolumeManagerImpl extends cr.EventTarget {
         }
       }));
 
-      console.debug(`Initialized all ${volumeMetadataList.length} volumes`);
+      console.warn(`Initialized all ${volumeMetadataList.length} volumes`);
     } finally {
       unlock();
     }
