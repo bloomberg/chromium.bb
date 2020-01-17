@@ -95,3 +95,11 @@ def Delete(input_proto, _output_proto, _config):
   """Delete a chroot."""
   chroot = controller_util.ParseChroot(input_proto.chroot)
   sdk.Delete(chroot)
+
+
+@faux.all_empty
+@validate.validation_complete
+def Unmount(input_proto, _output_proto, _config):
+  """Unmount a chroot"""
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sdk.Unmount(chroot)

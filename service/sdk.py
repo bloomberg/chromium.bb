@@ -224,6 +224,21 @@ def Delete(chroot=None):
   Clean(chroot, images=True)
 
 
+def Unmount(chroot=None):
+  """Unmount the chroot.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot being unmounted, or None for the
+      default chroot.
+  """
+  logging.info('Unmounting the chroot.')
+  cmd = [os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'), '--unmount']
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
+
+  cros_build_lib.run(cmd)
+
+
 def GetChrootVersion(chroot_path=None):
   """Get the chroot version.
 
