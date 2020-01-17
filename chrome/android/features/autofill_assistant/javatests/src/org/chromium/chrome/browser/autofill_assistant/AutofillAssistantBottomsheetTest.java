@@ -9,6 +9,7 @@ import static android.support.test.espresso.action.ViewActions.actionWithAsserti
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.scrollTo;
 import static android.support.test.espresso.action.ViewActions.typeText;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -47,6 +48,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ChipIcon;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
@@ -319,6 +321,37 @@ public class AutofillAssistantBottomsheetTest {
         // Scroll up.
         onView(withText("Title 0")).check(matches(not(isDisplayed())));
         onView(withText("Title 0")).perform(scrollTo()).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    public void testCancelSnackbarUndo() {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().addChoices(Choice.newBuilder().setChip(
+                                 ChipProto.newBuilder()
+                                         .setType(ChipType.CANCEL_ACTION)
+                                         .setIcon(ChipIcon.ICON_CLEAR)
+                                         .setText("Cancel"))))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("bottomsheet_behaviour_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+        waitUntilViewMatchesCondition(withText("Cancel"), isCompletelyDisplayed());
+
+        onView(withText("Cancel")).perform(click());
+        waitUntilViewMatchesCondition(withText(R.string.undo), isCompletelyDisplayed());
+        onView(withText("Cancel")).check(doesNotExist());
+        onView(withText(R.string.undo)).perform(click());
+        waitUntilViewMatchesCondition(withText("Cancel"), isDisplayed());
     }
 
     private ViewAction swipeDownToMinimize() {

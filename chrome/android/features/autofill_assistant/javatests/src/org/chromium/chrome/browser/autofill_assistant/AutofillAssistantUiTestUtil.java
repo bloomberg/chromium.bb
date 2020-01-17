@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.autofill_assistant;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 
+import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
+import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -238,6 +241,12 @@ class AutofillAssistantUiTestUtil {
      */
     public static void waitUntilViewMatchesCondition(
             Matcher<View> matcher, Matcher<View> condition) {
+        waitUntilViewMatchesCondition(matcher, condition, DEFAULT_MAX_TIME_TO_POLL);
+    }
+
+    /** @see {@link #waitUntilViewMatchesCondition(Matcher, Matcher)} */
+    public static void waitUntilViewMatchesCondition(
+            Matcher<View> matcher, Matcher<View> condition, long maxTimeoutMs) {
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Timeout while waiting for " + matcher + " to satisfy " + condition) {
                     @Override
@@ -251,7 +260,8 @@ class AutofillAssistantUiTestUtil {
                             return false;
                         }
                     }
-                });
+                },
+                maxTimeoutMs, DEFAULT_POLLING_INTERVAL);
     }
 
     /**
