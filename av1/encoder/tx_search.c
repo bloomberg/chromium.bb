@@ -2098,11 +2098,9 @@ static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
           max_prob = tx_type_probs[i];
           max_idx = i;
         }
+        if (tx_type_probs[i] < thresh) prune |= (1 << i);
       }
-
-      for (i = 0; i < TX_TYPES; i++) {
-        if (tx_type_probs[i] < thresh && i != max_idx) prune |= (1 << i);
-      }
+      if ((prune >> max_idx) & 0x01) prune &= ~(1 << max_idx);
       allowed_tx_mask &= (~prune);
     }
     for (i = 0; i < TX_TYPES; i++) {
