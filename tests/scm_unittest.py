@@ -85,10 +85,10 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     self.enabled = self.FAKE_REPOS.set_up_git()
     if self.enabled:
       self.clone_dir = scm.os.path.join(self.FAKE_REPOS.git_base, 'repo_1')
+    else:
+      self.skipTest('git fake repos not available')
 
   def testIsValidRevision(self):
-    if not self.enabled:
-      return
     # Sha1's are [0-9a-z]{32}, so starting with a 'z' or 'r' should always fail.
     self.assertFalse(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='zebra'))
     self.assertFalse(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='r123456'))
@@ -98,14 +98,15 @@ class RealGitTest(fake_repos.FakeReposTestBase):
     self.assertTrue(scm.GIT.IsValidRevision(cwd=self.clone_dir, rev='HEAD'))
 
   def testIsAncestor(self):
-    if not self.enabled:
-      return
     self.assertTrue(scm.GIT.IsAncestor(
         self.clone_dir, self.githash('repo_1', 1), self.githash('repo_1', 2)))
     self.assertFalse(scm.GIT.IsAncestor(
         self.clone_dir, self.githash('repo_1', 2), self.githash('repo_1', 1)))
     self.assertFalse(scm.GIT.IsAncestor(
         self.clone_dir, self.githash('repo_1', 1), 'zebra'))
+
+  def testGetAllFiles(self):
+    self.assertEqual(['DEPS','origin'], scm.GIT.GetAllFiles(self.clone_dir))
 
 
 if __name__ == '__main__':

@@ -322,6 +322,12 @@ class GIT(object):
     return GIT.Capture(command, cwd=cwd).splitlines(False)
 
   @staticmethod
+  def GetAllFiles(cwd):
+    """Returns the list of all files under revision control."""
+    command = ['-c', 'core.quotePath=false', 'ls-files', '--', '.']
+    return GIT.Capture(command, cwd=cwd).splitlines(False)
+
+  @staticmethod
   def GetPatchName(cwd):
     """Constructs a name for this patch."""
     short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd=cwd)
