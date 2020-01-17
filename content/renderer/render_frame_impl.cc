@@ -5988,6 +5988,13 @@ void RenderFrameImpl::BeginNavigation(
     int cumulative_bindings = RenderProcess::current()->GetEnabledBindings();
     bool should_fork = HasWebUIScheme(url) || HasWebUIScheme(old_url) ||
                        (cumulative_bindings & kWebUIBindingsPolicyMask);
+    if (!should_fork && url.SchemeIs(url::kFileScheme)) {
+      // Fork non-file to file opens (see https://crbug.com/1031119).  Note that
+      // this may fork unnecessarily if another tab (hosting a file or not)
+      // targeted this one before its initial navigation, but that shouldn't
+      // cause a problem.
+      should_fork = !old_url.SchemeIs(url::kFileScheme);
+    }
 
     if (!should_fork) {
       // Give the embedder a chance.
