@@ -1945,73 +1945,19 @@ static int ml_predict_tx_split(MACROBLOCK *x, BLOCK_SIZE bsize, int blk_row,
   return clamp(int_score, -80000, 80000);
 }
 
-static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                            int block, int blk_row, int blk_col,
-                            BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
-                            const TXB_CTX *const txb_ctx,
-                            FAST_TX_SEARCH_MODE ftxs_mode,
-                            int use_fast_coef_costing, int skip_trellis,
-                            int64_t ref_best_rd, RD_STATS *best_rd_stats) {
+static INLINE uint16_t
+get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
+            int blk_row, int blk_col, BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+            const TXB_CTX *const txb_ctx, FAST_TX_SEARCH_MODE ftxs_mode,
+            int64_t ref_best_rd, TX_TYPE *allowed_txk_types, int *txk_map) {
   const AV1_COMMON *cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  struct macroblockd_plane *const pd = &xd->plane[plane];
   MB_MODE_INFO *mbmi = xd->mi[0];
   const int is_inter = is_inter_block(mbmi);
-  int64_t best_rd = INT64_MAX;
-  uint16_t best_eob = 0;
-  TX_TYPE best_tx_type = DCT_DCT;
-  TX_TYPE last_tx_type = TX_TYPES;
-  int rate_cost = 0;
   const int fast_tx_search = ftxs_mode & FTXS_DCT_AND_1D_DCT_ONLY;
-  // The buffer used to swap dqcoeff in macroblockd_plane so we can keep dqcoeff
-  // of the best tx_type
-  DECLARE_ALIGNED(32, tran_low_t, this_dqcoeff[MAX_SB_SQUARE]);
-  tran_low_t *orig_dqcoeff = pd->dqcoeff;
-  tran_low_t *best_dqcoeff = this_dqcoeff;
-  const int tx_type_map_idx =
-      plane ? 0 : blk_row * xd->tx_type_map_stride + blk_col;
-  int perform_block_coeff_opt = 0;
-  av1_invalid_rd_stats(best_rd_stats);
-
-  TXB_RD_INFO *intra_txb_rd_info = NULL;
-  uint16_t cur_joint_ctx = 0;
-  const int mi_row = xd->mi_row;
-  const int mi_col = xd->mi_col;
-  const int within_border =
-      mi_row >= xd->tile.mi_row_start &&
-      (mi_row + mi_size_high[plane_bsize] < xd->tile.mi_row_end) &&
-      mi_col >= xd->tile.mi_col_start &&
-      (mi_col + mi_size_wide[plane_bsize] < xd->tile.mi_col_end);
-  skip_trellis |=
-      cpi->optimize_seg_arr[mbmi->segment_id] == NO_TRELLIS_OPT ||
-      cpi->optimize_seg_arr[mbmi->segment_id] == FINAL_PASS_TRELLIS_OPT;
-  if (is_intra_hash_match(cpi, x, plane, blk_row, blk_col, plane_bsize, tx_size,
-                          txb_ctx, &intra_txb_rd_info, within_border,
-                          tx_type_map_idx, &cur_joint_ctx)) {
-    best_rd_stats->rate = intra_txb_rd_info->rate;
-    best_rd_stats->dist = intra_txb_rd_info->dist;
-    best_rd_stats->sse = intra_txb_rd_info->sse;
-    best_rd_stats->skip = intra_txb_rd_info->eob == 0;
-    x->plane[plane].eobs[block] = intra_txb_rd_info->eob;
-    x->plane[plane].txb_entropy_ctx[block] = intra_txb_rd_info->txb_entropy_ctx;
-    best_eob = intra_txb_rd_info->eob;
-    best_tx_type = intra_txb_rd_info->tx_type;
-    perform_block_coeff_opt = intra_txb_rd_info->perform_block_coeff_opt;
-    skip_trellis |= !perform_block_coeff_opt;
-    update_txk_array(xd, blk_row, blk_col, tx_size, best_tx_type);
-    recon_intra(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                txb_ctx, skip_trellis, best_tx_type, last_tx_type, &rate_cost,
-                best_eob);
-    pd->dqcoeff = orig_dqcoeff;
-    return;
-  }
-
   // if txk_allowed = TX_TYPES, >1 tx types are allowed, else, if txk_allowed <
   // TX_TYPES, only that specific tx type is allowed.
   TX_TYPE txk_allowed = TX_TYPES;
-  int txk_map[TX_TYPES] = {
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
-  };
 
   if ((!is_inter && x->use_default_intra_tx_type) ||
       (is_inter && x->use_default_inter_tx_type)) {
@@ -2021,7 +1967,6 @@ static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     if (plane == 0) txk_allowed = DCT_DCT;
   }
 
-  uint8_t best_txb_ctx = 0;
   const TxSetType tx_set_type =
       av1_get_ext_tx_set_type(tx_size, is_inter, cm->reduced_tx_set_used);
 
@@ -2047,25 +1992,6 @@ static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       (!is_inter && cpi->oxcf.use_intra_dct_only)) {
     txk_allowed = DCT_DCT;
   }
-
-  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
-  int64_t block_sse = 0;
-  unsigned int block_mse_q8 = UINT_MAX;
-  block_sse = pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize,
-                              &block_mse_q8);
-  assert(block_mse_q8 != UINT_MAX);
-  if (is_cur_buf_hbd(xd)) {
-    block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
-    block_mse_q8 = ROUND_POWER_OF_TWO(block_mse_q8, (xd->bd - 8) * 2);
-  }
-  block_sse *= 16;
-
-  // Used mse based threshold logic to take decision of R-D of optimization of
-  // coeffs. For smaller residuals, coeff optimization would be helpful. For
-  // larger residuals, R-D optimization may not be effective.
-  // TODO(any): Experiment with variance and mean based thresholds
-  perform_block_coeff_opt = (block_mse_q8 <= x->coeff_opt_dist_threshold);
-  skip_trellis |= !perform_block_coeff_opt;
 
   if (cpi->oxcf.enable_flip_idtx == 0) {
     for (TX_TYPE tx_type = FLIPADST_DCT; tx_type <= H_FLIPADST; ++tx_type) {
@@ -2144,6 +2070,96 @@ static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   }
 
   assert(IMPLIES(txk_allowed < TX_TYPES, allowed_tx_mask == 1 << txk_allowed));
+  *allowed_txk_types = txk_allowed;
+  return allowed_tx_mask;
+}
+
+static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
+                            int block, int blk_row, int blk_col,
+                            BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                            const TXB_CTX *const txb_ctx,
+                            FAST_TX_SEARCH_MODE ftxs_mode,
+                            int use_fast_coef_costing, int skip_trellis,
+                            int64_t ref_best_rd, RD_STATS *best_rd_stats) {
+  const AV1_COMMON *cm = &cpi->common;
+  MACROBLOCKD *xd = &x->e_mbd;
+  struct macroblockd_plane *const pd = &xd->plane[plane];
+  MB_MODE_INFO *mbmi = xd->mi[0];
+  int64_t best_rd = INT64_MAX;
+  uint16_t best_eob = 0;
+  TX_TYPE best_tx_type = DCT_DCT;
+  TX_TYPE last_tx_type = TX_TYPES;
+  int rate_cost = 0;
+  // The buffer used to swap dqcoeff in macroblockd_plane so we can keep dqcoeff
+  // of the best tx_type
+  DECLARE_ALIGNED(32, tran_low_t, this_dqcoeff[MAX_SB_SQUARE]);
+  tran_low_t *orig_dqcoeff = pd->dqcoeff;
+  tran_low_t *best_dqcoeff = this_dqcoeff;
+  const int tx_type_map_idx =
+      plane ? 0 : blk_row * xd->tx_type_map_stride + blk_col;
+  int perform_block_coeff_opt = 0;
+  av1_invalid_rd_stats(best_rd_stats);
+
+  TXB_RD_INFO *intra_txb_rd_info = NULL;
+  uint16_t cur_joint_ctx = 0;
+  const int mi_row = xd->mi_row;
+  const int mi_col = xd->mi_col;
+  const int within_border =
+      mi_row >= xd->tile.mi_row_start &&
+      (mi_row + mi_size_high[plane_bsize] < xd->tile.mi_row_end) &&
+      mi_col >= xd->tile.mi_col_start &&
+      (mi_col + mi_size_wide[plane_bsize] < xd->tile.mi_col_end);
+  skip_trellis |=
+      cpi->optimize_seg_arr[mbmi->segment_id] == NO_TRELLIS_OPT ||
+      cpi->optimize_seg_arr[mbmi->segment_id] == FINAL_PASS_TRELLIS_OPT;
+  if (is_intra_hash_match(cpi, x, plane, blk_row, blk_col, plane_bsize, tx_size,
+                          txb_ctx, &intra_txb_rd_info, within_border,
+                          tx_type_map_idx, &cur_joint_ctx)) {
+    best_rd_stats->rate = intra_txb_rd_info->rate;
+    best_rd_stats->dist = intra_txb_rd_info->dist;
+    best_rd_stats->sse = intra_txb_rd_info->sse;
+    best_rd_stats->skip = intra_txb_rd_info->eob == 0;
+    x->plane[plane].eobs[block] = intra_txb_rd_info->eob;
+    x->plane[plane].txb_entropy_ctx[block] = intra_txb_rd_info->txb_entropy_ctx;
+    best_eob = intra_txb_rd_info->eob;
+    best_tx_type = intra_txb_rd_info->tx_type;
+    perform_block_coeff_opt = intra_txb_rd_info->perform_block_coeff_opt;
+    skip_trellis |= !perform_block_coeff_opt;
+    update_txk_array(xd, blk_row, blk_col, tx_size, best_tx_type);
+    recon_intra(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                txb_ctx, skip_trellis, best_tx_type, last_tx_type, &rate_cost,
+                best_eob);
+    pd->dqcoeff = orig_dqcoeff;
+    return;
+  }
+
+  uint8_t best_txb_ctx = 0;
+  TX_TYPE txk_allowed = TX_TYPES;
+  int txk_map[TX_TYPES] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+  };
+  uint16_t allowed_tx_mask =
+      get_tx_mask(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                  txb_ctx, ftxs_mode, ref_best_rd, &txk_allowed, txk_map);
+
+  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
+  int64_t block_sse = 0;
+  unsigned int block_mse_q8 = UINT_MAX;
+  block_sse = pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize,
+                              &block_mse_q8);
+  assert(block_mse_q8 != UINT_MAX);
+  if (is_cur_buf_hbd(xd)) {
+    block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
+    block_mse_q8 = ROUND_POWER_OF_TWO(block_mse_q8, (xd->bd - 8) * 2);
+  }
+  block_sse *= 16;
+
+  // Used mse based threshold logic to take decision of R-D of optimization of
+  // coeffs. For smaller residuals, coeff optimization would be helpful. For
+  // larger residuals, R-D optimization may not be effective.
+  // TODO(any): Experiment with variance and mean based thresholds
+  perform_block_coeff_opt = (block_mse_q8 <= x->coeff_opt_dist_threshold);
+  skip_trellis |= !perform_block_coeff_opt;
 
   // Tranform domain distortion is accurate for higher residuals.
   // TODO(any): Experiment with variance and mean based thresholds
