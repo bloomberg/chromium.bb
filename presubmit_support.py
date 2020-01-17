@@ -14,6 +14,7 @@ __version__ = '1.8.0'
 # caching (between all different invocations of presubmit scripts for a given
 # change). We should add it as our presubmit scripts start feeling slow.
 
+import argparse
 import ast  # Exposed through the API.
 import contextlib
 import cpplint
@@ -24,7 +25,6 @@ import itertools
 import json  # Exposed through the API.
 import logging
 import multiprocessing
-import optparse
 import os  # Somewhat exposed through the API.
 import random
 import re  # Exposed through the API.
@@ -211,7 +211,7 @@ class ThreadPool(object):
   def CallCommand(self, test):
     """Runs an external program.
 
-    This function converts invocation of .py files and invocations of "python"
+    This function converts invocation of .py files and invocations of 'python'
     to vpython invocations.
     """
     cmd = self._GetCommand(test)
@@ -517,40 +517,40 @@ class InputApi(object):
   # perspective. Don't modify this list from a presubmit script!
   #
   # Files without an extension aren't included in the list. If you want to
-  # filter them as source files, add r"(^|.*?[\\\/])[^.]+$" to the white list.
+  # filter them as source files, add r'(^|.*?[\\\/])[^.]+$' to the white list.
   # Note that ALL CAPS files are black listed in DEFAULT_BLACK_LIST below.
   DEFAULT_WHITE_LIST = (
       # C++ and friends
-      r".+\.c$", r".+\.cc$", r".+\.cpp$", r".+\.h$", r".+\.m$", r".+\.mm$",
-      r".+\.inl$", r".+\.asm$", r".+\.hxx$", r".+\.hpp$", r".+\.s$", r".+\.S$",
+      r'.+\.c$', r'.+\.cc$', r'.+\.cpp$', r'.+\.h$', r'.+\.m$', r'.+\.mm$',
+      r'.+\.inl$', r'.+\.asm$', r'.+\.hxx$', r'.+\.hpp$', r'.+\.s$', r'.+\.S$',
       # Scripts
-      r".+\.js$", r".+\.py$", r".+\.sh$", r".+\.rb$", r".+\.pl$", r".+\.pm$",
+      r'.+\.js$', r'.+\.py$', r'.+\.sh$', r'.+\.rb$', r'.+\.pl$', r'.+\.pm$',
       # Other
-      r".+\.java$", r".+\.mk$", r".+\.am$", r".+\.css$", r".+\.mojom$",
-      r".+\.fidl$"
+      r'.+\.java$', r'.+\.mk$', r'.+\.am$', r'.+\.css$', r'.+\.mojom$',
+      r'.+\.fidl$'
   )
 
   # Path regexp that should be excluded from being considered containing source
   # files. Don't modify this list from a presubmit script!
   DEFAULT_BLACK_LIST = (
-      r"testing_support[\\\/]google_appengine[\\\/].*",
-      r".*\bexperimental[\\\/].*",
+      r'testing_support[\\\/]google_appengine[\\\/].*',
+      r'.*\bexperimental[\\\/].*',
       # Exclude third_party/.* but NOT third_party/{WebKit,blink}
       # (crbug.com/539768 and crbug.com/836555).
-      r".*\bthird_party[\\\/](?!(WebKit|blink)[\\\/]).*",
+      r'.*\bthird_party[\\\/](?!(WebKit|blink)[\\\/]).*',
       # Output directories (just in case)
-      r".*\bDebug[\\\/].*",
-      r".*\bRelease[\\\/].*",
-      r".*\bxcodebuild[\\\/].*",
-      r".*\bout[\\\/].*",
+      r'.*\bDebug[\\\/].*',
+      r'.*\bRelease[\\\/].*',
+      r'.*\bxcodebuild[\\\/].*',
+      r'.*\bout[\\\/].*',
       # All caps files like README and LICENCE.
-      r".*\b[A-Z0-9_]{2,}$",
+      r'.*\b[A-Z0-9_]{2,}$',
       # SCM (can happen in dual SCM configuration). (Slightly over aggressive)
-      r"(|.*[\\\/])\.git[\\\/].*",
-      r"(|.*[\\\/])\.svn[\\\/].*",
+      r'(|.*[\\\/])\.git[\\\/].*',
+      r'(|.*[\\\/])\.svn[\\\/].*',
       # There is no point in processing a patch file.
-      r".+\.diff$",
-      r".+\.patch$",
+      r'.+\.diff$',
+      r'.+\.patch$',
   )
 
   def __init__(self, change, presubmit_path, is_committing,
@@ -635,7 +635,7 @@ class InputApi(object):
     self.Command = CommandData
 
     # Replace <hash_map> and <hash_set> as headers that need to be included
-    # with "base/containers/hash_tables.h" instead.
+    # with 'base/containers/hash_tables.h' instead.
     # Access to a protected member _XX of a client class
     # pylint: disable=protected-access
     self.cpplint._re_pattern_templates = [
@@ -662,7 +662,7 @@ class InputApi(object):
     (and optionally directories) in the same directory as the current presubmit
     script, or subdirectories thereof.
     """
-    dir_with_slash = normpath("%s/" % self.PresubmitLocalPath())
+    dir_with_slash = normpath('%s/' % self.PresubmitLocalPath())
     if len(dir_with_slash) == 1:
       dir_with_slash = ''
 
@@ -673,7 +673,7 @@ class InputApi(object):
   def LocalPaths(self):
     """Returns local paths of input_api.AffectedFiles()."""
     paths = [af.LocalPath() for af in self.AffectedFiles()]
-    logging.debug("LocalPaths: %s", paths)
+    logging.debug('LocalPaths: %s', paths)
     return paths
 
   def AbsoluteLocalPaths(self):
@@ -686,8 +686,8 @@ class InputApi(object):
     thereof.
     """
     if include_deletes is not None:
-      warn("AffectedTestableFiles(include_deletes=%s)"
-               " is deprecated and ignored" % str(include_deletes),
+      warn('AffectedTestableFiles(include_deletes=%s)'
+               ' is deprecated and ignored' % str(include_deletes),
            category=DeprecationWarning,
            stacklevel=2)
     return list(filter(
@@ -699,7 +699,7 @@ class InputApi(object):
     return self.AffectedTestableFiles(include_deletes=include_deletes)
 
   def FilterSourceFile(self, affected_file, white_list=None, black_list=None):
-    """Filters out files that aren't considered "source file".
+    """Filters out files that aren't considered 'source file'.
 
     If white_list or black_list is None, InputApi.DEFAULT_WHITE_LIST
     and InputApi.DEFAULT_BLACK_LIST is used respectively.
@@ -728,7 +728,7 @@ class InputApi(object):
     return list(filter(source_file, self.AffectedTestableFiles()))
 
   def RightHandSideLines(self, source_file_filter=None):
-    """An iterator over all text lines in "new" version of changed files.
+    """An iterator over all text lines in 'new' version of changed files.
 
     Only lists lines from new or modified text files in the change that are
     contained by the directory of the currently executing presubmit script.
@@ -929,7 +929,7 @@ class AffectedFile(object):
     """Returns an iterator over the lines in the old version of file.
 
     The old version is the file before any modifications in the user's
-    workspace, i.e. the "left hand side".
+    workspace, i.e. the 'left hand side'.
 
     Contents will be empty if the file is a directory or does not exist.
     Note: The carriage returns (LF or CR) are stripped off.
@@ -940,8 +940,8 @@ class AffectedFile(object):
   def NewContents(self):
     """Returns an iterator over the lines in the new version of file.
 
-    The new version is the file in the user's workspace, i.e. the "right hand
-    side".
+    The new version is the file in the user's workspace, i.e. the 'right hand
+    side'.
 
     Contents will be empty if the file is a directory or does not exist.
     Note: The carriage returns (LF or CR) are stripped off.
@@ -1021,7 +1021,7 @@ class Change(object):
 
   _AFFECTED_FILES = AffectedFile
 
-  # Matches key/value (or "tag") lines in changelist descriptions.
+  # Matches key/value (or 'tag') lines in changelist descriptions.
   TAG_LINE_RE = re.compile(
       '^[ \t]*(?P<key>[A-Z][A-Z_0-9]*)[ \t]*=[ \t]*(?P<value>.*?)[ \t]*$')
   scm = ''
@@ -1060,7 +1060,7 @@ class Change(object):
   def DescriptionText(self):
     """Returns the user-entered changelist description, minus tags.
 
-    Any line in the user-provided description starting with e.g. "FOO="
+    Any line in the user-provided description starting with e.g. 'FOO='
     (whitespace permitted before and around) is considered a tag line.  Such
     lines are stripped out of the description this function returns.
     """
@@ -1077,7 +1077,7 @@ class Change(object):
     self._full_description = description
 
     # From the description text, build up a dictionary of key/value pairs
-    # plus the description minus all key/value or "tag" lines.
+    # plus the description minus all key/value or 'tag' lines.
     description_without_tags = []
     self.tags = {}
     for line in self._full_description.splitlines():
@@ -1099,7 +1099,7 @@ class Change(object):
 
   def __getattr__(self, attr):
     """Return tags directly as attributes on the object."""
-    if not re.match(r"^[A-Z_]*$", attr):
+    if not re.match(r'^[A-Z_]*$', attr):
       raise AttributeError(self, attr)
     return self.tags.get(attr)
 
@@ -1115,7 +1115,7 @@ class Change(object):
 
   def ReviewersFromDescription(self):
     """Returns all reviewers listed in the commit description."""
-    # We don't support a "R:" git-footer for reviewers; that is in metadata.
+    # We don't support a 'R:' git-footer for reviewers; that is in metadata.
     tags = [r.strip() for r in self.tags.get('R', '').split(',') if r.strip()]
     return sorted(set(tags))
 
@@ -1161,8 +1161,8 @@ class Change(object):
   def AffectedTestableFiles(self, include_deletes=None, **kwargs):
     """Return a list of the existing text files in a change."""
     if include_deletes is not None:
-      warn("AffectedTeestableFiles(include_deletes=%s)"
-               " is deprecated and ignored" % str(include_deletes),
+      warn('AffectedTeestableFiles(include_deletes=%s)'
+               ' is deprecated and ignored' % str(include_deletes),
            category=DeprecationWarning,
            stacklevel=2)
     return list(filter(
@@ -1182,7 +1182,7 @@ class Change(object):
     return [af.AbsoluteLocalPath() for af in self.AffectedFiles()]
 
   def RightHandSideLines(self):
-    """An iterator over all text lines in "new" version of changed files.
+    """An iterator over all text lines in 'new' version of changed files.
 
     Lists lines from new or modified text files in the change.
 
@@ -1368,20 +1368,20 @@ def DoGetTryMasters(change,
   """
   presubmit_files = ListRelevantPresubmitFiles(changed_files, repository_root)
   if not presubmit_files and verbose:
-    output_stream.write("Warning, no PRESUBMIT.py found.\n")
+    output_stream.write('Warning, no PRESUBMIT.py found.\n')
   results = {}
   executer = GetTryMastersExecuter()
 
   if default_presubmit:
     if verbose:
-      output_stream.write("Running default presubmit script.\n")
+      output_stream.write('Running default presubmit script.\n')
     fake_path = os.path.join(repository_root, 'PRESUBMIT.py')
     results = _MergeMasters(results, executer.ExecPresubmitScript(
         default_presubmit, fake_path, project, change))
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
-      output_stream.write("Running %s\n" % filename)
+      output_stream.write('Running %s\n' % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
     results = _MergeMasters(results, executer.ExecPresubmitScript(
@@ -1414,7 +1414,7 @@ def DoPostUploadExecuter(change,
   presubmit_files = ListRelevantPresubmitFiles(
       change.LocalPaths(), repository_root)
   if not presubmit_files and verbose:
-    output_stream.write("Warning, no PRESUBMIT.py found.\n")
+    output_stream.write('Warning, no PRESUBMIT.py found.\n')
   results = []
   executer = GetPostUploadExecuter()
   # The root presubmit file should be executed after the ones in subdirectories.
@@ -1425,7 +1425,7 @@ def DoPostUploadExecuter(change,
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
-      output_stream.write("Running %s\n" % filename)
+      output_stream.write('Running %s\n' % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
     results.extend(executer.ExecPresubmitScript(
@@ -1572,27 +1572,27 @@ def DoPresubmitChecks(change,
     output = PresubmitOutput(input_stream, output_stream)
 
     if committing:
-      output.write("Running presubmit commit checks ...\n")
+      output.write('Running presubmit commit checks ...\n')
     else:
-      output.write("Running presubmit upload checks ...\n")
+      output.write('Running presubmit upload checks ...\n')
     start_time = time_time()
     presubmit_files = ListRelevantPresubmitFiles(
         change.AbsoluteLocalPaths(), change.RepositoryRoot())
     if not presubmit_files and verbose:
-      output.write("Warning, no PRESUBMIT.py found.\n")
+      output.write('Warning, no PRESUBMIT.py found.\n')
     results = []
     thread_pool = ThreadPool()
     executer = PresubmitExecuter(change, committing, verbose, gerrit_obj,
                                  dry_run, thread_pool, parallel)
     if default_presubmit:
       if verbose:
-        output.write("Running default presubmit script.\n")
+        output.write('Running default presubmit script.\n')
       fake_path = os.path.join(change.RepositoryRoot(), 'PRESUBMIT.py')
       results += executer.ExecPresubmitScript(default_presubmit, fake_path)
     for filename in presubmit_files:
       filename = os.path.abspath(filename)
       if verbose:
-        output.write("Running %s\n" % filename)
+        output.write('Running %s\n' % filename)
       # Accept CRLF presubmit script.
       presubmit_script = gclient_utils.FileRead(filename, 'rU')
       results += executer.ExecPresubmitScript(presubmit_script, filename)
@@ -1640,7 +1640,7 @@ def DoPresubmitChecks(change,
 
     total_time = time_time() - start_time
     if total_time > 1.0:
-      output.write("Presubmit checks took %.1fs to calculate.\n\n" % total_time)
+      output.write('Presubmit checks took %.1fs to calculate.\n\n' % total_time)
 
     if errors:
       output.fail()
@@ -1688,11 +1688,11 @@ def ParseFiles(args, recursive):
   return files
 
 
-def load_files(options, args):
+def load_files(options):
   """Tries to determine the SCM."""
   files = []
-  if args:
-    files = ParseFiles(args, options.recursive)
+  if options.files:
+    files = ParseFiles(options.files, options.recursive)
   change_scm = scm.determine_scm(options.root)
   if change_scm == 'git':
     change_class = GitChange
@@ -1700,7 +1700,8 @@ def load_files(options, args):
     if not files:
       files = scm.GIT.CaptureStatus([], options.root, upstream)
   else:
-    logging.info('Doesn\'t seem under source control. Got %d files', len(args))
+    logging.info(
+        'Doesn\'t seem under source control. Got %d files', len(options.files))
     if not files:
       return None, None
     change_class = Change
@@ -1724,47 +1725,50 @@ def canned_check_filter(method_names):
 
 
 def main(argv=None):
-  parser = optparse.OptionParser(usage="%prog [options] <files...>",
-                                 version="%prog " + str(__version__))
-  parser.add_option("-c", "--commit", action="store_true", default=False,
-                   help="Use commit instead of upload checks")
-  parser.add_option("-u", "--upload", action="store_false", dest='commit',
-                   help="Use upload instead of commit checks")
-  parser.add_option("-r", "--recursive", action="store_true",
-                   help="Act recursively")
-  parser.add_option("-v", "--verbose", action="count", default=0,
-                   help="Use 2 times for more debug info")
-  parser.add_option("--name", default='no name')
-  parser.add_option("--author")
-  parser.add_option("--description", default='')
-  parser.add_option("--issue", type='int', default=0)
-  parser.add_option("--patchset", type='int', default=0)
-  parser.add_option("--root", default=os.getcwd(),
-                    help="Search for PRESUBMIT.py up to this directory. "
-                    "If inherit-review-settings-ok is present in this "
-                    "directory, parent directories up to the root file "
-                    "system directories will also be searched.")
-  parser.add_option("--upstream",
-                    help="Git only: the base ref or upstream branch against "
-                    "which the diff should be computed.")
-  parser.add_option("--default_presubmit")
-  parser.add_option("--may_prompt", action='store_true', default=False)
-  parser.add_option("--skip_canned", action='append', default=[],
-                    help="A list of checks to skip which appear in "
-                    "presubmit_canned_checks. Can be provided multiple times "
-                    "to skip multiple canned checks.")
-  parser.add_option("--dry_run", action='store_true',
-                    help=optparse.SUPPRESS_HELP)
-  parser.add_option("--gerrit_url", help=optparse.SUPPRESS_HELP)
-  parser.add_option("--gerrit_fetch", action='store_true',
-                    help=optparse.SUPPRESS_HELP)
-  parser.add_option('--parallel', action='store_true',
-                    help='Run all tests specified by input_api.RunTests in all '
-                         'PRESUBMIT files in parallel.')
-  parser.add_option('--json_output',
-                    help='Write presubmit errors to json output.')
+  parser = argparse.ArgumentParser(usage='%(prog)s [options] <files...>')
+  hooks = parser.add_mutually_exclusive_group()
+  hooks.add_argument('-c', '--commit', action='store_true',
+                     help='Use commit instead of upload checks.')
+  hooks.add_argument('-u', '--upload', action='store_false', dest='commit',
+                     help='Use upload instead of commit checks.')
+  parser.add_argument('-r', '--recursive', action='store_true',
+                      help='Act recursively.')
+  parser.add_argument('-v', '--verbose', action='count', default=0,
+                      help='Use 2 times for more debug info.')
+  parser.add_argument('--name', default='no name')
+  parser.add_argument('--author')
+  parser.add_argument('--description', default='')
+  parser.add_argument('--issue', type=int, default=0)
+  parser.add_argument('--patchset', type=int, default=0)
+  parser.add_argument('--root', default=os.getcwd(),
+                      help='Search for PRESUBMIT.py up to this directory. '
+                      'If inherit-review-settings-ok is present in this '
+                      'directory, parent directories up to the root file '
+                      'system directories will also be searched.')
+  parser.add_argument('--upstream',
+                      help='Git only: the base ref or upstream branch against '
+                      'which the diff should be computed.')
+  parser.add_argument('--default_presubmit')
+  parser.add_argument('--may_prompt', action='store_true', default=False)
+  parser.add_argument('--skip_canned', action='append', default=[],
+                      help='A list of checks to skip which appear in '
+                      'presubmit_canned_checks. Can be provided multiple times '
+                      'to skip multiple canned checks.')
+  parser.add_argument('--dry_run', action='store_true', help=argparse.SUPPRESS)
+  parser.add_argument('--gerrit_url', help=argparse.SUPPRESS)
+  parser.add_argument('--gerrit_fetch', action='store_true',
+                      help=argparse.SUPPRESS)
+  parser.add_argument('--parallel', action='store_true',
+                      help='Run all tests specified by input_api.RunTests in '
+                           'all PRESUBMIT files in parallel.')
+  parser.add_argument('--json_output',
+                      help='Write presubmit errors to json output.')
+  parser.add_argument('files', nargs='*',
+                      help='List of files to be marked as modified when '
+                      'executing presubmit or post-upload hooks. fnmatch '
+                      'wildcards can also be used.')
 
-  options, args = parser.parse_args(argv)
+  options = parser.parse_args(argv)
 
   if options.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
@@ -1773,7 +1777,7 @@ def main(argv=None):
   else:
     logging.basicConfig(level=logging.ERROR)
 
-  change_class, files = load_files(options, args)
+  change_class, files = load_files(options)
   if not change_class:
     parser.error('For unversioned directory, <files> is not optional.')
   logging.info('Found %d file(s).', len(files))

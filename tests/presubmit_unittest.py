@@ -897,8 +897,7 @@ def CheckChangeOnCommit(input_api, output_api):
 
     self.assertEqual(
         sys.stderr.getvalue(),
-        'Usage: presubmit_unittest.py [options] <files...>\n'
-        '\n'
+        'usage: presubmit_unittest.py [options] <files...>\n'
         'presubmit_unittest.py: error: For unversioned directory, <files> is '
         'not optional.\n')
 
