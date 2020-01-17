@@ -345,6 +345,7 @@ Tile::Tile(
     const dsp::Dsp* const dsp, ThreadPool* const thread_pool,
     ResidualBufferPool* const residual_buffer_pool,
     DecoderScratchBufferPool* const decoder_scratch_buffer_pool,
+    Array2D<SuperBlockState>* const superblock_state,
     BlockingCounterWithStatus* const pending_tiles)
     : number_(tile_number),
       data_(data),
@@ -434,6 +435,21 @@ Tile::Tile(
     deblock_column_limit_[plane] =
         std::min(frame_header_.columns4x4, DivideBy4(plane_width + 3)
                                                << subsampling_x_[plane]);
+  }
+  if (split_parse_and_decode_ && superblock_state->rows() > 0) {
+    // The |superblock_state| array is for the entire frame. Set
+    // |threading_.sb_state| to point to the beginning of this Tile.
+    std::lock_guard<std::mutex> lock(threading_.mutex);
+    const int superblock_width_log2 =
+        FloorLog2(kBlockWidthPixels[SuperBlockSize()]);
+    const int superblock_row_start_index =
+        MultiplyBy4(row4x4_start_) >> superblock_width_log2;
+    const int superblock_column_start_index =
+        MultiplyBy4(column4x4_start_) >> superblock_width_log2;
+    threading_.sb_state.Reset(
+        superblock_rows_, superblock_state->columns(),
+        &(*superblock_state)[superblock_row_start_index]
+                            [superblock_column_start_index]);
   }
 }
 
@@ -548,11 +564,6 @@ bool Tile::Decode(bool is_main_thread) {
 bool Tile::ThreadedDecode() {
   {
     std::lock_guard<std::mutex> lock(threading_.mutex);
-    if (!threading_.sb_state.Reset(superblock_rows_, superblock_columns_)) {
-      pending_tiles_->Decrement(false);
-      LIBGAV1_DLOG(ERROR, "threading.sb_state.Reset() failed.");
-      return false;
-    }
     // Account for the parsing job.
     ++threading_.pending_jobs;
   }

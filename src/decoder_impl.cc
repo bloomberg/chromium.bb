@@ -541,6 +541,20 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   }
 
   if (threading_strategy_.row_thread_pool(0) != nullptr) {
+    const int block_width4x4_minus_one =
+        sequence_header.use_128x128_superblock ? 31 : 15;
+    const int block_width4x4_log2 =
+        sequence_header.use_128x128_superblock ? 5 : 4;
+    const int superblock_rows =
+        (frame_header.rows4x4 + block_width4x4_minus_one) >>
+        block_width4x4_log2;
+    const int superblock_columns =
+        (frame_header.columns4x4 + block_width4x4_minus_one) >>
+        block_width4x4_log2;
+    if (!superblock_state_.Reset(superblock_rows, superblock_columns)) {
+      LIBGAV1_DLOG(ERROR, "Failed to allocate super_block_state.\n");
+      return kLibgav1StatusOutOfMemory;
+    }
     if (residual_buffer_pool_ == nullptr) {
       residual_buffer_pool_.reset(new (std::nothrow) ResidualBufferPool(
           sequence_header.use_128x128_superblock,
@@ -697,7 +711,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
           &cdef_index_, &inter_transform_sizes_, dsp,
           threading_strategy_.row_thread_pool(tile_index++),
           residual_buffer_pool_.get(), &decoder_scratch_buffer_pool_,
-          &pending_tiles));
+          &superblock_state_, &pending_tiles));
       if (tile == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate tile.");
         return kLibgav1StatusOutOfMemory;

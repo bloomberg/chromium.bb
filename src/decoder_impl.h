@@ -154,6 +154,7 @@ class DecoderImpl : public Allocable {
 
   BufferPool buffer_pool_;
   std::unique_ptr<ResidualBufferPool> residual_buffer_pool_;
+  Array2D<SuperBlockState> superblock_state_;
   AlignedUniquePtr<uint8_t> threaded_window_buffer_;
   size_t threaded_window_buffer_size_ = 0;
   // Buffer used to temporarily store the input row for applying SuperRes.

@@ -500,6 +500,14 @@ enum ObuType : int8_t {
   kObuPadding = 15,
 };
 
+// Enum to track the processing state of a superblock.
+enum SuperBlockState : uint8_t {
+  kSuperBlockStateNone,       // Not yet parsed or decoded.
+  kSuperBlockStateParsed,     // Parsed but not yet decoded.
+  kSuperBlockStateScheduled,  // Scheduled for decoding.
+  kSuperBlockStateDecoded     // Parsed and decoded.
+};
+
 //------------------------------------------------------------------------------
 // ToString()
 //

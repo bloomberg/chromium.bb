@@ -84,6 +84,7 @@ class Tile : public Allocable {
        Array2D<TransformSize>* inter_transform_sizes, const dsp::Dsp* dsp,
        ThreadPool* thread_pool, ResidualBufferPool* residual_buffer_pool,
        DecoderScratchBufferPool* decoder_scratch_buffer_pool,
+       Array2D<SuperBlockState>* superblock_state,
        BlockingCounterWithStatus* pending_tiles);
 
   // Move only.
@@ -138,20 +139,16 @@ class Tile : public Allocable {
     int depth;
   };
 
-  // Enum to track the processing state of a superblock.
-  enum SuperBlockState : uint8_t {
-    kSuperBlockStateNone,       // Not yet parsed or decoded.
-    kSuperBlockStateParsed,     // Parsed but not yet decoded.
-    kSuperBlockStateScheduled,  // Scheduled for decoding.
-    kSuperBlockStateDecoded     // Parsed and decoded.
-  };
-
   // Parameters used to facilitate multi-threading within the Tile.
   struct ThreadingParameters {
     std::mutex mutex;
-    // 2d array of size |superblock_rows_| by |superblock_columns_| containing
-    // the processing state of each superblock.
-    Array2D<SuperBlockState> sb_state LIBGAV1_GUARDED_BY(mutex);
+    // Array2DView of size |superblock_rows_| by |superblock_columns_|
+    // containing the processing state of each superblock. The code in this
+    // class uses relative indexing of superblocks with respect to this Tile.
+    // The memory for this comes from the caller (the |super_block_state|
+    // parameter in the constructor). The memory is for the whole frame whereas
+    // the |sb_state| array in this struct points to the beginning of this Tile.
+    Array2DView<SuperBlockState> sb_state LIBGAV1_GUARDED_BY(mutex);
     // Variable used to indicate either parse or decode failure.
     bool abort LIBGAV1_GUARDED_BY(mutex) = false;
     int pending_jobs LIBGAV1_GUARDED_BY(mutex) = 0;
