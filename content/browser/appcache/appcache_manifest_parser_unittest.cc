@@ -739,12 +739,12 @@ TEST(AppCacheManifestParserTest, PatternMatching) {
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             manifest.online_whitelist_namespaces[0].type);
   EXPECT_FALSE(manifest.intercept_namespaces[0].is_pattern);
-  EXPECT_TRUE(manifest.intercept_namespaces[1].is_pattern);
-  EXPECT_TRUE(manifest.intercept_namespaces[2].is_pattern);
+  EXPECT_FALSE(manifest.intercept_namespaces[1].is_pattern);
+  EXPECT_FALSE(manifest.intercept_namespaces[2].is_pattern);
   EXPECT_FALSE(manifest.fallback_namespaces[0].is_pattern);
-  EXPECT_TRUE(manifest.fallback_namespaces[1].is_pattern);
+  EXPECT_FALSE(manifest.fallback_namespaces[1].is_pattern);
   EXPECT_FALSE(manifest.online_whitelist_namespaces[0].is_pattern);
-  EXPECT_TRUE(manifest.online_whitelist_namespaces[1].is_pattern);
+  EXPECT_FALSE(manifest.online_whitelist_namespaces[1].is_pattern);
   EXPECT_EQ(
       GURL("http://foo.com/*/intercept_pattern?query"),
       manifest.intercept_namespaces[2].namespace_url);
@@ -879,7 +879,7 @@ TEST(AppCacheManifestParserTest, NetworkPatternMetrics) {
        0},
       {"NETWORK:\r*\r", 1, 0},
       {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 0, 1},
+      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
       {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/intercept* return /pattern isPattern\r",
@@ -913,8 +913,8 @@ TEST(AppCacheManifestParserTest, FallbackPatternMetricsWithGlobalScope) {
   } test_cases[] = {
       {"", 1, 0},
       {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 0,
-       1},
+      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1,
+       0},
       {"NETWORK:\r*\r", 1, 0},
       {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
       {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
@@ -955,7 +955,7 @@ TEST(AppCacheManifestParserTest, FallbackPatternMetricsWithDefaultScope) {
        0},
       {"FALLBACK:\rhttp://foo.com/scope/fallback /url\r", 1, 0},
       {"FALLBACK:\rhttp://foo.com/scope/fallback_pattern* /pattern isPattern\r",
-       0, 1},
+       1, 0},
       {"NETWORK:\r*\r", 1, 0},
       {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
       {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
@@ -1007,7 +1007,7 @@ TEST(AppCacheManifestParserTest, InterceptUsageMetricsWithGlobalScope) {
       {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 0, 1, 0},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/intercept* return /pattern isPattern\r",
-       0, 0, 1},
+       0, 1, 0},
   };
 
   for (const auto& test_case : test_cases) {
@@ -1054,7 +1054,7 @@ TEST(AppCacheManifestParserTest, InterceptUsageMetricsWithDefaultScope) {
        0, 1, 0},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/scope/intercept* return /pattern isPattern\r",
-       0, 0, 1},
+       0, 1, 0},
   };
 
   for (const auto& test_case : test_cases) {
@@ -1086,21 +1086,21 @@ TEST(AppCacheManifestParserTest, PatternMetricsWithGlobalScope) {
   } test_cases[] = {
       {"", 1, 0},
       {"FALLBACK:\rhttp://foo.com/fallback /url\r", 1, 0},
-      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 0,
-       1},
-      {"FALLBACK:\rhttp://foo.com/scope /pattern isPattern\r", 0, 1},
+      {"FALLBACK:\rhttp://foo.com/fallback_pattern* /pattern isPattern\r", 1,
+       0},
+      {"FALLBACK:\rhttp://foo.com/scope /pattern isPattern\r", 1, 0},
       {"FALLBACK:\rhttp://foo.com/scope/fallback_pattern* /pattern isPattern\r",
-       0, 1},
+       1, 0},
       {"FALLBACK:\rhttp://foo.com/scope/foo/fallback_pattern* /pattern "
        "isPattern\r",
-       0, 1},
+       1, 0},
       {"NETWORK:\r*\r", 1, 0},
       {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 0, 1},
+      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
       {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/intercept* return /pattern isPattern\r",
-       0, 1},
+       1, 0},
   };
 
   for (const auto& test_case : test_cases) {
@@ -1134,13 +1134,13 @@ TEST(AppCacheManifestParserTest, PatternMetricsWithDefaultScope) {
        0},
       {"FALLBACK:\rhttp://foo.com/scope /pattern isPattern\r", 1, 0},
       {"FALLBACK:\rhttp://foo.com/scope/fallback_pattern* /pattern isPattern\r",
-       0, 1},
+       1, 0},
       {"FALLBACK:\rhttp://foo.com/scope/foo/fallback_pattern* /pattern "
        "isPattern\r",
-       0, 1},
+       1, 0},
       {"NETWORK:\r*\r", 1, 0},
       {"NETWORK:\rhttp://foo.com/network\r", 1, 0},
-      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 0, 1},
+      {"NETWORK:\rhttp://foo.com/network_pattern* isPattern\r", 1, 0},
       {"CHROMIUM-INTERCEPT:\rhttp://foo.com/intercept return /url\r", 1, 0},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/intercept* return /pattern isPattern\r",
@@ -1152,7 +1152,7 @@ TEST(AppCacheManifestParserTest, PatternMetricsWithDefaultScope) {
       {"CHROMIUM-INTERCEPT:\rhttp://foo.com/scope/x return /url\r", 1, 0},
       {"CHROMIUM-INTERCEPT:\r"
        "http://foo.com/scope/x* return /pattern isPattern\r",
-       0, 1},
+       1, 0},
   };
 
   for (const auto& test_case : test_cases) {

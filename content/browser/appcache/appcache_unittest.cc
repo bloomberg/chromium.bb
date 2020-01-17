@@ -574,7 +574,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   cache->InitializeWithManifest(&manifest);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);
-  EXPECT_TRUE(cache->online_whitelist_namespaces_[0].is_pattern);
+  EXPECT_FALSE(cache->online_whitelist_namespaces_[0].is_pattern);
   EXPECT_EQ(kWhitelistUrl,
             cache->online_whitelist_namespaces_[0].namespace_url);
   cache->AddEntry(kManifestUrl, AppCacheEntry(AppCacheEntry::MANIFEST,
@@ -631,7 +631,7 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   EXPECT_EQ(0 + 10 + 100, cache->padding_size());
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);
-  EXPECT_TRUE(cache->online_whitelist_namespaces_[0].is_pattern);
+  EXPECT_FALSE(cache->online_whitelist_namespaces_[0].is_pattern);
   EXPECT_EQ(kWhitelistUrl,
             cache->online_whitelist_namespaces_[0].namespace_url);
 }
