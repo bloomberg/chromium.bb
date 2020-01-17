@@ -2456,14 +2456,14 @@ void Tile::StoreMotionFieldMvsIntoCurrentFrame(const Block& block) {
     // Must make a local copy so that StoreMotionFieldMvs() knows there is no
     // overlap between load and store.
     const MotionVector mv_to_store = bp.mv[i];
+    const int mv_row = std::abs(mv_to_store.mv[MotionVector::kRow]);
+    const int mv_column = std::abs(mv_to_store.mv[MotionVector::kColumn]);
     if (reference_frame_to_store > kReferenceFrameIntra &&
         // kRefMvsLimit equals 0x07FF, so we can first bitwise OR the two
         // absolute values and then compare with kRefMvsLimit to save a branch.
-        // The next two lines are equivalent to:
-        // std::abs(mv_to_store.mv[MotionVector::kRow]) <= kRefMvsLimit &&
-        // std::abs(mv_to_store.mv[MotionVector::kColumn]) <= kRefMvsLimit &&
-        (std::abs(mv_to_store.mv[MotionVector::kRow]) |
-         std::abs(mv_to_store.mv[MotionVector::kColumn])) <= kRefMvsLimit &&
+        // The next line is equivalent to:
+        // mv_row <= kRefMvsLimit && mv_column <= kRefMvsLimit
+        (mv_row | mv_column) <= kRefMvsLimit &&
         GetRelativeDistance(
             reference_order_hint_
                 [frame_header_.reference_frame_index[reference_frame_to_store -
