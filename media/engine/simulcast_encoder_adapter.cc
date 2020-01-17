@@ -377,12 +377,19 @@ int SimulcastEncoderAdapter::Encode(
       continue;
     }
 
-    std::vector<VideoFrameType> stream_frame_types;
+    // If adapter is passed through and only one sw encoder does simulcast,
+    // frame types for all streams should be passed to the encoder unchanged.
+    // Otherwise a single per-encoder frame type is passed.
+    std::vector<VideoFrameType> stream_frame_types(
+        streaminfos_.size() == 1 ? NumberOfStreams(codec_) : 1);
+
     if (send_key_frame) {
-      stream_frame_types.push_back(VideoFrameType::kVideoFrameKey);
+      std::fill(stream_frame_types.begin(), stream_frame_types.end(),
+                VideoFrameType::kVideoFrameKey);
       streaminfos_[stream_idx].key_frame_request = false;
     } else {
-      stream_frame_types.push_back(VideoFrameType::kVideoFrameDelta);
+      std::fill(stream_frame_types.begin(), stream_frame_types.end(),
+                VideoFrameType::kVideoFrameDelta);
     }
 
     int dst_width = streaminfos_[stream_idx].width;
