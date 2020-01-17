@@ -986,18 +986,6 @@
       ]
     },
     {
-      "name": "mushu",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": false,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "ninja",
       "configs": [
         {
@@ -2826,6 +2814,23 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 364,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "mushu",
+      "reference_board_name": "mushu",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "mushu",
+          "name": "mushu",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 426,
           "is_active": true
         }
       ]
