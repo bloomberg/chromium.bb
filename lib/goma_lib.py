@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import collections
 import datetime
 import getpass
 import glob
@@ -22,6 +23,12 @@ from chromite.lib import osutils
 
 class SpecifiedFileMissingError(Exception):
   """Error occurred when running LogsArchiver."""
+
+
+# For the ArchivedFiles tuple, log_files is a list of strings. The value of
+# the stats_file and counterz_file entry can be a string or None.
+ArchivedFiles = collections.namedtuple(
+    'ArchivedFiles', ('stats_file', 'counterz_file', 'log_files'))
 
 
 class LogsArchiver(object):
@@ -52,26 +59,29 @@ Instead it copies Goma files to a client-specified archive directory.
     """Archives all goma log files, stats file, and counterz file to dest_dir.
 
     Returns:
-      A list of files that were copied to dest_dir.
+      ArchivedFiles named tuple, which includes stats_file, counterz_file, and
+      list of log files. All files in the tuple were copied to dest_dir.
     """
-    log_files = []
+    archived_log_files = []
+    archived_stats_file = None
+    archived_counterz_file = None
     # Find log file names containing compiler_proxy-subproc.INFO.
     # _ArchiveInfoFiles returns a list of tuples of (info_file_path,
     # archived_file_name). We expect only 1 to be found, and add the filename
-    # for that tuple to log_files.
+    # for that tuple to archived_log_files.
     compiler_proxy_subproc_paths = self._ArchiveInfoFiles(
         'compiler_proxy-subproc')
     if len(compiler_proxy_subproc_paths) != 1:
       logging.warning('Unexpected compiler_proxy-subproc INFO files: %r',
                       compiler_proxy_subproc_paths)
     else:
-      log_files.append(compiler_proxy_subproc_paths[0][1])
+      archived_log_files.append(compiler_proxy_subproc_paths[0][1])
 
     # Find log file names containing compiler_proxy.INFO.
     # _ArchiveInfoFiles returns a list of tuples of (info_file_path,
     # archived_file_name). We expect only 1 to be found, and then need
     # to use the first tuple value of the list of 1 for the full path, and
-    # the filename of the tupe is added to log_files.
+    # the filename of the tupe is added to archived_log_files.
     compiler_proxy_path = None
     compiler_proxy_paths = self._ArchiveInfoFiles('compiler_proxy')
     if len(compiler_proxy_paths) != 1:
@@ -79,14 +89,15 @@ Instead it copies Goma files to a client-specified archive directory.
                       compiler_proxy_paths)
     else:
       compiler_proxy_path = compiler_proxy_paths[0][0]
-      log_files.append(compiler_proxy_paths[0][1])
+      archived_log_files.append(compiler_proxy_paths[0][1])
 
     gomacc_info_file = self._ArchiveGomaccInfoFiles()
-    log_files.append(gomacc_info_file)
+    if gomacc_info_file:
+      archived_log_files.append(gomacc_info_file)
 
     archived_ninja_log_filename = self._ArchiveNinjaLog(compiler_proxy_path)
     if archived_ninja_log_filename:
-      log_files.append(archived_ninja_log_filename)
+      archived_log_files.append(archived_ninja_log_filename)
 
     # Copy stats file and counterz file if they are specified.
     if self._counterz_file:
@@ -96,7 +107,7 @@ Instead it copies Goma files to a client-specified archive directory.
             'Goma counterz file missing: ' + counterz_path)
       shutil.copyfile(counterz_path,
                       os.path.join(self._dest_dir, self._counterz_file))
-      log_files.append(self._counterz_file)
+      archived_counterz_file = self._counterz_file
     if self._stats_file:
       stats_path = os.path.join(self._log_dir, self._stats_file)
       if not os.path.isfile(stats_path):
@@ -104,8 +115,9 @@ Instead it copies Goma files to a client-specified archive directory.
             'Goma stats file missing: ' + stats_path)
       shutil.copyfile(stats_path,
                       os.path.join(self._dest_dir, self._stats_file))
-      log_files.append(self._stats_file)
-    return log_files
+      archived_stats_file = self._stats_file
+    return ArchivedFiles(archived_stats_file, archived_counterz_file,
+                         archived_log_files)
 
   def _ArchiveInfoFiles(self, pattern):
     """Archives INFO files matched with pattern, with gzip'ing.

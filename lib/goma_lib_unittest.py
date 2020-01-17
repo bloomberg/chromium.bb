@@ -63,13 +63,13 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
         'gomacc', datetime.datetime(2017, 4, 26, 12, 2, 0))
 
     archiver = goma_lib.LogsArchiver(self.goma_log_dir, dest_dir=self.dest_dir)
-    file_list = archiver.Archive()
+    archiver_tuple = archiver.Archive()
 
     archived_files = os.listdir(self.dest_dir)
 
     # Verify that the list of files returned matched what we find in the
     # dest_dir.
-    self.assertCountEqual(file_list, archived_files)
+    self.assertCountEqual(archiver_tuple.log_files, archived_files)
 
     self.assertCountEqual(
         archived_files,
@@ -93,20 +93,15 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
     archiver = goma_lib.LogsArchiver(self.goma_log_dir, dest_dir=self.dest_dir,
                                      stats_file='stats.binaryproto',
                                      counterz_file='counterz.binaryproto')
-    file_list = archiver.Archive()
-
-    archived_files = os.listdir(self.dest_dir)
-    # Verify that the list of files returned matched what we find in the
-    # dest_dir.
-    self.assertCountEqual(file_list, archived_files)
+    archiver_tuple = archiver.Archive()
 
     self.assertCountEqual(
-        archived_files,
+        archiver_tuple.log_files,
         ['compiler_proxy.host.log.INFO.20170426-120000.000000.gz',
          'gomacc.host.log.INFO.20170426-120100.000000.tar.gz',
-         'compiler_proxy-subproc.host.log.INFO.20170426-120000.000000.gz',
-         'stats.binaryproto',
-         'counterz.binaryproto'])
+         'compiler_proxy-subproc.host.log.INFO.20170426-120000.000000.gz'])
+    self.assertEqual(archiver_tuple.stats_file, 'stats.binaryproto')
+    self.assertEqual(archiver_tuple.counterz_file, 'counterz.binaryproto')
 
   def testArchiveWithStatsAndMissingCounterz(self):
     """Test successful archive of goma logs with stats and counterz."""

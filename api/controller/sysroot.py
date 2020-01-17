@@ -15,6 +15,7 @@ from chromite.api.metrics import deserialize_metrics_log
 from chromite.lib import build_target_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import goma_lib
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import sysroot
@@ -163,6 +164,21 @@ def InstallPackages(input_proto, output_proto, _config):
       controller_util.CPVToPackageInfo(package, package_info)
 
     return controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE
+
+  # Copy goma logs to specified directory if there is a goma_config and
+  # it contains a log_dir to store artifacts.
+  if input_proto.goma_config.log_dir.dir:
+    archiver = goma_lib.LogsArchiver(
+        input_proto.goma_config.goma_dir,
+        dest_dir=input_proto.goma_config.log_dir.dir,
+        stats_file=input_proto.goma_config.stats_file,
+        counterz_file=input_proto.goma_config.counterz_file)
+    archiver_tuple = archiver.Archive()
+    if archiver_tuple.stats_file:
+      output_proto.goma_artifacts.stats_file = archiver_tuple.stats_file
+    if archiver_tuple.counterz_file:
+      output_proto.goma_artifacts.stats_file = archiver_tuple.counterz_file
+    output_proto.goma_artifacts.log_files[:] = archiver_tuple.log_files
 
   # Read metric events log and pipe them into output_proto.events.
   deserialize_metrics_log(output_proto.events, prefix=build_target.name)
