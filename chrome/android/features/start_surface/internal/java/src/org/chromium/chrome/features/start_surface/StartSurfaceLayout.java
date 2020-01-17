@@ -160,6 +160,9 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
     public void show(long time, boolean animate) {
         super.show(time, animate);
 
+        // Lazy initialization if needed.
+        mStartSurface.initialize();
+
         boolean showShrinkingAnimation =
                 animate && TabFeatureUtilities.isTabToGtsAnimationEnabled();
         boolean quick = mTabListDelegate.prepareOverview();
