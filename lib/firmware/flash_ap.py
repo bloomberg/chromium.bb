@@ -232,7 +232,7 @@ def _get_servo_info(dut_control):
 
 # TODO: Split out to actual arguments rather than an argparse namespace.
 def deploy(opts):
-  module_name = 'get_%s_commands' % opts.board
+  module_name = 'chromite.lib.firmware.flash_ap_commands.%s' % opts.board
   try:
     module = importlib.import_module(module_name)
   except ImportError:
