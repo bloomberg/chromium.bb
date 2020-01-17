@@ -185,7 +185,8 @@ void X11SoftwareBitmapPresenter::FlushAfterPutImage() {
   // blocking since there's no more data to read, so poll() won't wake up until
   // a new event comes, which may take a long time.  Forcing the event loop to
   // wake up with a dummy event fixes the race condition.
-  event_task_runner_->PostTask(FROM_HERE, base::BindOnce([] {}));
+  if (event_task_runner_)
+    event_task_runner_->PostTask(FROM_HERE, base::BindOnce([] {}));
 }
 
 void X11SoftwareBitmapPresenter::Resize(const gfx::Size& pixel_size) {
