@@ -484,15 +484,6 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
               invalid_mv);
   }
 
-  // Initialize so that Tile::StoreMotionFieldMvsIntoCurrentFrame() can skip
-  // some updates when the updates are the same as the initialized value.
-  // The following memory initialization of contiguous memory is very fast. It
-  // is not recommended to make the initialization multi-threaded, unless the
-  // memory which needs to be initialized in each thread is still contiguous.
-  if (frame_header.refresh_frame_flags != 0) {
-    state_.current_frame->ClearMotionFieldReferenceFrame();
-  }
-
   // The addition of kMaxBlockHeight4x4 and kMaxBlockWidth4x4 is necessary so
   // that the block parameters cache can be filled in for the last row/column
   // without having to check for boundary conditions.

@@ -28,6 +28,7 @@
 #include "src/motion_vector.h"
 #include "src/reconstruction.h"
 #include "src/utils/bit_mask_set.h"
+#include "src/utils/constants.h"
 #include "src/utils/logging.h"
 #include "src/utils/segmentation.h"
 #include "src/utils/stack.h"
@@ -307,16 +308,15 @@ void SetTransformType(const Tile::Block& block, int x4, int y4, int w4, int h4,
   }
 }
 
-void StoreMotionFieldMvs(const MotionVector& mv_to_store,
-                         ReferenceFrameType reference_frame_to_store,
-                         ptrdiff_t stride, int rows, int columns,
+void StoreMotionFieldMvs(ReferenceFrameType reference_frame_to_store,
+                         const MotionVector& mv_to_store, ptrdiff_t stride,
+                         int rows, int columns,
                          ReferenceFrameType* reference_frame_row_start,
                          MotionVector* mv) {
   static_assert(sizeof(*reference_frame_row_start) == sizeof(int8_t), "");
   do {
-    // Don't switch the following two memory setting functions. This is the
-    // natural memory visiting order, and some ARM CPUs are quite sensitive to
-    // it.
+    // Don't switch the following two memory setting functions.
+    // Some ARM CPUs are quite sensitive to the order.
     memset(reference_frame_row_start, reference_frame_to_store, columns);
     std::fill(mv, mv + columns, mv_to_store);
     reference_frame_row_start += stride;
@@ -2440,8 +2440,8 @@ void Tile::StoreMotionFieldMvsIntoCurrentFrame(const Block& block) {
   // block. It is done this way because motion field mvs are only needed at a
   // 8x8 granularity.
   const int row_start4x4 = block.row4x4 | 1;
-  const int row_limit4x4 = std::min(
-      block.row4x4 + kNum4x4BlocksHigh[block.size], frame_header_.rows4x4);
+  const int row_limit4x4 =
+      std::min(block.row4x4 + block.height4x4, frame_header_.rows4x4);
   if (row_start4x4 >= row_limit4x4) return;
   const int column_start4x4 = block.column4x4 | 1;
   const int column_limit4x4 =
@@ -2490,26 +2490,26 @@ void Tile::StoreMotionFieldMvsIntoCurrentFrame(const Block& block) {
         // of the general case of StoreMotionFieldMvs() by eliminating the
         // (columns == 0) case.
         assert(columns == 1);
-        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+        StoreMotionFieldMvs(reference_frame_to_store, mv_to_store, stride, rows,
                             1, reference_frame_row_start, mv);
       } else if (columns == 2) {
-        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+        StoreMotionFieldMvs(reference_frame_to_store, mv_to_store, stride, rows,
                             2, reference_frame_row_start, mv);
       } else if (columns == 4) {
-        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+        StoreMotionFieldMvs(reference_frame_to_store, mv_to_store, stride, rows,
                             4, reference_frame_row_start, mv);
       } else if (columns == 8) {
-        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+        StoreMotionFieldMvs(reference_frame_to_store, mv_to_store, stride, rows,
                             8, reference_frame_row_start, mv);
       } else if (columns == 16) {
-        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+        StoreMotionFieldMvs(reference_frame_to_store, mv_to_store, stride, rows,
                             16, reference_frame_row_start, mv);
       } else if (columns < 16) {
         // This always true condition (columns < 16) may help the compiler
         // simplify the inlining of the following function.
         // This general case is rare and usually only happens to the blocks
         // which contain the right boundary of the frame.
-        StoreMotionFieldMvs(mv_to_store, reference_frame_to_store, stride, rows,
+        StoreMotionFieldMvs(reference_frame_to_store, mv_to_store, stride, rows,
                             columns, reference_frame_row_start, mv);
       } else {
         assert(false);
