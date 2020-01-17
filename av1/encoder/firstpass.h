@@ -136,7 +136,7 @@ typedef struct {
 
 typedef struct {
   unsigned int section_intra_rating;
-  FIRSTPASS_STATS total_stats;
+  FIRSTPASS_STATS *total_stats;
   // Circular queue of first pass stats stored for most recent frames.
   // cpi->output_pkt_list[i].data.twopass_stats.buf points to actual data stored
   // here.
@@ -144,7 +144,7 @@ typedef struct {
   int frame_stats_next_idx;  // Index to next unused element in frame_stats_arr.
   const FIRSTPASS_STATS *stats_in;
   STATS_BUFFER_CTX *stats_buf_ctx;
-  FIRSTPASS_STATS total_left_stats;
+  FIRSTPASS_STATS *total_left_stats;
   int first_pass_done;
   int64_t bits_left;
   double modified_error_min;

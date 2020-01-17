@@ -137,11 +137,15 @@ static AOM_INLINE void accumulate_stats(FIRSTPASS_STATS *section,
 }
 
 void av1_init_first_pass(AV1_COMP *cpi) {
-  av1_twopass_zero_stats(&cpi->twopass.total_stats);
+  if (!cpi->lap_enabled) {
+    cpi->twopass.total_stats = aom_calloc(1, sizeof(FIRSTPASS_STATS));
+    av1_twopass_zero_stats(cpi->twopass.total_stats);
+  }
 }
 
 void av1_end_first_pass(AV1_COMP *cpi) {
-  output_stats(&cpi->twopass.total_stats, cpi->output_pkt_list);
+  if (cpi->twopass.total_stats)
+    output_stats(cpi->twopass.total_stats, cpi->output_pkt_list);
 }
 
 static aom_variance_fn_t get_block_variance_fn(BLOCK_SIZE bsize) {
@@ -851,7 +855,8 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
     // local variable 'fps'), and then cpi->output_pkt_list will point to it.
     *this_frame_stats = fps;
     output_stats(this_frame_stats, cpi->output_pkt_list);
-    accumulate_stats(&twopass->total_stats, &fps);
+    if (twopass->total_stats != NULL)
+      accumulate_stats(twopass->total_stats, &fps);
     /*In the case of two pass, first pass uses it as a circular buffer,
      * when LAP is enabled it is used as a linear buffer*/
     twopass->stats_buf_ctx->stats_in_end++;

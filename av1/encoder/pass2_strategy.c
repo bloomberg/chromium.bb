@@ -50,7 +50,10 @@ static double calculate_modified_err(const FRAME_INFO *frame_info,
                                      const TWO_PASS *twopass,
                                      const AV1EncoderConfig *oxcf,
                                      const FIRSTPASS_STATS *this_frame) {
-  const FIRSTPASS_STATS *const stats = &twopass->total_stats;
+  const FIRSTPASS_STATS *const stats = twopass->total_stats;
+  if (stats == NULL) {
+    return 0;
+  }
   const double av_weight = stats->weight / stats->count;
   const double av_err = (stats->coded_error * av_weight) / stats->count;
   double modified_error =
@@ -1690,20 +1693,21 @@ static void process_first_pass_stats(AV1_COMP *cpi,
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
 
-  if (cpi->oxcf.rc_mode != AOM_Q && current_frame->frame_number == 0) {
+  if (cpi->oxcf.rc_mode != AOM_Q && current_frame->frame_number == 0 &&
+      cpi->twopass.total_stats && cpi->twopass.total_left_stats) {
     const int frames_left =
-        (int)(twopass->total_stats.count - current_frame->frame_number);
+        (int)(twopass->total_stats->count - current_frame->frame_number);
 
     // Special case code for first frame.
     const int section_target_bandwidth =
         (int)(twopass->bits_left / frames_left);
-    const double section_length = twopass->total_left_stats.count;
+    const double section_length = twopass->total_left_stats->count;
     const double section_error =
-        twopass->total_left_stats.coded_error / section_length;
+        twopass->total_left_stats->coded_error / section_length;
     const double section_intra_skip =
-        twopass->total_left_stats.intra_skip_pct / section_length;
+        twopass->total_left_stats->intra_skip_pct / section_length;
     const double section_inactive_zone =
-        (twopass->total_left_stats.inactive_zone_rows * 2) /
+        (twopass->total_left_stats->inactive_zone_rows * 2) /
         ((double)cm->mb_rows * section_length);
     const int tmp_q = get_twopass_worst_quality(
         cpi, section_error, section_intra_skip + section_inactive_zone,
@@ -1738,7 +1742,8 @@ static void process_first_pass_stats(AV1_COMP *cpi,
   }
 
   // Update the total stats remaining structure.
-  subtract_stats(&twopass->total_left_stats, this_frame);
+  if (twopass->total_left_stats)
+    subtract_stats(twopass->total_left_stats, this_frame);
 
   // Set the frame content type flag.
   if (this_frame->intra_skip_pct >= FC_ANIMATION_THRESH)
@@ -1894,15 +1899,17 @@ void av1_init_second_pass(AV1_COMP *cpi) {
   double frame_rate;
   FIRSTPASS_STATS *stats;
 
-  av1_twopass_zero_stats(&twopass->total_stats);
-  av1_twopass_zero_stats(&twopass->total_left_stats);
+  twopass->total_stats = aom_calloc(1, sizeof(FIRSTPASS_STATS));
+  twopass->total_left_stats = aom_calloc(1, sizeof(FIRSTPASS_STATS));
+  av1_twopass_zero_stats(twopass->total_stats);
+  av1_twopass_zero_stats(twopass->total_left_stats);
 
   if (!twopass->stats_buf_ctx->stats_in_end) return;
 
-  stats = &twopass->total_stats;
+  stats = twopass->total_stats;
 
   *stats = *twopass->stats_buf_ctx->stats_in_end;
-  twopass->total_left_stats = *stats;
+  *twopass->total_left_stats = *stats;
 
   frame_rate = 10000000.0 * stats->count / stats->duration;
   // Each frame can have a different duration, as the frame rate in the source
@@ -1935,6 +1942,40 @@ void av1_init_second_pass(AV1_COMP *cpi) {
     }
     twopass->modified_error_left = modified_error_total;
   }
+
+  // Reset the vbr bits off target counters
+  cpi->rc.vbr_bits_off_target = 0;
+  cpi->rc.vbr_bits_off_target_fast = 0;
+
+  cpi->rc.rate_error_estimate = 0;
+
+  // Static sequence monitor variables.
+  twopass->kf_zeromotion_pct = 100;
+  twopass->last_kfgroup_zeromotion_pct = 100;
+
+  // Initialize bits per macro_block estimate correction factor.
+  twopass->bpm_factor = 1.0;
+  // Initialize actual and target bits counters for ARF groups so that
+  // at the start we have a neutral bpm adjustment.
+  twopass->rolling_arf_group_target_bits = 1;
+  twopass->rolling_arf_group_actual_bits = 1;
+}
+
+void av1_init_single_pass_lap(AV1_COMP *cpi) {
+  TWO_PASS *const twopass = &cpi->twopass;
+
+  twopass->total_stats = NULL;
+  twopass->total_left_stats = NULL;
+
+  if (!twopass->stats_buf_ctx->stats_in_end) return;
+
+  // This variable monitors how far behind the second ref update is lagging.
+  twopass->sr_update_lag = 1;
+
+  twopass->bits_left = 0;
+  twopass->modified_error_min = 0.0;
+  twopass->modified_error_max = 0.0;
+  twopass->modified_error_left = 0.0;
 
   // Reset the vbr bits off target counters
   cpi->rc.vbr_bits_off_target = 0;
