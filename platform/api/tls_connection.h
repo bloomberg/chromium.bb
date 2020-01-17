@@ -18,15 +18,6 @@ class TlsConnection {
   // Client callbacks are run via the TaskRunner used by TlsConnectionFactory.
   class Client {
    public:
-    // Called when |connection| writing is blocked and unblocked, respectively.
-    // Note that implementations should do best effort to buffer packets even in
-    // blocked state, and should call OnError if we actually overflow the
-    // buffer.
-    //
-    // TODO(crbug/openscreen/80): Remove these after Chromium is migrated.
-    [[deprecated]] virtual void OnWriteBlocked(TlsConnection* connection);
-    [[deprecated]] virtual void OnWriteUnblocked(TlsConnection* connection);
-
     // Called when |connection| experiences an error, such as a read error.
     virtual void OnError(TlsConnection* connection, Error error) = 0;
 
@@ -47,13 +38,7 @@ class TlsConnection {
   virtual void SetClient(Client* client) = 0;
 
   // Sends a message. Returns true iff the message will be sent.
-  //
-  // TODO(crbug/openscreen/80): Make this pure virtual after Chromium implements
-  // it.
-  [[nodiscard]] virtual bool Send(const void* data, size_t len);
-
-  // TODO(crbug/openscreen/80): Remove after Chromium is migrated to Send().
-  virtual void Write(const void* data, size_t len);
+  [[nodiscard]] virtual bool Send(const void* data, size_t len) = 0;
 
   // Get the local address.
   virtual IPEndpoint GetLocalEndpoint() const = 0;
