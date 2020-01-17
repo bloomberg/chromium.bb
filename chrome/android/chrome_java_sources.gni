@@ -1699,6 +1699,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomToolbarAnimationCoordinator.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomToolbarCoordinator.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomToolbarNewTabButton.java",
+  "java/src/org/chromium/chrome/browser/toolbar/bottom/BottomToolbarVariationManager.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BrowsingModeBottomToolbarCoordinator.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BrowsingModeBottomToolbarLinearLayout.java",
   "java/src/org/chromium/chrome/browser/toolbar/bottom/BrowsingModeBottomToolbarMediator.java",

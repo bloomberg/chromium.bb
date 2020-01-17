@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeState;
-import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -46,7 +45,7 @@ class StartSurfaceToolbarMediator {
 
     StartSurfaceToolbarMediator(PropertyModel model) {
         mPropertyModel = model;
-        mPropertyModel.set(MENU_IS_VISIBLE, !FeatureUtilities.isBottomToolbarEnabled());
+        mPropertyModel.set(MENU_IS_VISIBLE, true);
         mOverviewModeState = OverviewModeState.NOT_SHOWN;
     }
 
@@ -118,9 +117,7 @@ class StartSurfaceToolbarMediator {
         mPropertyModel.set(ACCESSIBILITY_ENABLED, enabled);
     }
 
-    void onBottomToolbarVisibilityChanged(boolean isVisible) {
-        mPropertyModel.set(MENU_IS_VISIBLE, !isVisible);
-    }
+    void onBottomToolbarVisibilityChanged(boolean isVisible) {}
 
     void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
         assert mOverviewModeBehavior == null;
