@@ -19,8 +19,6 @@
 // For the squared error buffer, keep a padding for 4 samples
 #define SSE_STRIDE (BW + 4)
 
-#if EXPERIMENT_TEMPORAL_FILTER
-
 DECLARE_ALIGNED(32, static const uint32_t, sse_bytemask_2x4[4][2][4]) = {
   { { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }, { 0xFFFF, 0x0000, 0x0000, 0x0000 } },
   { { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF }, { 0xFFFF, 0xFFFF, 0x0000, 0x0000 } },
@@ -28,12 +26,13 @@ DECLARE_ALIGNED(32, static const uint32_t, sse_bytemask_2x4[4][2][4]) = {
   { { 0x0000, 0x0000, 0x0000, 0xFFFF }, { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF } }
 };
 
-static void get_squared_error(uint8_t *frame1, unsigned int stride,
-                              uint8_t *frame2, unsigned int stride2,
-                              int block_width, int block_height,
-                              uint16_t *frame_sse, unsigned int dst_stride) {
-  uint8_t *src1 = frame1;
-  uint8_t *src2 = frame2;
+static void get_squared_error(const uint8_t *frame1, const unsigned int stride,
+                              const uint8_t *frame2, const unsigned int stride2,
+                              const int block_width, const int block_height,
+                              uint16_t *frame_sse,
+                              const unsigned int dst_stride) {
+  const uint8_t *src1 = frame1;
+  const uint8_t *src2 = frame2;
   uint16_t *dst = frame_sse;
 
   for (int i = 0; i < block_height; i++) {
@@ -99,23 +98,18 @@ static int32_t xx_mask_and_hadd(__m128i vsum1, __m128i vsum2, int i) {
   return _mm_cvtsi128_si32(veca);
 }
 
-void av1_temporal_filter_plane_sse2(uint8_t *frame1, unsigned int stride,
-                                    uint8_t *frame2, unsigned int stride2,
-                                    int block_width, int block_height,
-                                    int strength, double sigma,
-                                    int decay_control, const int *blk_fw,
-                                    int use_32x32, unsigned int *accumulator,
-                                    uint16_t *count) {
-  (void)strength;
-  (void)blk_fw;
-  (void)use_32x32;
+static void apply_temporal_filter_planewise(
+    const uint8_t *frame1, const unsigned int stride, const uint8_t *frame2,
+    const unsigned int stride2, const int block_width, const int block_height,
+    const double sigma, const int decay_control, unsigned int *accumulator,
+    uint16_t *count) {
   const double h = decay_control * (0.7 + log(sigma + 0.5));
   const double beta = 1.0;
 
   uint16_t frame_sse[SSE_STRIDE * BH];
   uint32_t acc_5x5_sse[BH][BW];
 
-  assert(WINDOW_LENGTH == 2);
+  assert(PLANEWISE_FILTER_WINDOW_LENGTH == 5);
   assert(((block_width == 32) && (block_height == 32)) ||
          ((block_width == 16) && (block_height == 16)));
 
@@ -179,17 +173,47 @@ void av1_temporal_filter_plane_sse2(uint8_t *frame1, unsigned int stride,
       const int pixel_value = frame2[i * stride2 + j];
 
       int diff_sse = acc_5x5_sse[i][j];
-      diff_sse /= WINDOW_SIZE;
+      diff_sse /=
+          (PLANEWISE_FILTER_WINDOW_LENGTH * PLANEWISE_FILTER_WINDOW_LENGTH);
 
       double scaled_diff = -diff_sse / (2 * beta * h * h);
       // clamp the value to avoid underflow in exp()
       if (scaled_diff < -15) scaled_diff = -15;
       double w = exp(scaled_diff);
-      const int weight = (int)(w * SCALE);
+      const int weight = (int)(w * PLANEWISE_FILTER_WEIGHT_SCALE);
 
       count[k] += weight;
       accumulator[k] += weight * pixel_value;
     }
   }
 }
-#endif
+
+void av1_apply_temporal_filter_planewise_sse2(
+    const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
+    const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
+    const int num_planes, const double noise_level, const uint8_t *pred,
+    uint32_t *accum, uint16_t *count) {
+  const int is_high_bitdepth = ref_frame->flags & YV12_FLAG_HIGHBITDEPTH;
+  if (is_high_bitdepth) {
+    assert(0 && "Only support low bit-depth with sse2!");
+  }
+
+  const int frame_height = ref_frame->heights[0] << mbd->plane[0].subsampling_y;
+  const int decay_control = frame_height >= 480 ? 4 : 3;
+
+  const int mb_height = block_size_high[block_size];
+  const int mb_width = block_size_wide[block_size];
+  const int mb_pels = mb_height * mb_width;
+  for (int plane = 0; plane < num_planes; ++plane) {
+    const uint32_t plane_h = mb_height >> mbd->plane[plane].subsampling_y;
+    const uint32_t plane_w = mb_width >> mbd->plane[plane].subsampling_x;
+    const uint32_t frame_stride = ref_frame->strides[plane == 0 ? 0 : 1];
+    const int frame_offset = mb_row * plane_h * frame_stride + mb_col * plane_w;
+
+    const uint8_t *ref = ref_frame->buffers[plane] + frame_offset;
+    apply_temporal_filter_planewise(ref, frame_stride, pred + mb_pels * plane,
+                                    plane_w, plane_w, plane_h, noise_level,
+                                    decay_control, accum + mb_pels * plane,
+                                    count + mb_pels * plane);
+  }
+}

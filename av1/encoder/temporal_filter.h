@@ -35,13 +35,21 @@ extern "C" {
 #define SQRT_PI_BY_2 1.25331413732
 
 #define EXPERIMENT_TEMPORAL_FILTER 1
-#define WINDOW_LENGTH 2
-#define WINDOW_SIZE 25
-#define SCALE 1000
 
 // Window size for temporal filtering on YUV planes.
-// This is particually used for function `av1_apply_temporal_filter_yuv_c()`.
+// This is particually used for function `av1_apply_temporal_filter_yuv()`.
 static const int YUV_FILTER_WINDOW_LENGTH = 3;
+
+// Window size for temporal filtering on Y planes.
+// This is particually used for function `av1_apply_temporal_filter_yonly()`.
+static const int YONLY_FILTER_WINDOW_LENGTH = 3;
+
+// Window size for plane-wise temporal filtering.
+// This is particually used for function `av1_apply_temporal_filter_planewise()`
+static const int PLANEWISE_FILTER_WINDOW_LENGTH = 5;
+// A scale factor used in plane-wise temporal filtering to raise the filter
+// weight from `double` with range [0, 1] to `int` with range [0, 1000].
+static const int PLANEWISE_FILTER_WEIGHT_SCALE = 1000;
 
 static INLINE BLOCK_SIZE dims_to_size(int w, int h) {
   if (w != h) return -1;
