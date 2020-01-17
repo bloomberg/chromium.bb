@@ -1107,10 +1107,14 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
       canvas2d_bridge_ = CreateUnaccelerated2dBuffer();
   }
 
-  if (canvas2d_bridge_)
-    canvas2d_bridge_->SetCanvasResourceHost(this);
-  else
+  if (!canvas2d_bridge_)
     return;
+
+  canvas2d_bridge_->SetCanvasResourceHost(this);
+  bool is_being_displayed =
+      GetLayoutObject() && GetComputedStyle() &&
+      GetComputedStyle()->Visibility() == EVisibility::kVisible;
+  canvas2d_bridge_->SetIsBeingDisplayed(is_being_displayed);
 
   did_fail_to_create_resource_provider_ = false;
   UpdateMemoryUsage();
