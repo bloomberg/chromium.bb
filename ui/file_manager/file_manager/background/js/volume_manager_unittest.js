@@ -484,3 +484,48 @@ async function testErrorInitializingVolume(done) {
 
   done();
 }
+
+/**
+ * Tests VolumeInfoImpl doesn't raise exception if null is passed for
+ * filesystem. crbug.com/1041340
+ */
+async function testDriveWithNullFilesystem(done) {
+  // Get Drive volume metadata from faked getVolumeMetadataList().
+  const driveVolumeMetadata =
+      chrome.fileManagerPrivate.volumeMetadataList_.find(volumeMetadata => {
+        return volumeMetadata.volumeType ===
+            VolumeManagerCommon.VolumeType.DRIVE;
+      });
+  assertTrue(!!driveVolumeMetadata);
+
+  const localizedLabel = 'DRIVE LABEL';
+  const expectedError = 'EXPECTED ERROR DESCRIPTION';
+
+  // Create a VolumeInfo with null filesystem, in the same way that happens on
+  // volumeManagerUtil.createVolumeInfo().
+  const volumeInfo = new VolumeInfoImpl(
+      /** @type {VolumeManagerCommon.VolumeType} */
+      (driveVolumeMetadata.volumeType), driveVolumeMetadata.volumeId,
+      null,  // File system is not found.
+      expectedError, driveVolumeMetadata.deviceType,
+      driveVolumeMetadata.devicePath, driveVolumeMetadata.isReadOnly,
+      driveVolumeMetadata.isReadOnlyRemovableDevice,
+      driveVolumeMetadata.profile, localizedLabel,
+      driveVolumeMetadata.providerId, driveVolumeMetadata.hasMedia,
+      driveVolumeMetadata.configurable, driveVolumeMetadata.watchable,
+      /** @type {VolumeManagerCommon.Source} */
+      (driveVolumeMetadata.source),
+      /** @type {VolumeManagerCommon.FileSystemType} */
+      (driveVolumeMetadata.diskFileSystemType), driveVolumeMetadata.iconSet,
+      (driveVolumeMetadata.driveLabel));
+
+  // Wait for trying to resolve display root, it should fail with
+  // |expectedError| if not re-throw to make the test fail.
+  await volumeInfo.resolveDisplayRoot().catch(error => {
+    if (error !== expectedError) {
+      throw error;
+    }
+  });
+
+  done();
+}
