@@ -11,6 +11,7 @@ from chromite.lib import cros_logging as logging
 # TODO: Remove this line once VBoot is working on Volteer.
 __use_flashrom__ = True
 
+
 def is_fast_required(use_futility, servo_version):
   """Returns true if --fast is necessary to flash successfully.
 
@@ -19,9 +20,7 @@ def is_fast_required(use_futility, servo_version):
   flash properly. Meant to be a temporary hack until b/143240576 is fixed.
 
   Args:
-    board (str): The board name.
-    use_futility (bool): True if futility is to be used, False if
-      flashrom.
+    use_futility (bool): True if futility is to be used, False if flashrom.
     servo_version (str): The type name of the servo device being used.
 
   Returns:
@@ -57,8 +56,6 @@ def get_commands(servo_version, serial):
   """
   dut_control_on = [['cpu_fw_spi:on']]
   dut_control_off = [['cpu_fw_spi:off']]
-  flashrom_cmd = []
-  futility_cmd = []
   if servo_version == 'servo_v2':
     programmer = 'ft2232_spi:type=servo-v2,serial=%s' % serial
   elif (servo_version == 'servo_micro'
@@ -73,9 +70,8 @@ def get_commands(servo_version, serial):
     # These commands were based off the commands for other boards.
     programmer = 'raiden_debug_spi:target=AP,serial=%s' % serial
   else:
-    raise Exception(servo_version, 'not recognized')
-  futility_cmd = ['sudo', 'futility', 'update', '-p',
-                  programmer, '-i']
-  flashrom_cmd = ['sudo', 'flashrom', '-p', programmer,
-                  '-w']
+    raise Exception('%s not recognized' % servo_version)
+
+  futility_cmd = ['sudo', 'futility', 'update', '-p', programmer, '-i']
+  flashrom_cmd = ['sudo', 'flashrom', '-p', programmer, '-w']
   return [dut_control_on, dut_control_off, flashrom_cmd, futility_cmd]

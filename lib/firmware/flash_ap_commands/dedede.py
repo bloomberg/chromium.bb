@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+
 def is_fast_required(use_futility, servo_version):
   """Returns true if --fast is necessary to flash successfully.
 
@@ -15,10 +16,10 @@ def is_fast_required(use_futility, servo_version):
   flash properly. Meant to be a temporary hack until b/143240576 is fixed.
 
   Args:
-    board (str): The board name.
     use_futility (bool): True if futility is to be used, False if
       flashrom.
     servo_version (str): The type name of the servo device being used.
+
   Returns:
     bool: True if fast is necessary, False otherwise.
   """
@@ -41,6 +42,7 @@ def get_commands(servo_version, serial):
       host to the dut
     serial (string): serial number of the servo device connected to the
       dut used in formatting commands
+
   Returns:
     array: [dut_control_on, dut_control_off, flashrom_cmd, futility_cmd]
       dut_control*=2d arrays formmated like [["cmd1", "arg1", "arg2"],
@@ -51,8 +53,6 @@ def get_commands(servo_version, serial):
   """
   dut_control_on = []
   dut_control_off = []
-  programmer = ''
-
   if servo_version == 'c2d2':
     dut_control_on.append(['ap_flash_select:on'])
     dut_control_on.append(['spi2_vref:pp3300'])
@@ -63,7 +63,7 @@ def get_commands(servo_version, serial):
         servo_version == 'servo_v4_with_ccd_cr50'):
     programmer = 'raiden_debug_spi:target=AP,serial=%s ' % serial
   else:
-    raise Exception(servo_version, 'not recognized')
+    raise Exception('%s not recognized' % servo_version)
 
   flashrom_cmd = ['sudo', 'flashrom', '-p', programmer, '-w']
   futility_cmd = ['sudo', 'futility', 'update', '-p', programmer, '-i']

@@ -10,15 +10,14 @@ from __future__ import print_function
 def is_fast_required(use_futility, servo_version):
   """Returns true if --fast is necessary to flash successfully.
 
-  The configurations in this function consistantly fail on the verify step,
+  The configurations in this function consistently fail on the verify step,
   adding --fast removes verification of the flash and allows these configs to
   flash properly. Meant to be a temporary hack until b/143240576 is fixed.
 
   Args:
-    board (str): The board name.
-    use_futility (bool): True if futility is to be used, False if
-      flashrom.
+    use_futility (bool): True if futility is to be used, False if flashrom.
     servo_version (str): The type name of the servo device being used.
+
   Returns:
     bool: True if fast is necessary, False otherwise.
   """
@@ -40,6 +39,7 @@ def get_commands(servo_version, serial):
       host to the dut
     serial (string): serial number of the servo device connected to the
       dut used in formatting commands
+
   Returns:
     array: [dut_control_on, dut_control_off, flashrom_cmd, futility_cmd]
       dut_control*=2d arrays formmated like [["cmd1", "arg1", "arg2"],
@@ -50,8 +50,6 @@ def get_commands(servo_version, serial):
   """
   dut_control_on = []
   dut_control_off = []
-  flashrom_cmd = []
-  futility_cmd = []
   if servo_version == 'servo_v2':
     dut_control_on.append(['spi2_vref:pp1800', 'spi2_buf_en:on',
                            'spi2_buf_on_flex_en:on',
@@ -60,10 +58,6 @@ def get_commands(servo_version, serial):
                             'spi2_buf_on_flex_en:off',
                             'spi_hold:off'])
     programmer = 'ft2232_spi:type=servo-v2,serial=%s' % serial
-    flashrom_cmd = ['sudo', 'flashrom', '-p',
-                    programmer, '-w']
-    futility_cmd = ['sudo', 'futility', 'update', '-p',
-                    programmer, '-i']
   elif (servo_version == 'servo_micro'
         or servo_version == 'servo_v4_with_servo_micro'):
     dut_control_on.append(['spi2_vref:pp1800', 'spi2_buf_en:on',
@@ -71,17 +65,13 @@ def get_commands(servo_version, serial):
     dut_control_off.append(['spi2_vref:off', 'spi2_buf_en:off',
                             'spi_hold:off'])
     programmer = 'raiden_debug_spi:serial=%s' % serial
-    flashrom_cmd = ['sudo', 'flashrom', '-p', programmer,
-                    '-w']
-    futility_cmd = ['sudo', 'futility', 'update', '-p',
-                    programmer, '-i']
   elif (servo_version == 'ccd_cr50' or
         servo_version == 'servo_v4_with_ccd_cr50'):
     programmer = 'raiden_debug_spi:target=AP,serial=%s' % serial
-    futility_cmd = ['sudo', 'futility', 'update', '-p',
-                    programmer, '-i']
-    flashrom_cmd = ['sudo', 'flashrom', '-p',
-                    programmer, '-w']
   else:
-    raise Exception(servo_version, 'not recognized')
+    raise Exception('%s not recognized' % servo_version)
+
+  flashrom_cmd = ['sudo', 'flashrom', '-p', programmer, '-w']
+  futility_cmd = ['sudo', 'futility', 'update', '-p', programmer, '-i']
+
   return [dut_control_on, dut_control_off, flashrom_cmd, futility_cmd]
