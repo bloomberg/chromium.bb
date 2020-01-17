@@ -292,10 +292,8 @@ static int virtio_gpu_bo_invalidate(struct bo *bo, struct mapping *mapping)
 	xfer.box.h = mapping->rect.height;
 	xfer.box.d = 1;
 
-	// Unfortunately, the kernel doesn't actually pass the guest layer_stride and
-	// guest stride to the host (compare virtio_gpu.h and virtgpu_drm.h). We can use
-	// the level to work around this.
-	xfer.level = bo->meta.strides[0];
+	// TODO(b/145993887): Send also stride when the patches are landed
+	// When BO_USE_RENDERING is set, the level=stride hack is not needed
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VIRTGPU_TRANSFER_FROM_HOST, &xfer);
 	if (ret) {
