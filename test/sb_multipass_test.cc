@@ -20,8 +20,9 @@
 #include "test/yuv_video_source.h"
 
 namespace {
-class AV1SBMultipassTest : public ::libaom_test::CodecTestWith2Params<int, int>,
-                           public ::libaom_test::EncoderTest {
+class AV1SBMultipassTest
+    : public ::libaom_test::CodecTestWith2Params<int, bool>,
+      public ::libaom_test::EncoderTest {
  protected:
   AV1SBMultipassTest()
       : EncoderTest(GET_PARAM(0)), set_cpu_used_(GET_PARAM(1)),
@@ -147,6 +148,6 @@ class AV1SBMultipassTest : public ::libaom_test::CodecTestWith2Params<int, int>,
 TEST_P(AV1SBMultipassTest, TwoPassMatchTest) { DoTest(); }
 
 AV1_INSTANTIATE_TEST_CASE(AV1SBMultipassTest, ::testing::Range(0, 6),
-                          ::testing::Range(0, 2));
+                          ::testing::Bool());
 
 }  // namespace
