@@ -435,7 +435,8 @@ public class FeatureUtilities {
      * @return Whether the Start Surface is enabled.
      */
     public static boolean isStartSurfaceEnabled() {
-        return isFlagEnabled(ChromePreferenceKeys.START_SURFACE_ENABLED_KEY, false);
+        return isFlagEnabled(ChromePreferenceKeys.START_SURFACE_ENABLED_KEY, false)
+               && !SysUtils.isLowEndDevice();
     }
 
     /**

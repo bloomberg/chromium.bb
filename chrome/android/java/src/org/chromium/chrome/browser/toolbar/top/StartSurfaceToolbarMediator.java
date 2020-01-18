@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -55,15 +56,13 @@ class StartSurfaceToolbarMediator {
         mTemplateUrlObserver = new TemplateUrlServiceObserver() {
             @Override
             public void onTemplateURLServiceChanged() {
-                updateLogoVisibility(mOverviewModeState,
-                        TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
+                updateLogoVisibility(TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
             }
         };
 
         TemplateUrlServiceFactory.get().addObserver(mTemplateUrlObserver);
         mIsGoogleSearchEngine = TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle();
-        updateLogoVisibility(
-                mOverviewModeState, TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
+        updateLogoVisibility(TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle());
     }
 
     void destroy() {
@@ -115,6 +114,7 @@ class StartSurfaceToolbarMediator {
 
     void onAccessibilityStatusChanged(boolean enabled) {
         mPropertyModel.set(ACCESSIBILITY_ENABLED, enabled);
+        updateNewTabButtonVisibility();
     }
 
     void onBottomToolbarVisibilityChanged(boolean isVisible) {}
@@ -128,10 +128,9 @@ class StartSurfaceToolbarMediator {
                 @Override
                 public void onOverviewModeStateChanged(
                         @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
-                    boolean isShownTabswitcherState =
-                            overviewModeState == OverviewModeState.SHOWN_TABSWITCHER;
-                    mPropertyModel.set(NEW_TAB_BUTTON_IS_VISIBLE, isShownTabswitcherState);
-                    updateLogoVisibility(overviewModeState, mIsGoogleSearchEngine);
+                    mOverviewModeState = overviewModeState;
+                    updateNewTabButtonVisibility();
+                    updateLogoVisibility(mIsGoogleSearchEngine);
                 }
                 @Override
                 public void onOverviewModeFinishedShowing() {
@@ -148,14 +147,21 @@ class StartSurfaceToolbarMediator {
         mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
-    private void updateLogoVisibility(
-            @OverviewModeState int overviewModeState, boolean isGoogleSearchEngine) {
-        mOverviewModeState = overviewModeState;
+    private void updateLogoVisibility(boolean isGoogleSearchEngine) {
         mIsGoogleSearchEngine = isGoogleSearchEngine;
         boolean shouldShowLogo =
                 (mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
                         || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY)
                 && mIsGoogleSearchEngine;
         mPropertyModel.set(LOGO_IS_VISIBLE, shouldShowLogo);
+    }
+
+    private void updateNewTabButtonVisibility() {
+        // This toolbar is only shown for tab switcher when accessibility is enabled. Note that
+        // OverviewListLayout will be shown as the tab switcher instead of the star surface.
+        boolean isShownTabswitcherState = mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER
+                || mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_TASKS_ONLY
+                || AccessibilityUtil.isAccessibilityEnabled();
+        mPropertyModel.set(NEW_TAB_BUTTON_IS_VISIBLE, isShownTabswitcherState);
     }
 }
