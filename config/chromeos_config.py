@@ -2613,18 +2613,21 @@ def ApplyCustomOverrides(site_config):
           'dev_installer_prebuilts': True,
           'hw_tests': [],
           'hw_tests_override': [],
+          'paygen': False,
       },
 
       'gale-release': {
           'dev_installer_prebuilts': True,
           'hw_tests': [],
           'hw_tests_override': [],
+          'paygen': False,
       },
 
       'mistral-release': {
           'dev_installer_prebuilts': True,
           'hw_tests': [],
           'hw_tests_override': [],
+          'paygen': False,
       },
 
       'lakitu-release': config_lib.BuildConfig().apply(
