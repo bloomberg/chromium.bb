@@ -128,10 +128,13 @@ DesktopAutomationHandler.prototype = {
     }
 
     // Decide whether to announce and sync this event.
+    let isFocusOnRoot = evt.type == 'focus' && evt.target == evt.target.root;
     if (!DesktopAutomationHandler.announceActions &&
         evt.eventFrom == 'action' &&
-        EventSourceState.get() != EventSourceType.TOUCH_GESTURE)
+        (EventSourceState.get() != EventSourceType.TOUCH_GESTURE ||
+         isFocusOnRoot)) {
       return;
+    }
 
     var prevRange = ChromeVoxState.instance.getCurrentRangeWithoutRecovery();
 
