@@ -306,11 +306,12 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     # Mapping more content than the amount of free disk required.
     with self.assertRaises(local_caching.NoMoreSpace) as cm:
       self._add_one_item(cache, 1)
-    expected = (
-        'Not enough space to fetch the whole isolated tree.\n'
-        '  CachePolicies(max_cache_size=0; max_items=0; min_free_space=1000; '
-        'max_age_secs=0)\n'
-        '  cache=6bytes, 3 items; 999b free_space')
+    expected = ('Not enough space to fetch the whole isolated tree.\n '
+                'CachePolicies(max_cache_size=0 (0.000 GiB); max_items=0; '
+                'min_free_space=1000 (0.000 GiB); max_age_secs=0)\n  '
+                'cache=6 bytes (0.000 GiB), 3 items; '
+                '999 bytes (0.000 GiB) free_space')
+
     self.assertEqual(expected, cm.exception.message)
 
   def test_save_disk(self):

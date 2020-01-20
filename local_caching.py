@@ -185,11 +185,11 @@ class CachePolicies(object):
     self.max_age_secs = max_age_secs
 
   def __str__(self):
-    return (
-        'CachePolicies(max_cache_size=%s; max_items=%s; min_free_space=%s; '
-        'max_age_secs=%s)') % (
-            self.max_cache_size, self.max_items, self.min_free_space,
-            self.max_age_secs)
+    return ('CachePolicies(max_cache_size=%s (%.3f GiB); max_items=%s; '
+            'min_free_space=%s (%.3f GiB); max_age_secs=%s)') % (
+                self.max_cache_size, float(self.max_cache_size) / 1024**3,
+                self.max_items, self.min_free_space,
+                float(self.min_free_space) / 1024**3, self.max_age_secs)
 
 
 class CacheMiss(Exception):
@@ -743,8 +743,11 @@ class DiskContentAddressedCache(ContentAddressedCache):
       if not allow_protected and digest == self._protected:
         total_size = sum(self._lru.values())
         msg = ('Not enough space to fetch the whole isolated tree.\n'
-               '  %s\n  cache=%dbytes, %d items; %sb free_space') % (
-                   self.policies, total_size, len(self._lru), self._free_disk)
+               ' %s\n  cache=%d bytes (%.3f GiB), %d items; '
+               '%s bytes (%.3f GiB) free_space') % (
+                   self.policies, total_size, float(total_size) / 1024**3,
+                   len(self._lru), self._free_disk,
+                   float(self._free_disk) / 1024**3)
         raise NoMoreSpace(msg)
     except KeyError:
       # That means an internal error.
