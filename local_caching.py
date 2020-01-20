@@ -835,6 +835,7 @@ class NamedCache(Cache):
         logging.exception(
             'NamedCache: failed to load named cache state file; obliterating')
         file_path.rmtree(self.cache_dir)
+        fs.makedirs(self.cache_dir)
       with self._lock:
         self._try_upgrade()
     if time_fn:
