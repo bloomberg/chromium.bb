@@ -2,7 +2,7 @@ export const description = `
 copy imageBitmap To texture tests.
 `;
 
-import { TestGroup, assert, pcombine, poptions } from '../../framework/index.js';
+import { TestGroup, pcombine, poptions } from '../../framework/index.js';
 
 import { GPUTest } from './gpu_test.js';
 
@@ -72,22 +72,6 @@ class F extends GPUTest {
     }
     return failedPixels > 0 ? lines.join('\n') : undefined;
   }
-
-  // Using drawImage to extract imageBitmap content.
-  imageBitmapToData(imageBitmap: ImageBitmap): ArrayBufferView {
-    const imageCanvas = document.createElement('canvas');
-    imageCanvas.width = imageBitmap.width;
-    imageCanvas.height = imageBitmap.height;
-
-    const imageCanvasContext = imageCanvas.getContext('2d');
-    assert(
-      imageCanvasContext !== null,
-      'Cannot create canvas context for reading back contents from imageBitmap.'
-    );
-
-    imageCanvasContext.drawImage(imageBitmap, 0, 0, imageBitmap.width, imageBitmap.height);
-    return imageCanvasContext.getImageData(0, 0, imageBitmap.width, imageBitmap.height).data;
-  }
 }
 
 export const g = new TestGroup(F);
@@ -134,8 +118,6 @@ g.test('from ImageData', async t => {
     }
   );
 
-  const data = t.imageBitmapToData(imageBitmap);
-
   const rowPitchValue = calculateRowPitch(imageBitmap.width, bytesPerPixel);
   const testBuffer = t.device.createBuffer({
     size: rowPitchValue * imageBitmap.height,
@@ -153,7 +135,7 @@ g.test('from ImageData', async t => {
 
   t.checkCopyImageBitmapResult(
     testBuffer,
-    data,
+    imagePixels,
     imageBitmap.width,
     imageBitmap.height,
     bytesPerPixel
