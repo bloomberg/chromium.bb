@@ -309,8 +309,8 @@ class DiskContentAddressedCacheTest(TestCase, ContentAddressedCacheTestMixin):
     expected = (
         'Not enough space to fetch the whole isolated tree.\n'
         '  CachePolicies(max_cache_size=0; max_items=0; min_free_space=1000; '
-          'max_age_secs=0)\n'
-        '  cache=8bytes, 4 items; 999b free_space')
+        'max_age_secs=0)\n'
+        '  cache=6bytes, 3 items; 999b free_space')
     self.assertEqual(expected, cm.exception.message)
 
   def test_save_disk(self):

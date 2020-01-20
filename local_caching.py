@@ -739,13 +739,12 @@ class DiskContentAddressedCache(ContentAddressedCache):
     """
     self._lock.assert_locked()
     try:
-      digest, (size, _ts) = self._lru.get_oldest()
+      digest, _ = self._lru.get_oldest()
       if not allow_protected and digest == self._protected:
-        total_size = sum(self._lru.values())+size
-        msg = (
-            'Not enough space to fetch the whole isolated tree.\n'
-            '  %s\n  cache=%dbytes, %d items; %sb free_space') % (
-              self.policies, total_size, len(self._lru)+1, self._free_disk)
+        total_size = sum(self._lru.values())
+        msg = ('Not enough space to fetch the whole isolated tree.\n'
+               '  %s\n  cache=%dbytes, %d items; %sb free_space') % (
+                   self.policies, total_size, len(self._lru), self._free_disk)
         raise NoMoreSpace(msg)
     except KeyError:
       # That means an internal error.
