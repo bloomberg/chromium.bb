@@ -4305,6 +4305,21 @@ static INLINE void compute_best_interintra_mode(
     *best_interintra_mode = mbmi->interintra_mode;
   }
 }
+
+// Computes the rd_threshold and total_mode_rate
+static AOM_INLINE int64_t compute_total_rate_and_rd_thresh(
+    MACROBLOCK *const x, int *rate_mv, int *total_mode_rate, BLOCK_SIZE bsize,
+    int64_t ref_best_rd, int rmode) {
+  const int is_wedge_used = av1_is_wedge_used(bsize);
+  const int64_t rd_thresh = get_rd_thresh_from_best_rd(
+      ref_best_rd, (1 << INTER_INTRA_RD_THRESH_SHIFT),
+      INTER_INTRA_RD_THRESH_SCALE);
+  const int rwedge = is_wedge_used ? x->wedge_interintra_cost[bsize][0] : 0;
+  *total_mode_rate = *rate_mv + rmode + rwedge;
+  const int64_t mode_rd = RDCOST(x->rdmult, *total_mode_rate, 0);
+  return (rd_thresh - mode_rd);
+}
+
 static int handle_inter_intra_mode(const AV1_COMP *const cpi,
                                    MACROBLOCK *const x, BLOCK_SIZE bsize,
                                    MB_MODE_INFO *mbmi,
@@ -4378,14 +4393,10 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
     }
 
     RD_STATS rd_stats;
-    const int64_t rd_thresh = get_rd_thresh_from_best_rd(
-        ref_best_rd, (1 << INTER_INTRA_RD_THRESH_SHIFT),
-        INTER_INTRA_RD_THRESH_SCALE);
-    const int rwedge = is_wedge_used ? x->wedge_interintra_cost[bsize][0] : 0;
-    const int total_mode_rate = *rate_mv + rmode + rwedge;
-    const int64_t mode_rd = RDCOST(x->rdmult, total_mode_rate, 0);
-    const int64_t tmp_rd_thresh = rd_thresh - mode_rd;
-    rd = estimate_yrd_for_sb(cpi, bsize, x, tmp_rd_thresh, &rd_stats);
+    int total_mode_rate;
+    const int64_t rd_thresh = compute_total_rate_and_rd_thresh(
+        x, rate_mv, &total_mode_rate, bsize, ref_best_rd, rmode);
+    rd = estimate_yrd_for_sb(cpi, bsize, x, rd_thresh, &rd_stats);
     if (rd != INT64_MAX) {
       rd = RDCOST(x->rdmult, total_mode_rate + rd_stats.rate, rd_stats.dist);
     } else {
