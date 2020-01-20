@@ -7011,22 +7011,11 @@ static AOM_INLINE void init_mode_skip_mask(mode_skip_mask_t *mask,
       ~(sf->intra_sf.intra_y_mode_mask[max_txsize_lookup[bsize]]);
 }
 
-// Please add/modify parameter setting in this function, making it consistent
-// and easy to read and maintain.
-static AOM_INLINE void set_params_rd_pick_inter_mode(
-    const AV1_COMP *cpi, MACROBLOCK *x, HandleInterModeArgs *args,
-    BLOCK_SIZE bsize, mode_skip_mask_t *mode_skip_mask, int skip_ref_frame_mask,
-    unsigned int ref_costs_single[REF_FRAMES],
-    unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES],
-    struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
-  const AV1_COMMON *const cm = &cpi->common;
-  MACROBLOCKD *const xd = &x->e_mbd;
-  MB_MODE_INFO *const mbmi = xd->mi[0];
-  MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
-  unsigned char segment_id = mbmi->segment_id;
-
+static AOM_INLINE void init_pred_buf(const MACROBLOCK *const x,
+                                     HandleInterModeArgs *const args) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
   if (is_cur_buf_hbd(xd)) {
-    int len = sizeof(uint16_t);
+    const int len = sizeof(uint16_t);
     args->above_pred_buf[0] = CONVERT_TO_BYTEPTR(x->above_pred_buf);
     args->above_pred_buf[1] =
         CONVERT_TO_BYTEPTR(x->above_pred_buf + (MAX_SB_SQUARE >> 1) * len);
@@ -7045,9 +7034,23 @@ static AOM_INLINE void set_params_rd_pick_inter_mode(
     args->left_pred_buf[1] = x->left_pred_buf + (MAX_SB_SQUARE >> 1);
     args->left_pred_buf[2] = x->left_pred_buf + MAX_SB_SQUARE;
   }
+}
 
+// Please add/modify parameter setting in this function, making it consistent
+// and easy to read and maintain.
+static AOM_INLINE void set_params_rd_pick_inter_mode(
+    const AV1_COMP *cpi, MACROBLOCK *x, HandleInterModeArgs *args,
+    BLOCK_SIZE bsize, mode_skip_mask_t *mode_skip_mask, int skip_ref_frame_mask,
+    unsigned int *ref_costs_single, unsigned int (*ref_costs_comp)[REF_FRAMES],
+    struct buf_2d (*yv12_mb)[MAX_MB_PLANE]) {
+  const AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = xd->mi[0];
+  MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
+  unsigned char segment_id = mbmi->segment_id;
+
+  init_pred_buf(x, args);
   av1_collect_neighbors_ref_counts(xd);
-
   estimate_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single,
                            ref_costs_comp);
 
