@@ -34,6 +34,7 @@
 """
 
 
+from __future__ import absolute_import
 import logging
 import os
 import signal
@@ -71,10 +72,10 @@ def _echo_check_procedure(client):
 def _echo_check_procedure_with_binary(client):
     client.connect()
 
-    client.send_message('binary', binary=True)
-    client.assert_receive('binary', binary=True)
-    client.send_message('\x00\x80\xfe\xff\x00\x80', binary=True)
-    client.assert_receive('\x00\x80\xfe\xff\x00\x80', binary=True)
+    client.send_message(b'binary', binary=True)
+    client.assert_receive(b'binary', binary=True)
+    client.send_message(b'\x00\x80\xfe\xff\x00\x80', binary=True)
+    client.assert_receive(b'\x00\x80\xfe\xff\x00\x80', binary=True)
 
     client.send_close()
     client.assert_receive_close()
@@ -240,9 +241,9 @@ class EndToEndHyBiTest(EndToEndTestBase):
             try:
                 client.connect()
                 self.fail('Could not catch HttpStatusException')
-            except client_for_testing.HttpStatusException, e:
+            except client_for_testing.HttpStatusException as e:
                 self.assertEqual(status, e.status)
-            except Exception, e:
+            except Exception as e:
                 self.fail('Catch unexpected exception')
             finally:
                 client.close_socket()

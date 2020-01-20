@@ -45,6 +45,7 @@ This code is far from robust, e.g., we cut corners in handshake.
 """
 
 
+from __future__ import absolute_import
 import base64
 import errno
 import logging
@@ -139,7 +140,7 @@ def receive_bytes(socket, length):
                 (length, length - remaining))
         received_bytes.append(new_received_bytes)
         remaining -= len(new_received_bytes)
-    return ''.join(received_bytes)
+    return b''.join(received_bytes)
 
 
 # TODO(tyoshino): Now the WebSocketHandshake class diverts these methods. We
@@ -163,7 +164,7 @@ def _read_fields(socket):
         value = _read_value(socket, ch)
         # 4.1 37. read a byte from the server
         ch = receive_bytes(socket, 1)
-        if ch != '\n':  # 0x0A
+        if ch != b'\n':  # 0x0A
             raise Exception(
                 'Expected LF but found %r while reading value %r for header '
                 '%r' % (ch, name, value))
@@ -183,14 +184,14 @@ def _read_name(socket):
     while True:
         # 4.1 34. read a byte from the server
         ch = receive_bytes(socket, 1)
-        if ch == '\r':  # 0x0D
+        if ch == b'\r':  # 0x0D
             return None
-        elif ch == '\n':  # 0x0A
+        elif ch == b'\n':  # 0x0A
             raise Exception(
                 'Unexpected LF when reading header name %r' % name)
-        elif ch == ':':  # 0x3A
+        elif ch == b':':  # 0x3A
             return name
-        elif ch >= 'A' and ch <= 'Z':  # range 0x31 to 0x5A
+        elif ch >= b'A' and ch <= b'Z':  # range 0x31 to 0x5A
             ch = chr(ord(ch) + 0x20)
             name += ch
         else:
@@ -201,19 +202,19 @@ def _skip_spaces(socket):
     # 4.1 35. read a byte from the server
     while True:
         ch = receive_bytes(socket, 1)
-        if ch == ' ':  # 0x20
+        if ch == b' ':  # 0x20
             continue
         return ch
 
 
 def _read_value(socket, ch):
     # 4.1 33. let /value/ be empty byte arrays
-    value = ''
+    value = b''
     # 4.1 36. read a byte from server.
     while True:
-        if ch == '\r':  # 0x0D
+        if ch == b'\r':  # 0x0D
             return value
-        elif ch == '\n':  # 0x0A
+        elif ch == b'\n':  # 0x0A
             raise Exception(
                 'Unexpected LF when reading header value %r' % value)
         else:
@@ -299,7 +300,7 @@ class WebSocketHandshake(object):
 
         request_line = _method_line(self._options.resource)
         self._logger.debug('Opening handshake Request-Line: %r', request_line)
-        self._socket.sendall(request_line)
+        self._socket.sendall(request_line.encode('UTF-8'))
 
         fields = []
         fields.append(_UPGRADE_HEADER)
@@ -336,11 +337,11 @@ class WebSocketHandshake(object):
 
         self._logger.info('Sent opening handshake request')
 
-        field = ''
+        field = b''
         while True:
             ch = receive_bytes(self._socket, 1)
             field += ch
-            if ch == '\n':
+            if ch == b'\n':
                 break
 
         self._logger.debug('Opening handshake Response-Line: %r', field)
@@ -392,7 +393,7 @@ class WebSocketHandshake(object):
         # Validate
         try:
             decoded_accept = base64.b64decode(accept)
-        except TypeError, e:
+        except TypeError as e:
             raise HandshakeException(
                 'Illegal value for header Sec-WebSocket-Accept: ' + accept)
 
@@ -620,7 +621,7 @@ def connect_socket_with_retry(host, port, timeout, use_tls,
             if use_tls:
                 return _TLSSocket(s)
             return s
-        except socket.error, e:
+        except socket.error as e:
             if e.errno != errno.ECONNREFUSED:
                 raise
             else:
@@ -685,7 +686,7 @@ class Client(object):
     def assert_connection_closed(self):
         try:
             read_data = receive_bytes(self._socket, 1)
-        except Exception, e:
+        except Exception as e:
             if str(e).find(
                 'Connection closed before receiving requested length ') == 0:
                 return

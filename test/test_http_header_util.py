@@ -33,6 +33,7 @@
 """Tests for http_header_util module."""
 
 
+from __future__ import absolute_import
 import unittest
 import six
 

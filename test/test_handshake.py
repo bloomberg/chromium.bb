@@ -33,6 +33,7 @@
 """Tests for handshake._base module."""
 
 
+from __future__ import absolute_import
 import unittest
 
 import set_sys_path  # Update sys.path to locate mod_pywebsocket module.

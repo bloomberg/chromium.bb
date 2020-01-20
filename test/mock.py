@@ -32,12 +32,14 @@
 """
 
 
-import Queue
+from __future__ import absolute_import
+import six.moves.queue
 import threading
 
 from mod_pywebsocket import common
 from mod_pywebsocket.stream import Stream
 from mod_pywebsocket.stream import StreamOptions
+from six.moves import range
 
 
 class _MockConnBase(object):
@@ -58,7 +60,7 @@ class _MockConnBase(object):
     def written_data(self):
         """Get bytes written to this mock."""
 
-        return ''.join(self._write_data)
+        return b''.join(self._write_data)
 
 
 class MockConn(_MockConnBase):
@@ -114,7 +116,7 @@ class MockBlockingConn(_MockConnBase):
 
     def __init__(self):
         _MockConnBase.__init__(self)
-        self._queue = Queue.Queue()
+        self._queue = six.moves.queue.Queue()
 
     def readline(self):
         """Override mod_python.apache.mp_conn.readline."""
@@ -153,7 +155,7 @@ class MockTable(dict):
 
     def __init__(self, copy_from={}):
         if isinstance(copy_from, dict):
-            copy_from = copy_from.items()
+            copy_from = list(copy_from.items())
         for key, value in copy_from:
             self.__setitem__(key, value)
 

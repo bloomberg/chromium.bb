@@ -33,8 +33,10 @@
 """Tests for msgutil module."""
 
 
+from __future__ import absolute_import
+from __future__ import print_function
 import array
-import Queue
+import six.moves.queue
 import random
 import struct
 import unittest
@@ -50,19 +52,21 @@ from mod_pywebsocket.stream import Stream
 from mod_pywebsocket.stream import StreamOptions
 from mod_pywebsocket import util
 from test import mock
+from six.moves import map
+from six.moves import range
 
 
 # We use one fixed nonce for testing instead of cryptographically secure PRNG.
-_MASKING_NONCE = 'ABCD'
+_MASKING_NONCE = b'ABCD'
 
 
 def _mask_hybi(frame):
-    frame_key = map(ord, _MASKING_NONCE)
+    frame_key = list(map(ord, _MASKING_NONCE))
     frame_key_len = len(frame_key)
     result = array.array('B')
     result.fromstring(frame)
     count = 0
-    for i in xrange(len(result)):
+    for i in range(len(result)):
         result[i] ^= frame_key[count]
         count = (count + 1) % frame_key_len
     return _MASKING_NONCE + result.tostring()
@@ -280,13 +284,13 @@ class BasicMessageTest(unittest.TestCase):
 
     def test_receive_close(self):
         request = _create_request(
-            ('\x88\x8a', struct.pack('!H', 1000) + 'Good bye'))
+            ('\x88\x8a', struct.pack('!H', 1000) + b'Good bye'))
         self.assertEqual(None, msgutil.receive_message(request))
         self.assertEqual(1000, request.ws_close_code)
         self.assertEqual('Good bye', request.ws_close_reason)
 
     def test_send_longest_close(self):
-        reason = 'a' * 123
+        reason = b'a' * 123
         request = _create_request(
             ('\x88\xfd',
              struct.pack('!H', common.STATUS_NORMAL_CLOSURE) + reason))
@@ -448,7 +452,7 @@ class PerMessageDeflateTest(unittest.TestCase):
 
         compress = zlib.compressobj(
                 zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
-        compressed_hello = compress.compress('Hello')
+        compressed_hello = compress.compress(b'Hello')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_hello = compressed_hello[:-4]
         expected = '\xc1%c' % len(compressed_hello)
@@ -510,13 +514,13 @@ class PerMessageDeflateTest(unittest.TestCase):
 
         expected = ''
 
-        compressed_hello = compress.compress('Hello')
+        compressed_hello = compress.compress(b'Hello')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_hello = compressed_hello[:-4]
         expected += '\xc1%c' % len(compressed_hello)
         expected += compressed_hello
 
-        compressed_world = compress.compress('World')
+        compressed_world = compress.compress(b'World')
         compressed_world += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_world = compressed_world[:-4]
         expected += '\xc1%c' % len(compressed_world)
@@ -535,15 +539,15 @@ class PerMessageDeflateTest(unittest.TestCase):
 
         compress = zlib.compressobj(
                 zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
-        compressed_hello = compress.compress('Hello')
+        compressed_hello = compress.compress(b'Hello')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
         expected = '\x41%c' % len(compressed_hello)
         expected += compressed_hello
-        compressed_goodbye = compress.compress('Goodbye')
+        compressed_goodbye = compress.compress(b'Goodbye')
         compressed_goodbye += compress.flush(zlib.Z_SYNC_FLUSH)
         expected += '\x00%c' % len(compressed_goodbye)
         expected += compressed_goodbye
-        compressed_world = compress.compress('World')
+        compressed_world = compress.compress(b'World')
         compressed_world += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_world = compressed_world[:-4]
         expected += '\x80%c' % len(compressed_world)
@@ -560,16 +564,16 @@ class PerMessageDeflateTest(unittest.TestCase):
 
         compress = zlib.compressobj(
                 zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
-        compressed_hello = compress.compress('')
+        compressed_hello = compress.compress(b'')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
-        expected = '\x41%c' % len(compressed_hello)
+        expected = b'\x41%c' % len(compressed_hello)
         expected += compressed_hello
-        compressed_empty = compress.compress('Hello')
+        compressed_empty = compress.compress(b'Hello')
         compressed_empty += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_empty = compressed_empty[:-4]
-        expected += '\x80%c' % len(compressed_empty)
+        expected += b'\x80%c' % len(compressed_empty)
         expected += compressed_empty
-        print '%r' % expected
+        print('%r' % expected)
         self.assertEqual(expected, request.connection.written_data())
 
     def test_send_message_fragmented_empty_last_frame(self):
@@ -582,14 +586,14 @@ class PerMessageDeflateTest(unittest.TestCase):
 
         compress = zlib.compressobj(
                 zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
-        compressed_hello = compress.compress('Hello')
+        compressed_hello = compress.compress(b'Hello')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
-        expected = '\x41%c' % len(compressed_hello)
+        expected = b'\x41%c' % len(compressed_hello)
         expected += compressed_hello
-        compressed_empty = compress.compress('')
+        compressed_empty = compress.compress(b'')
         compressed_empty += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_empty = compressed_empty[:-4]
-        expected += '\x80%c' % len(compressed_empty)
+        expected += b'\x80%c' % len(compressed_empty)
         expected += compressed_empty
         self.assertEqual(expected, request.connection.written_data())
 
@@ -630,21 +634,21 @@ class PerMessageDeflateTest(unittest.TestCase):
         extension.add_parameter('server_no_context_takeover', None)
         request = _create_request_from_rawdata(
                 '', permessage_deflate_request=extension)
-        for i in xrange(3):
+        for i in range(3):
             msgutil.send_message(request, 'Hello', end=False)
             msgutil.send_message(request, 'Hello', end=True)
 
         compress = zlib.compressobj(
                 zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
 
-        first_hello = compress.compress('Hello')
+        first_hello = compress.compress(b'Hello')
         first_hello += compress.flush(zlib.Z_SYNC_FLUSH)
-        expected = '\x41%c' % len(first_hello)
+        expected = b'\x41%c' % len(first_hello)
         expected += first_hello
-        second_hello = compress.compress('Hello')
+        second_hello = compress.compress(b'Hello')
         second_hello += compress.flush(zlib.Z_SYNC_FLUSH)
         second_hello = second_hello[:-4]
-        expected += '\x80%c' % len(second_hello)
+        expected += b'\x80%c' % len(second_hello)
         expected += second_hello
 
         self.assertEqual(
@@ -661,22 +665,22 @@ class PerMessageDeflateTest(unittest.TestCase):
         msgutil.send_message(request, 'Hello', end=False)
         msgutil.send_message(request, 'World', end=True)
 
-        expected = ''
+        expected = b''
 
         compress = zlib.compressobj(
             zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
-        compressed_hello = compress.compress('Hello')
+        compressed_hello = compress.compress(b'Hello')
         compressed_hello += compress.flush(zlib.Z_FINISH)
-        compressed_hello = compressed_hello + chr(0)
-        expected += '\x41%c' % len(compressed_hello)
+        compressed_hello = compressed_hello + struct.pack('!B', 0)
+        expected += b'\x41%c' % len(compressed_hello)
         expected += compressed_hello
 
         compress = zlib.compressobj(
             zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
-        compressed_world = compress.compress('World')
+        compressed_world = compress.compress(b'World')
         compressed_world += compress.flush(zlib.Z_FINISH)
-        compressed_world = compressed_world + chr(0)
-        expected += '\x80%c' % len(compressed_world)
+        compressed_world = compressed_world + struct.pack('!B', 0)
+        expected += b'\x80%c' % len(compressed_world)
         expected += compressed_world
 
         self.assertEqual(expected, request.connection.written_data())
@@ -685,14 +689,14 @@ class PerMessageDeflateTest(unittest.TestCase):
         compress = zlib.compressobj(
             zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
 
-        compressed_hello = compress.compress('Hello')
+        compressed_hello = compress.compress(b'Hello')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_hello = compressed_hello[:-4]
-        data = '\xc1%c' % (len(compressed_hello) | 0x80)
+        data = b'\xc1%c' % (len(compressed_hello) | 0x80)
         data += _mask_hybi(compressed_hello)
 
         # Close frame
-        data += '\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + 'Good bye')
+        data += b'\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + 'Good bye')
 
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
@@ -708,8 +712,8 @@ class PerMessageDeflateTest(unittest.TestCase):
         """
 
         random.seed(a=0)
-        payload = ''.join(
-            [chr(random.randint(0, 255)) for i in xrange(1000)])
+        payload = b''.join(
+            [struct.pack('!B', random.randint(0, 255)) for i in range(1000)])
 
         compress = zlib.compressobj(
             zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
@@ -749,7 +753,7 @@ class PerMessageDeflateTest(unittest.TestCase):
 
             frame_count += 1
 
-        print "Chunk sizes: %r" % chunk_sizes
+        print("Chunk sizes: %r" % chunk_sizes)
         self.assertTrue(len(chunk_sizes) > 10)
 
         # Close frame
@@ -769,7 +773,7 @@ class PerMessageDeflateTest(unittest.TestCase):
 
         data = ''
 
-        compressed_hello = compress.compress('HelloWebSocket')
+        compressed_hello = compress.compress(b'HelloWebSocket')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_hello = compressed_hello[:-4]
         split_position = len(compressed_hello) / 2
@@ -782,7 +786,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         compress = zlib.compressobj(
                 zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
 
-        compressed_world = compress.compress('World')
+        compressed_world = compress.compress(b'World')
         compressed_world += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_world = compressed_world[:-4]
         data += '\xc1%c' % (len(compressed_world) | 0x80)
@@ -806,8 +810,8 @@ class PerMessageDeflateTest(unittest.TestCase):
         """
 
         random.seed(a=0)
-        payload = ''.join(
-            [chr(random.randint(0, 255)) for i in xrange(1000)])
+        payload = b''.join(
+            [struct.pack('!B', random.randint(0, 255)) for i in range(1000)])
 
         compress = None
 
@@ -852,9 +856,9 @@ class PerMessageDeflateTest(unittest.TestCase):
                     compress = None
                     finish_used = True
 
-        print "Chunk sizes: %r" % chunk_sizes
+        print("Chunk sizes: %r" % chunk_sizes)
         self.assertTrue(len(chunk_sizes) > 10)
-        print "Methods: %r" % methods
+        print("Methods: %r" % methods)
         self.assertTrue(sync_used)
         self.assertTrue(finish_used)
 
@@ -888,7 +892,7 @@ class MessageReceiverTest(unittest.TestCase):
         self.assertEqual('Hello!', receiver.receive())
 
     def test_onmessage(self):
-        onmessage_queue = Queue.Queue()
+        onmessage_queue = six.moves.queue.Queue()
 
         def onmessage_handler(message):
             onmessage_queue.put(message)
@@ -908,13 +912,13 @@ class MessageSenderTest(unittest.TestCase):
         sender = msgutil.MessageSender(request)
 
         sender.send('World')
-        self.assertEqual('\x81\x05World', request.connection.written_data())
+        self.assertEqual(b'\x81\x05World', request.connection.written_data())
 
     def test_send_nowait(self):
         # Use a queue to check the bytes written by MessageSender.
         # request.connection.written_data() cannot be used here because
         # MessageSender runs in a separate thread.
-        send_queue = Queue.Queue()
+        send_queue = six.moves.queue.Queue()
 
         def write(bytes):
             send_queue.put(bytes)
@@ -926,8 +930,8 @@ class MessageSenderTest(unittest.TestCase):
 
         sender.send_nowait('Hello')
         sender.send_nowait('World')
-        self.assertEqual('\x81\x05Hello', send_queue.get())
-        self.assertEqual('\x81\x05World', send_queue.get())
+        self.assertEqual(b'\x81\x05Hello', send_queue.get())
+        self.assertEqual(b'\x81\x05World', send_queue.get())
 
 if __name__ == '__main__':
     unittest.main()

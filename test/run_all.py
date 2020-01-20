@@ -44,6 +44,7 @@ example, run this for making the test runner verbose.
 """
 
 
+from __future__ import absolute_import
 import logging
 import optparse
 import os

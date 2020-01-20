@@ -34,6 +34,7 @@ Test files should import this module before mod_pywebsocket.
 """
 
 
+from __future__ import absolute_import
 import os
 import sys
 

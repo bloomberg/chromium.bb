@@ -33,7 +33,8 @@
 """Tests for mock module."""
 
 
-import Queue
+from __future__ import absolute_import
+import six.moves.queue
 import threading
 import unittest
 
@@ -100,7 +101,7 @@ class MockBlockingConnTest(unittest.TestCase):
                     self._queue.put(data)
 
         conn = mock.MockBlockingConn()
-        queue = Queue.Queue()
+        queue = six.moves.queue.Queue()
         reader = LineReader(conn, queue)
         self.failUnless(queue.empty())
         conn.put_bytes('Foo bar\r\n')
