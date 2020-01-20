@@ -4306,6 +4306,36 @@ static INLINE void compute_best_interintra_mode(
   }
 }
 
+// Computes the best wedge interintra mode
+static AOM_INLINE int64_t compute_best_wedge_interintra(
+    const AV1_COMP *const cpi, MB_MODE_INFO *mbmi, MACROBLOCKD *xd,
+    MACROBLOCK *const x, const int *const interintra_mode_cost,
+    const BUFFER_SET *orig_dst, uint8_t *intrapred_, uint8_t *tmp_buf_,
+    int *best_mode, int *best_wedge_index, BLOCK_SIZE bsize) {
+  const AV1_COMMON *const cm = &cpi->common;
+  const int bw = block_size_wide[bsize];
+  int64_t best_interintra_rd_wedge = INT64_MAX;
+  int64_t best_total_rd = INT64_MAX;
+  uint8_t *intrapred = get_buf_by_bd(xd, intrapred_);
+  for (INTERINTRA_MODE mode = 0; mode < INTERINTRA_MODES; ++mode) {
+    mbmi->interintra_mode = mode;
+    av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
+                                              intrapred, bw);
+    int64_t rd = pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
+    const int rate_overhead =
+        interintra_mode_cost[mode] +
+        x->wedge_idx_cost[bsize][mbmi->interintra_wedge_index];
+    const int64_t total_rd = rd + RDCOST(x->rdmult, rate_overhead, 0);
+    if (total_rd < best_total_rd) {
+      best_total_rd = total_rd;
+      best_interintra_rd_wedge = rd;
+      *best_mode = mbmi->interintra_mode;
+      *best_wedge_index = mbmi->interintra_wedge_index;
+    }
+  }
+  return best_interintra_rd_wedge;
+}
+
 // Computes the rd_threshold and total_mode_rate
 static AOM_INLINE int64_t compute_total_rate_and_rd_thresh(
     MACROBLOCK *const x, int *rate_mv, int *total_mode_rate, BLOCK_SIZE bsize,
@@ -4418,23 +4448,9 @@ static int handle_inter_intra_mode(const AV1_COMP *const cpi,
       // Exhaustive search of all wedge and mode combinations.
       int best_mode = 0;
       int best_wedge_index = 0;
-      int64_t best_total_rd = INT64_MAX;
-      for (int j = 0; j < INTERINTRA_MODES; ++j) {
-        mbmi->interintra_mode = (INTERINTRA_MODE)j;
-        av1_build_intra_predictors_for_interintra(cm, xd, bsize, 0, orig_dst,
-                                                  intrapred, bw);
-        rd = pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
-        const int rate_overhead =
-            interintra_mode_cost[mbmi->interintra_mode] +
-            x->wedge_idx_cost[bsize][mbmi->interintra_wedge_index];
-        const int64_t total_rd = rd + RDCOST(x->rdmult, rate_overhead, 0);
-        if (total_rd < best_total_rd) {
-          best_total_rd = total_rd;
-          best_interintra_rd_wedge = rd;
-          best_mode = mbmi->interintra_mode;
-          best_wedge_index = mbmi->interintra_wedge_index;
-        }
-      }
+      best_interintra_rd_wedge = compute_best_wedge_interintra(
+          cpi, mbmi, xd, x, interintra_mode_cost, orig_dst, intrapred_,
+          tmp_buf_, &best_mode, &best_wedge_index, bsize);
       mbmi->interintra_mode = best_mode;
       mbmi->interintra_wedge_index = best_wedge_index;
       if (best_mode != INTERINTRA_MODES - 1) {
