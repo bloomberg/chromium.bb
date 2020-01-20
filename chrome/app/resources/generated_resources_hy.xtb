@@ -698,7 +698,7 @@
 <translation id="197288927597451399">Տեղադրել</translation>
 <translation id="1974043046396539880">CRL բաշխման կետեր</translation>
 <translation id="1974060860693918893">Լրացուցիչ</translation>
-<translation id="1974821797477522211">Կապակցում ցանցին</translation>
+<translation id="1974821797477522211">Միացում ցանցին</translation>
 <translation id="1975841812214822307">Հեռացնել…</translation>
 <translation id="1976150099241323601">Մուտք անվտանգության սարք</translation>
 <translation id="1976323404609382849">Մի քանի կայքերի կողմից տեղակայվող քուքիներն արգելափակվել են:</translation>
@@ -1576,7 +1576,7 @@
 <translation id="3225084153129302039">Կանխադրված մանուշակագույն ավատար</translation>
 <translation id="3225319735946384299">Կոդի ստորագրում</translation>
 <translation id="3227137524299004712">Խոսափող</translation>
-<translation id="3228679360002431295">Կապակցում և ստուգում<ph name="ANIMATED_ELLIPSIS" /></translation>
+<translation id="3228679360002431295">Միացում և ստուգում<ph name="ANIMATED_ELLIPSIS" /></translation>
 <translation id="3232318083971127729">Արժեքը՝</translation>
 <translation id="3233271424239923319">Լինուքսի հավելվածների ու ֆայլերի պահուստավորում</translation>
 <translation id="323803881985677942">Բացել ընդլայնման ընտրանքները</translation>
@@ -2071,7 +2071,7 @@
 <translation id="389901847090970821">Ընտրեք ստեղնաշարը</translation>
 <translation id="3899879303189199559">Ավելի քան մեկ տարի անցանց է</translation>
 <translation id="3900966090527141178">Գաղտնաբառերի արտահանում</translation>
-<translation id="3901991538546252627">Կապակցում <ph name="NAME" />-ին</translation>
+<translation id="3901991538546252627">Միացում <ph name="NAME" />-ին</translation>
 <translation id="3905761538810670789">Հավելվածի վերանորոգում</translation>
 <translation id="3908393983276948098"><ph name="PLUGIN_NAME" /> փլագինը հնացած է</translation>
 <translation id="3908501907586732282">Միացնել ընդլայնումը</translation>
@@ -2382,7 +2382,7 @@
 <translation id="4375035964737468845">Բացել ներբեռնված ֆայլերը</translation>
 <translation id="4377363674125277448">Առկա է սերվերի վկայականի հետ կապված խնդիր:</translation>
 <translation id="4378154925671717803">Հեռախոս</translation>
-<translation id="4378551569595875038">Կապակցում…</translation>
+<translation id="4378551569595875038">Միացում…</translation>
 <translation id="4378556263712303865">Սարքի հայտ</translation>
 <translation id="4380648069038809855">Մուտք լիաէկրան ռեժիմ</translation>
 <translation id="4382131447572146376">{COUNT,plural, =0{<ph name="EMAIL" />}=1{<ph name="EMAIL" /> ու ևս 1 հաշիվ}one{<ph name="EMAIL" /> ու ևս <ph name="EXTRA_ACCOUNTS" /> հաշիվ}other{<ph name="EMAIL" /> ու ևս <ph name="EXTRA_ACCOUNTS" /> հաշիվ}}</translation>
@@ -4581,7 +4581,7 @@
 <translation id="7611008212562900400">Որոնեք սարքում, հավելվածներում, համացանցում...</translation>
 <translation id="7614260613810441905">Հարցնել, երբ որևէ կայք ուզենա փոփոխել ձեր սարքի ֆայլերը և պանակները (խորհուրդ է տրվում)</translation>
 <translation id="7616214729753637086">Սարքի գրանցում…</translation>
-<translation id="7617366389578322136">Կապակցում «<ph name="DEVICE_NAME" />» սարքին</translation>
+<translation id="7617366389578322136">Միացում «<ph name="DEVICE_NAME" />» սարքին</translation>
 <translation id="7621382409404463535">Չհաջողվեց պահել սարքի կարգավորումները:</translation>
 <translation id="7622114377921274169">Լիցքավորում</translation>
 <translation id="7624337243375417909">Caps Lock-ն անջատված է</translation>
