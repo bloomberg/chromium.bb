@@ -8,6 +8,8 @@ import collections
 import json
 import time
 
+CURRENT_VERSION = 3
+
 
 class LRUDict(object):
   """Dictionary that can evict least recently used items.
@@ -74,7 +76,7 @@ class LRUDict(object):
       raise ValueError(
           'Broken state file %s, should be json object or list' % (state_file,))
     state_ver = state.get('version')
-    if state_ver != 2:
+    if state_ver != CURRENT_VERSION:
       raise ValueError(
           'Unsupported state file %s, version is %s. '
           'Latest supported is 2' % (state_file, state_ver))
@@ -115,7 +117,7 @@ class LRUDict(object):
 
     with open(state_file, 'w') as f:
       contents = {
-          'version': 2,
+          'version': CURRENT_VERSION,
           'items': list(self._items.items()),
       }
       json.dump(contents, f, separators=(',', ':'))

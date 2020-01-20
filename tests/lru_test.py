@@ -180,14 +180,14 @@ class LRUDictTest(unittest.TestCase):
 
   def test_corrupted_state_file(self):
     # Loads correct state just fine.
-    s = _load_from_raw(json.dumps(
-      {
-        'version': 2,
-        'items': [
-          ['key1', ['value1', 1]],
-          ['key2', ['value2', 2]],
-        ],
-      }))
+    s = _load_from_raw(
+        json.dumps({
+            'version': lru.CURRENT_VERSION,
+            'items': [
+                ['key1', ['value1', 1]],
+                ['key2', ['value2', 2]],
+            ],
+        }))
     self.assertIsNotNone(s)
     self.assertEqual(2, len(s))
 

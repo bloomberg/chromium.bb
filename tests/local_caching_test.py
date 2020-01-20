@@ -763,10 +763,8 @@ class NamedCacheTest(TestCase, CacheTestMixin):
       f.write('world')
     # v1
     old = {
-      'version': 2,
-      'items': [
-        ['cache1', ['f1', now]],
-      ],
+        'version': lru.CURRENT_VERSION,
+        'items': [['cache1', ['f1', now]],],
     }
     c = local_caching.NamedCache
     with fs.open(os.path.join(self.cache_dir, c.STATE_FILE), 'w') as f:
@@ -780,7 +778,7 @@ class NamedCacheTest(TestCase, CacheTestMixin):
 
 
 def _gen_state(items):
-  state = {'items': items, 'version': 2}
+  state = {'items': items, 'version': lru.CURRENT_VERSION}
   return json.dumps(state, sort_keys=True, separators=(',', ':'))
 
 
