@@ -306,6 +306,29 @@ int ScaleLut(const uint8_t scaling_lut[kScalingLookupTableSize], int index) {
   return start + RightShiftWithRounding((end - start) * remainder, shift);
 }
 
+// |width| and |height| refer to the plane, not the frame, meaning any
+// subsampling should be applied by the caller.
+template <typename Pixel>
+inline void CopyImagePlane(const void* source_plane, ptrdiff_t source_stride,
+                           int width, int height, void* dest_plane,
+                           ptrdiff_t dest_stride) {
+  // If it's the same buffer there's nothing to do.
+  if (source_plane == dest_plane) return;
+  const auto* in_plane = static_cast<const Pixel*>(source_plane);
+  source_stride /= sizeof(Pixel);
+  auto* out_plane = static_cast<Pixel*>(dest_plane);
+  dest_stride /= sizeof(Pixel);
+
+  const Pixel* in_row = in_plane;
+  Pixel* out_row = out_plane;
+  int y = 0;
+  do {
+    memcpy(out_row, in_row, width * sizeof(*out_row));
+    in_row += source_stride;
+    out_row += dest_stride;
+  } while (++y < height);
+}
+
 }  // namespace
 
 template <int bitdepth>
@@ -993,29 +1016,6 @@ void FilmGrain<bitdepth>::ConstructNoiseImage(
   }
 }
 
-// |width| and |height| refer to the plane, not the frame, meaning any
-// subsampling should be applied by the caller.
-template <typename Pixel>
-inline void CopyImagePlane(const void* source_plane, ptrdiff_t source_stride,
-                           int width, int height, void* dest_plane,
-                           ptrdiff_t dest_stride) {
-  // If it's the same buffer we should not call the function at all.
-  assert(source_plane != dest_plane);
-  const auto* in_plane = static_cast<const Pixel*>(source_plane);
-  source_stride /= sizeof(Pixel);
-  auto* out_plane = static_cast<Pixel*>(dest_plane);
-  dest_stride /= sizeof(Pixel);
-
-  const Pixel* in_row = in_plane;
-  Pixel* out_row = out_plane;
-  int y = 0;
-  do {
-    memcpy(out_row, in_row, width * sizeof(*out_row));
-    in_row += source_stride;
-    out_row += dest_stride;
-  } while (++y < height);
-}
-
 template <int bitdepth, typename GrainType, typename Pixel>
 void BlendNoiseWithImageLuma_C(const void* noise_image_ptr, int min_value,
                                int max_luma, int scaling_shift, int width,
@@ -1046,41 +1046,30 @@ void BlendNoiseWithImageLuma_C(const void* noise_image_ptr, int min_value,
 // This function is for the case params_.chroma_scaling_from_luma == false.
 template <int bitdepth, typename GrainType, typename Pixel>
 void BlendNoiseWithImageChroma_C(
-    const FilmGrainParams& params, const void* noise_image_ptr, int min_value,
-    int max_chroma, int width, int height, int subsampling_x, int subsampling_y,
-    const uint8_t scaling_lut_u[256], const uint8_t scaling_lut_v[256],
+    Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
+    int min_value, int max_chroma, int width, int height, int subsampling_x,
+    int subsampling_y, const uint8_t scaling_lut_uv[256],
     const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v, void* dest_plane_u,
-    ptrdiff_t dest_stride_u, void* dest_plane_v, ptrdiff_t dest_stride_v) {
+    const void* source_plane_uv, ptrdiff_t source_stride_uv,
+    void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
 
   const int chroma_width = (width + subsampling_x) >> subsampling_x;
   const int chroma_height = (height + subsampling_y) >> subsampling_y;
-  if (params.num_u_points == 0) {
-    if (source_plane_u != dest_plane_u) {
-      CopyImagePlane<Pixel>(source_plane_u, source_stride_u, chroma_width,
-                            chroma_height, dest_plane_u, dest_stride_u);
-    }
-  }
-  if (params.num_v_points == 0) {
-    if (source_plane_v != dest_plane_v) {
-      CopyImagePlane<Pixel>(source_plane_v, source_stride_v, chroma_width,
-                            chroma_height, dest_plane_v, dest_stride_v);
-    }
-  }
 
   const auto* in_y = static_cast<const Pixel*>(source_plane_y);
   source_stride_y /= sizeof(Pixel);
-  const auto* in_u = static_cast<const Pixel*>(source_plane_u);
-  source_stride_u /= sizeof(Pixel);
-  const auto* in_v = static_cast<const Pixel*>(source_plane_v);
-  source_stride_v /= sizeof(Pixel);
-  auto* out_u = static_cast<Pixel*>(dest_plane_u);
-  dest_stride_u /= sizeof(Pixel);
-  auto* out_v = static_cast<Pixel*>(dest_plane_v);
-  dest_stride_v /= sizeof(Pixel);
+  const auto* in_uv = static_cast<const Pixel*>(source_plane_uv);
+  source_stride_uv /= sizeof(Pixel);
+  auto* out_uv = static_cast<Pixel*>(dest_plane_uv);
+  dest_stride_uv /= sizeof(Pixel);
+
+  const int offset = (plane == kPlaneU) ? params.u_offset : params.v_offset;
+  const int luma_multiplier =
+      (plane == kPlaneU) ? params.u_luma_multiplier : params.v_luma_multiplier;
+  const int multiplier =
+      (plane == kPlaneU) ? params.u_multiplier : params.v_multiplier;
 
   const int scaling_shift = params.chroma_scaling;
   int y = 0;
@@ -1099,32 +1088,16 @@ void BlendNoiseWithImageChroma_C(
       } else {
         average_luma = in_y[luma_y * source_stride_y + luma_x];
       }
-      if (params.num_u_points > 0) {
-        const int orig = in_u[y * source_stride_u + x];
-        const int combined = average_luma * params.u_luma_multiplier +
-                             orig * params.u_multiplier;
-        const int merged =
-            Clip3((combined >> 6) + LeftShift(params.u_offset, bitdepth - 8), 0,
-                  (1 << bitdepth) - 1);
-        int noise = noise_image[kPlaneU][y][x];
-        noise = RightShiftWithRounding(
-            ScaleLut<bitdepth>(scaling_lut_u, merged) * noise, scaling_shift);
-        out_u[y * dest_stride_u + x] =
-            Clip3(orig + noise, min_value, max_chroma);
-      }
-      if (params.num_v_points > 0) {
-        const int orig = in_v[y * source_stride_v + x];
-        const int combined = average_luma * params.v_luma_multiplier +
-                             orig * params.v_multiplier;
-        const int merged =
-            Clip3((combined >> 6) + LeftShift(params.v_offset, bitdepth - 8), 0,
-                  (1 << bitdepth) - 1);
-        int noise = noise_image[kPlaneV][y][x];
-        noise = RightShiftWithRounding(
-            ScaleLut<bitdepth>(scaling_lut_v, merged) * noise, scaling_shift);
-        out_v[y * dest_stride_v + x] =
-            Clip3(orig + noise, min_value, max_chroma);
-      }
+      const int orig = in_uv[y * source_stride_uv + x];
+      const int combined = average_luma * luma_multiplier + orig * multiplier;
+      const int merged =
+          Clip3((combined >> 6) + LeftShift(offset, bitdepth - 8), 0,
+                (1 << bitdepth) - 1);
+      int noise = noise_image[plane][y][x];
+      noise = RightShiftWithRounding(
+          ScaleLut<bitdepth>(scaling_lut_uv, merged) * noise, scaling_shift);
+      out_uv[y * dest_stride_uv + x] =
+          Clip3(orig + noise, min_value, max_chroma);
     } while (++x < chroma_width);
   } while (++y < chroma_height);
 }
@@ -1133,25 +1106,20 @@ void BlendNoiseWithImageChroma_C(
 // This further implies that scaling_lut_u == scaling_lut_v == scaling_lut_y.
 template <int bitdepth, typename GrainType, typename Pixel>
 void BlendNoiseWithImageChromaWithCfl_C(
-    const FilmGrainParams& params, const void* noise_image_ptr, int min_value,
-    int max_chroma, int width, int height, int subsampling_x, int subsampling_y,
-    const uint8_t scaling_lut[256], const uint8_t /*scaling_lut_v*/[256],
+    Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
+    int min_value, int max_chroma, int width, int height, int subsampling_x,
+    int subsampling_y, const uint8_t scaling_lut[256],
     const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v, void* dest_plane_u,
-    ptrdiff_t dest_stride_u, void* dest_plane_v, ptrdiff_t dest_stride_v) {
+    const void* source_plane_uv, ptrdiff_t source_stride_uv,
+    void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
   const auto* in_y = static_cast<const Pixel*>(source_plane_y);
   source_stride_y /= sizeof(Pixel);
-  const auto* in_u = static_cast<const Pixel*>(source_plane_u);
-  source_stride_u /= sizeof(Pixel);
-  const auto* in_v = static_cast<const Pixel*>(source_plane_v);
-  source_stride_v /= sizeof(Pixel);
-  auto* out_u = static_cast<Pixel*>(dest_plane_u);
-  dest_stride_u /= sizeof(Pixel);
-  auto* out_v = static_cast<Pixel*>(dest_plane_v);
-  dest_stride_v /= sizeof(Pixel);
+  const auto* in_uv = static_cast<const Pixel*>(source_plane_uv);
+  source_stride_uv /= sizeof(Pixel);
+  auto* out_uv = static_cast<Pixel*>(dest_plane_uv);
+  dest_stride_uv /= sizeof(Pixel);
 
   const int chroma_width = (width + subsampling_x) >> subsampling_x;
   const int chroma_height = (height + subsampling_y) >> subsampling_y;
@@ -1172,21 +1140,13 @@ void BlendNoiseWithImageChromaWithCfl_C(
       } else {
         average_luma = in_y[luma_y * source_stride_y + luma_x];
       }
-      const int orig_u = in_u[y * source_stride_u + x];
-      int noise_u = noise_image[kPlaneU][y][x];
-      noise_u = RightShiftWithRounding(
-          ScaleLut<bitdepth>(scaling_lut, average_luma) * noise_u,
+      const int orig_uv = in_uv[y * source_stride_uv + x];
+      int noise_uv = noise_image[plane][y][x];
+      noise_uv = RightShiftWithRounding(
+          ScaleLut<bitdepth>(scaling_lut, average_luma) * noise_uv,
           scaling_shift);
-      out_u[y * dest_stride_u + x] =
-          Clip3(orig_u + noise_u, min_value, max_chroma);
-
-      const int orig_v = in_v[y * source_stride_v + x];
-      int noise_v = noise_image[kPlaneV][y][x];
-      noise_v = RightShiftWithRounding(
-          ScaleLut<bitdepth>(scaling_lut, average_luma) * noise_v,
-          scaling_shift);
-      out_v[y * dest_stride_v + x] =
-          Clip3(orig_v + noise_v, min_value, max_chroma);
+      out_uv[y * dest_stride_uv + x] =
+          Clip3(orig_uv + noise_uv, min_value, max_chroma);
     } while (++x < chroma_width);
   } while (++y < chroma_height);
 }
@@ -1283,13 +1243,45 @@ bool FilmGrain<bitdepth>::AddNoise(
     max_chroma = max_luma;
   }
   if (!is_monochrome_) {
-    dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
-        params_, noise_image_, min_value, max_chroma, width_, height_,
-        subsampling_x_, subsampling_y_, scaling_lut_u_, scaling_lut_v_,
-        source_plane_y, source_stride_y, source_plane_u, source_stride_u,
-        source_plane_v, source_stride_v, dest_plane_u, dest_stride_u,
-        dest_plane_v, dest_stride_v);
+    if (params_.chroma_scaling_from_luma) {
+      dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
+          kPlaneU, params_, noise_image_, min_value, max_chroma, width_,
+          height_, subsampling_x_, subsampling_y_, scaling_lut_u_,
+          source_plane_y, source_stride_y, source_plane_u, source_stride_u,
+          dest_plane_u, dest_stride_u);
+      dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
+          kPlaneV, params_, noise_image_, min_value, max_chroma, width_,
+          height_, subsampling_x_, subsampling_y_, scaling_lut_v_,
+          source_plane_y, source_stride_y, source_plane_v, source_stride_v,
+          dest_plane_v, dest_stride_v);
+    } else {
+      if (params_.num_u_points == 0) {
+        const int chroma_width = (width_ + subsampling_x_) >> subsampling_x_;
+        const int chroma_height = (height_ + subsampling_y_) >> subsampling_y_;
+        CopyImagePlane<Pixel>(source_plane_u, source_stride_u, chroma_width,
+                              chroma_height, dest_plane_u, dest_stride_u);
+      } else {
+        dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
+            kPlaneU, params_, noise_image_, min_value, max_chroma, width_,
+            height_, subsampling_x_, subsampling_y_, scaling_lut_u_,
+            source_plane_y, source_stride_y, source_plane_u, source_stride_u,
+            dest_plane_u, dest_stride_u);
+      }
+      if (params_.num_v_points == 0) {
+        const int chroma_width = (width_ + subsampling_x_) >> subsampling_x_;
+        const int chroma_height = (height_ + subsampling_y_) >> subsampling_y_;
+        CopyImagePlane<Pixel>(source_plane_v, source_stride_v, chroma_width,
+                              chroma_height, dest_plane_v, dest_stride_v);
+      } else {
+        dsp->film_grain.blend_noise_chroma[params_.chroma_scaling_from_luma](
+            kPlaneV, params_, noise_image_, min_value, max_chroma, width_,
+            height_, subsampling_x_, subsampling_y_, scaling_lut_v_,
+            source_plane_y, source_stride_y, source_plane_v, source_stride_v,
+            dest_plane_v, dest_stride_v);
+      }
+    }
   }
+
   if (use_luma) {
     dsp->film_grain.blend_noise_luma(
         noise_image_, min_value, max_luma, params_.chroma_scaling, width_,

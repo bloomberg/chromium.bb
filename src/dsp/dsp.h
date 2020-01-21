@@ -714,15 +714,13 @@ using InitializeScalingLutFunc = void (*)(int num_points,
 // |width| and |height| are the dimensions of the frame.
 // |min_value|, |max_luma|, and |max_chroma| are computed by the caller of these
 // functions, according to the code in the spec.
-// |source_plane_y|, |source_plane_u|, and |source_plane_v| are the plane
-// buffers of the decoded frame. They are blended with the film grain noise and
-// written to |dest_plane_y|, |dest_plane_u|, and |dest_plane_v| as final
-// output for display. |source_plane_p| and |dest_plane_p| (where p is y, u, or
-// v) may point to the same buffer, in which case the film grain noise is added
-// in place.
-// |scaling_lut_y|, |scaling_lut_u|, and |scaling_lut_v| represent a piecewise
-// linear mapping from the frame's raw pixel value, to a scaling factor for the
-// noise sample.
+// |source_plane_y| and |source_plane_uv| are the plane buffers of the decoded
+// frame. They are blended with the film grain noise and written to
+// |dest_plane_y| and |dest_plane_uv| as final output for display.
+// source_plane_* and dest_plane_* may point to the same buffer, in which case
+// the film grain noise is added in place.
+// |scaling_lut_y|  and |scaling_lut| represent a piecewise linear mapping from
+// the frame's raw pixel value, to a scaling factor for the noise sample.
 // |scaling_shift| is applied as a right shift after scaling, so that scaling
 // down is possible. It is found in FilmGrainParams, but supplied directly to
 // BlendNoiseWithImageLumaFunc because it's the only member used.
@@ -732,17 +730,13 @@ using BlendNoiseWithImageLumaFunc = void (*)(
     const void* source_plane_y, ptrdiff_t source_stride_y, void* dest_plane_y,
     ptrdiff_t dest_stride_y);
 
-// Note that when chroma_scaling_from_luma is true, |scaling_lut_u| and
-// |scaling_lut_v| are both references to |scaling_lut_y|, so the function only
-// needs to accept one of them.
 using BlendNoiseWithImageChromaFunc = void (*)(
-    const FilmGrainParams& params, const void* noise_image_ptr, int min_value,
-    int max_value, int width, int height, int subsampling_x, int subsampling_y,
-    const uint8_t scaling_lut_u[256], const uint8_t scaling_lut_v[256],
+    Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
+    int min_value, int max_value, int width, int height, int subsampling_x,
+    int subsampling_y, const uint8_t scaling_lut[256],
     const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v, void* dest_plane_u,
-    ptrdiff_t dest_stride_u, void* dest_plane_v, ptrdiff_t dest_stride_v);
+    const void* source_plane_uv, ptrdiff_t source_stride_uv,
+    void* dest_plane_uv, ptrdiff_t dest_stride_uv);
 
 using BlendNoiseWithImageChromaFuncs =
     BlendNoiseWithImageChromaFunc[/*chroma_scaling_from_luma*/ 2];

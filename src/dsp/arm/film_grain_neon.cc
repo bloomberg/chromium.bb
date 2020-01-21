@@ -758,15 +758,14 @@ inline int16x8_t BlendChromaValsWithCfl(
 
 template <int bitdepth, typename GrainType, typename Pixel>
 LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
-    const FilmGrainParams& params, const Array2D<GrainType>& noise_image,
-    int min_value, int max_chroma, int width, int height, int subsampling_x,
-    int subsampling_y, const uint8_t scaling_lut[kScalingLookupTableSize],
+    const Array2D<GrainType>& noise_image, int min_value, int max_chroma,
+    int width, int height, int subsampling_x, int subsampling_y,
+    int scaling_shift, const uint8_t scaling_lut[kScalingLookupTableSize],
     const Pixel* in_y_row, ptrdiff_t source_stride_y,
     const Pixel* in_chroma_row, ptrdiff_t source_stride_chroma,
     Pixel* out_chroma_row, ptrdiff_t dest_stride) {
   const int16x8_t floor = vdupq_n_s16(min_value);
   const int16x8_t ceiling = vdupq_n_s16(max_chroma);
-  const int scaling_shift = params.chroma_scaling;
   Pixel luma_buffer[16];
   memset(luma_buffer, 0, sizeof(luma_buffer));
   // In 8bpp, the maximum upscaled noise is 127*255 = 0x7E81, which is safe
@@ -838,61 +837,27 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlaneWithCfl_NEON(
 // This further implies that scaling_lut_u == scaling_lut_v == scaling_lut_y.
 template <int bitdepth, typename GrainType, typename Pixel>
 void BlendNoiseWithImageChromaWithCfl_NEON(
-    const FilmGrainParams& params, const void* noise_image_ptr, int min_value,
-    int max_chroma, int width, int height, int subsampling_x, int subsampling_y,
-    const uint8_t scaling_lut[kScalingLookupTableSize],
-    const uint8_t /*scaling_lut_v*/[kScalingLookupTableSize],
+    Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
+    int min_value, int max_chroma, int width, int height, int subsampling_x,
+    int subsampling_y, const uint8_t scaling_lut[kScalingLookupTableSize],
     const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v, void* dest_plane_u,
-    ptrdiff_t dest_stride_u, void* dest_plane_v, ptrdiff_t dest_stride_v) {
+    const void* source_plane_uv, ptrdiff_t source_stride_uv,
+    void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
   const auto* noise_image =
       static_cast<const Array2D<GrainType>*>(noise_image_ptr);
   const auto* in_y = static_cast<const Pixel*>(source_plane_y);
   source_stride_y /= sizeof(Pixel);
 
-  const auto* in_u = static_cast<const Pixel*>(source_plane_u);
-  source_stride_u /= sizeof(Pixel);
-  auto* out_u = static_cast<Pixel*>(dest_plane_u);
-  dest_stride_u /= sizeof(Pixel);
+  const auto* in_uv = static_cast<const Pixel*>(source_plane_uv);
+  source_stride_uv /= sizeof(Pixel);
+  auto* out_uv = static_cast<Pixel*>(dest_plane_uv);
+  dest_stride_uv /= sizeof(Pixel);
   // Looping over one plane at a time is faster in higher resolutions, despite
   // re-computing luma.
   BlendChromaPlaneWithCfl_NEON<bitdepth, GrainType, Pixel>(
-      params, noise_image[kPlaneU], min_value, max_chroma, width, height,
-      subsampling_x, subsampling_y, scaling_lut, in_y, source_stride_y, in_u,
-      source_stride_u, out_u, dest_stride_u);
-
-  const auto* in_v = static_cast<const Pixel*>(source_plane_v);
-  source_stride_v /= sizeof(Pixel);
-  auto* out_v = static_cast<Pixel*>(dest_plane_v);
-  dest_stride_v /= sizeof(Pixel);
-  BlendChromaPlaneWithCfl_NEON<bitdepth, GrainType, Pixel>(
-      params, noise_image[kPlaneV], min_value, max_chroma, width, height,
-      subsampling_x, subsampling_y, scaling_lut, in_y, source_stride_y, in_v,
-      source_stride_v, out_v, dest_stride_v);
-}
-
-// |width| and |height| refer to the plane, not the frame, meaning any
-// subsampling should be applied by the caller.
-template <typename Pixel>
-inline void CopyImagePlane(const void* source_plane, ptrdiff_t source_stride,
-                           int width, int height, void* dest_plane,
-                           ptrdiff_t dest_stride) {
-  // If it's the same buffer we should not call the function at all.
-  assert(source_plane != dest_plane);
-  const auto* in_plane = static_cast<const Pixel*>(source_plane);
-  source_stride /= sizeof(Pixel);
-  auto* out_plane = static_cast<Pixel*>(dest_plane);
-  dest_stride /= sizeof(Pixel);
-
-  const Pixel* in_row = in_plane;
-  Pixel* out_row = out_plane;
-  int y = 0;
-  do {
-    memcpy(out_row, in_row, width * sizeof(*out_row));
-    in_row += source_stride;
-    out_row += dest_stride;
-  } while (++y < height);
+      noise_image[plane], min_value, max_chroma, width, height, subsampling_x,
+      subsampling_y, params.chroma_scaling, scaling_lut, in_y, source_stride_y,
+      in_uv, source_stride_uv, out_uv, dest_stride_uv);
 }
 
 }  // namespace
@@ -988,48 +953,29 @@ LIBGAV1_ALWAYS_INLINE void BlendChromaPlane8bpp_NEON(
 
 // This function is for the case params_.chroma_scaling_from_luma == false.
 void BlendNoiseWithImageChroma8bpp_NEON(
-    const FilmGrainParams& params, const void* noise_image_ptr, int min_value,
-    int max_chroma, int width, int height, int subsampling_x, int subsampling_y,
-    const uint8_t scaling_lut_u[kScalingLookupTableSize],
-    const uint8_t scaling_lut_v[kScalingLookupTableSize],
+    Plane plane, const FilmGrainParams& params, const void* noise_image_ptr,
+    int min_value, int max_chroma, int width, int height, int subsampling_x,
+    int subsampling_y, const uint8_t scaling_lut[kScalingLookupTableSize],
     const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v, void* dest_plane_u,
-    ptrdiff_t dest_stride_u, void* dest_plane_v, ptrdiff_t dest_stride_v) {
+    const void* source_plane_uv, ptrdiff_t source_stride_uv,
+    void* dest_plane_uv, ptrdiff_t dest_stride_uv) {
+  assert(plane == kPlaneU || plane == kPlaneV);
   const auto* noise_image =
       static_cast<const Array2D<int8_t>*>(noise_image_ptr);
-  const int chroma_height = (height + subsampling_y) >> subsampling_y;
-  const int chroma_width = (width + subsampling_x) >> subsampling_x;
-  if (params.num_u_points == 0) {
-    if (source_plane_u != dest_plane_u) {
-      CopyImagePlane<uint8_t>(source_plane_u, source_stride_u, chroma_width,
-                              chroma_height, dest_plane_u, dest_stride_u);
-    }
-  } else {
-    const auto* in_y = static_cast<const uint8_t*>(source_plane_y);
-    const auto* in_u = static_cast<const uint8_t*>(source_plane_u);
-    auto* out_u = static_cast<uint8_t*>(dest_plane_u);
-    BlendChromaPlane8bpp_NEON(
-        noise_image[kPlaneU], min_value, max_chroma, width, height,
-        subsampling_x, subsampling_y, params.chroma_scaling, params.u_offset,
-        params.u_multiplier, params.u_luma_multiplier, scaling_lut_u, in_y,
-        source_stride_y, in_u, source_stride_u, out_u, dest_stride_u);
-  }
-  if (params.num_v_points == 0) {
-    if (source_plane_v != dest_plane_v) {
-      CopyImagePlane<uint8_t>(source_plane_v, source_stride_v, chroma_width,
-                              chroma_height, dest_plane_v, dest_stride_v);
-    }
-  } else {
-    const auto* in_y = static_cast<const uint8_t*>(source_plane_y);
-    const auto* in_v = static_cast<const uint8_t*>(source_plane_v);
-    auto* out_v = static_cast<uint8_t*>(dest_plane_v);
-    BlendChromaPlane8bpp_NEON(
-        noise_image[kPlaneV], min_value, max_chroma, width, height,
-        subsampling_x, subsampling_y, params.chroma_scaling, params.v_offset,
-        params.v_multiplier, params.v_luma_multiplier, scaling_lut_v, in_y,
-        source_stride_y, in_v, source_stride_v, out_v, dest_stride_v);
-  }
+  const auto* in_y = static_cast<const uint8_t*>(source_plane_y);
+  const auto* in_uv = static_cast<const uint8_t*>(source_plane_uv);
+  auto* out_uv = static_cast<uint8_t*>(dest_plane_uv);
+
+  const int offset = (plane == kPlaneU) ? params.u_offset : params.v_offset;
+  const int luma_multiplier =
+      (plane == kPlaneU) ? params.u_luma_multiplier : params.v_luma_multiplier;
+  const int multiplier =
+      (plane == kPlaneU) ? params.u_multiplier : params.v_multiplier;
+  BlendChromaPlane8bpp_NEON(noise_image[plane], min_value, max_chroma, width,
+                            height, subsampling_x, subsampling_y,
+                            params.chroma_scaling, offset, multiplier,
+                            luma_multiplier, scaling_lut, in_y, source_stride_y,
+                            in_uv, source_stride_uv, out_uv, dest_stride_uv);
 }
 
 inline void WriteOverlapLine8bpp_NEON(const int8_t* noise_stripe_row,
