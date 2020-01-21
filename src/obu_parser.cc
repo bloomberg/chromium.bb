@@ -18,6 +18,7 @@
 #include <array>
 #include <cassert>
 #include <climits>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 
@@ -85,6 +86,15 @@ int GetLastNonzeroByteIndex(const uint8_t* data, size_t size) {
 }
 
 }  // namespace
+
+bool ObuSequenceHeader::ParametersChanged(const ObuSequenceHeader& old) const {
+  // Note that the operating_parameters field is not compared per Section 7.5:
+  //   Within a particular coded video sequence, the contents of
+  //   sequence_header_obu must be bit-identical each time the sequence header
+  //   appears except for the contents of operating_parameters_info.
+  return memcmp(this, &old,
+                offsetof(ObuSequenceHeader, operating_parameters)) != 0;
+}
 
 // Macros to avoid repeated error checks in the parser code.
 #define OBU_LOG_AND_RETURN_FALSE                                            \
@@ -429,7 +439,11 @@ bool ObuParser::ParseSequenceHeader() {
   if (!ParseColorConfig(&sequence_header)) return false;
   OBU_READ_BIT_OR_FAIL;
   sequence_header.film_grain_params_present = static_cast<bool>(scratch);
-  // TODO(wtc): Compare new sequence header with old sequence header.
+  // Compare new sequence header with old sequence header.
+  if (has_sequence_header_ &&
+      sequence_header.ParametersChanged(sequence_header_)) {
+    decoder_state_.ClearReferenceFrames();
+  }
   sequence_header_ = sequence_header;
   has_sequence_header_ = true;
   // Section 6.4.1: It is a requirement of bitstream conformance that if

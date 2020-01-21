@@ -58,6 +58,13 @@ struct EncodedFrame : public Allocable {
 };
 
 struct DecoderState {
+  // Section 7.20. Updates frames in the reference_frame array with
+  // current_frame, based on the refresh_frame_flags bitmask.
+  void UpdateReferenceFrames(int refresh_frame_flags);
+
+  // Clears all the reference frames.
+  void ClearReferenceFrames();
+
   ObuSequenceHeader sequence_header = {};
   // If true, sequence_header is valid.
   bool has_sequence_header = false;
@@ -81,8 +88,8 @@ struct DecoderState {
   //
   // NOTE: When show_existing_frame is false, it is often more convenient to
   // just use the order_hint field of the frame header as OrderHint. So this
-  // field is mainly used to update the state_.reference_order_hint array in
-  // DecoderImpl::UpdateReferenceFrames().
+  // field is mainly used to update the reference_order_hint array in
+  // UpdateReferenceFrames().
   uint8_t order_hint = 0;
   // reference_frame_sign_bias[i] (a boolean) specifies the intended direction
   // of the motion vector in time for each reference frame.
@@ -133,9 +140,6 @@ class DecoderImpl : public Allocable {
   // is handled in Tile::DecodeBlock().
   void SetCurrentFrameSegmentationMap(const ObuFrameHeader& frame_header,
                                       const SegmentationMap* prev_segment_ids);
-  // Section 7.20. Updates frames in the state_.reference_frame array with
-  // state_.current_frame, based on the refresh_frame_flags bitmask.
-  void UpdateReferenceFrames(int refresh_frame_flags);
 
   Queue<EncodedFrame> encoded_frames_;
   DecoderState state_;

@@ -76,6 +76,27 @@ int GetBottomBorderPixels(const bool do_cdef, const bool do_restoration) {
 
 }  // namespace
 
+void DecoderState::UpdateReferenceFrames(int refresh_frame_flags) {
+  for (int ref_index = 0, mask = refresh_frame_flags; mask != 0;
+       ++ref_index, mask >>= 1) {
+    if ((mask & 1) != 0) {
+      reference_valid[ref_index] = true;
+      reference_frame_id[ref_index] = current_frame_id;
+      reference_frame[ref_index] = current_frame;
+      reference_order_hint[ref_index] = order_hint;
+    }
+  }
+}
+
+void DecoderState::ClearReferenceFrames() {
+  reference_valid = {};
+  reference_frame_id = {};
+  reference_order_hint = {};
+  for (int ref_index = 0; ref_index < kNumReferenceFrameTypes; ++ref_index) {
+    reference_frame[ref_index] = nullptr;
+  }
+}
+
 // static
 StatusCode DecoderImpl::Create(const DecoderSettings* settings,
                                std::unique_ptr<DecoderImpl>* output) {
@@ -242,7 +263,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
         return status;
       }
     }
-    UpdateReferenceFrames(obu->frame_header().refresh_frame_flags);
+    state_.UpdateReferenceFrames(obu->frame_header().refresh_frame_flags);
     if (obu->frame_header().show_frame ||
         obu->frame_header().show_existing_frame) {
       if (displayable_frame != nullptr) {
@@ -264,11 +285,11 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
             obu->frame_header().refresh_frame_flags == 0) {
           // If show_existing_frame is true, then the current frame is a
           // previously saved reference frame. If refresh_frame_flags is
-          // nonzero, then the UpdateReferenceFrames() call above has saved the
-          // current frame as a reference frame. Therefore, if both of these
-          // conditions are false, then the current frame is not saved as a
-          // reference frame. displayable_frame should hold the only reference
-          // to the current frame.
+          // nonzero, then the state_.UpdateReferenceFrames() call above has
+          // saved the current frame as a reference frame. Therefore, if both
+          // of these conditions are false, then the current frame is not
+          // saved as a reference frame. displayable_frame should hold the
+          // only reference to the current frame.
           assert(displayable_frame.use_count() == 1);
           // Add film grain noise in place.
           film_grain_frame = displayable_frame;
@@ -833,18 +854,6 @@ void DecoderImpl::SetCurrentFrameSegmentationMap(
       state_.current_frame->segmentation_map()->Clear();
     } else {
       state_.current_frame->segmentation_map()->CopyFrom(*prev_segment_ids);
-    }
-  }
-}
-
-void DecoderImpl::UpdateReferenceFrames(int refresh_frame_flags) {
-  for (int ref_index = 0, mask = refresh_frame_flags; mask != 0;
-       ++ref_index, mask >>= 1) {
-    if ((mask & 1) != 0) {
-      state_.reference_valid[ref_index] = true;
-      state_.reference_frame_id[ref_index] = state_.current_frame_id;
-      state_.reference_frame[ref_index] = state_.current_frame;
-      state_.reference_order_hint[ref_index] = state_.order_hint;
     }
   }
 }
