@@ -342,13 +342,6 @@ class CORE_EXPORT NGConstraintSpace final {
   // (ie. fit-content). This is used for inline-block, floats, etc.
   bool IsShrinkToFit() const { return bitfields_.is_shrink_to_fit; }
 
-  // Whether this constraint space is used for an intermediate layout in a
-  // multi-pass layout. In such a case, we should not copy back the resulting
-  // layout data to the legacy tree or create a paint fragment from it.
-  bool IsIntermediateLayout() const {
-    return bitfields_.is_intermediate_layout;
-  }
-
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const {
@@ -883,7 +876,6 @@ class CORE_EXPORT NGConstraintSpace final {
           is_anonymous(false),
           is_new_formatting_context(false),
           is_orthogonal_writing_mode_root(false),
-          is_intermediate_layout(false),
           is_fixed_block_size_indefinite(false),
           is_restricted_block_size_table_cell(false),
           use_first_line_style(false),
@@ -906,7 +898,6 @@ class CORE_EXPORT NGConstraintSpace final {
              is_new_formatting_context == other.is_new_formatting_context &&
              is_orthogonal_writing_mode_root ==
                  other.is_orthogonal_writing_mode_root &&
-             is_intermediate_layout == other.is_intermediate_layout &&
              is_fixed_block_size_indefinite ==
                  other.is_fixed_block_size_indefinite &&
              is_restricted_block_size_table_cell ==
@@ -933,7 +924,6 @@ class CORE_EXPORT NGConstraintSpace final {
     unsigned is_anonymous : 1;
     unsigned is_new_formatting_context : 1;
     unsigned is_orthogonal_writing_mode_root : 1;
-    unsigned is_intermediate_layout : 1;
 
     unsigned is_fixed_block_size_indefinite : 1;
     unsigned is_restricted_block_size_table_cell : 1;
