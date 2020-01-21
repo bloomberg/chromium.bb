@@ -101,15 +101,10 @@ class ChromeCommitter(object):
       upload_args += ['--send-mail']
       if self._dryrun:
         upload_args += ['--dry-run']
+      else:
+        upload_args += ['--use-commit-queue']
       git.RunGit(self._checkout_dir, upload_args, print_cmd=True,
                  stderr=True, capture_output=False)
-
-      # Flip the CQ commit bit.
-      submit_args = ['cl', 'set-commit', '-v']
-      if self._dryrun:
-        submit_args += ['--dry-run']
-      git.RunGit(self._checkout_dir, submit_args,
-                 print_cmd=True, stderr=True, capture_output=False)
     except cros_build_lib.RunCommandError as e:
       # Log the change for debugging.
       git.RunGit(self._checkout_dir, ['--no-pager', 'log', '--pretty=full'],

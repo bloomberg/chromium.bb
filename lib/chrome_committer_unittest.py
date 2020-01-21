@@ -82,8 +82,7 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
                                 'Automated Commit: Modify OWNERS and BUILD.gn',
                                 '--bypass-hooks', '-f',
                                 '--tbrs', 'chrome-os-gardeners@google.com',
-                                '--send-mail'])
-    self._assertCommand('git cl set-commit -v')
+                                '--send-mail', '--use-commit-queue'])
 
   def testUploadDryRun(self):
     """Tests that we can upload a commit with dryrun."""
@@ -99,5 +98,4 @@ class ChromeCommitterTester(cros_test_lib.RunCommandTestCase,
                                 '-c', 'user.name=user@test.org',
                                 'cl', 'upload', '-v', '-m',
                                 'Automated Commit: Modify OWNERS and BUILD.gn',
-                                '--bypass-hooks', '-f'])
-    self._assertCommand('git cl set-commit -v --dry-run')
+                                '--bypass-hooks', '-f', '--dry-run'])
