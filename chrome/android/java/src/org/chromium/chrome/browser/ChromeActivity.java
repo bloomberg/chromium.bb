@@ -280,7 +280,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private UpdateNotificationController mUpdateNotificationController;
     private ScrimView mScrimView;
     private StatusBarColorController mStatusBarColorController;
-    private ShareDelegate mShareDelegate;
 
     // Timestamp in ms when initial layout inflation begins
     private long mInflateInitialLayoutBeginMs;
@@ -420,9 +419,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     this, getStatusBarColorController().getStatusBarScrimDelegate(), coordinator);
 
             initializeBottomSheetController();
-            mShareDelegate = new ShareDelegateImpl(mBottomSheetController, getActivityTabProvider(),
-                    new ShareDelegateImpl.ShareSheetDelegate());
-            mShareDelegateSupplier.set(mShareDelegate);
+            ShareDelegate shareDelegate = new ShareDelegateImpl(mBottomSheetController,
+                    getActivityTabProvider(), new ShareDelegateImpl.ShareSheetDelegate());
+            mShareDelegateSupplier.set(shareDelegate);
 
             Intent intent = getIntent();
             if (intent != null && getSavedInstanceState() == null) {
@@ -1930,7 +1929,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return An {@link ObservableSupplier} that will supply the {@link ShareDelegate} when
      *         it is ready.
      */
-    protected ObservableSupplier<ShareDelegate> getShareDelegateSupplier() {
+    public ObservableSupplier<ShareDelegate> getShareDelegateSupplier() {
         return mShareDelegateSupplier;
     }
 
@@ -2554,13 +2553,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      */
     public BottomSheetController getBottomSheetController() {
         return mBottomSheetController;
-    }
-
-    /**
-     * @return A {@link ShareDelegate}.
-     */
-    public ShareDelegate getShareDelegate() {
-        return mShareDelegate;
     }
 
     @VisibleForTesting

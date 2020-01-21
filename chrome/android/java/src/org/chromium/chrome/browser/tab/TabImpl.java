@@ -672,10 +672,10 @@ public class TabImpl implements Tab {
      * @return {@link ChromeActivity} that currently contains this {@link Tab} in its
      *         {@link TabModel}.
      */
-    public ChromeActivity getActivity() {
+    public ChromeActivity<?> getActivity() {
         if (getWindowAndroid() == null) return null;
         Activity activity = ContextUtils.activityFromContext(getWindowAndroid().getContext().get());
-        if (activity instanceof ChromeActivity) return (ChromeActivity) activity;
+        if (activity instanceof ChromeActivity) return (ChromeActivity<?>) activity;
         return null;
     }
 

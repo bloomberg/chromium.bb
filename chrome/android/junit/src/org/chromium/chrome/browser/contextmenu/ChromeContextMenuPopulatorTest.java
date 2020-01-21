@@ -93,8 +93,8 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     private void initializePopulator(@ContextMenuMode int mode) {
-        mPopulator =
-                Mockito.spy(new ChromeContextMenuPopulator(mItemDelegate, mShareDelegate, mode));
+        mPopulator = Mockito.spy(
+                new ChromeContextMenuPopulator(mItemDelegate, () -> mShareDelegate, mode));
         doReturn(mTemplateUrlService).when(mPopulator).getTemplateUrlService();
     }
 

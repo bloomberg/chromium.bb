@@ -117,7 +117,8 @@ public class WebappDelegateFactory implements TabDelegateFactory {
     @Override
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
         return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
-                mActivity.getShareDelegate(), ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
+                mActivity.getShareDelegateSupplier(),
+                ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
     }
 
     @Override
