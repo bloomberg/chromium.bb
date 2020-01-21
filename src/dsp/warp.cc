@@ -153,14 +153,12 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           // value. So the whole prediction block has the same value.
           const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
           const Pixel row_border_pixel = first_row_border[row * source_stride];
-          int sum = vertical_offset +
-                    (horizontal_offset << (7 - kRoundBitsHorizontal)) +
-                    (row_border_pixel << (14 - kRoundBitsHorizontal));
-          sum >>= inter_round_bits_vertical;
           DestType* dst_row = dst + start_x - block_start_x;
           if (clip) {
-            Memset(dst_row, Clip3(sum - kSingleRoundOffset, 0, kMaxPixel), 8);
+            Memset(dst_row, row_border_pixel, 8);
           } else {
+            int sum = row_border_pixel + kSingleRoundOffset;
+            sum <<= ((14 - kRoundBitsHorizontal) - inter_round_bits_vertical);
             Memset(dst_row, sum, 8);
           }
           const DestType* const first_dst_row = dst_row;

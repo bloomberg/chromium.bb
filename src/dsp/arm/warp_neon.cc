@@ -239,29 +239,16 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
           const uint8_t row_border_pixel =
               first_row_border[row * source_stride];
-          int sum = vertical_offset +
-                    (horizontal_offset << (7 - kInterRoundBitsHorizontal)) +
-                    (row_border_pixel << (14 - kInterRoundBitsHorizontal));
-          assert((sum & 2047) == 0);  // 2^11 - 1 = 2047.
-          assert(inter_round_bits_vertical <= 11);
-          sum >>= inter_round_bits_vertical;
-          assert(sum >= 0 && sum <= UINT16_MAX);
-          const uint16x8_t sum_vec = vdupq_n_u16(sum);
-          uint8x8_t sum_clip;
-          if (clip) {
-            const uint16x8_t single_round_offset =
-                vdupq_n_u16(kSingleRoundOffset);
-            const uint16x8_t sum_descale =
-                vqsubq_u16(sum_vec, single_round_offset);
-            sum_clip = vqmovn_u16(sum_descale);
-          }
 
           DestType* dst_row = dst + start_x - block_start_x;
           for (int y = 0; y < 8; ++y) {
             if (clip) {
-              vst1_u8(reinterpret_cast<uint8_t*>(dst_row), sum_clip);
+              memset(dst_row, row_border_pixel, 8);
             } else {
-              vst1q_u16(reinterpret_cast<uint16_t*>(dst_row), sum_vec);
+              const uint16x8_t sum =
+                  vdupq_n_u16((row_border_pixel + kSingleRoundOffset)
+                              << (11 - inter_round_bits_vertical));
+              vst1q_u16(reinterpret_cast<uint16_t*>(dst_row), sum);
             }
             dst_row += dest_stride;
           }
