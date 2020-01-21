@@ -910,7 +910,7 @@ TEST_F(PermissionRequestManagerTest,
   Accept();
 }
 
-TEST_F(PermissionRequestManagerTest, TestCrowdDenyHoldbackChance) {
+TEST_F(PermissionRequestManagerTest, DISABLED_TestCrowdDenyHoldbackChance) {
   const struct {
     std::string holdback_chance;
     bool enabled_in_prefs;

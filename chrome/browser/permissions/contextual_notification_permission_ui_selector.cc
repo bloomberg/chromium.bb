@@ -136,11 +136,12 @@ void ContextualNotificationPermissionUiSelector::EvaluateCrowdDenyTrigger(
 
   base::Optional<UiToUse> ui_to_use = GetUiToUseBasedOnSiteReputation(
       CrowdDenyPreloadData::GetInstance()->GetReputationDataForSite(origin));
-  if (ui_to_use) {
-    OnCrowdDenyTriggerEvaluated(*ui_to_use);
+  if (!ui_to_use || *ui_to_use == UiToUse::kNormalUi) {
+    OnCrowdDenyTriggerEvaluated(UiToUse::kNormalUi);
     return;
   }
 
+  // PreloadData suggests a spammy site, ping safe browsing to verify.
   DCHECK(!safe_browsing_request_);
   DCHECK(g_browser_process->safe_browsing_service());
 
