@@ -2088,14 +2088,7 @@ class Changelist(object):
 
   def _IsCqConfigured(self):
     detail = self._GetChangeDetail(['LABELS'])
-    if u'Commit-Queue' not in detail.get('labels', {}):
-      return False
-    # TODO(crbug/753213): Remove temporary hack
-    if ('https://chromium.googlesource.com/chromium/src' ==
-        self.GetRemoteUrl() and
-        detail['branch'].startswith('refs/branch-heads/')):
-      return False
-    return True
+    return u'Commit-Queue' in detail.get('labels', {})
 
   def CMDLand(self, force, bypass_hooks, verbose, parallel):
     if git_common.is_dirty_git_tree('land'):
