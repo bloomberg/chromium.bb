@@ -1312,7 +1312,9 @@ TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
           {},
           {proto::CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN,
            proto::
-               CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION});
+               CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION,
+           proto::
+               CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD});
   prediction_manager()->UpdateHostModelFeaturesForTesting(
       get_models_response.get());
   prediction_manager()->UpdatePredictionModelsForTesting(
@@ -1341,6 +1343,10 @@ TEST_F(PredictionManagerTest, PreviousSessionStatisticsUsed) {
       evaluated_features["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_"
                          "SESSION_STANDARD_DEVIATION"],
       50.0);
+  EXPECT_FLOAT_EQ(
+      evaluated_features
+          ["CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD"],
+      200.0);
 }
 
 TEST_F(PredictionManagerTest,
