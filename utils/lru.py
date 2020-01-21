@@ -79,7 +79,7 @@ class LRUDict(object):
     if state_ver != CURRENT_VERSION:
       raise ValueError(
           'Unsupported state file %s, version is %s. '
-          'Latest supported is 2' % (state_file, state_ver))
+          'Latest supported is %d' % (state_file, state_ver, CURRENT_VERSION))
     state_items = state.get('items')
     if not isinstance(state_items, list):
       raise ValueError(
