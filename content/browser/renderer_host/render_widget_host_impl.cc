@@ -1254,18 +1254,20 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
         false;
     is_in_touchpad_gesture_fling_ = false;
-    if (scroll_peak_gpu_mem_tracker_ &&
-        !view_->is_currently_scrolling_viewport()) {
-      // We start tracking peak gpu-memory usage when the initial scroll-begin
-      // is dispatched. However, it is possible that the scroll-begin did not
-      // trigger any scrolls (e.g. the page is not scrollable). In such cases,
-      // we do not want to report the peak-memory usage metric. So it is
-      // canceled here.
-      scroll_peak_gpu_mem_tracker_->Cancel();
+    if (view_) {
+      if (scroll_peak_gpu_mem_tracker_ &&
+          !view_->is_currently_scrolling_viewport()) {
+        // We start tracking peak gpu-memory usage when the initial scroll-begin
+        // is dispatched. However, it is possible that the scroll-begin did not
+        // trigger any scrolls (e.g. the page is not scrollable). In such cases,
+        // we do not want to report the peak-memory usage metric. So it is
+        // canceled here.
+        scroll_peak_gpu_mem_tracker_->Cancel();
+      }
+
+      view_->set_is_currently_scrolling_viewport(false);
     }
     scroll_peak_gpu_mem_tracker_ = nullptr;
-    if (view_)
-      view_->set_is_currently_scrolling_viewport(false);
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureFlingStart) {
     if (gesture_event.SourceDevice() == blink::WebGestureDevice::kTouchpad) {
@@ -3308,7 +3310,15 @@ void RenderWidgetHostImpl::OnZoomToFindInPageRectInMainFrame(
 }
 
 gfx::Size RenderWidgetHostImpl::GetRootWidgetViewportSize() {
+  if (!view_)
+    return gfx::Size();
+
+  // if |view_| is RWHVCF and |frame_connector_| is destroyed, then call to
+  // GetRootView will return null pointer.
   auto* root_view = view_->GetRootView();
+  if (!root_view)
+    return gfx::Size();
+
   return root_view->GetVisibleViewportSize();
 }
 
