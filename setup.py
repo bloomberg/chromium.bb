@@ -34,7 +34,9 @@
 """
 
 
-from distutils.core import setup, Extension
+from __future__ import absolute_import
+from __future__ import print_function
+from setuptools import setup, Extension
 import sys
 
 
@@ -43,8 +45,10 @@ _PACKAGE_NAME = 'mod_pywebsocket'
 # Build and use a C++ extension for faster masking. SWIG is required.
 _USE_FAST_MASKING = False
 
-if sys.version < '2.3':
-    print >> sys.stderr, '%s requires Python 2.3 or later.' % _PACKAGE_NAME
+# This is used since python_requires field is not recognized with
+# pip version 9.0.0 and earlier
+if sys.version < '2.7':
+    print('%s requires Python 2.7 or later.' % _PACKAGE_NAME, file=sys.stderr)
     sys.exit(1)
 
 if _USE_FAST_MASKING:
@@ -56,18 +60,19 @@ if _USE_FAST_MASKING:
 
 setup(author='Yuzo Fujishima',
       author_email='yuzo@chromium.org',
-      description='WebSocket extension for Apache HTTP Server.',
+      description='Standalone WebSocket Server for testing purposes.',
       long_description=(
-              'mod_pywebsocket is an Apache HTTP Server extension for '
+              'mod_pywebsocket is a standalone server for '
               'the WebSocket Protocol (RFC 6455). '
               'See mod_pywebsocket/__init__.py for more detail.'),
       license='See LICENSE',
       name=_PACKAGE_NAME,
       packages=[_PACKAGE_NAME, _PACKAGE_NAME + '.handshake'],
+      python_requires='>=2.7',
+      install_requires=['six'],
+      #TODO(suzukikeita): Update this to new Github URL
       url='http://code.google.com/p/pywebsocket/',
-      # See the source of distutils.version, distutils.versionpredicate and
-      # distutils.dist to understand how to name version numbers.
-      version='0.7.9',
+      version='3.0.0',
       )
 
 

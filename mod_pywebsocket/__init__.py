@@ -28,7 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-""" A WebSocket API for Standalone WebSocket Server
+""" A Standalone WebSocket Server for testing purposes
 
 mod_pywebsocket is an API that provides WebSocket functionalities with
 a standalone WebSocket server. It is intended for testing or
