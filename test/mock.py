@@ -35,8 +35,11 @@
 from __future__ import absolute_import
 import six.moves.queue
 import threading
+import struct
+import six
 
 from mod_pywebsocket import common
+from mod_pywebsocket import util
 from mod_pywebsocket.stream import Stream
 from mod_pywebsocket.stream import StreamOptions
 from six.moves import range
@@ -50,10 +53,13 @@ class _MockConnBase(object):
 
     def __init__(self):
         self._write_data = []
-        self.remote_addr = 'fake_address'
+        self.remote_addr = b'fake_address'
 
     def write(self, data):
-        """Override mod_python.apache.mp_conn.write."""
+        """Override mod_python.apache.mp_conn.write.
+
+        data should be bytes when touching this method manually.
+        """
 
         self._write_data.append(data)
 
@@ -120,20 +126,21 @@ class MockBlockingConn(_MockConnBase):
 
     def readline(self):
         """Override mod_python.apache.mp_conn.readline."""
-        line = ''
+        line = bytearray()
         while True:
             c = self._queue.get()
-            line += c
-            if c == '\n':
-                return line
+            line.append(c)
+            if c == ord(b'\n'):
+                return bytes(line)
 
     def read(self, length):
         """Override mod_python.apache.mp_conn.read."""
 
-        data = ''
+        data = bytearray()
         for unused in range(length):
-            data += self._queue.get()
-        return data
+            data.append(self._queue.get())
+
+        return bytes(data)
 
     def put_bytes(self, bytes):
         """Put bytes to be read from this mock.
@@ -142,7 +149,7 @@ class MockBlockingConn(_MockConnBase):
             bytes: bytes to be read.
         """
 
-        for byte in bytes:
+        for byte in six.iterbytes(bytes):
             self._queue.put(byte)
 
 

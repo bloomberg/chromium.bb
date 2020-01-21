@@ -39,11 +39,13 @@ import os
 import random
 import sys
 import unittest
+import struct
 
 import set_sys_path  # Update sys.path to locate mod_pywebsocket module.
 
 from mod_pywebsocket import util
 from six.moves import range
+from six import PY3
 
 
 _TEST_DATA_DIR = os.path.join(os.path.split(__file__)[0], 'testdata')
@@ -53,7 +55,10 @@ class UtilTest(unittest.TestCase):
     """A unittest for util module."""
 
     def test_get_stack_trace(self):
-        self.assertEqual('None\n', util.get_stack_trace())
+        if PY3:
+            self.assertEqual('NoneType: None\n', util.get_stack_trace())
+        else:
+            self.assertEqual('None\n', util.get_stack_trace())
         try:
             a = 1 / 0  # Intentionally raise exception.
         except Exception:
@@ -81,7 +86,7 @@ class UtilTest(unittest.TestCase):
 
     def test_hexify(self):
         self.assertEqual('61 7a 41 5a 30 39 20 09 0d 0a 00 ff',
-                         util.hexify('azAZ09 \t\r\n\x00\xff'))
+                         util.hexify(b'azAZ09 \t\r\n\x00\xff'))
 
 
 class RepeatedXorMaskerTest(unittest.TestCase):
@@ -91,46 +96,46 @@ class RepeatedXorMaskerTest(unittest.TestCase):
         # Sample input e6,97,a5 is U+65e5 in UTF-8
         masker = util.RepeatedXorMasker('\xff\xff\xff\xff')
         result = masker.mask('\xe6\x97\xa5')
-        self.assertEqual('\x19\x68\x5a', result)
+        self.assertEqual(b'\x19\x68\x5a', result)
 
         masker = util.RepeatedXorMasker('\x00\x00\x00\x00')
         result = masker.mask('\xe6\x97\xa5')
-        self.assertEqual('\xe6\x97\xa5', result)
+        self.assertEqual(b'\xe6\x97\xa5', result)
 
         masker = util.RepeatedXorMasker('\xe6\x97\xa5\x20')
         result = masker.mask('\xe6\x97\xa5')
-        self.assertEqual('\x00\x00\x00', result)
+        self.assertEqual(b'\x00\x00\x00', result)
 
     def test_mask_twice(self):
         masker = util.RepeatedXorMasker('\x00\x7f\xff\x20')
         # mask[0], mask[1], ... will be used.
         result = masker.mask('\x00\x00\x00\x00\x00')
-        self.assertEqual('\x00\x7f\xff\x20\x00', result)
+        self.assertEqual(b'\x00\x7f\xff\x20\x00', result)
         # mask[2], mask[0], ... will be used for the next call.
         result = masker.mask('\x00\x00\x00\x00\x00')
-        self.assertEqual('\x7f\xff\x20\x00\x7f', result)
+        self.assertEqual(b'\x7f\xff\x20\x00\x7f', result)
 
     def test_mask_large_data(self):
-        masker = util.RepeatedXorMasker('mASk')
-        original = ''.join([chr(i % 256) for i in range(1000)])
+        masker = util.RepeatedXorMasker(b'mASk')
+        original = b''.join([util.pack_byte(i % 256) for i in range(1000)])
         result = masker.mask(original)
-        expected = ''.join(
-                [chr((i % 256) ^ ord('mASk'[i % 4])) for i in range(1000)])
+        expected = b''.join(
+                [util.pack_byte((i % 256) ^ ord('mASk'[i % 4])) for i in range(1000)])
         self.assertEqual(expected, result)
 
         masker = util.RepeatedXorMasker('MaSk')
         first_part = 'The WebSocket Protocol enables two-way communication.'
         result = masker.mask(first_part)
         self.assertEqual(
-                '\x19\t6K\x1a\x0418"\x028\x0e9A\x03\x19"\x15<\x08"\rs\x0e#'
-                '\x001\x07(\x12s\x1f:\x0e~\x1c,\x18s\x08"\x0c>\x1e#\x080\n9'
-                '\x08<\x05c',
+                b'\x19\t6K\x1a\x0418"\x028\x0e9A\x03\x19"\x15<\x08"\rs\x0e#'
+                b'\x001\x07(\x12s\x1f:\x0e~\x1c,\x18s\x08"\x0c>\x1e#\x080\n9'
+                b'\x08<\x05c',
                 result)
         second_part = 'It has two parts: a handshake and the data transfer.'
         result = masker.mask(second_part)
         self.assertEqual(
-                "('K%\x00 K9\x16<K=\x00!\x1f>[s\nm\t2\x05)\x12;\n&\x04s\n#"
-                "\x05s\x1f%\x04s\x0f,\x152K9\x132\x05>\x076\x19c",
+                b"('K%\x00 K9\x16<K=\x00!\x1f>[s\nm\t2\x05)\x12;\n&\x04s\n#"
+                b"\x05s\x1f%\x04s\x0f,\x152K9\x132\x05>\x076\x19c",
                 result)
 
 

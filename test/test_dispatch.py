@@ -172,7 +172,7 @@ class DispatcherTest(unittest.TestCase):
     def test_transfer_data(self):
         dispatcher = dispatch.Dispatcher(_TEST_HANDLERS_DIR, None)
 
-        request = mock.MockRequest(connection=mock.MockConn('\x88\x02\x03\xe8'))
+        request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/origin_check'
         request.ws_protocol = 'p1'
         dispatcher.transfer_data(request)
@@ -180,7 +180,7 @@ class DispatcherTest(unittest.TestCase):
                          '\x88\x02\x03\xe8',
                          request.connection.written_data())
 
-        request = mock.MockRequest(connection=mock.MockConn('\x88\x02\x03\xe8'))
+        request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
@@ -188,7 +188,7 @@ class DispatcherTest(unittest.TestCase):
                          '\x88\x02\x03\xe8',
                          request.connection.written_data())
 
-        request = mock.MockRequest(connection=mock.MockConn('\x88\x02\x03\xe8'))
+        request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain?'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
@@ -196,7 +196,7 @@ class DispatcherTest(unittest.TestCase):
                          '\x88\x02\x03\xe8',
                          request.connection.written_data())
 
-        request = mock.MockRequest(connection=mock.MockConn('\x88\x02\x03\xe8'))
+        request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain?q=v'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
@@ -208,7 +208,7 @@ class DispatcherTest(unittest.TestCase):
         dispatcher = dispatch.Dispatcher(_TEST_HANDLERS_DIR, None)
         for resource in ['/blank', '/sub/non_callable',
                          '/sub/no_wsh_at_the_end', '/does/not/exist']:
-            request = mock.MockRequest(connection=mock.MockConn(''))
+            request = mock.MockRequest(connection=mock.MockConn(b''))
             request.ws_resource = resource
             request.ws_protocol = 'p2'
             try:
@@ -221,7 +221,7 @@ class DispatcherTest(unittest.TestCase):
 
     def test_transfer_data_handler_exception(self):
         dispatcher = dispatch.Dispatcher(_TEST_HANDLERS_DIR, None)
-        request = mock.MockRequest(connection=mock.MockConn(''))
+        request = mock.MockRequest(connection=mock.MockConn(b''))
         request.ws_resource = '/sub/exception_in_transfer'
         request.ws_protocol = 'p3'
         try:

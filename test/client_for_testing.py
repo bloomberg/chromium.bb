@@ -55,6 +55,8 @@ import re
 import socket
 import struct
 import time
+from six import iterbytes
+from six import indexbytes
 
 from mod_pywebsocket import common
 from mod_pywebsocket import util
@@ -180,7 +182,7 @@ def _read_fields(socket):
 
 def _read_name(socket):
     # 4.1 33. let /name/ be empty byte arrays
-    name = ''
+    name = b''
     while True:
         # 4.1 34. read a byte from the server
         ch = receive_bytes(socket, 1)
@@ -190,10 +192,7 @@ def _read_name(socket):
             raise Exception(
                 'Unexpected LF when reading header name %r' % name)
         elif ch == b':':  # 0x3A
-            return name
-        elif ch >= b'A' and ch <= b'Z':  # range 0x31 to 0x5A
-            ch = chr(ord(ch) + 0x20)
-            name += ch
+            return name.lower()
         else:
             name += ch
 
@@ -223,16 +222,15 @@ def _read_value(socket, ch):
 
 
 def read_frame_header(socket):
-    received = receive_bytes(socket, 2)
 
-    first_byte = ord(received[0])
+    first_byte = ord(receive_bytes(socket, 1))
     fin = (first_byte >> 7) & 1
     rsv1 = (first_byte >> 6) & 1
     rsv2 = (first_byte >> 5) & 1
     rsv3 = (first_byte >> 4) & 1
     opcode = first_byte & 0xf
 
-    second_byte = ord(received[1])
+    second_byte = ord(receive_bytes(socket, 1))
     mask = (second_byte >> 7) & 1
     payload_length = second_byte & 0x7f
 
@@ -332,8 +330,8 @@ class WebSocketHandshake(object):
         self._logger.debug('Opening handshake request headers: %r', fields)
 
         for field in fields:
-            self._socket.sendall(field)
-        self._socket.sendall('\r\n')
+            self._socket.sendall(field.encode('UTF-8'))
+        self._socket.sendall(b'\r\n')
 
         self._logger.info('Sent opening handshake request')
 
@@ -346,24 +344,25 @@ class WebSocketHandshake(object):
 
         self._logger.debug('Opening handshake Response-Line: %r', field)
 
-        if len(field) < 7 or not field.endswith('\r\n'):
+        # Will raise a UnicodeDecodeError when the decode fails
+        if len(field) < 7 or not field.endswith(b'\r\n'):
             raise Exception('Wrong status line: %r' % field)
-        m = re.match('[^ ]* ([^ ]*) .*', field)
+        m = re.match(b'[^ ]* ([^ ]*) .*', field)
         if m is None:
             raise Exception(
                 'No HTTP status code found in status line: %r' % field)
         code = m.group(1)
-        if not re.match('[0-9][0-9][0-9]', code):
+        if not re.match(b'[0-9][0-9][0-9]$', code):
             raise Exception(
                 'HTTP status code %r is not three digit in status line: %r' %
                 (code, field))
-        if code != '101':
+        if code != b'101':
             raise HttpStatusException(
                 'Expected HTTP status code 101 but found %r in status line: '
                 '%r' % (code, field), int(code))
         fields = _read_fields(self._socket)
         ch = receive_bytes(self._socket, 1)
-        if ch != '\n':  # 0x0A
+        if ch != b'\n':  # 0x0A
             raise Exception('Expected LF but found: %r' % ch)
 
         self._logger.debug('Opening handshake response headers: %r', fields)
@@ -458,8 +457,9 @@ class WebSocketStream(object):
         masking_nonce = os.urandom(4)
         result = [masking_nonce]
         count = 0
-        for c in s:
-            result.append(chr(ord(c) ^ ord(masking_nonce[count])))
+        for c in iterbytes(s):
+            result.append(
+                    util.pack_byte(c ^ indexbytes(masking_nonce, count)))
             count = (count + 1) % len(masking_nonce)
         return ''.join(result)
 
@@ -488,14 +488,15 @@ class WebSocketStream(object):
         else:
             mask_bit = 0
 
-        header = chr(fin << 7 | rsv1 << 6 | rsv2 << 5 | rsv3 << 4 | opcode)
+        header = util.pack_byte(
+                        fin << 7 | rsv1 << 6 | rsv2 << 5 | rsv3 << 4 | opcode)
         payload_length = len(payload)
         if payload_length <= 125:
-            header += chr(mask_bit | payload_length)
+            header += util.pack_byte(mask_bit | payload_length)
         elif payload_length < 1 << 16:
-            header += chr(mask_bit | 126) + struct.pack('!H', payload_length)
+            header += util.pack_byte(mask_bit | 126) + struct.pack('!H', payload_length)
         elif payload_length < 1 << 63:
-            header += chr(mask_bit | 127) + struct.pack('!Q', payload_length)
+            header += util.pack_byte(mask_bit | 127) + struct.pack('!Q', payload_length)
         else:
             raise Exception('Too long payload (%d byte)' % payload_length)
         if mask:
@@ -571,16 +572,16 @@ class WebSocketStream(object):
                                   rsv2, rsv3)
 
     def _build_close_frame(self, code, reason, mask):
-        frame = chr(1 << 7 | OPCODE_CLOSE)
+        frame = util.pack_byte(1 << 7 | OPCODE_CLOSE)
 
         if code is not None:
             body = struct.pack('!H', code) + reason.encode('utf-8')
         else:
-            body = ''
+            body = b''
         if mask:
-            frame += chr(1 << 7 | len(body)) + self._mask_hybi(body)
+            frame += util.pack_byte(1 << 7 | len(body)) + self._mask_hybi(body)
         else:
-            frame += chr(len(body)) + body
+            frame += util.pack_byte(len(body)) + body
         return frame
 
     def send_close(self, code, reason):

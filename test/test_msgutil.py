@@ -35,6 +35,7 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import division
 import array
 import six.moves.queue
 import random
@@ -54,14 +55,14 @@ from mod_pywebsocket import util
 from test import mock
 from six.moves import map
 from six.moves import range
-
+from six import iterbytes
 
 # We use one fixed nonce for testing instead of cryptographically secure PRNG.
 _MASKING_NONCE = b'ABCD'
 
 
 def _mask_hybi(frame):
-    frame_key = list(map(ord, _MASKING_NONCE))
+    frame_key = list(iterbytes(_MASKING_NONCE))
     frame_key_len = len(frame_key)
     result = array.array('B')
     result.fromstring(frame)
@@ -82,7 +83,7 @@ def _install_extension_processor(processor, request, stream_options):
 def _create_request_from_rawdata(
         read_data,
         permessage_deflate_request=None):
-    req = mock.MockRequest(connection=mock.MockConn(''.join(read_data)))
+    req = mock.MockRequest(connection=mock.MockConn(b''.join(read_data)))
     req.ws_version = common.VERSION_HYBI_LATEST
     req.ws_extension_processors = []
 
@@ -132,19 +133,19 @@ class BasicMessageTest(unittest.TestCase):
     def test_send_message(self):
         request = _create_request()
         msgutil.send_message(request, 'Hello')
-        self.assertEqual('\x81\x05Hello', request.connection.written_data())
+        self.assertEqual(b'\x81\x05Hello', request.connection.written_data())
 
-        payload = 'a' * 125
+        payload = b'a' * 125
         request = _create_request()
         msgutil.send_message(request, payload)
-        self.assertEqual('\x81\x7d' + payload,
+        self.assertEqual(b'\x81\x7d' + payload,
                          request.connection.written_data())
 
     def test_send_medium_message(self):
-        payload = 'a' * 126
+        payload = b'a' * 126
         request = _create_request()
         msgutil.send_message(request, payload)
-        self.assertEqual('\x81\x7e\x00\x7e' + payload,
+        self.assertEqual(b'\x81\x7e\x00\x7e' + payload,
                          request.connection.written_data())
 
         payload = 'a' * ((1 << 16) - 1)
@@ -154,17 +155,17 @@ class BasicMessageTest(unittest.TestCase):
                          request.connection.written_data())
 
     def test_send_large_message(self):
-        payload = 'a' * (1 << 16)
+        payload = b'a' * (1 << 16)
         request = _create_request()
         msgutil.send_message(request, payload)
-        self.assertEqual('\x81\x7f\x00\x00\x00\x00\x00\x01\x00\x00' + payload,
+        self.assertEqual(b'\x81\x7f\x00\x00\x00\x00\x00\x01\x00\x00' + payload,
                          request.connection.written_data())
 
     def test_send_message_unicode(self):
         request = _create_request()
         msgutil.send_message(request, u'\u65e5')
         # U+65e5 is encoded as e6,97,a5 in UTF-8
-        self.assertEqual('\x81\x03\xe6\x97\xa5',
+        self.assertEqual(b'\x81\x03\xe6\x97\xa5',
                          request.connection.written_data())
 
     def test_send_message_fragments(self):
@@ -173,39 +174,39 @@ class BasicMessageTest(unittest.TestCase):
         msgutil.send_message(request, ' ', False)
         msgutil.send_message(request, 'World', False)
         msgutil.send_message(request, '!', True)
-        self.assertEqual('\x01\x05Hello\x00\x01 \x00\x05World\x80\x01!',
+        self.assertEqual(b'\x01\x05Hello\x00\x01 \x00\x05World\x80\x01!',
                          request.connection.written_data())
 
     def test_send_fragments_immediate_zero_termination(self):
         request = _create_request()
         msgutil.send_message(request, 'Hello World!', False)
         msgutil.send_message(request, '', True)
-        self.assertEqual('\x01\x0cHello World!\x80\x00',
+        self.assertEqual(b'\x01\x0cHello World!\x80\x00',
                          request.connection.written_data())
 
     def test_receive_message(self):
         request = _create_request(
-            ('\x81\x85', 'Hello'), ('\x81\x86', 'World!'))
+            (b'\x81\x85', 'Hello'), (b'\x81\x86', 'World!'))
         self.assertEqual('Hello', msgutil.receive_message(request))
         self.assertEqual('World!', msgutil.receive_message(request))
 
         payload = 'a' * 125
-        request = _create_request(('\x81\xfd', payload))
+        request = _create_request((b'\x81\xfd', payload))
         self.assertEqual(payload, msgutil.receive_message(request))
 
     def test_receive_medium_message(self):
         payload = 'a' * 126
-        request = _create_request(('\x81\xfe\x00\x7e', payload))
+        request = _create_request((b'\x81\xfe\x00\x7e', payload))
         self.assertEqual(payload, msgutil.receive_message(request))
 
         payload = 'a' * ((1 << 16) - 1)
-        request = _create_request(('\x81\xfe\xff\xff', payload))
+        request = _create_request((b'\x81\xfe\xff\xff', payload))
         self.assertEqual(payload, msgutil.receive_message(request))
 
     def test_receive_large_message(self):
         payload = 'a' * (1 << 16)
         request = _create_request(
-            ('\x81\xff\x00\x00\x00\x00\x00\x01\x00\x00', payload))
+            (b'\x81\xff\x00\x00\x00\x00\x00\x01\x00\x00', payload))
         self.assertEqual(payload, msgutil.receive_message(request))
 
     def test_receive_length_not_encoded_using_minimal_number_of_bytes(self):
@@ -215,17 +216,17 @@ class BasicMessageTest(unittest.TestCase):
         payload = 'a'
         # 1 byte can be represented without extended payload length field.
         request = _create_request(
-            ('\x81\xff\x00\x00\x00\x00\x00\x00\x00\x01', payload))
+            (b'\x81\xff\x00\x00\x00\x00\x00\x00\x00\x01', payload))
         self.assertEqual(payload, msgutil.receive_message(request))
 
     def test_receive_message_unicode(self):
-        request = _create_request(('\x81\x83', '\xe6\x9c\xac'))
+        request = _create_request((b'\x81\x83', '\xe6\x9c\xac'))
         # U+672c is encoded as e6,9c,ac in UTF-8
         self.assertEqual(u'\u672c', msgutil.receive_message(request))
 
     def test_receive_message_erroneous_unicode(self):
         # \x80 and \x81 are invalid as UTF-8.
-        request = _create_request(('\x81\x82', '\x80\x81'))
+        request = _create_request((b'\x81\x82', '\x80\x81'))
         # Invalid characters should raise InvalidUTF8Exception
         self.assertRaises(InvalidUTF8Exception,
                           msgutil.receive_message,
@@ -233,48 +234,48 @@ class BasicMessageTest(unittest.TestCase):
 
     def test_receive_fragments(self):
         request = _create_request(
-            ('\x01\x85', 'Hello'),
-            ('\x00\x81', ' '),
-            ('\x00\x85', 'World'),
-            ('\x80\x81', '!'))
+            (b'\x01\x85', 'Hello'),
+            (b'\x00\x81', ' '),
+            (b'\x00\x85', 'World'),
+            (b'\x80\x81', '!'))
         self.assertEqual('Hello World!', msgutil.receive_message(request))
 
     def test_receive_fragments_unicode(self):
         # UTF-8 encodes U+6f22 into e6bca2 and U+5b57 into e5ad97.
         request = _create_request(
-            ('\x01\x82', '\xe6\xbc'),
-            ('\x00\x82', '\xa2\xe5'),
-            ('\x80\x82', '\xad\x97'))
+            (b'\x01\x82', '\xe6\xbc'),
+            (b'\x00\x82', '\xa2\xe5'),
+            (b'\x80\x82', '\xad\x97'))
         self.assertEqual(u'\u6f22\u5b57', msgutil.receive_message(request))
 
     def test_receive_fragments_immediate_zero_termination(self):
         request = _create_request(
-            ('\x01\x8c', 'Hello World!'), ('\x80\x80', ''))
+            (b'\x01\x8c', 'Hello World!'), (b'\x80\x80', ''))
         self.assertEqual('Hello World!', msgutil.receive_message(request))
 
     def test_receive_fragments_duplicate_start(self):
         request = _create_request(
-            ('\x01\x85', 'Hello'), ('\x01\x85', 'World'))
+            (b'\x01\x85', 'Hello'), (b'\x01\x85', 'World'))
         self.assertRaises(msgutil.InvalidFrameException,
                           msgutil.receive_message,
                           request)
 
     def test_receive_fragments_intermediate_but_not_started(self):
-        request = _create_request(('\x00\x85', 'Hello'))
+        request = _create_request((b'\x00\x85', 'Hello'))
         self.assertRaises(msgutil.InvalidFrameException,
                           msgutil.receive_message,
                           request)
 
     def test_receive_fragments_end_but_not_started(self):
-        request = _create_request(('\x80\x85', 'Hello'))
+        request = _create_request((b'\x80\x85', 'Hello'))
         self.assertRaises(msgutil.InvalidFrameException,
                           msgutil.receive_message,
                           request)
 
     def test_receive_message_discard(self):
         request = _create_request(
-            ('\x8f\x86', 'IGNORE'), ('\x81\x85', 'Hello'),
-            ('\x8f\x89', 'DISREGARD'), ('\x81\x86', 'World!'))
+            (b'\x8f\x86', 'IGNORE'), (b'\x81\x85', 'Hello'),
+            (b'\x8f\x89', 'DISREGARD'), (b'\x81\x86', 'World!'))
         self.assertRaises(msgutil.UnsupportedFrameException,
                           msgutil.receive_message, request)
         self.assertEqual('Hello', msgutil.receive_message(request))
@@ -284,7 +285,7 @@ class BasicMessageTest(unittest.TestCase):
 
     def test_receive_close(self):
         request = _create_request(
-            ('\x88\x8a', struct.pack('!H', 1000) + b'Good bye'))
+            (b'\x88\x8a', struct.pack('!H', 1000) + b'Good bye'))
         self.assertEqual(None, msgutil.receive_message(request))
         self.assertEqual(1000, request.ws_close_code)
         self.assertEqual('Good bye', request.ws_close_reason)
@@ -292,7 +293,7 @@ class BasicMessageTest(unittest.TestCase):
     def test_send_longest_close(self):
         reason = b'a' * 123
         request = _create_request(
-            ('\x88\xfd',
+            (b'\x88\xfd',
              struct.pack('!H', common.STATUS_NORMAL_CLOSURE) + reason))
         request.ws_stream.close_connection(common.STATUS_NORMAL_CLOSURE,
                                            reason)
@@ -344,26 +345,26 @@ class BasicMessageTest(unittest.TestCase):
         # Stream automatically respond to ping with pong without any action
         # by application layer.
         request = _create_request(
-            ('\x89\x85', 'Hello'), ('\x81\x85', 'World'))
+            (b'\x89\x85', 'Hello'), (b'\x81\x85', 'World'))
         self.assertEqual('World', msgutil.receive_message(request))
         self.assertEqual('\x8a\x05Hello',
                          request.connection.written_data())
 
         request = _create_request(
-            ('\x89\x85', 'Hello'), ('\x81\x85', 'World'))
+            (b'\x89\x85', 'Hello'), (b'\x81\x85', 'World'))
         request.on_ping_handler = handler
         self.assertEqual('World', msgutil.receive_message(request))
         self.assertTrue(request.called)
 
     def test_receive_longest_ping(self):
         request = _create_request(
-            ('\x89\xfd', 'a' * 125), ('\x81\x85', 'World'))
+            (b'\x89\xfd', 'a' * 125), (b'\x81\x85', 'World'))
         self.assertEqual('World', msgutil.receive_message(request))
         self.assertEqual('\x8a\x7d' + 'a' * 125,
                          request.connection.written_data())
 
     def test_receive_ping_too_long(self):
-        request = _create_request(('\x89\xfe\x00\x7e', 'a' * 126))
+        request = _create_request((b'\x89\xfe\x00\x7e', 'a' * 126))
         self.assertRaises(msgutil.InvalidFrameException,
                           msgutil.receive_message,
                           request)
@@ -375,7 +376,7 @@ class BasicMessageTest(unittest.TestCase):
             request.called = True
 
         request = _create_request(
-            ('\x8a\x85', 'Hello'), ('\x81\x85', 'World'))
+            (b'\x8a\x85', 'Hello'), (b'\x81\x85', 'World'))
         request.on_pong_handler = handler
         msgutil.send_ping(request, 'Hello')
         self.assertEqual('\x89\x05Hello',
@@ -391,23 +392,23 @@ class BasicMessageTest(unittest.TestCase):
     def test_receive_unsolicited_pong(self):
         # Unsolicited pong is allowed from HyBi 07.
         request = _create_request(
-            ('\x8a\x85', 'Hello'), ('\x81\x85', 'World'))
+            (b'\x8a\x85', 'Hello'), (b'\x81\x85', 'World'))
         msgutil.receive_message(request)
 
         request = _create_request(
-            ('\x8a\x85', 'Hello'), ('\x81\x85', 'World'))
+            (b'\x8a\x85', 'Hello'), (b'\x81\x85', 'World'))
         msgutil.send_ping(request, 'Jumbo')
         # Body mismatch.
         msgutil.receive_message(request)
 
     def test_ping_cannot_be_fragmented(self):
-        request = _create_request(('\x09\x85', 'Hello'))
+        request = _create_request((b'\x09\x85', 'Hello'))
         self.assertRaises(msgutil.InvalidFrameException,
                           msgutil.receive_message,
                           request)
 
     def test_ping_with_too_long_payload(self):
-        request = _create_request(('\x89\xfe\x01\x00', 'a' * 256))
+        request = _create_request((b'\x89\xfe\x01\x00', 'a' * 256))
         self.assertRaises(msgutil.InvalidFrameException,
                           msgutil.receive_message,
                           request)
@@ -447,7 +448,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
         msgutil.send_message(request, 'Hello')
 
         compress = zlib.compressobj(
@@ -455,7 +456,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         compressed_hello = compress.compress(b'Hello')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_hello = compressed_hello[:-4]
-        expected = '\xc1%c' % len(compressed_hello)
+        expected = b'\xc1%c' % len(compressed_hello)
         expected += compressed_hello
         self.assertEqual(expected, request.connection.written_data())
 
@@ -465,7 +466,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
 
         msgutil.send_message(request, '')
 
@@ -474,7 +475,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         # - 1 bit of BFINAL (0)
         # - 2 bits of BTYPE (no compression)
         # - 5 bits of padding
-        self.assertEqual('\xc1\x01\x00',
+        self.assertEqual(b'\xc1\x01\x00',
                          request.connection.written_data())
 
     def test_send_message_with_null_character(self):
@@ -483,7 +484,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
 
         msgutil.send_message(request, '\x00')
 
@@ -498,7 +499,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         # - 1 bit of BFINAL (0)
         # - 2 bits of BTYPE (no compression)
         # - 2 bits of padding
-        self.assertEqual('\xc1\x03\x62\x00\x00',
+        self.assertEqual(b'\xc1\x03\x62\x00\x00',
                          request.connection.written_data())
 
     def test_send_two_messages(self):
@@ -512,18 +513,18 @@ class PerMessageDeflateTest(unittest.TestCase):
         compress = zlib.compressobj(
                 zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
 
-        expected = ''
+        expected = b''
 
         compressed_hello = compress.compress(b'Hello')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_hello = compressed_hello[:-4]
-        expected += '\xc1%c' % len(compressed_hello)
+        expected += b'\xc1%c' % len(compressed_hello)
         expected += compressed_hello
 
         compressed_world = compress.compress(b'World')
         compressed_world += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_world = compressed_world[:-4]
-        expected += '\xc1%c' % len(compressed_world)
+        expected += b'\xc1%c' % len(compressed_world)
         expected += compressed_world
 
         self.assertEqual(expected, request.connection.written_data())
@@ -541,16 +542,16 @@ class PerMessageDeflateTest(unittest.TestCase):
                 zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
         compressed_hello = compress.compress(b'Hello')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
-        expected = '\x41%c' % len(compressed_hello)
+        expected = b'\x41%c' % len(compressed_hello)
         expected += compressed_hello
         compressed_goodbye = compress.compress(b'Goodbye')
         compressed_goodbye += compress.flush(zlib.Z_SYNC_FLUSH)
-        expected += '\x00%c' % len(compressed_goodbye)
+        expected += b'\x00%c' % len(compressed_goodbye)
         expected += compressed_goodbye
         compressed_world = compress.compress(b'World')
         compressed_world += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_world = compressed_world[:-4]
-        expected += '\x80%c' % len(compressed_world)
+        expected += b'\x80%c' % len(compressed_world)
         expected += compressed_world
         self.assertEqual(expected, request.connection.written_data())
 
@@ -598,8 +599,8 @@ class PerMessageDeflateTest(unittest.TestCase):
         self.assertEqual(expected, request.connection.written_data())
 
     def test_send_message_using_small_window(self):
-        common_part = 'abcdefghijklmnopqrstuvwxyz'
-        test_message = common_part + '-' * 30000 + common_part
+        common_part = b'abcdefghijklmnopqrstuvwxyz'
+        test_message = common_part + b'-' * 30000 + common_part
 
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
@@ -619,10 +620,10 @@ class PerMessageDeflateTest(unittest.TestCase):
         actual_payload = actual_frame[expected_websocket_header_size:]
 
         self.assertEqual(
-                '\xc1%c' % expected_websocket_payload_size, actual_header)
+                b'\xc1%c' % expected_websocket_payload_size, actual_header)
         decompress = zlib.decompressobj(-8)
         decompressed_message = decompress.decompress(
-                actual_payload + '\x00\x00\xff\xff')
+                actual_payload + b'\x00\x00\xff\xff')
         decompressed_message += decompress.flush()
         self.assertEqual(test_message, decompressed_message)
         self.assertEqual(0, len(decompress.unused_data))
@@ -696,7 +697,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         data += _mask_hybi(compressed_hello)
 
         # Close frame
-        data += b'\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + 'Good bye')
+        data += b'\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + b'Good bye')
 
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
@@ -723,7 +724,7 @@ class PerMessageDeflateTest(unittest.TestCase):
 
         # Fragment the compressed payload into lots of frames.
         bytes_chunked = 0
-        data = ''
+        data = b''
         frame_count = 0
 
         chunk_sizes = []
@@ -735,7 +736,7 @@ class PerMessageDeflateTest(unittest.TestCase):
             # - at least 10 chunks are created.
             chunk_size = random.randint(
                 1, min(125,
-                       len(compressed_payload) / 10,
+                       len(compressed_payload) // 10,
                        len(compressed_payload) - bytes_chunked))
             chunk_sizes.append(chunk_size)
             chunk = compressed_payload[
@@ -748,7 +749,7 @@ class PerMessageDeflateTest(unittest.TestCase):
             if bytes_chunked == len(compressed_payload):
                 first_octet = first_octet | 0x80
 
-            data += '%c%c' % (first_octet, chunk_size | 0x80)
+            data += b'%c%c' % (first_octet, chunk_size | 0x80)
             data += _mask_hybi(chunk)
 
             frame_count += 1
@@ -757,7 +758,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         self.assertTrue(len(chunk_sizes) > 10)
 
         # Close frame
-        data += '\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + 'Good bye')
+        data += b'\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + b'Good bye')
 
         extension = common.ExtensionParameter(
             common.PERMESSAGE_DEFLATE_EXTENSION)
@@ -771,16 +772,16 @@ class PerMessageDeflateTest(unittest.TestCase):
         compress = zlib.compressobj(
                 zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -zlib.MAX_WBITS)
 
-        data = ''
+        data = b''
 
         compressed_hello = compress.compress(b'HelloWebSocket')
         compressed_hello += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_hello = compressed_hello[:-4]
-        split_position = len(compressed_hello) / 2
-        data += '\x41%c' % (split_position | 0x80)
+        split_position = len(compressed_hello) // 2
+        data += b'\x41%c' % (split_position | 0x80)
         data += _mask_hybi(compressed_hello[:split_position])
 
-        data += '\x80%c' % ((len(compressed_hello) - split_position) | 0x80)
+        data += b'\x80%c' % ((len(compressed_hello) - split_position) | 0x80)
         data += _mask_hybi(compressed_hello[split_position:])
 
         compress = zlib.compressobj(
@@ -789,11 +790,11 @@ class PerMessageDeflateTest(unittest.TestCase):
         compressed_world = compress.compress(b'World')
         compressed_world += compress.flush(zlib.Z_SYNC_FLUSH)
         compressed_world = compressed_world[:-4]
-        data += '\xc1%c' % (len(compressed_world) | 0x80)
+        data += b'\xc1%c' % (len(compressed_world) | 0x80)
         data += _mask_hybi(compressed_world)
 
         # Close frame
-        data += '\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + 'Good bye')
+        data += b'\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + b'Good bye')
 
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
@@ -817,7 +818,7 @@ class PerMessageDeflateTest(unittest.TestCase):
 
         # Fragment the compressed payload into lots of frames.
         bytes_chunked = 0
-        compressed_payload = ''
+        compressed_payload = b''
 
         chunk_sizes = []
         methods = []
@@ -864,7 +865,7 @@ class PerMessageDeflateTest(unittest.TestCase):
 
         self.assertTrue(125 < len(compressed_payload))
         self.assertTrue(len(compressed_payload) < 65536)
-        data = '\xc2\xfe' + struct.pack('!H', len(compressed_payload))
+        data = b'\xc2\xfe' + struct.pack('!H', len(compressed_payload))
         data += _mask_hybi(compressed_payload)
 
         # Close frame
@@ -888,7 +889,7 @@ class MessageReceiverTest(unittest.TestCase):
 
         self.assertEqual(None, receiver.receive_nowait())
 
-        request.connection.put_bytes('\x81\x86' + _mask_hybi('Hello!'))
+        request.connection.put_bytes(b'\x81\x86' + _mask_hybi('Hello!'))
         self.assertEqual('Hello!', receiver.receive())
 
     def test_onmessage(self):
@@ -900,7 +901,7 @@ class MessageReceiverTest(unittest.TestCase):
         request = _create_blocking_request()
         receiver = msgutil.MessageReceiver(request, onmessage_handler)
 
-        request.connection.put_bytes('\x81\x86' + _mask_hybi('Hello!'))
+        request.connection.put_bytes(b'\x81\x86' + _mask_hybi('Hello!'))
         self.assertEqual('Hello!', onmessage_queue.get())
 
 

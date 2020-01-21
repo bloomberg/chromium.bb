@@ -47,26 +47,26 @@ class MockConnTest(unittest.TestCase):
     """A unittest for MockConn class."""
 
     def setUp(self):
-        self._conn = mock.MockConn('ABC\r\nDEFG\r\n\r\nHIJK')
+        self._conn = mock.MockConn(b'ABC\r\nDEFG\r\n\r\nHIJK')
 
     def test_readline(self):
-        self.assertEqual('ABC\r\n', self._conn.readline())
-        self.assertEqual('DEFG\r\n', self._conn.readline())
-        self.assertEqual('\r\n', self._conn.readline())
-        self.assertEqual('HIJK', self._conn.readline())
-        self.assertEqual('', self._conn.readline())
+        self.assertEqual(b'ABC\r\n', self._conn.readline())
+        self.assertEqual(b'DEFG\r\n', self._conn.readline())
+        self.assertEqual(b'\r\n', self._conn.readline())
+        self.assertEqual(b'HIJK', self._conn.readline())
+        self.assertEqual(b'', self._conn.readline())
 
     def test_read(self):
-        self.assertEqual('ABC\r\nD', self._conn.read(6))
-        self.assertEqual('EFG\r\n\r\nHI', self._conn.read(9))
-        self.assertEqual('JK', self._conn.read(10))
-        self.assertEqual('', self._conn.read(10))
+        self.assertEqual(b'ABC\r\nD', self._conn.read(6))
+        self.assertEqual(b'EFG\r\n\r\nHI', self._conn.read(9))
+        self.assertEqual(b'JK', self._conn.read(10))
+        self.assertEqual(b'', self._conn.read(10))
 
     def test_read_and_readline(self):
-        self.assertEqual('ABC\r\nD', self._conn.read(6))
-        self.assertEqual('EFG\r\n', self._conn.readline())
-        self.assertEqual('\r\nHIJK', self._conn.read(9))
-        self.assertEqual('', self._conn.readline())
+        self.assertEqual(b'ABC\r\nD', self._conn.read(6))
+        self.assertEqual(b'EFG\r\n', self._conn.readline())
+        self.assertEqual(b'\r\nHIJK', self._conn.read(9))
+        self.assertEqual(b'', self._conn.readline())
 
     def test_write(self):
         self._conn.write('Hello\r\n')
@@ -104,9 +104,9 @@ class MockBlockingConnTest(unittest.TestCase):
         queue = six.moves.queue.Queue()
         reader = LineReader(conn, queue)
         self.failUnless(queue.empty())
-        conn.put_bytes('Foo bar\r\n')
+        conn.put_bytes(b'Foo bar\r\n')
         read = queue.get()
-        self.assertEqual('Foo bar\r\n', read)
+        self.assertEqual(b'Foo bar\r\n', read)
 
 
 class MockTableTest(unittest.TestCase):

@@ -291,12 +291,12 @@ class EndToEndHyBiTest(EndToEndTestBase):
         def test_function(client):
             # From the examples in the spec.
             client._stream.send_data(
-                    '\xf2\x48\xcd',
+                    b'\xf2\x48\xcd',
                     client_for_testing.OPCODE_TEXT,
                     end=False,
                     rsv1=1)
             client._stream.send_data(
-                    '\xc9\xc9\x07\x00',
+                    b'\xc9\xc9\x07\x00',
                     client_for_testing.OPCODE_TEXT)
             client._stream.assert_receive_binary(
                     '\xf2\x48\xcd\xc9\xc9\x07\x00',
@@ -319,11 +319,11 @@ class EndToEndHyBiTest(EndToEndTestBase):
         def test_function(client):
             # From the examples in the spec.
             client._stream.send_data(
-                    '\xf2\x48\xcd\xc9\xc9\x07\x00',
+                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
                     client_for_testing.OPCODE_TEXT,
                     rsv1=1)
             client._stream.send_data(
-                    '\xf2\x00\x11\x00\x00',
+                    b'\xf2\x00\x11\x00\x00',
                     client_for_testing.OPCODE_TEXT,
                     rsv1=1)
             client._stream.assert_receive_binary(
@@ -351,11 +351,11 @@ class EndToEndHyBiTest(EndToEndTestBase):
         def test_function(client):
             # From the examples in the spec.
             client._stream.send_data(
-                    '\xf2\x48\xcd\xc9\xc9\x07\x00',
+                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
                     client_for_testing.OPCODE_TEXT,
                     rsv1=1)
             client._stream.send_data(
-                    '\xf2\x00\x11\x00\x00',
+                    b'\xf2\x00\x11\x00\x00',
                     client_for_testing.OPCODE_TEXT,
                     rsv1=1)
             client._stream.assert_receive_binary(
@@ -524,7 +524,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
             client.connect()
 
             # Text frame with invalid UTF-8 string.
-            client.send_message('\x80', raw=True)
+            client.send_message(b'\x80', raw=True)
             client.assert_receive_close(
                 client_for_testing.STATUS_INVALID_FRAME_PAYLOAD_DATA)
 

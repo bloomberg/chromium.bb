@@ -69,7 +69,7 @@ def _create_good_request_def():
 
 
 def _create_request(request_def):
-    conn = mock.MockConn('')
+    conn = mock.MockConn(b'')
     return mock.MockRequest(
         method=request_def.method,
         uri=request_def.uri,

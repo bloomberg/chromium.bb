@@ -54,6 +54,7 @@ import re
 import socket
 import traceback
 import zlib
+import struct
 
 try:
     from mod_pywebsocket import fast_masking
@@ -150,6 +151,11 @@ def get_class_logger(o):
     """Return the logging class information."""
     return logging.getLogger(
         '%s.%s' % (o.__class__.__module__, o.__class__.__name__))
+
+
+def pack_byte(b):
+    """Pack an integer to network-ordered byte"""
+    return struct.pack('!B', b)
 
 
 class NoopMasker(object):
