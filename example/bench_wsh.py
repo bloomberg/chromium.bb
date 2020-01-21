@@ -37,7 +37,9 @@ value. <count> must be an integer value.
 """
 
 
+from __future__ import absolute_import
 import time
+from six.moves import range
 
 
 def web_socket_do_extra_handshake(request):
@@ -52,7 +54,7 @@ def web_socket_transfer_data(request):
     wait = float(parts[0])
     count = int(parts[1])
     message = parts[2]
-    for i in xrange(count):
+    for i in range(count):
         request.ws_stream.send_message(message)
         time.sleep(wait)
 

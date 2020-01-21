@@ -5,7 +5,8 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 
-import urlparse
+from __future__ import absolute_import
+from six.moves import urllib
 
 
 def _add_set_cookie(request, value):
@@ -13,7 +14,7 @@ def _add_set_cookie(request, value):
 
 
 def web_socket_do_extra_handshake(request):
-    components = urlparse.urlparse(request.uri)
+    components = urllib.parse.urlparse(request.uri)
     command = components[4]
 
     ONE_DAY_LIFE = 'Max-Age=86400'

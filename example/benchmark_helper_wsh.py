@@ -29,6 +29,8 @@
 
 
 """Handler for benchmark.html."""
+from __future__ import absolute_import
+import six
 
 
 def web_socket_do_extra_handshake(request):
@@ -37,14 +39,14 @@ def web_socket_do_extra_handshake(request):
 
 
 def web_socket_transfer_data(request):
-    data = ''
+    data = b''
 
     while True:
         command = request.ws_stream.receive_message()
         if command is None:
             return
 
-        if not isinstance(command, unicode):
+        if not isinstance(command, six.text_type):
             raise ValueError('Invalid command data:' + command)
         commands = command.split(' ')
         if len(commands) == 0:
@@ -59,7 +61,7 @@ def web_socket_transfer_data(request):
 
             # Reuse data if possible.
             if len(data) != size:
-                data = 'a' * size
+                data = b'a' * size
             request.ws_stream.send_message(data, binary=True)
         elif commands[0] == 'send':
             if len(commands) != 2:
@@ -74,7 +76,7 @@ def web_socket_transfer_data(request):
             size = len(data)
 
             if verify_data:
-                if data != 'a' * size:
+                if data != b'a' * size:
                     raise ValueError('Payload verification failed')
 
             request.ws_stream.send_message(str(size))
