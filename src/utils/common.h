@@ -341,8 +341,8 @@ inline int GetRelativeDistance(const unsigned int a, const unsigned int b,
     assert(b == 0);
   } else {
     assert(order_hint_shift_bits >= 24);  // i.e., order_hint_bits <= 8
-    assert(a < (1 << (32 - order_hint_shift_bits)));
-    assert(b < (1 << (32 - order_hint_shift_bits)));
+    assert(a < (1u << (32 - order_hint_shift_bits)));
+    assert(b < (1u << (32 - order_hint_shift_bits)));
     assert(diff < (1 << (32 - order_hint_shift_bits)));
     assert(diff >= -(1 << (32 - order_hint_shift_bits)));
   }
