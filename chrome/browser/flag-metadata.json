@@ -2497,7 +2497,7 @@
   {
     "name": "mac-system-media-permissions-info-ui",
     "owners": [ "guidou", "engedy", "hkamila" ],
-    "expiry_milestone": 78
+    "expiry_milestone": 83
   },
   {
     "name": "mac-v2-gpu-sandbox",
