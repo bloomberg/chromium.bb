@@ -445,6 +445,7 @@ MediaFactory::CreateRendererFactorySelector(
     return nullptr;
 
   auto factory_selector = std::make_unique<media::RendererFactorySelector>();
+  bool use_default_renderer_factory = true;
 
 #if defined(OS_ANDROID)
   DCHECK(interface_broker_);
@@ -462,6 +463,7 @@ MediaFactory::CreateRendererFactorySelector(
   if (use_media_player) {
     factory_selector->AddBaseFactory(FactoryType::kMediaPlayer,
                                      std::move(media_player_factory));
+    use_default_renderer_factory = false;
   } else {
     // Always give |factory_selector| a MediaPlayerRendererClient factory. WMPI
     // might fallback to it if the final redirected URL is an HLS url.
@@ -488,8 +490,8 @@ MediaFactory::CreateRendererFactorySelector(
       FactoryType::kFlinging, std::move(flinging_factory), is_flinging_cb);
 #endif  // defined(OS_ANDROID)
 
-  bool use_default_renderer_factory = true;
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
+  DCHECK(!use_media_player);
   if (enable_mojo_renderer) {
     use_default_renderer_factory = false;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
