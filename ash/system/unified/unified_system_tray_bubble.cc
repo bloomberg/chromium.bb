@@ -287,6 +287,13 @@ void UnifiedSystemTrayBubble::FocusEntered(bool reverse) {
   unified_view_->FocusEntered(reverse);
 }
 
+void UnifiedSystemTrayBubble::OnMessageCenterActivated() {
+  // When the message center is activated, we no longer need to reroute key
+  // events to this bubble. Otherwise, we interfere with notifications that may
+  // require key input like inline replies. See crbug.com/1040738.
+  bubble_view_->StopReroutingEvents();
+}
+
 void UnifiedSystemTrayBubble::OnDisplayConfigurationChanged() {
   UpdateBubbleBounds();
 }

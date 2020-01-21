@@ -346,6 +346,10 @@ int TrayBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+void TrayBubbleView::StopReroutingEvents() {
+  reroute_event_handler_.reset();
+}
+
 ax::mojom::Role TrayBubbleView::GetAccessibleWindowRole() {
   // We override the role because the base class sets it to alert dialog.
   // This would make screen readers announce the whole of the system tray
