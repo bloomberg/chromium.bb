@@ -31,28 +31,21 @@
 """WebSocket utilities."""
 
 
+from __future__ import absolute_import
 import array
 import errno
+from six import iterbytes
+from six.moves import map
+from six.moves import range
 
-# Import hash classes from a module available and recommended for each Python
-# version and re-export those symbol. Use sha and md5 module in Python 2.4, and
-# hashlib module in Python 2.6.
-try:
-    import hashlib
-    md5_hash = hashlib.md5
-    sha1_hash = hashlib.sha1
-except ImportError:
-    import md5
-    import sha
-    md5_hash = md5.md5
-    sha1_hash = sha.sha
+import hashlib
+md5_hash = hashlib.md5
+sha1_hash = hashlib.sha1
 
-import StringIO
 import logging
 import os
 import re
 import socket
-import traceback
 import zlib
 import struct
 
@@ -60,18 +53,6 @@ try:
     from mod_pywebsocket import fast_masking
 except ImportError:
     pass
-
-
-def get_stack_trace():
-    """Get the current stack trace as string.
-
-    This is needed to support Python 2.3.
-    TODO: Remove this when we only support Python 2.4 and above.
-          Use traceback.format_exc instead.
-    """
-    out = StringIO.StringIO()
-    traceback.print_exc(file=out)
-    return out.getvalue()
 
 
 def prepend_message_to_exception(message, exc):
@@ -144,7 +125,7 @@ def wrap_popen3_for_win(cygwin_path):
 
 
 def hexify(s):
-    return ' '.join(map(lambda x: '%02x' % ord(x), s))
+    return ' '.join(['%02x' % x for x in iterbytes(s)])
 
 
 def get_class_logger(o):
@@ -203,11 +184,11 @@ class RepeatedXorMasker(object):
 
         # Use temporary local variables to eliminate the cost to access
         # attributes
-        masking_key = map(ord, self._masking_key)
+        masking_key = [c for c in iterbytes(self._masking_key)]
         masking_key_size = len(masking_key)
         masking_key_index = self._masking_key_index
 
-        for i in xrange(len(result)):
+        for i in range(len(result)):
             result[i] ^= masking_key[masking_key_index]
             masking_key_index = (masking_key_index + 1) % masking_key_size
 
@@ -283,7 +264,7 @@ class _Inflater(object):
         self._logger = get_class_logger(self)
         self._window_bits = window_bits
 
-        self._unconsumed = ''
+        self._unconsumed = b''
 
         self.reset()
 
@@ -291,7 +272,7 @@ class _Inflater(object):
         if not (size == -1 or size > 0):
             raise Exception('size must be -1 or positive')
 
-        data = ''
+        data = b''
 
         while True:
             if size == -1:
@@ -299,7 +280,7 @@ class _Inflater(object):
                 # See Python bug http://bugs.python.org/issue12050 to
                 # understand why the same code cannot be used for updating
                 # self._unconsumed for here and else block.
-                self._unconsumed = ''
+                self._unconsumed = b''
             else:
                 data += self._decompress.decompress(
                     self._unconsumed, size - len(data))
@@ -363,7 +344,7 @@ class _RFC1979Deflater(object):
         if bfinal:
             result = self._deflater.compress_and_finish(bytes)
             # Add a padding block with BFINAL = 0 and BTYPE = 0.
-            result = result + chr(0)
+            result = result + pack_byte(0)
             self._deflater = None
             return result
 
@@ -392,7 +373,7 @@ class _RFC1979Inflater(object):
     def filter(self, bytes):
         # Restore stripped LEN and NLEN field of a non-compressed block added
         # for Z_SYNC_FLUSH.
-        self._inflater.append(bytes + '\x00\x00\xff\xff')
+        self._inflater.append(bytes + b'\x00\x00\xff\xff')
         return self._inflater.decompress(-1)
 
 
@@ -429,7 +410,7 @@ class DeflateSocket(object):
 
             read_data = self._socket.recv(DeflateSocket._RECV_SIZE)
             if not read_data:
-                return ''
+                return b''
             self._inflater.append(read_data)
 
     def sendall(self, bytes):

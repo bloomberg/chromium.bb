@@ -55,18 +55,6 @@ _TEST_DATA_DIR = os.path.join(os.path.split(__file__)[0], 'testdata')
 class UtilTest(unittest.TestCase):
     """A unittest for util module."""
 
-    def test_get_stack_trace(self):
-        if PY3:
-            self.assertEqual('NoneType: None\n', util.get_stack_trace())
-        else:
-            self.assertEqual('None\n', util.get_stack_trace())
-        try:
-            a = 1 / 0  # Intentionally raise exception.
-        except Exception:
-            trace = util.get_stack_trace()
-            self.failUnless(trace.startswith('Traceback'))
-            self.failUnless(trace.find('ZeroDivisionError') != -1)
-
     def test_prepend_message_to_exception(self):
         exc = Exception('World')
         self.assertEqual('World', str(exc))

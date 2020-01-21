@@ -42,6 +42,7 @@ import os
 import struct
 import time
 import socket
+import six
 
 from mod_pywebsocket import common
 from mod_pywebsocket import util
@@ -58,7 +59,7 @@ _NOOP_MASKER = util.NoopMasker()
 class Frame(object):
 
     def __init__(self, fin=1, rsv1=0, rsv2=0, rsv3=0,
-                 opcode=None, payload=''):
+                 opcode=None, payload=b''):
         self.fin = fin
         self.rsv1 = rsv1
         self.rsv2 = rsv2
@@ -90,11 +91,11 @@ def create_length_header(length, mask):
     if length < 0:
         raise ValueError('length must be non negative integer')
     elif length <= 125:
-        return chr(mask_bit | length)
+        return util.pack_byte(mask_bit | length)
     elif length < (1 << 16):
-        return chr(mask_bit | 126) + struct.pack('!H', length)
+        return util.pack_byte(mask_bit | 126) + struct.pack('!H', length)
     elif length < (1 << 63):
-        return chr(mask_bit | 127) + struct.pack('!Q', length)
+        return util.pack_byte(mask_bit | 127) + struct.pack('!Q', length)
     else:
         raise ValueError('Payload is too big for one frame')
 
@@ -115,12 +116,12 @@ def create_header(opcode, payload_length, fin, rsv1, rsv2, rsv3, mask):
     if (fin | rsv1 | rsv2 | rsv3) & ~1:
         raise ValueError('FIN bit and Reserved bit parameter must be 0 or 1')
 
-    header = ''
+    header = b''
 
     first_byte = ((fin << 7)
                   | (rsv1 << 6) | (rsv2 << 5) | (rsv3 << 4)
                   | opcode)
-    header += chr(first_byte)
+    header += util.pack_byte(first_byte)
     header += create_length_header(payload_length, mask)
 
     return header
@@ -189,16 +190,14 @@ def parse_frame(receive_bytes, logger=None,
 
     logger.log(common.LOGLEVEL_FINE, 'Receive the first 2 octets of a frame')
 
-    received = receive_bytes(2)
-
-    first_byte = ord(received[0])
+    first_byte = ord(receive_bytes(1))
     fin = (first_byte >> 7) & 1
     rsv1 = (first_byte >> 6) & 1
     rsv2 = (first_byte >> 5) & 1
     rsv3 = (first_byte >> 4) & 1
     opcode = first_byte & 0xf
 
-    second_byte = ord(received[1])
+    second_byte = ord(receive_bytes(1))
     mask = (second_byte >> 7) & 1
     payload_length = second_byte & 0x7f
 
@@ -368,7 +367,7 @@ def create_close_frame(body, mask=False, frame_filters=[]):
 
 
 def create_closing_handshake_body(code, reason):
-    body = ''
+    body = b''
     if code is not None:
         if (code > common.STATUS_USER_PRIVATE_MAX or
             code < common.STATUS_NORMAL_CLOSURE):
@@ -448,7 +447,7 @@ class Stream(object):
                     'Receiving %d byte failed. Peer (%r) closed connection' %
                     (length, (self._request.connection.remote_addr,)))
             return read_bytes
-        except socket.error, e:
+        except socket.error as e:
             # Catch a socket.error. Because it's not a child class of the
             # IOError prior to Python 2.6, we cannot omit this except clause.
             # Use %s rather than %r for the exception to use human friendly
@@ -456,7 +455,7 @@ class Stream(object):
             raise ConnectionTerminatedException(
                 'Receiving %d byte failed. socket.error (%s) occurred' %
                 (length, e))
-        except IOError, e:
+        except IOError as e:
             # Also catch an IOError because mod_python throws it.
             raise ConnectionTerminatedException(
                 'Receiving %d byte failed. IOError (%s) occurred' %
@@ -469,7 +468,7 @@ class Stream(object):
 
         try:
             self._request.connection.write(bytes_to_write)
-        except Exception, e:
+        except Exception as e:
             util.prepend_message_to_exception(
                     'Failed to send message to %r: ' %
                             (self._request.connection.remote_addr,),
@@ -478,7 +477,7 @@ class Stream(object):
 
     def receive_bytes(self, length):
         """Receives multiple bytes. Retries read when we couldn't receive the
-        specified amount.
+        specified amount. This method returns byte strings.
 
         Raises:
             ConnectionTerminatedException: when read returns empty string.
@@ -489,7 +488,7 @@ class Stream(object):
             new_read_bytes = self._read(length)
             read_bytes.append(new_read_bytes)
             length -= len(new_read_bytes)
-        return ''.join(read_bytes)
+        return b''.join(read_bytes)
 
     def _read_until(self, delim_char):
         """Reads bytes until we encounter delim_char. The result will not
@@ -505,7 +504,7 @@ class Stream(object):
             if ch == delim_char:
                 break
             read_bytes.append(ch)
-        return ''.join(read_bytes)
+        return b''.join(read_bytes)
 
     def _receive_frame(self):
         """Receives a frame and return data in the frame as a tuple containing
@@ -574,7 +573,7 @@ class Stream(object):
             raise BadOperationException(
                 'Requested send_message after sending out a closing handshake')
 
-        if binary and isinstance(message, unicode):
+        if binary and isinstance(message, six.text_type):
             raise BadOperationException(
                 'Message for binary frame must be instance of str')
 
@@ -611,7 +610,7 @@ class Stream(object):
                 # at least one frame is sent.
                 if len(message) <= bytes_written:
                     break
-        except ValueError, e:
+        except ValueError as e:
             raise BadOperationException(e)
 
     def _get_message_from_frame(self, frame):
@@ -639,7 +638,7 @@ class Stream(object):
             if frame.fin:
                 # End of fragmentation frame
                 self._received_fragments.append(frame.payload)
-                message = ''.join(self._received_fragments)
+                message = b''.join(self._received_fragments)
                 self._received_fragments = []
                 return message
             else:
@@ -750,7 +749,7 @@ class Stream(object):
             if handler:
                 handler(self._request, message)
                 return
-        except AttributeError, e:
+        except AttributeError:
             pass
         self._send_pong(message)
 
@@ -777,7 +776,7 @@ class Stream(object):
                     break
                 else:
                     inflight_pings.append(expected_body)
-            except IndexError, e:
+            except IndexError:
                 # The received pong was unsolicited pong. Keep the
                 # ping queue as is.
                 self._ping_queue = inflight_pings
@@ -788,7 +787,7 @@ class Stream(object):
             handler = self._request.on_pong_handler
             if handler:
                 handler(self._request, message)
-        except AttributeError, e:
+        except AttributeError:
             pass
 
     def receive_message(self):
@@ -852,7 +851,7 @@ class Stream(object):
                 # CHARACTER.
                 try:
                     return message.decode('utf-8')
-                except UnicodeDecodeError, e:
+                except UnicodeDecodeError as e:
                     raise InvalidUTF8Exception(e)
             elif self._original_opcode == common.OPCODE_BINARY:
                 return message
@@ -909,9 +908,9 @@ class Stream(object):
                     'close reason must not be specified if code is None')
             reason = ''
         else:
-            if not isinstance(reason, str) and not isinstance(reason, unicode):
+            if not isinstance(reason, bytes) and not isinstance(reason, six.text_type):
                 raise BadOperationException(
-                    'close reason must be an instance of str or unicode')
+                    'close reason must be an instance of bytes or unicode')
 
         self._send_closing_handshake(code, reason)
         self._logger.debug(
@@ -938,7 +937,9 @@ class Stream(object):
         # TODO: 3. close the WebSocket connection.
         # note: mod_python Connection (mp_conn) doesn't have close method.
 
-    def send_ping(self, body=''):
+    def send_ping(self, body, binary=False):
+        if not binary and isinstance(body, six.text_type):
+            body = body.encode('UTF-8')
         frame = create_ping_frame(
             body,
             self._options.mask_send,

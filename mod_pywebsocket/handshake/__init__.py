@@ -34,6 +34,7 @@ successfully established.
 """
 
 
+from __future__ import absolute_import
 import logging
 
 from mod_pywebsocket import common
@@ -85,15 +86,15 @@ def do_handshake(request, dispatcher):
             handshaker.do_handshake()
             _LOGGER.info('Established (%s protocol)', name)
             return
-        except HandshakeException, e:
+        except HandshakeException as e:
             _LOGGER.debug(
                 'Failed to complete opening handshake as %s protocol: %r',
                 name, e)
             if e.status:
                 raise e
-        except AbortedByUserException, e:
+        except AbortedByUserException as e:
             raise
-        except VersionException, e:
+        except VersionException as e:
             raise
 
     # TODO(toyoshim): Add a test to cover the case all handshakers fail.

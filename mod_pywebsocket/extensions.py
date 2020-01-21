@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
+from __future__ import absolute_import
 from mod_pywebsocket import common
 from mod_pywebsocket import util
 from mod_pywebsocket.http_header_util import quote_if_necessary
@@ -184,7 +185,7 @@ class PerMessageDeflateExtensionProcessor(ExtensionProcessorInterface):
             try:
                 server_max_window_bits = _parse_window_bits(
                     server_max_window_bits)
-            except ValueError, e:
+            except ValueError as e:
                 self._logger.debug('Bad %s parameter: %r',
                                    self._SERVER_MAX_WINDOW_BITS_PARAM,
                                    e)

@@ -33,6 +33,7 @@ processors.
 """
 
 
+from __future__ import absolute_import
 from mod_pywebsocket import common
 from mod_pywebsocket import http_header_util
 
@@ -111,12 +112,12 @@ def parse_host_header(request):
         return fields[0], get_default_port(request.is_https())
     try:
         return fields[0], int(fields[1])
-    except ValueError, e:
+    except ValueError as e:
         raise HandshakeException('Invalid port number format: %r' % e)
 
 
 def format_header(name, value):
-    return '%s: %s\r\n' % (name, value)
+    return u'%s: %s\r\n' % (name, value)
 
 
 def get_mandatory_header(request, key):
@@ -138,10 +139,10 @@ def validate_mandatory_header(request, key, expected_value, fail_status=None):
 def check_request_line(request):
     # 5.1 1. The three character UTF-8 string "GET".
     # 5.1 2. A UTF-8-encoded U+0020 SPACE character (0x20 byte).
-    if request.method != 'GET':
+    if request.method != u'GET':
         raise HandshakeException('Method is not GET: %r' % request.method)
 
-    if request.protocol != 'HTTP/1.1':
+    if request.protocol != u'HTTP/1.1':
         raise HandshakeException('Version is not HTTP/1.1: %r' %
                                  request.protocol)
 

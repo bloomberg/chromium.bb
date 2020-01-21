@@ -38,7 +38,8 @@ bytes writing/reading.
 """
 
 
-import Queue
+from __future__ import absolute_import
+import six.moves.queue
 import threading
 
 
@@ -95,7 +96,7 @@ def receive_message(request):
     return request.ws_stream.receive_message()
 
 
-def send_ping(request, body=''):
+def send_ping(request, body):
     request.ws_stream.send_ping(body)
 
 
@@ -124,7 +125,7 @@ class MessageReceiver(threading.Thread):
 
         threading.Thread.__init__(self)
         self._request = request
-        self._queue = Queue.Queue()
+        self._queue = six.moves.queue.Queue()
         self._onmessage = onmessage
         self._stop_requested = False
         self.setDaemon(True)
@@ -157,7 +158,7 @@ class MessageReceiver(threading.Thread):
         """
         try:
             message = self._queue.get_nowait()
-        except Queue.Empty:
+        except six.moves.queue.Empty:
             message = None
         return message
 
@@ -190,7 +191,7 @@ class MessageSender(threading.Thread):
         """
         threading.Thread.__init__(self)
         self._request = request
-        self._queue = Queue.Queue()
+        self._queue = six.moves.queue.Queue()
         self.setDaemon(True)
         self.start()
 
