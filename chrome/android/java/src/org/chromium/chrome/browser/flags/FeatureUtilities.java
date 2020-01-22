@@ -66,6 +66,7 @@ public class FeatureUtilities {
     private static Map<String, Boolean> sFlags = new HashMap<>();
     private static Boolean sHasRecognitionIntentHandler;
     private static String sReachedCodeProfilerTrialGroup;
+    private static Boolean sEnabledTabThumbnailApsectRatioForTesting;
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -675,6 +676,31 @@ public class FeatureUtilities {
         }
 
         return sReachedCodeProfilerTrialGroup;
+    }
+
+    /**
+     * @return Whether the thumbnail_aspect_ratio field trail is set.
+     */
+    public static boolean isTabThumbnailAspectRatioNotOne() {
+        if (sEnabledTabThumbnailApsectRatioForTesting != null) {
+            return sEnabledTabThumbnailApsectRatioForTesting;
+        }
+
+        double expectedAspectRatio = ChromeFeatureList.getFieldTrialParamByFeatureAsDouble(
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "thumbnail_aspect_ratio", 1.0);
+        return Double.compare(1.0, expectedAspectRatio) != 0;
+    }
+
+    /**
+     * @return Whether to allow to refetch tab thumbnail if the aspect ratio is not matching.
+     */
+    public static boolean isAllowToRefetchTabThumbnail() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, "allow_to_refetch", false);
+    }
+
+    public static void enableTabThumbnailAspectRatioForTesting(Boolean enabled) {
+        sEnabledTabThumbnailApsectRatioForTesting = enabled;
     }
 
     private static void cacheFlag(String preferenceName, String featureName) {

@@ -30797,6 +30797,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Got JPEG thumbnail"/>
   <int value="1" label="Got ETC1 thumbnail"/>
   <int value="2" label="Got nothing"/>
+  <int value="3" label="Got different aspect ratio JPEG thumbnail"/>
 </enum>
 
 <enum name="GsaAccountChangeNotificationSource">

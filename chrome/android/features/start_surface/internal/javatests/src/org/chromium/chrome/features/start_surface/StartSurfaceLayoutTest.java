@@ -24,6 +24,7 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAU
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
@@ -35,6 +36,7 @@ import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageView;
 
 import org.junit.After;
 import org.junit.Before;
@@ -57,9 +59,11 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabFeatureUtilities;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.tab_ui.R;
@@ -79,7 +83,9 @@ import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
@@ -780,6 +786,272 @@ public class StartSurfaceLayoutTest {
         verifyTabSwitcherCardCount(cta, 0);
     }
 
+    @Test
+    @MediumTest
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testThumbnailAspectRatio_default() throws Exception {
+        // clang-format on
+        prepareTabs(2, 0, mUrl);
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        onView(withId(R.id.tab_list_view))
+                .check(ThumbnailAspectRatioAssertion.havingAspectRatio(1.0));
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
+    public void testThumbnailAspectRatio_point75() throws Exception {
+        prepareTabs(2, 0, mUrl);
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        onView(withId(R.id.tab_list_view))
+                .check(ThumbnailAspectRatioAssertion.havingAspectRatio(0.75));
+        leaveGTSAndVerifyThumbnailsAreReleased();
+
+        Tab tab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
+        mActivityTestRule.loadUrlInTab(
+                NTP_URL, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, tab);
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        onView(withId(R.id.tab_list_view))
+                .check(ThumbnailAspectRatioAssertion.havingAspectRatio(0.75));
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
+    public void testThumbnailAspectRatio_fromTwoToPoint75() throws Exception {
+        // clang-format on
+        prepareTabs(2, 0, mUrl);
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        onView(withId(R.id.tab_list_view))
+                .check(ThumbnailAspectRatioAssertion.havingAspectRatio(2.0));
+        TabModel currentTabModel =
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+        for (int i = 0; i < currentTabModel.getCount(); i++) {
+            TabUiTestHelper.checkThumbnailsExist(currentTabModel.getTabAt(i));
+        }
+        leaveGTSAndVerifyThumbnailsAreReleased();
+
+        simulateAspectRatioChangedToPoint75();
+        verifyAllThumbnailHasAspectRatio(0.75);
+
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        onView(withId(R.id.tab_list_view))
+                .check(ThumbnailAspectRatioAssertion.havingAspectRatio(2.0));
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testThumbnailFetchingResult_defaultAspectRatio() throws Exception {
+        // clang-format on
+        prepareTabs(2, 0, mUrl);
+        int oldJpegCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_JPEG);
+        int oldEtc1Count = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_ETC1);
+        int oldNothingCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_NOTHING);
+        int oldDifferentAspectRatioJpegCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG);
+
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        int currentJpegCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_JPEG);
+        int currentEtc1Count = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_ETC1);
+        int currentNothingCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_NOTHING);
+        int currentDifferentAspectRatioJpegCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG);
+
+        assertEquals(1, currentJpegCount - oldJpegCount);
+        assertEquals(0, currentEtc1Count - oldEtc1Count);
+        assertEquals(0, currentDifferentAspectRatioJpegCount - oldDifferentAspectRatioJpegCount);
+        // Get thumbnail from a live layer.
+        assertEquals(1, currentNothingCount - oldNothingCount);
+
+        oldJpegCount = currentJpegCount;
+        oldEtc1Count = currentEtc1Count;
+        oldNothingCount = currentNothingCount;
+        oldDifferentAspectRatioJpegCount = currentDifferentAspectRatioJpegCount;
+
+        TabModel currentTabModel =
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+        for (int i = 0; i < currentTabModel.getCount(); i++) {
+            TabUiTestHelper.checkThumbnailsExist(currentTabModel.getTabAt(i));
+        }
+
+        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
+        mActivityTestRule.startMainActivityFromLauncher();
+
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        assertEquals(2,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                        TabContentManager.ThumbnailFetchingResult.GOT_JPEG)
+                        - oldJpegCount);
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                        TabContentManager.ThumbnailFetchingResult.GOT_ETC1)
+                        - oldEtc1Count);
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                        TabContentManager.ThumbnailFetchingResult.GOT_NOTHING)
+                        - oldNothingCount);
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                        TabContentManager.ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG)
+                        - oldDifferentAspectRatioJpegCount);
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/2.0/allow_to_refetch/true"})
+    public void testThumbnailFetchingResult_changingAspectRatio() throws Exception {
+        // clang-format on
+        prepareTabs(2, 0, mUrl);
+        int oldJpegCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_JPEG);
+        int oldEtc1Count = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_ETC1);
+        int oldNothingCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_NOTHING);
+        int oldDifferentAspectRatioJpegCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG);
+
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        int currentJpegCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_JPEG);
+        int currentEtc1Count = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_ETC1);
+        int currentNothingCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_NOTHING);
+        int currentDifferentAspectRatioJpegCount = RecordHistogram.getHistogramValueCountForTesting(
+                TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                TabContentManager.ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG);
+
+        assertEquals(1, currentJpegCount - oldJpegCount);
+        assertEquals(0, currentEtc1Count - oldEtc1Count);
+        assertEquals(0, currentDifferentAspectRatioJpegCount - oldDifferentAspectRatioJpegCount);
+        // Get thumbnail from a live layer.
+        assertEquals(1, currentNothingCount - oldNothingCount);
+
+        oldJpegCount = currentJpegCount;
+        oldEtc1Count = currentEtc1Count;
+        oldNothingCount = currentNothingCount;
+        oldDifferentAspectRatioJpegCount = currentDifferentAspectRatioJpegCount;
+
+        onView(withId(R.id.tab_list_view))
+                .check(ThumbnailAspectRatioAssertion.havingAspectRatio(2.0));
+
+        TabModel currentTabModel =
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+        for (int i = 0; i < currentTabModel.getCount(); i++) {
+            TabUiTestHelper.checkThumbnailsExist(currentTabModel.getTabAt(i));
+        }
+        leaveGTSAndVerifyThumbnailsAreReleased();
+
+        simulateAspectRatioChangedToPoint75();
+        verifyAllThumbnailHasAspectRatio(0.75);
+
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                        TabContentManager.ThumbnailFetchingResult.GOT_JPEG)
+                        - oldJpegCount);
+        assertEquals(2,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                        TabContentManager.ThumbnailFetchingResult.GOT_DIFFERENT_ASPECT_RATIO_JPEG)
+                        - oldDifferentAspectRatioJpegCount);
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                        TabContentManager.ThumbnailFetchingResult.GOT_ETC1)
+                        - oldEtc1Count);
+        assertEquals(0,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        TabContentManager.UMA_THUMBNAIL_FETCHING_RESULT,
+                        TabContentManager.ThumbnailFetchingResult.GOT_NOTHING)
+                        - oldNothingCount);
+        onView(withId(R.id.tab_list_view))
+                .check(ThumbnailAspectRatioAssertion.havingAspectRatio(2.0));
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
+            message = "https://crbug.com/1023833")
+    @CommandLineFlags.Add({BASE_PARAMS})
+    public void testRecycling_defaultAspectRatio() throws InterruptedException {
+        // clang-format on
+        prepareTabs(10, 0, mUrl);
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
+        enterGTSWithThumbnailChecking();
+        onView(withId(R.id.tab_list_view)).perform(RecyclerViewActions.scrollToPosition(9));
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
+            message = "https://crbug.com/1023833")
+    @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
+    public void testRecycling_aspectRatioPoint75() throws InterruptedException {
+        // clang-format on
+        prepareTabs(10, 0, mUrl);
+        ChromeTabUtils.switchTabInCurrentTabModel(mActivityTestRule.getActivity(), 0);
+        enterGTSWithThumbnailChecking();
+        onView(withId(R.id.tab_list_view)).perform(RecyclerViewActions.scrollToPosition(9));
+    }
+
+    @Test
+    @MediumTest
+    // clang-format off
+    @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.M,
+            message = "https://crbug.com/1023833")
+    @CommandLineFlags.Add({BASE_PARAMS + "/thumbnail_aspect_ratio/0.75"})
+    public void testExpandTab_withAspectRatioPoint75() throws InterruptedException {
+        // clang-format on
+        prepareTabs(1, 0, mUrl);
+        enterGTSWithThumbnailChecking();
+        leaveGTSAndVerifyThumbnailsAreReleased();
+    }
+
     private void switchTabModel(boolean isIncognito) {
         assertTrue(isIncognito !=
                 mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
@@ -863,7 +1135,6 @@ public class StartSurfaceLayoutTest {
      */
     private void leaveGTSAndVerifyThumbnailsAreReleased() {
         assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
-
         StartSurface startSurface = mStartSurfaceLayout.getStartSurfaceForTesting();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { startSurface.getController().onBackPressed(); });
@@ -895,6 +1166,43 @@ public class StartSurfaceLayoutTest {
         checkCaptureCount(expected, initCount);
     }
 
+    private static class ThumbnailAspectRatioAssertion implements ViewAssertion {
+        private double mExpectedRatio;
+
+        public static ThumbnailAspectRatioAssertion havingAspectRatio(double ratio) {
+            return new ThumbnailAspectRatioAssertion(ratio);
+        }
+
+        private ThumbnailAspectRatioAssertion(double expectedRatio) {
+            mExpectedRatio = expectedRatio;
+        }
+
+        @Override
+        public void check(View view, NoMatchingViewException noMatchException) {
+            if (noMatchException != null) throw noMatchException;
+
+            RecyclerView recyclerView = (RecyclerView) view;
+
+            RecyclerView.Adapter adapter = recyclerView.getAdapter();
+            for (int i = 0; i < adapter.getItemCount(); i++) {
+                RecyclerView.ViewHolder viewHolder =
+                        recyclerView.findViewHolderForAdapterPosition(i);
+                if (viewHolder != null) {
+                    ViewLookupCachingFrameLayout tabView =
+                            (ViewLookupCachingFrameLayout) viewHolder.itemView;
+                    ImageView thumbnail = (ImageView) tabView.fastFindViewById(R.id.tab_thumbnail);
+                    BitmapDrawable drawable = (BitmapDrawable) thumbnail.getDrawable();
+                    Bitmap bitmap = drawable.getBitmap();
+                    double bitmapRatio = bitmap.getWidth() * 1.0 / bitmap.getHeight();
+                    assertTrue(
+                            "Actual ratio: " + bitmapRatio + "; Expected ratio: " + mExpectedRatio,
+                            Math.abs(bitmapRatio - mExpectedRatio)
+                                    <= TabContentManager.ASPECT_RATIO_PRECISION);
+                }
+            }
+        }
+    }
+
     private void checkCaptureCount(int expectedDelta, int initCount) {
         // TODO(wychen): With animation, the 2nd capture might be skipped if the 1st takes too long.
         CriteriaHelper.pollUiThread(
@@ -924,5 +1232,35 @@ public class StartSurfaceLayoutTest {
             }
         }
         return true;
+    }
+
+    private void simulateAspectRatioChangedToPoint75() throws IOException {
+        TabModel currentModel = mActivityTestRule.getActivity().getCurrentTabModel();
+        for (int i = 0; i < currentModel.getCount(); i++) {
+            Tab tab = currentModel.getTabAt(i);
+            Bitmap bitmap = TabContentManager.getJpegForTab(tab);
+            bitmap = Bitmap.createScaledBitmap(
+                    bitmap, bitmap.getWidth(), (int) (bitmap.getWidth() * 1.0 / 0.75), false);
+            encodeJpeg(tab, bitmap);
+        }
+    }
+
+    private void encodeJpeg(Tab tab, Bitmap bitmap) throws IOException {
+        FileOutputStream outputStream =
+                new FileOutputStream(TabContentManager.getTabThumbnailFileJpeg(tab));
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, outputStream);
+        outputStream.close();
+        Bitmap decodedBitmap = TabContentManager.getJpegForTab(tab);
+    }
+
+    private void verifyAllThumbnailHasAspectRatio(double ratio) {
+        TabModel currentModel = mActivityTestRule.getActivity().getCurrentTabModel();
+        for (int i = 0; i < currentModel.getCount(); i++) {
+            Tab tab = currentModel.getTabAt(i);
+            Bitmap bitmap = TabContentManager.getJpegForTab(tab);
+            double bitmapRatio = bitmap.getWidth() * 1.0 / bitmap.getHeight();
+            assertTrue("Actual ratio: " + bitmapRatio + "; Expected ratio: " + ratio,
+                    Math.abs(bitmapRatio - ratio) <= TabContentManager.ASPECT_RATIO_PRECISION);
+        }
     }
 }
