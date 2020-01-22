@@ -26,7 +26,6 @@
 extern "C" {
 #endif
 
-#define MAX_REF_MV_SEARCH 3
 #define INTER_INTRA_RD_THRESH_SCALE 9
 #define INTER_INTRA_RD_THRESH_SHIFT 4
 #define COMP_TYPE_RD_THRESH_SCALE 11

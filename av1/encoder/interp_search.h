@@ -14,7 +14,7 @@
 
 #include "av1/encoder/block.h"
 #include "av1/encoder/encoder.h"
-#include "av1/encoder/rdopt.h"
+#include "av1/encoder/rdopt_utils.h"
 
 #ifdef __cplusplus
 extern "C" {
