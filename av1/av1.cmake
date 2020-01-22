@@ -130,6 +130,8 @@ list(APPEND AOM_AV1_ENCODER_SOURCES
             "${AOM_ROOT}/av1/encoder/block.h"
             "${AOM_ROOT}/av1/encoder/cnn.c"
             "${AOM_ROOT}/av1/encoder/cnn.h"
+            "${AOM_ROOT}/av1/encoder/compound_type.c"
+            "${AOM_ROOT}/av1/encoder/compound_type.h"
             "${AOM_ROOT}/av1/encoder/context_tree.c"
             "${AOM_ROOT}/av1/encoder/context_tree.h"
             "${AOM_ROOT}/av1/encoder/corner_detect.c"

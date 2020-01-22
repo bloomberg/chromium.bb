@@ -173,11 +173,6 @@ sobel_xy av1_sobel(const uint8_t *input, int stride, int i, int j,
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);
 
-typedef int64_t (*pick_interinter_mask_type)(
-    const AV1_COMP *const cpi, MACROBLOCK *x, const BLOCK_SIZE bsize,
-    const uint8_t *const p0, const uint8_t *const p1,
-    const int16_t *const residual1, const int16_t *const diff10);
-
 static INLINE int av1_encoder_get_relative_dist(const OrderHintInfo *oh, int a,
                                                 int b) {
   if (!oh->enable_order_hint) return 0;
