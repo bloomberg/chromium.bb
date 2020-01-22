@@ -821,9 +821,6 @@ static AOM_INLINE void init_gop_frames_for_tpl(
     GF_GROUP *gf_group, int *tpl_group_frames,
     const EncodeFrameInput *const frame_input, int *pframe_qindex) {
   AV1_COMMON *cm = &cpi->common;
-  const SequenceHeader *const seq_params = &cm->seq_params;
-  int frame_idx = 0;
-  RefCntBuffer *frame_bufs = cm->buffer_pool->frame_bufs;
   int cur_frame_idx = gf_group->index;
   *pframe_qindex = 0;
 
@@ -831,20 +828,6 @@ static AOM_INLINE void init_gop_frames_for_tpl(
   EncodeFrameParams frame_params = *init_frame_params;
 
   int ref_picture_map[REF_FRAMES];
-  for (int i = 0; i < FRAME_BUFFERS && frame_idx < INTER_REFS_PER_FRAME + 1;
-       ++i) {
-    if (frame_bufs[i].ref_count == 0) {
-      alloc_frame_mvs(cm, &frame_bufs[i]);
-      if (aom_realloc_frame_buffer(
-              &frame_bufs[i].buf, cm->width, cm->height,
-              seq_params->subsampling_x, seq_params->subsampling_y,
-              seq_params->use_highbitdepth, cpi->oxcf.border_in_pixels,
-              cm->byte_alignment, NULL, NULL, NULL))
-        aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                           "Failed to allocate frame buffer");
-      ++frame_idx;
-    }
-  }
 
   for (int i = 0; i < REF_FRAMES; ++i) {
     if (frame_params.frame_type == KEY_FRAME) {
