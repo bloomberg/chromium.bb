@@ -1066,11 +1066,24 @@ void ClientControlledShellSurface::OnPostWidgetCommit() {
   if (expected_orientation_ == orientation_)
     orientation_compositor_lock_.reset();
 
-  widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
-                                          pending_always_on_top_
-                                          ? ui::ZOrderLevel::kFloatingWindow
-                                          : ui::ZOrderLevel::kNormal);
-
+  ui::ZOrderLevel z_order_level = pending_always_on_top_
+                                   ? ui::ZOrderLevel::kFloatingWindow
+                                   : ui::ZOrderLevel::kNormal;
+  ash::WindowState* window_state = GetWindowState();
+  if (window_state->IsPip()) {
+    // CTS requires a PIP window to stay at the initial position that Android
+    // calculates. UpdatePipBounds() is triggered by setting the window always
+    // on top, and depending on the density, it's adjusted by one pixel, which
+    // makes CTS fail.
+    // TODO(takise): Remove this workaround once ARC P is gone. See b/147847272
+    // for more detail.
+    base::AutoReset<bool> resetter(&ignore_bounds_change_request_, true);
+    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                            z_order_level);
+  } else {
+    widget_->GetNativeWindow()->SetProperty(aura::client::kZOrderingKey,
+                                            z_order_level);
+  }
 }
 
 void ClientControlledShellSurface::OnSurfaceDestroying(Surface* surface) {
