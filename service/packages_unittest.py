@@ -132,13 +132,18 @@ class UprevEbuildFromPinTest(cros_test_lib.TempDirTestCase):
     mod = result.modified[0]
     self.assertEqual(mod.new_version, self.new_version,
                      'unexpected version number: %s' % mod.new_version)
-    self.assertEqual(len(mod.files), 1,
+    self.assertEqual(len(mod.files), 2,
                      'unexpected number of modified files: %s' % len(mod.files))
+
+    old_ebuild_path = os.path.join(package_path,
+                                   self.ebuild_template % self.version)
+    self.assertEqual(mod.files[0], old_ebuild_path,
+                     'unexpected deleted ebuild file: %s' % mod.files[0])
 
     new_ebuild_path = os.path.join(package_path,
                                    self.ebuild_template % self.new_version)
-    self.assertEqual(mod.files[0], new_ebuild_path,
-                     'unexpected updated ebuild file: %s' % mod.files[0])
+    self.assertEqual(mod.files[1], new_ebuild_path,
+                     'unexpected updated ebuild file: %s' % mod.files[1])
 
   def test_no_ebuild(self):
     """Tests assertion is raised if package has no ebuilds"""
