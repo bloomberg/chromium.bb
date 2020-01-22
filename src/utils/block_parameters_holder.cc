@@ -33,6 +33,20 @@ int RowsOrColumns4x4ToSuperBlocks(int value4x4, bool use_128x128_superblock) {
                                 : DivideBy64(MultiplyBy4(value4x4) + 63);
 }
 
+void StoreCache(BlockParameters* bp_to_store, ptrdiff_t stride, int rows,
+                int columns, BlockParameters** bp) {
+  do {
+    // The following loop has better performance than using std::fill().
+    // std::fill() has some overhead in checking zero loop count.
+    int x = columns;
+    auto* bp_dst = bp;
+    do {
+      *bp_dst++ = bp_to_store;
+    } while (--x != 0);
+    bp += stride;
+  } while (--rows != 0);
+}
+
 }  // namespace
 
 BlockParametersHolder::BlockParametersHolder(int rows4x4, int columns4x4,
@@ -73,14 +87,27 @@ bool BlockParametersHolder::Init() {
 void BlockParametersHolder::FillCache(int row4x4, int column4x4,
                                       BlockSize block_size,
                                       BlockParameters* const bp) {
-  const int row4x4_end =
-      std::min(row4x4 + kNum4x4BlocksHigh[block_size], rows4x4_);
-  const int column4x4_end =
-      std::min(column4x4 + kNum4x4BlocksWide[block_size], columns4x4_);
-  for (int y = row4x4; y < row4x4_end; ++y) {
-    for (int x = column4x4; x < column4x4_end; ++x) {
-      block_parameters_cache_[y][x] = bp;
-    }
+  const int rows = std::min(static_cast<int>(kNum4x4BlocksHigh[block_size]),
+                            rows4x4_ - row4x4);
+  const int columns = std::min(static_cast<int>(kNum4x4BlocksWide[block_size]),
+                               columns4x4_ - column4x4);
+  auto* const bp_dst = &block_parameters_cache_[row4x4][column4x4];
+  // Specialize columns cases (values in kNum4x4BlocksWide[]) for better
+  // performance.
+  if (columns == 1) {
+    StoreCache(bp, columns4x4_, rows, 1, bp_dst);
+  } else if (columns == 2) {
+    StoreCache(bp, columns4x4_, rows, 2, bp_dst);
+  } else if (columns == 4) {
+    StoreCache(bp, columns4x4_, rows, 4, bp_dst);
+  } else if (columns == 8) {
+    StoreCache(bp, columns4x4_, rows, 8, bp_dst);
+  } else if (columns == 16) {
+    StoreCache(bp, columns4x4_, rows, 16, bp_dst);
+  } else if (columns == 32) {
+    StoreCache(bp, columns4x4_, rows, 32, bp_dst);
+  } else {
+    StoreCache(bp, columns4x4_, rows, columns, bp_dst);
   }
 }
 
