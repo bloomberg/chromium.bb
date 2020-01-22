@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.phosphorus',
   syntax='proto3',
   serialized_options=_b('ZBgo.chromium.org/chromiumos/infra/proto/go/test_platform/phosphorus'),
-  serialized_pb=_b('\n+test_platform/phosphorus/upload_to_gs.proto\x12\x18test_platform.phosphorus\x1a%test_platform/phosphorus/common.proto\"f\n\x11UploadToGSRequest\x12\x30\n\x06\x63onfig\x18\x01 \x01(\x0b\x32 .test_platform.phosphorus.Config\x12\x0e\n\x06\x62ucket\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\t\"$\n\x12UploadToGSResponse\x12\x0e\n\x06gs_url\x18\x01 \x01(\tBDZBgo.chromium.org/chromiumos/infra/proto/go/test_platform/phosphorusb\x06proto3')
+  serialized_pb=_b('\n+test_platform/phosphorus/upload_to_gs.proto\x12\x18test_platform.phosphorus\x1a%test_platform/phosphorus/common.proto\"l\n\x11UploadToGSRequest\x12\x30\n\x06\x63onfig\x18\x01 \x01(\x0b\x32 .test_platform.phosphorus.Config\x12\x14\n\x0cgs_directory\x18\x02 \x01(\t\x12\x0f\n\x07task_id\x18\x03 \x01(\t\"$\n\x12UploadToGSResponse\x12\x0e\n\x06gs_url\x18\x01 \x01(\tBDZBgo.chromium.org/chromiumos/infra/proto/go/test_platform/phosphorusb\x06proto3')
   ,
   dependencies=[test__platform_dot_phosphorus_dot_common__pb2.DESCRIPTOR,])
 
@@ -42,7 +42,7 @@ _UPLOADTOGSREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='bucket', full_name='test_platform.phosphorus.UploadToGSRequest.bucket', index=1,
+      name='gs_directory', full_name='test_platform.phosphorus.UploadToGSRequest.gs_directory', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -68,7 +68,7 @@ _UPLOADTOGSREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=112,
-  serialized_end=214,
+  serialized_end=220,
 )
 
 
@@ -98,8 +98,8 @@ _UPLOADTOGSRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=216,
-  serialized_end=252,
+  serialized_start=222,
+  serialized_end=258,
 )
 
 _UPLOADTOGSREQUEST.fields_by_name['config'].message_type = test__platform_dot_phosphorus_dot_common__pb2._CONFIG
