@@ -101,23 +101,29 @@ Instead it copies Goma files to a client-specified archive directory.
 
     # Copy stats file and counterz file if they are specified.
     if self._counterz_file:
-      counterz_path = os.path.join(self._log_dir, self._counterz_file)
-      if not os.path.isfile(counterz_path):
-        raise SpecifiedFileMissingError(
-            'Goma counterz file missing: ' + counterz_path)
-      shutil.copyfile(counterz_path,
-                      os.path.join(self._dest_dir, self._counterz_file))
-      archived_counterz_file = self._counterz_file
+      archived_counterz_file = self._CopyExpectedGomaFile(self._counterz_file)
     if self._stats_file:
-      stats_path = os.path.join(self._log_dir, self._stats_file)
-      if not os.path.isfile(stats_path):
-        raise SpecifiedFileMissingError(
-            'Goma stats file missing: ' + stats_path)
-      shutil.copyfile(stats_path,
-                      os.path.join(self._dest_dir, self._stats_file))
-      archived_stats_file = self._stats_file
+      archived_stats_file = self._CopyExpectedGomaFile(self._stats_file)
     return ArchivedFiles(archived_stats_file, archived_counterz_file,
                          archived_log_files)
+
+  def _CopyExpectedGomaFile(self, filename):
+    """Copies expected goma files (stats, counterz).
+
+    Args:
+      filename (str): File to copy.
+
+    Returns:
+      The filename on success, None on error.
+    """
+    file_path = os.path.join(self._log_dir, filename)
+    if not os.path.isfile(file_path):
+      logging.warning('Goma expected file specified, not found %s', file_path)
+      return None
+    else:
+      shutil.copyfile(file_path,
+                      os.path.join(self._dest_dir, filename))
+      return filename
 
   def _ArchiveInfoFiles(self, pattern):
     """Archives INFO files matched with pattern, with gzip'ing.

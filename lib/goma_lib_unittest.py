@@ -118,10 +118,16 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
     archiver = goma_lib.LogsArchiver(self.goma_log_dir, dest_dir=self.dest_dir,
                                      stats_file='stats.binaryproto',
                                      counterz_file='counterz.binaryproto')
-    # Because counterz.binaryproto does not exist, we expect
-    # SpecifiedFileMissingError to be raised.
-    with self.assertRaises(goma_lib.SpecifiedFileMissingError):
-      archiver.Archive()
+    # Because counterz.binaryproto does not exist, verify it is not returned
+    # as one of the files archived.
+    archiver_tuple = archiver.Archive()
+    self.assertFalse(archiver_tuple.counterz_file)
+    self.assertEqual(archiver_tuple.stats_file, 'stats.binaryproto')
+    self.assertCountEqual(
+        archiver_tuple.log_files,
+        ['compiler_proxy.host.log.INFO.20170426-120000.000000.gz',
+         'gomacc.host.log.INFO.20170426-120100.000000.tar.gz',
+         'compiler_proxy-subproc.host.log.INFO.20170426-120000.000000.gz'])
 
   def testNinjaLogArchive(self):
     """Test successful archive of ninja logs."""

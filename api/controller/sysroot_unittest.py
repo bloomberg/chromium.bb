@@ -17,7 +17,6 @@ from chromite.api.gen.chromite.api import sysroot_pb2
 from chromite.lib import build_target_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-from chromite.lib import goma_lib
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
@@ -568,9 +567,16 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase,
     out_proto = self._OutputProto()
     self.PatchObject(sysroot_service, 'BuildPackages')
 
-    with self.assertRaises(goma_lib.SpecifiedFileMissingError):
-      sysroot_controller.InstallPackages(in_proto, out_proto,
-                                         self.api_config)
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto,
+                                            self.api_config)
+    self.assertFalse(rc)
+    self.assertFalse(out_proto.failed_packages)
+    self.assertCountEqual(out_proto.goma_artifacts.log_files, [
+        'compiler_proxy-subproc.host.log.INFO.20180921-120100.000000.gz',
+        'compiler_proxy.host.log.INFO.20180921-120000.000000.gz',
+        'gomacc.host.log.INFO.20180921-120200.000000.tar.gz'])
+    self.assertFalse(out_proto.goma_artifacts.counterz_file)
+    self.assertFalse(out_proto.goma_artifacts.stats_file)
 
   def testFailureOutputHandling(self):
     """Test failed package handling."""
