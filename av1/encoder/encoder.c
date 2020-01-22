@@ -4134,12 +4134,6 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   *q = av1_rc_pick_q_and_bounds(cpi, &cpi->rc, cm->width, cm->height,
                                 cpi->gf_group.index, bottom_index, top_index);
 
-  // Set the motion vector precision based on mv stats from the last coded
-  // frame.
-  if (!frame_is_intra_only(cm)) {
-    av1_pick_and_set_high_precision_mv(cpi, *q);
-  }
-
   // Configure experimental use of segmentation for enhanced coding of
   // static regions if indicated.
   // Only allowed in the second pass of a two pass encode, as it requires
@@ -5191,6 +5185,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   int overshoot_seen = 0;
   int undershoot_seen = 0;
   int low_cr_seen = 0;
+  int last_loop_allow_hp = 0;
 
 #if CONFIG_COLLECT_COMPONENT_TIMING
   printf("\n Encoding a frame:");
@@ -5264,6 +5259,18 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
 #if CONFIG_COLLECT_COMPONENT_TIMING
     start_timing(cpi, av1_encode_frame_time);
 #endif
+    // Set the motion vector precision based on mv stats from the last coded
+    // frame.
+    if (!frame_is_intra_only(cm)) {
+      av1_pick_and_set_high_precision_mv(cpi, q);
+
+      // If the precision has changed during different iteration of the loop,
+      // then we need to reset the global motion vectors
+      if (loop_count > 0 && cm->allow_high_precision_mv != last_loop_allow_hp) {
+        cpi->global_motion_search_done = 0;
+      }
+      last_loop_allow_hp = cm->allow_high_precision_mv;
+    }
 
     // transform / motion compensation build reconstruction frame
     av1_encode_frame(cpi);
