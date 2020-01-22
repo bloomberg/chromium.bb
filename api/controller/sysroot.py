@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import os
+
 from chromite.api import controller
 from chromite.api import faux
 from chromite.api import validate
@@ -168,8 +170,14 @@ def InstallPackages(input_proto, output_proto, _config):
   # Copy goma logs to specified directory if there is a goma_config and
   # it contains a log_dir to store artifacts.
   if input_proto.goma_config.log_dir.dir:
+    # Get the goma log directory based on the GLOG_log_dir env variable.
+    # TODO(crbug.com/1045001): Replace environment variable with query to
+    # goma object after goma refactoring allows this.
+    log_source_dir = os.getenv('GLOG_log_dir')
+    if not log_source_dir:
+      cros_build_lib.Die('GLOG_log_dir must be defined.')
     archiver = goma_lib.LogsArchiver(
-        input_proto.goma_config.goma_dir,
+        log_source_dir,
         dest_dir=input_proto.goma_config.log_dir.dir,
         stats_file=input_proto.goma_config.stats_file,
         counterz_file=input_proto.goma_config.counterz_file)

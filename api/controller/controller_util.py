@@ -7,8 +7,6 @@
 
 from __future__ import print_function
 
-import os
-
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.cbuildbot import goma_util
 from chromite.lib import constants
@@ -78,10 +76,8 @@ def ParseGomaConfig(goma_message, chroot_path):
     goma_approach = goma_util.GomaApproach('?staging',
                                            'staging-goma.chromium.org', True)
 
-  log_dir = goma_message.log_dir.dir or None
-  if log_dir:
-    log_dir = os.path.join(chroot_path, log_dir.lstrip(os.sep))
-
+  # Note that we are not specifying the goma log_dir so that goma will create
+  # and use a tmp dir for the logs.
   stats_filename = goma_message.stats_file or None
   counterz_filename = goma_message.counterz_file or None
 
@@ -91,7 +87,6 @@ def ParseGomaConfig(goma_message, chroot_path):
                         chromeos_goma_dir=chromeos_goma_dir,
                         chroot_dir=chroot_path,
                         goma_approach=goma_approach,
-                        log_dir=log_dir,
                         stats_filename=stats_filename,
                         counterz_filename=counterz_filename)
 

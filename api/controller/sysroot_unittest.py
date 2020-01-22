@@ -341,6 +341,7 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase,
     osutils.SafeMakedirs(self.goma_dir)
     self.goma_out_dir = os.path.join(self.tempdir, 'goma_out_dir')
     osutils.SafeMakedirs(self.goma_out_dir)
+    os.environ['GLOG_log_dir'] = self.goma_dir
 
   def _InputProto(self, build_target=None, sysroot_path=None,
                   build_source=False, goma_dir=None, goma_log_dir=None,
