@@ -12,7 +12,7 @@
 ## ./git-foo-command  #=> runs `python git_foo_command.py`
 
 ## Constants
-PYTHONDONTWRITEBYTECODE=1
+PYTHONDONTWRITEBYTECODE=1; export PYTHONDONTWRITEBYTECODE
 
 ## "Input parameters".
 # If set before the script is sourced, then we'll use the pre-set values.
