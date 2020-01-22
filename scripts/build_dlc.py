@@ -499,17 +499,27 @@ def ValidateDlcIdentifier(name):
     - No underscore.
     - First character should be only alphanumeric.
     - Other characters can be alphanumeric and '-' (dash).
-    - Maximum length of 40 characters.
+    - Maximum length of 40 (MAX_ID_NAME) characters.
 
   For more info see:
   https://chromium.googlesource.com/chromiumos/platform2/+/master/dlcservice/docs/developer.md#create-a-dlc-module
 
   Args:
-    name: The string to be validated.
+    name: The value of the string to be validated.
   """
-  if (not name or not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9-]*$', name) or
-      len(name) > MAX_ID_NAME):
-    raise Exception('Invalid DLC identifier %s' % name)
+  errors = []
+  if not name:
+    errors.append('Must not be empty.')
+  if not name[0].isalnum():
+    errors.append('Must start with alphanumeric character.')
+  if not re.match(r'^[a-zA-Z0-9][a-zA-Z0-9-]*$', name):
+    errors.append('Must only use alphanumeric and - (dash).')
+  if len(name) > MAX_ID_NAME:
+    errors.append('Must be within %d characters.' % MAX_ID_NAME)
+
+  if errors:
+    msg = '%s is invalid:\n%s' % (name, '\n'.join(errors))
+    raise Exception(msg)
 
 
 def ValidateArguments(opts):

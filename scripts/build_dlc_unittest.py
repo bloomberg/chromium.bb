@@ -48,6 +48,7 @@ class UtilsTest(cros_test_lib.TempDirTestCase):
     build_dlc.ValidateDlcIdentifier('hello-world2')
     build_dlc.ValidateDlcIdentifier('this-string-has-length-40-exactly-now---')
 
+    self.assertRaises(Exception, build_dlc.ValidateDlcIdentifier, '')
     self.assertRaises(Exception, build_dlc.ValidateDlcIdentifier, '-')
     self.assertRaises(Exception, build_dlc.ValidateDlcIdentifier, '-hi')
     self.assertRaises(Exception, build_dlc.ValidateDlcIdentifier, 'hello%')
