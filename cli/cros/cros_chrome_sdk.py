@@ -991,11 +991,6 @@ class ChromeSDKCommand(command.CliCommand):
       env['CXXFLAGS'] = ' '.join(env['CXXFLAGS'].split() + clang_append_flags)
       env['LD'] = env['CXX']
 
-    # Use cros readelf for the target builds. TODO: Delete it after Jan 2019
-    # since READELF env variable should already be set,
-    # https://crbug.com/917193.
-    env.setdefault('READELF', sdk_ctx.target_tc + '-readelf')
-
     # For host compiler, we use the compiler that comes with Chrome
     # instead of the target compiler.
     env['CC_host'] = os.path.join(chrome_clang_path, 'clang')
