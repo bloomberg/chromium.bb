@@ -219,6 +219,7 @@ public class TabListMediatorUnitTest {
     private RecyclerView.ViewHolder mDummyViewHolder2;
     private View mItemView1 = mock(View.class);
     private View mItemView2 = mock(View.class);
+    private TabModelObserver mMediatorTabModelObserver;
     private TabGroupModelFilter.Observer mMediatorTabGroupModelFilterObserver;
 
     @Before
@@ -636,6 +637,33 @@ public class TabListMediatorUnitTest {
         // model is updated.
         assertThat(actionListenerBeforeUpdate, not(actionListenerAfterUpdate));
         assertThat(mModel.size(), equalTo(2));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID,
+            ChromeFeatureList.TAB_GROUPS_UI_IMPROVEMENTS_ANDROID})
+    // clang-format off
+    public void tabAddition_Restore_SyncingTabListModelWithTabModel() {
+        // clang-format on
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+        // Mock that tab restoring stage is over.
+        mMediator.setTabRestoreCompletedForTesting(true);
+
+        // Mock that tab1 and tab2 are in the same group, and they are being restored. The
+        // TabListModel has been cleaned out before the restoring happens. This case could happen
+        // within a incognito tab group when user switches between light/dark mode.
+        createTabGroup(new ArrayList<>(Arrays.asList(mTab1, mTab2)), TAB1_ID);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab1);
+        doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab2);
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(1).when(mTabGroupModelFilter).getCount();
+        mModel.clear();
+
+        mMediatorTabModelObserver.didAddTab(mTab2, TabLaunchType.FROM_RESTORE);
+        assertThat(mModel.size(), equalTo(0));
+
+        mMediatorTabModelObserver.didAddTab(mTab1, TabLaunchType.FROM_RESTORE);
+        assertThat(mModel.size(), equalTo(1));
     }
 
     @Test
@@ -1717,9 +1745,10 @@ public class TabListMediatorUnitTest {
                 mTabListFaviconProvider, actionOnRelatedTabs, null, null, null, handler,
                 getClass().getSimpleName(), 0);
 
-        // There are two TabGroupModelFilter.Observer added when initializing TabListMediator, one
-        // from TabListMediator and the other from TabGroupTitleEditor. Here we only test the one
-        // from TabListMediator.
+        // There are two TabModelObserver and two TabGroupModelFilter.Observer added when
+        // initializing TabListMediator, one set from TabListMediator and the other from
+        // TabGroupTitleEditor. Here we only test the ones from TabListMediator.
+        mMediatorTabModelObserver = mTabModelObserverCaptor.getAllValues().get(1);
         mMediatorTabGroupModelFilterObserver =
                 mTabGroupModelFilterObserverCaptor.getAllValues().get(0);
 

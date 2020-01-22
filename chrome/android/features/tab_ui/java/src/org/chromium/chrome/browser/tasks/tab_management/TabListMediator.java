@@ -476,16 +476,20 @@ class TabListMediator {
                 if (!mTabRestoreCompleted) return;
                 onTabAdded(tab, !mActionsOnAllRelatedTabs);
                 if (type == TabLaunchType.FROM_RESTORE && mActionsOnAllRelatedTabs) {
-                    // When tab is restored after restoring stage (e.g. exiting multi-window mode),
-                    // we need to update related property models.
+                    // When tab is restored after restoring stage (e.g. exiting multi-window mode,
+                    // switching between dark/light mode in incognito), we need to update related
+                    // property models.
                     TabModelFilter filter = mTabModelSelector.getTabModelFilterProvider()
                                                     .getCurrentTabModelFilter();
                     int index = filter.indexOf(tab);
                     if (index == TabList.INVALID_TAB_INDEX) return;
                     Tab currentGroupSelectedTab = filter.getTabAt(index);
-
-                    assert mModel.indexFromId(currentGroupSelectedTab.getId()) == index;
-
+                    // TabModel and TabListModel may be in the process of syncing up through
+                    // restoring. Examples of this situation are switching between light/dark mode
+                    // in incognito, exiting multi-window mode, etc.
+                    if (mModel.indexFromId(currentGroupSelectedTab.getId()) != index) {
+                        return;
+                    }
                     updateTab(index, currentGroupSelectedTab,
                             mModel.get(index).model.get(TabProperties.IS_SELECTED), false, false);
                 }
