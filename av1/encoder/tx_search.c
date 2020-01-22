@@ -16,7 +16,6 @@
 #include "av1/common/idct.h"
 #include "av1/encoder/model_rd.h"
 #include "av1/encoder/random.h"
-#include "av1/encoder/rdopt.h"
 #include "av1/encoder/rdopt_utils.h"
 #include "av1/encoder/tx_prune_model_weights.h"
 #include "av1/encoder/tx_search.h"
@@ -2072,6 +2071,52 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
   assert(IMPLIES(txk_allowed < TX_TYPES, allowed_tx_mask == 1 << txk_allowed));
   *allowed_txk_types = txk_allowed;
   return allowed_tx_mask;
+}
+
+#if CONFIG_RD_DEBUG
+static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
+                                             TX_SIZE tx_size, int blk_row,
+                                             int blk_col, int txb_coeff_cost) {
+  (void)blk_row;
+  (void)blk_col;
+  (void)tx_size;
+  rd_stats->txb_coeff_cost[plane] += txb_coeff_cost;
+
+  {
+    const int txb_h = tx_size_high_unit[tx_size];
+    const int txb_w = tx_size_wide_unit[tx_size];
+    int idx, idy;
+    for (idy = 0; idy < txb_h; ++idy)
+      for (idx = 0; idx < txb_w; ++idx)
+        rd_stats->txb_coeff_cost_map[plane][blk_row + idy][blk_col + idx] = 0;
+
+    rd_stats->txb_coeff_cost_map[plane][blk_row][blk_col] = txb_coeff_cost;
+  }
+  assert(blk_row < TXB_COEFF_COST_MAP_SIZE);
+  assert(blk_col < TXB_COEFF_COST_MAP_SIZE);
+}
+#endif
+
+static INLINE int av1_cost_coeffs(MACROBLOCK *x, int plane, int block,
+                                  TX_SIZE tx_size, const TX_TYPE tx_type,
+                                  const TXB_CTX *const txb_ctx,
+                                  int use_fast_coef_costing,
+                                  int reduced_tx_set_used) {
+#if TXCOEFF_COST_TIMER
+  struct aom_usec_timer timer;
+  aom_usec_timer_start(&timer);
+#endif
+  (void)use_fast_coef_costing;
+  const int cost = av1_cost_coeffs_txb(x, plane, block, tx_size, tx_type,
+                                       txb_ctx, reduced_tx_set_used);
+#if TXCOEFF_COST_TIMER
+  AV1_COMMON *tmp_cm = (AV1_COMMON *)&cpi->common;
+  aom_usec_timer_mark(&timer);
+  const int64_t elapsed_time = aom_usec_timer_elapsed(&timer);
+  tmp_cm->txcoeff_cost_timer += elapsed_time;
+  ++tmp_cm->txcoeff_cost_count;
+#endif
+  return cost;
 }
 
 static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
