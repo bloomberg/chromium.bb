@@ -632,21 +632,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
   def testHWTestsReleaseBuilderRequirement(self):
     """Make sure all release configs run hw tests."""
     expected_exceptions = set((
-        # See b/140317527.
-        'arkham-release',
-        'gale-release',
-        'mistral-release',
-        'whirlwind-release',
-        # See crbug.com/1011171.
-        'dedede-release',
-        'expresso-release',
-        'jacuzzi-release',
-        'zork-release',
-        # See http://b/141387161.
-        'veyron_rialto-release',
-        'mushu-release',
-        # See http://b/147462165.
-    ))
+        build_name
+        for build_name, config in self.site_config.items()
+        if config.hw_tests_disabled_bug))
     missing_tests = set()
     running_tests = set()
     for build_name, config in self.site_config.items():
@@ -663,7 +651,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
           continue
         elif check_name not in expected_exceptions:
           # If it's not listed as an exception, it needs to run hardware tests.
-          if not config.hw_tests:
+          if not config.hw_tests and not config.hw_tests_disabled_bug:
             missing_tests.add(build_name)
         elif config.hw_tests:
           # It is listed as an exception, and it is running hardware tests.  It
@@ -678,38 +666,8 @@ class CBuildBotTest(ChromeosConfigTestBase):
   def testHWTestsReleaseBuilderWeakRequirement(self):
     """Make sure most release configs run hw tests."""
     for build_name, config in self.site_config.items():
-      # crbug/871967: clapper-release* hwtests are intentionally currently
-      # turned off.
-      if build_name.startswith('clapper'):
+      if config.hw_tests_disabled_bug:
         continue
-
-      if build_name.startswith('betty'):
-        continue
-
-      if build_name.startswith('novato'):
-        continue
-
-      if build_name.startswith('amd64-generic'):
-        continue
-
-      # crbug.com/1011171: dedede, expresso, jacuzzi, and zork do not run
-      # hwtests in the release builder.
-      if build_name.startswith(('dedede', 'expresso', 'jacuzzi', 'zork')):
-        continue
-
-      # Jetstream boards currently do not run hwtests in the release builder,
-      # b/140317527.
-      if build_name.startswith(('arkham', 'gale', 'mistral', 'whirlwind')):
-        continue
-
-      # Veyron_rialto doesn't have DUTs now. See http://b/141387161.
-      if build_name.startswith(('veyron_rialto')):
-        continue
-
-      # Mushu does not have DUTs in lab See # http://b/147462165
-      if build_name.startswith(('mushu')):
-        continue
-
       if (config.build_type == 'canary' and 'test' in config.images and
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(

@@ -905,6 +905,10 @@ def DefaultSettings():
       # use pools other than pool:cts.
       enable_skylab_hw_tests=False,
 
+      # If set, this is the URL of the bug justifying why hw_tests are disabled
+      # on a builder that should always have hw_tests.
+      hw_tests_disabled_bug='',
+
       # If True, run SkylabHWTestStage instead of HWTestStage for suites that
       # use pool:cts.
       enable_skylab_cts_hw_tests=False,

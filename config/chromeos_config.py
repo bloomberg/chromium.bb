@@ -2526,36 +2526,42 @@ def ApplyCustomOverrides(site_config):
   overwritten_configs = {
       'amd64-generic-cheets-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1000717',
       },
 
       # The board does not exist in the lab. See crbug.com/1003981
       'beaglebone_servo-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1003981',
       },
 
       # No hw tests for beaglebone, expresso (crbug.com/1011171).
       'beaglebone-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1011171',
       },
 
       'expresso-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1011171',
       },
 
       # No tests for ARCVM builders.
       'betty-arcvm-master-release': {
           'hw_tests': [],
           'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/144139998',
           'vm_tests': [],
           'vm_tests_override': []
       },
       'betty-arcvm-pi-release': {
           'hw_tests': [],
           'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/144139998',
           'vm_tests': [],
           'vm_tests_override': []
       },
@@ -2563,43 +2569,51 @@ def ApplyCustomOverrides(site_config):
       # No hw tests for any betty builders.  See crbug/998427.
       'betty-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/998427',
       },
 
       'betty-arc64-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1000717',
       },
       'betty-arcmaster-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/998427',
       },
 
       'betty-pi-arc-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1026430',
       },
 
       'betty-qt-arc-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/998427',
       },
 
       'novato-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1000717',
       },
 
       'novato-arc64-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1000717',
       },
 
 
       # No hw tests for any veyron_rialto builders. See http://b/141387161.
       'veyron_rialto-release': {
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/141387161',
       },
 
 
@@ -2607,12 +2621,14 @@ def ApplyCustomOverrides(site_config):
       'arkham-release': {
           'hw_tests': [],
           'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/140317527',
       },
 
       'whirlwind-release': {
           'dev_installer_prebuilts': True,
           'hw_tests': [],
           'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/140317527',
           'paygen': False,
       },
 
@@ -2620,6 +2636,7 @@ def ApplyCustomOverrides(site_config):
           'dev_installer_prebuilts': True,
           'hw_tests': [],
           'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/140317527',
           'paygen': False,
       },
 
@@ -2627,6 +2644,7 @@ def ApplyCustomOverrides(site_config):
           'dev_installer_prebuilts': True,
           'hw_tests': [],
           'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/140317527',
           'paygen': False,
       },
 
@@ -2711,7 +2729,8 @@ def ApplyCustomOverrides(site_config):
       'dedede-release': {
           'sign_types': ['recovery', 'factory'],
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/144683687',
       },
 
       'flapjack-release': {
@@ -2728,7 +2747,8 @@ def ApplyCustomOverrides(site_config):
       'mushu-release': {
           'sign_types': ['recovery', 'factory'],
           'hw_tests': [],
-          'hw_tests_override': []
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://b/147462165',
       },
 
       'jacuzzi-release': {
@@ -2736,6 +2756,7 @@ def ApplyCustomOverrides(site_config):
           # No hw tests for jacuzzi (crbug.com/1011171).
           'hw_tests': [],
           'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1011171',
       },
 
       'kukui-release': {
@@ -2744,6 +2765,10 @@ def ApplyCustomOverrides(site_config):
 
       'puff-release': {
           'sign_types': ['recovery', 'factory'],
+          # Puff has no DUTs in the lab. (crbug.com/1033551)
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1033551',
       },
 
       'excelsior-release': {
@@ -2763,10 +2788,15 @@ def ApplyCustomOverrides(site_config):
           # No hw tests for zork (crbug.com/1011171).
           'hw_tests': [],
           'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1011171',
       },
 
       'drallion-release': {
           'sign_types': ['recovery', 'factory'],
+          # Drallion has no DUTs in the lab. (crbug.com/1043198)
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1043198',
       },
 
       # --- end from here ---
