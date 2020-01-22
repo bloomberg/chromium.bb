@@ -1063,16 +1063,24 @@ class ChromeSDKCommand(command.CliCommand):
     env['PATH'] = '%s:%s' % (os.path.dirname(self.sdk.gs_ctx.gsutil_bin),
                              env['PATH'])
 
+    # Get SDK version, falling back to previous versions as necessary.
+    full_version = sdk_ctx.version
+    if full_version != CUSTOM_VERSION:
+      full_version = self.sdk.GetFullVersion(sdk_ctx.version)
+    version = full_version
+    if version.startswith('R'):
+      version = version.split('-')[1]
+
     # Export internally referenced variables.
     os.environ[self.sdk.SDK_BOARD_ENV] = board
     if options.sdk_path:
       os.environ[self.sdk.SDK_PATH_ENV] = options.sdk_path
-    os.environ[self.sdk.SDK_VERSION_ENV] = sdk_ctx.version
+    os.environ[self.sdk.SDK_VERSION_ENV] = version
 
     # Add board and sdk version as gn args so that tests can bind them in
     # test wrappers generated at compile time.
     gn_args['cros_board'] = board
-    gn_args['cros_sdk_version'] = sdk_ctx.version
+    gn_args['cros_sdk_version'] = version
 
     # Export the board/version info in a more accessible way, so developers can
     # reference them in their chrome_sdk.bashrc files, as well as within the
@@ -1201,9 +1209,6 @@ class ChromeSDKCommand(command.CliCommand):
     env['GN_ARGS'] = gn_args_env
 
     # PS1 sets the command line prompt and xterm window caption.
-    full_version = sdk_ctx.version
-    if full_version != CUSTOM_VERSION:
-      full_version = self.sdk.GetFullVersion(sdk_ctx.version)
     env['PS1'] = self._CreatePS1(self.board, full_version,
                                  chroot=options.chroot)
 
