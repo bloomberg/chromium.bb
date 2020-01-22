@@ -1802,6 +1802,7 @@ void Tile::ComputePrediction(const Block& block) {
       1;
   const int sub_block_row4x4 = block.row4x4 & mask;
   const int sub_block_column4x4 = block.column4x4 & mask;
+  const int plane_count = block.HasChroma() ? PlaneCount() : 1;
   // Returns true if this block applies local warping. The state is determined
   // in the Y plane and carried for use in the U/V planes.
   // But the U/V planes will not apply warping when the block size is smaller
@@ -1809,7 +1810,8 @@ void Tile::ComputePrediction(const Block& block) {
   bool is_local_valid = false;
   // Local warping parameters, similar usage as is_local_valid.
   GlobalMotion local_warp_params;
-  for (int plane = 0; plane < (block.HasChroma() ? PlaneCount() : 1); ++plane) {
+  int plane = 0;
+  do {
     const int8_t subsampling_x = subsampling_x_[plane];
     const int8_t subsampling_y = subsampling_y_[plane];
     const BlockSize plane_size =
@@ -1821,7 +1823,7 @@ void Tile::ComputePrediction(const Block& block) {
     const int base_x = MultiplyBy4(block.column4x4 >> subsampling_x);
     const int base_y = MultiplyBy4(block.row4x4 >> subsampling_y);
     if (bp.reference_frame[1] == kReferenceFrameIntra) {
-      const int tr_row4x4 = (sub_block_row4x4 >> subsampling_y);
+      const int tr_row4x4 = sub_block_row4x4 >> subsampling_y;
       const int tr_column4x4 =
           (sub_block_column4x4 >> subsampling_x) + block_width4x4 + 1;
       const int bl_row4x4 =
@@ -1843,19 +1845,31 @@ void Tile::ComputePrediction(const Block& block) {
                                      ->inter_intra_mode],
           tx_size);
     }
-    int candidate_row = (block.row4x4 >> subsampling_y) << subsampling_y;
-    int candidate_column = (block.column4x4 >> subsampling_x) << subsampling_x;
-    bool some_use_intra = false;
-    for (int r = 0; r < (block_height4x4 << subsampling_y); ++r) {
-      for (int c = 0; c < (block_width4x4 << subsampling_x); ++c) {
-        auto* const bp = block_parameters_holder_.Find(candidate_row + r,
-                                                       candidate_column + c);
-        if (bp != nullptr && bp->reference_frame[0] == kReferenceFrameIntra) {
-          some_use_intra = true;
-          break;
+    int candidate_row = block.row4x4;
+    int candidate_column = block.column4x4;
+    bool some_use_intra = bp.reference_frame[0] == kReferenceFrameIntra;
+    if (!some_use_intra && plane != 0) {
+      candidate_row = (candidate_row >> subsampling_y) << subsampling_y;
+      candidate_column = (candidate_column >> subsampling_x) << subsampling_x;
+      if (candidate_row != block.row4x4) {
+        // Top block.
+        const BlockParameters& bp_top =
+            *block_parameters_holder_.Find(candidate_row, block.column4x4);
+        some_use_intra = bp_top.reference_frame[0] == kReferenceFrameIntra;
+        if (!some_use_intra && candidate_column != block.column4x4) {
+          // Top-left block.
+          const BlockParameters& bp_top_left =
+              *block_parameters_holder_.Find(candidate_row, candidate_column);
+          some_use_intra =
+              bp_top_left.reference_frame[0] == kReferenceFrameIntra;
         }
       }
-      if (some_use_intra) break;
+      if (!some_use_intra && candidate_column != block.column4x4) {
+        // Left block.
+        const BlockParameters& bp_left =
+            *block_parameters_holder_.Find(block.row4x4, candidate_column);
+        some_use_intra = bp_left.reference_frame[0] == kReferenceFrameIntra;
+      }
     }
     int prediction_width;
     int prediction_height;
@@ -1868,15 +1882,23 @@ void Tile::ComputePrediction(const Block& block) {
       prediction_width = block.width >> subsampling_x;
       prediction_height = block.height >> subsampling_y;
     }
-    for (int r = 0, y = 0; y < block_height; y += prediction_height, ++r) {
-      for (int c = 0, x = 0; x < block_width; x += prediction_width, ++c) {
+    int r = 0;
+    int y = 0;
+    do {
+      int c = 0;
+      int x = 0;
+      do {
         InterPrediction(block, static_cast<Plane>(plane), base_x + x,
                         base_y + y, prediction_width, prediction_height,
                         candidate_row + r, candidate_column + c,
                         &is_local_valid, &local_warp_params);
-      }
-    }
-  }
+        ++c;
+        x += prediction_width;
+      } while (x < block_width);
+      ++r;
+      y += prediction_height;
+    } while (y < block_height);
+  } while (++plane < plane_count);
 }
 
 #undef CALL_BITDEPTH_FUNCTION
