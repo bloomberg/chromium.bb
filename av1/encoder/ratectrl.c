@@ -1770,11 +1770,11 @@ void av1_rc_update_framerate(AV1_COMP *cpi, int width, int height) {
 static void vbr_rate_correction(AV1_COMP *cpi, int *this_frame_target) {
   RATE_CONTROL *const rc = &cpi->rc;
   int64_t vbr_bits_off_target = rc->vbr_bits_off_target;
-
-  assert(cpi->twopass.total_stats != NULL);
+  const int stats_count = cpi->twopass.total_stats != NULL
+                              ? (int)cpi->twopass.total_stats->count
+                              : 0;
   const int frame_window =
-      AOMMIN(16, (int)(cpi->twopass.total_stats->count -
-                       cpi->common.current_frame.frame_number));
+      AOMMIN(16, (int)(stats_count - cpi->common.current_frame.frame_number));
 
   if (frame_window > 0) {
     const int max_delta =
