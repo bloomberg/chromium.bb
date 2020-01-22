@@ -22,6 +22,9 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 import java.util.List;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.OTHERS;
+
 /**
  * This class is a coordinator for TabSelectionEditor component. It manages the communication with
  * {@link TabListCoordinator} as well as the life-cycle of shared component.
@@ -147,8 +150,8 @@ class TabSelectionEditorCoordinator {
 
         if (tabs != null && preSelectedCount > 0) {
             assert preSelectedCount < tabs.size();
-            mTabListCoordinator.addSpecialListItem(
-                    preSelectedCount, TabProperties.UiType.DIVIDER, new PropertyModel());
+            mTabListCoordinator.addSpecialListItem(preSelectedCount, TabProperties.UiType.DIVIDER,
+                    new PropertyModel.Builder(CARD_TYPE).with(CARD_TYPE, OTHERS).build());
         }
     }
 

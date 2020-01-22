@@ -23761,6 +23761,9 @@ should be able to be added at any place in this file.
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">
+  <suffix name="NewTabTile"
+      label="Users tapped the new tab tile in GridTabSwitcher, causing a new
+             tab to be created."/>
   <suffix name="TabGridDialogFromStrip"
       label="Users tapped '+' button on the tab group dialog toolbar, causing
              a new tab to be created in the group. The dialog is expanded

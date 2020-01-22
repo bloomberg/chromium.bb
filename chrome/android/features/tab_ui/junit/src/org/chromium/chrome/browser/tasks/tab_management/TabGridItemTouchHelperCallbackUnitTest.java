@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static junit.framework.Assert.assertFalse;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -271,6 +273,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         mItemTouchHelperCallback.setSelectedTabIndexForTesting(POSITION1);
 
         // Simulate hovering on card#2.
+        mModel.get(1).model.set(TabProperties.CARD_ANIMATION_STATUS,
+                ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_IN);
         mItemTouchHelperCallback.setHoveredTabIndexForTesting(POSITION2);
 
         mItemTouchHelperCallback.onSelectedChanged(
@@ -281,7 +285,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
         assertThat(mModel.get(0).model.get(TabProperties.CARD_ANIMATION_STATUS),
                 equalTo(ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_OUT));
-        assertThat(mModel.get(0).model.get(TabProperties.ALPHA), equalTo(1f));
     }
 
     @Test
@@ -295,6 +298,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         mItemTouchHelperCallback.setSelectedTabIndexForTesting(POSITION2);
 
         // Simulate hovering on card#1.
+        mModel.get(0).model.set(TabProperties.CARD_ANIMATION_STATUS,
+                ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_IN);
         mItemTouchHelperCallback.setHoveredTabIndexForTesting(POSITION1);
 
         mItemTouchHelperCallback.onSelectedChanged(
@@ -303,9 +308,8 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         verify(mGridLayoutManager).removeView(mItemView2);
         verify(mTabGroupModelFilter).mergeTabsToGroup(TAB2_ID, TAB1_ID);
         verify(mTracker).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
-        assertThat(mModel.get(1).model.get(TabProperties.CARD_ANIMATION_STATUS),
-                equalTo(ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_OUT));
-        assertThat(mModel.get(1).model.get(TabProperties.ALPHA), equalTo(1f));
+        assertThat(mModel.get(0).model.get(TabProperties.CARD_ANIMATION_STATUS),
+                equalTo(ClosableTabGridView.AnimationStatus.HOVERED_CARD_ZOOM_OUT));
     }
 
     @Test
@@ -369,9 +373,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         initAndAssertAllProperties();
 
         // Simulate the selection of card#2 in TabListModel.
-        mModel.get(1).model.set(TabProperties.CARD_ANIMATION_STATUS,
-                ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_IN);
-        mModel.get(1).model.set(TabProperties.ALPHA, 0.8f);
         mItemTouchHelperCallback.setSelectedTabIndexForTesting(POSITION2);
 
         // Simulate hovering on card#1.
@@ -386,9 +387,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         verify(mGridLayoutManager, never()).removeView(mItemView2);
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(TAB2_ID, TAB1_ID);
         verify(mTracker, never()).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
-        assertThat(mModel.get(1).model.get(TabProperties.CARD_ANIMATION_STATUS),
-                equalTo(ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_OUT));
-        assertThat(mModel.get(1).model.get(TabProperties.ALPHA), equalTo(1f));
     }
 
     @Test
@@ -396,9 +394,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         initAndAssertAllProperties();
 
         // Simulate the selection of card#2 in TabListModel.
-        mModel.get(1).model.set(TabProperties.CARD_ANIMATION_STATUS,
-                ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_IN);
-        mModel.get(1).model.set(TabProperties.ALPHA, 0.8f);
         mItemTouchHelperCallback.setSelectedTabIndexForTesting(POSITION2);
 
         // Simulate hovering on card#1.
@@ -413,9 +408,6 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         verify(mGridLayoutManager, never()).removeView(mItemView2);
         verify(mTabGroupModelFilter, never()).mergeTabsToGroup(TAB2_ID, TAB1_ID);
         verify(mTracker, never()).notifyEvent(eq(EventConstants.TAB_DRAG_AND_DROP_TO_GROUP));
-        assertThat(mModel.get(1).model.get(TabProperties.CARD_ANIMATION_STATUS),
-                equalTo(ClosableTabGridView.AnimationStatus.SELECTED_CARD_ZOOM_OUT));
-        assertThat(mModel.get(1).model.get(TabProperties.ALPHA), equalTo(1f));
     }
 
     @Test
@@ -747,6 +739,36 @@ public class TabGridItemTouchHelperCallbackUnitTest {
         mItemTouchHelperCallback.clearView(mRecyclerView, mDummyViewHolder1);
 
         verify(mGridLayoutManager, never()).removeView(mItemView1);
+    }
+
+    @Test
+    public void newTabTileNotDraggable() {
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.NEW_TAB_TILE);
+        setupItemTouchHelperCallback(false);
+        assertFalse(
+                mItemTouchHelperCallback.hasDragFlagForTesting(mRecyclerView, mMockViewHolder1));
+    }
+
+    @Test
+    public void newTabTileNotSwipeable() {
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.NEW_TAB_TILE);
+        setupItemTouchHelperCallback(false);
+        assertFalse(mItemTouchHelperCallback.hasSwipeFlag(mRecyclerView, mMockViewHolder1));
+    }
+
+    @Test
+    public void newTabTileNotDropable() {
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.NEW_TAB_TILE);
+        setupItemTouchHelperCallback(false);
+        assertFalse(mItemTouchHelperCallback.canDropOver(
+                mRecyclerView, mMockViewHolder2, mMockViewHolder1));
+    }
+
+    @Test(expected = AssertionError.class)
+    public void newTabTileOnMoveFail() {
+        when(mMockViewHolder1.getItemViewType()).thenReturn(TabProperties.UiType.NEW_TAB_TILE);
+        setupItemTouchHelperCallback(false);
+        mItemTouchHelperCallback.onMove(mRecyclerView, mMockViewHolder1, mMockViewHolder2);
     }
 
     private void verifyDrag(

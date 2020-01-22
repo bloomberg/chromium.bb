@@ -1226,9 +1226,14 @@ const FeatureEntry::FeatureVariation kChromeDuetVariations[] = {
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabVariation[] = {
     {"tab_grid_layout_android_new_tab", "NewTabVariation"}};
 
+const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
+    {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
+
 const FeatureEntry::FeatureVariation kTabGridLayoutAndroidVariations[] = {
     {"New Tab Variation", kTabGridLayoutAndroid_NewTabVariation,
      base::size(kTabGridLayoutAndroid_NewTabVariation), nullptr},
+    {"New Tab Tile", kTabGridLayoutAndroid_NewTabTile,
+     base::size(kTabGridLayoutAndroid_NewTabTile), nullptr},
 };
 const FeatureEntry::FeatureParam kStartSurfaceAndroid_SingleSurface[] = {
     {"start_surface_variation", "single"}};

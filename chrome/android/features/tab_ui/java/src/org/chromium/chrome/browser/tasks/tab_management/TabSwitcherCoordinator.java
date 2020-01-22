@@ -61,6 +61,7 @@ public class TabSwitcherCoordinator
     private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
     private final UndoGroupSnackbarController mUndoGroupSnackbarController;
     private final TabModelSelector mTabModelSelector;
+    private NewTabTileCoordinator mNewTabTileCoordinator;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -167,6 +168,17 @@ public class TabSwitcherCoordinator
                             return 1;
                         }
                     });
+            if (ChromeFeatureList
+                            .getFieldTrialParamByFeature(ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+                                    "tab_grid_layout_android_new_tab_tile")
+                            .equals("NewTabTile")) {
+                mNewTabTileCoordinator =
+                        new NewTabTileCoordinator(tabModelSelector, tabCreatorManager);
+                mTabListCoordinator.registerItemType(TabProperties.UiType.NEW_TAB_TILE, () -> {
+                    return (ViewGroup) LayoutInflater.from(context).inflate(
+                            R.layout.new_tab_tile_card_item, container, false);
+                }, NewTabTileViewBinder::bind);
+            }
         }
 
         mMenuOrKeyboardActionController = menuOrKeyboardActionController;
@@ -285,7 +297,17 @@ public class TabSwitcherCoordinator
         }
 
         mMediator.registerFirstMeaningfulPaintRecorder();
-        return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
+        boolean showQuickly = mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
+        if (showQuickly) {
+            mTabListCoordinator.removeSpecialListItem(TabProperties.UiType.NEW_TAB_TILE, 0);
+        }
+
+        if (tabs != null && mNewTabTileCoordinator != null) {
+            mTabListCoordinator.addSpecialListItem(tabs.size(), TabProperties.UiType.NEW_TAB_TILE,
+                    mNewTabTileCoordinator.getModel());
+        }
+
+        return showQuickly;
     }
 
     private View getTabGridDialogAnimationSourceView(int tabId) {
@@ -320,6 +342,9 @@ public class TabSwitcherCoordinator
         }
         if (mTabGridIphItemCoordinator != null) {
             mTabGridIphItemCoordinator.destroy();
+        }
+        if (mNewTabTileCoordinator != null) {
+            mNewTabTileCoordinator.destroy();
         }
         mMultiThumbnailCardProvider.destroy();
         mTabSelectionEditorCoordinator.destroy();

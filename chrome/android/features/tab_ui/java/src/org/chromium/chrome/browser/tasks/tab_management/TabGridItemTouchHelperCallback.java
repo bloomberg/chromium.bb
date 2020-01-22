@@ -4,14 +4,17 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.TAB;
+
 import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
-
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.FeatureUtilities;
@@ -99,15 +102,32 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        final int dragFlags = mDragFlags;
-        final int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+        final int dragFlags = viewHolder.getItemViewType() == TabProperties.UiType.MESSAGE
+                        || viewHolder.getItemViewType() == TabProperties.UiType.NEW_TAB_TILE
+                ? 0
+                : mDragFlags;
+        final int swipeFlags = viewHolder.getItemViewType() == TabProperties.UiType.NEW_TAB_TILE
+                ? 0
+                : ItemTouchHelper.START | ItemTouchHelper.END;
         mRecyclerView = recyclerView;
         return makeMovementFlags(dragFlags, swipeFlags);
     }
 
     @Override
+    public boolean canDropOver(@NonNull RecyclerView recyclerView,
+               @NonNull RecyclerView.ViewHolder current, @NonNull RecyclerView.ViewHolder target) {
+        if (target.getItemViewType() == TabProperties.UiType.MESSAGE
+                || target.getItemViewType() == TabProperties.UiType.NEW_TAB_TILE) {
+            return false;
+        }
+        return super.canDropOver(recyclerView, current, target);
+    }
+
+    @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder fromViewHolder,
             RecyclerView.ViewHolder toViewHolder) {
+        assert !(fromViewHolder instanceof SimpleRecyclerViewAdapter.ViewHolder)
+                || hasTabPropertiesModel(fromViewHolder);
         mSelectedTabIndex = toViewHolder.getAdapterPosition();
         if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX) {
             mModel.updateHoveredTabForMergeToGroup(mHoveredTabIndex, false);
@@ -157,17 +177,27 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             if (!FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
                 mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
             }
+
+            RecyclerView.ViewHolder hoveredViewHolder =
+                    mRecyclerView.findViewHolderForAdapterPosition(mHoveredTabIndex);
+            boolean shouldUpdate =
+                    !(hoveredViewHolder instanceof SimpleRecyclerViewAdapter.ViewHolder)
+                    || hasTabPropertiesModel(hoveredViewHolder);
+
             if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && mActionsOnAllRelatedTabs) {
                 RecyclerView.ViewHolder selectedViewHolder =
                         mRecyclerView.findViewHolderForAdapterPosition(mSelectedTabIndex);
-                if (selectedViewHolder != null && !mRecyclerView.isComputingLayout()) {
+                if (selectedViewHolder != null && !mRecyclerView.isComputingLayout()
+                        && shouldUpdate) {
                     View selectedItemView = selectedViewHolder.itemView;
                     onTabMergeToGroup(mSelectedTabIndex, mHoveredTabIndex);
                     mRecyclerView.getLayoutManager().removeView(selectedItemView);
                 }
+            } else {
+                mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
             }
-            mModel.updateSelectedTabForMergeToGroup(mSelectedTabIndex, false);
-            if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX) {
+
+            if (mHoveredTabIndex != TabModel.INVALID_TAB_INDEX && shouldUpdate) {
                 mModel.updateHoveredTabForMergeToGroup(mSelectedTabIndex > mHoveredTabIndex
                                 ? mHoveredTabIndex
                                 : mHoveredTabIndex - 1,
@@ -199,6 +229,11 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
                         TabGridDialogParent.UngroupBarStatus.HIDE);
             }
         }
+    }
+
+    private boolean hasTabPropertiesModel(RecyclerView.ViewHolder viewHolder) {
+        return viewHolder instanceof SimpleRecyclerViewAdapter.ViewHolder
+                && ((SimpleRecyclerViewAdapter.ViewHolder) viewHolder).model.get(CARD_TYPE) == TAB;
     }
 
     @Override
@@ -239,9 +274,18 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             int prev_hovered = mHoveredTabIndex;
             mHoveredTabIndex = TabListRecyclerView.getHoveredTabIndex(
                     recyclerView, viewHolder.itemView, dX, dY, mMergeThreshold);
-            mModel.updateHoveredTabForMergeToGroup(mHoveredTabIndex, true);
-            if (prev_hovered != mHoveredTabIndex) {
-                mModel.updateHoveredTabForMergeToGroup(prev_hovered, false);
+
+            RecyclerView.ViewHolder hoveredViewHolder =
+                    mRecyclerView.findViewHolderForAdapterPosition(mHoveredTabIndex);
+
+            if (hoveredViewHolder instanceof SimpleRecyclerViewAdapter.ViewHolder
+                    && !hasTabPropertiesModel(hoveredViewHolder)) {
+                mHoveredTabIndex = TabModel.INVALID_TAB_INDEX;
+            } else {
+                mModel.updateHoveredTabForMergeToGroup(mHoveredTabIndex, true);
+                if (prev_hovered != mHoveredTabIndex) {
+                    mModel.updateHoveredTabForMergeToGroup(prev_hovered, false);
+                }
             }
         } else if (actionState == ItemTouchHelper.ACTION_STATE_DRAG
                 && mTabGridDialogHandler != null) {
@@ -305,5 +349,16 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
     @VisibleForTesting
     void setCurrentActionStateForTesting(int actionState) {
         mCurrentActionState = actionState;
+    }
+
+    @VisibleForTesting
+    boolean hasDragFlagForTesting(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        int flags = getMovementFlags(recyclerView, viewHolder);
+        return (flags >> 16) != 0;
+    }
+    @VisibleForTesting
+    boolean hasSwipeFlag(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        int flags = getMovementFlags(recyclerView, viewHolder);
+        return ((flags >> 8) & 0xFF) != 0;
     }
 }

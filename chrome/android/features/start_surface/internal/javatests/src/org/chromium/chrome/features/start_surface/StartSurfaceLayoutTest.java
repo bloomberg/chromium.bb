@@ -6,6 +6,9 @@ package org.chromium.chrome.features.start_surface;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
@@ -14,6 +17,8 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
@@ -696,24 +701,83 @@ public class StartSurfaceLayoutTest {
                 mUrl, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, tab);
     }
 
-    private static class TabCountAssertion implements ViewAssertion {
-        private int mExpectedCount;
+    @Test
+    @MediumTest
+    @Feature("NewTabTile")
+    // clang-format off
+    @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION,
+            ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
+    @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab_tile/NewTabTile"
+            + "/tab_grid_layout_android_new_tab/false"})
+    public void testNewTabTile() throws InterruptedException {
+        // clang-format on
+        // TODO(yuezhanggg): Modify TabUiTestHelper.verifyTabSwitcherCardCount so that it can be
+        // used here to verify card count. Right now it doesn't work because when switching between
+        // normal/incognito, the tab list fading-in animation has not finished when check happens.
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareTabs(2, 0, null);
 
-        public static TabCountAssertion havingTabCount(int tabCount) {
-            return new TabCountAssertion(tabCount);
-        }
+        // New tab tile should be showing.
+        enterGTSWithThumbnailChecking();
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(3));
+        verifyTabModelTabCount(cta, 2, 0);
 
-        public TabCountAssertion(int expectedCount) {
-            mExpectedCount = expectedCount;
-        }
+        // Clicking new tab tile in normal mode should create a normal tab.
+        onView(withId(R.id.new_tab_tile)).perform(click());
+        CriteriaHelper.pollUiThread(() -> !cta.getOverviewModeBehavior().overviewVisible());
+        enterGTSWithThumbnailChecking();
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(4));
+        verifyTabModelTabCount(cta, 3, 0);
 
-        @Override
-        public void check(View view, NoMatchingViewException noMatchException) {
-            if (noMatchException != null) throw noMatchException;
+        // New tab tile should be showing in incognito mode.
+        switchTabModel(true);
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
 
-            RecyclerView.Adapter adapter = ((RecyclerView) view).getAdapter();
-            assertEquals(mExpectedCount, adapter.getItemCount());
-        }
+        // Clicking new tab tile in incognito mode should create an incognito tab.
+        onView(withId(R.id.new_tab_tile)).perform(click());
+        CriteriaHelper.pollUiThread(() -> !cta.getOverviewModeBehavior().overviewVisible());
+        enterGTSWithThumbnailChecking();
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(2));
+        verifyTabModelTabCount(cta, 3, 1);
+
+        // Close all normal tabs and incognito tabs, the new tab tile should still show in both
+        // modes.
+        switchTabModel(false);
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(4));
+        MenuUtils.invokeCustomMenuActionSync(
+                InstrumentationRegistry.getInstrumentation(), cta, R.id.close_all_tabs_menu_id);
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
+        switchTabModel(true);
+        onView(withId(R.id.tab_list_view)).check(TabCountAssertion.havingTabCount(1));
+        onView(withId(R.id.new_tab_tile)).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    @Feature("NewTabTile")
+    // clang-format off
+    @Features.DisableFeatures({ChromeFeatureList.TAB_TO_GTS_ANIMATION,
+            ChromeFeatureList.CLOSE_TAB_SUGGESTIONS})
+    @CommandLineFlags.Add({BASE_PARAMS + "/tab_grid_layout_android_new_tab_tile/false"
+            + "/tab_grid_layout_android_new_tab/false"})
+    public void testNewTabTile_Disabled() throws InterruptedException {
+        // clang-format on
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareTabs(2, 0, null);
+
+        enterGTSWithThumbnailChecking();
+
+        onView(withId(R.id.new_tab_tile)).check(doesNotExist());
+        verifyTabSwitcherCardCount(cta, 2);
+
+        switchTabModel(true);
+        onView(withId(R.id.new_tab_tile)).check(doesNotExist());
+        verifyTabSwitcherCardCount(cta, 0);
     }
 
     private void switchTabModel(boolean isIncognito) {
@@ -770,6 +834,26 @@ public class StartSurfaceLayoutTest {
         checkCaptureCount(delta, count);
         TabUiTestHelper.verifyAllTabsHaveThumbnail(
                 mActivityTestRule.getActivity().getCurrentTabModel());
+    }
+
+    private static class TabCountAssertion implements ViewAssertion {
+        private int mExpectedCount;
+
+        public static TabCountAssertion havingTabCount(int tabCount) {
+            return new TabCountAssertion(tabCount);
+        }
+
+        public TabCountAssertion(int expectedCount) {
+            mExpectedCount = expectedCount;
+        }
+
+        @Override
+        public void check(View view, NoMatchingViewException noMatchException) {
+            if (noMatchException != null) throw noMatchException;
+
+            RecyclerView.Adapter adapter = ((RecyclerView) view).getAdapter();
+            assertEquals(mExpectedCount, adapter.getItemCount());
+        }
     }
 
     /**
