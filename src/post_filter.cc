@@ -1696,10 +1696,10 @@ void PostFilter::HorizontalDeblockFilterNoMask(Plane plane, int row4x4_start,
     for (int row4x4 = 0; MultiplyBy4(row4x4_start + row4x4) < height_ &&
                          row4x4 < kNum4x4InLoopFilterMaskUnit;
          row4x4 += row_step) {
-      const bool need_filter = GetDeblockFilterEdgeInfo(
-          plane, row4x4_start + row4x4, column4x4_start + column4x4,
-          subsampling_x, subsampling_y, type, &level, &row_step,
-          &filter_length);
+      const bool need_filter =
+          GetDeblockFilterEdgeInfo<kLoopFilterTypeHorizontal>(
+              plane, row4x4_start + row4x4, column4x4_start + column4x4,
+              subsampling_x, subsampling_y, &level, &row_step, &filter_length);
       if (need_filter) {
         int outer_thresh;
         int inner_thresh;
@@ -1740,10 +1740,11 @@ void PostFilter::VerticalDeblockFilterNoMask(Plane plane, int row4x4_start,
     for (int column4x4 = 0; MultiplyBy4(column4x4_start + column4x4) < width_ &&
                             column4x4 < kNum4x4InLoopFilterMaskUnit;
          column4x4 += column_step) {
-      const bool need_filter = GetDeblockFilterEdgeInfo(
-          plane, row4x4_start + row4x4, column4x4_start + column4x4,
-          subsampling_x, subsampling_y, type, &level, &column_step,
-          &filter_length);
+      const bool need_filter =
+          GetDeblockFilterEdgeInfo<kLoopFilterTypeVertical>(
+              plane, row4x4_start + row4x4, column4x4_start + column4x4,
+              subsampling_x, subsampling_y, &level, &column_step,
+              &filter_length);
       if (need_filter) {
         int outer_thresh;
         int inner_thresh;
@@ -1762,10 +1763,13 @@ void PostFilter::VerticalDeblockFilterNoMask(Plane plane, int row4x4_start,
   }
 }
 
-bool PostFilter::GetDeblockFilterEdgeInfo(
-    const Plane plane, int row4x4, int column4x4, const int8_t subsampling_x,
-    const int8_t subsampling_y, const LoopFilterType type, uint8_t* level,
-    int* step, int* filter_length) const {
+template <LoopFilterType type>
+bool PostFilter::GetDeblockFilterEdgeInfo(const Plane plane, int row4x4,
+                                          int column4x4,
+                                          const int8_t subsampling_x,
+                                          const int8_t subsampling_y,
+                                          uint8_t* level, int* step,
+                                          int* filter_length) const {
   row4x4 = GetDeblockPosition(row4x4, subsampling_y);
   column4x4 = GetDeblockPosition(column4x4, subsampling_x);
   const BlockParameters* bp = block_parameters_.Find(row4x4, column4x4);

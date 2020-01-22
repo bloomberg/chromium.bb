@@ -380,9 +380,10 @@ class PostFilter {
   // VerticalDeblockFilter().
   void VerticalDeblockFilterNoMask(Plane plane, int row4x4_start,
                                    int column4x4_start, int unit_id);
+  template <LoopFilterType type>
   bool GetDeblockFilterEdgeInfo(Plane plane, int row4x4, int column4x4,
                                 int8_t subsampling_x, int8_t subsampling_y,
-                                LoopFilterType type, uint8_t* level, int* step,
+                                uint8_t* level, int* step,
                                 int* filter_length) const;
   static dsp::LoopFilterSize GetLoopFilterSize(Plane plane, int step) {
     if (step == 4) {
