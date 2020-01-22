@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -18,9 +17,10 @@ _sym_db = _symbol_database.Default()
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='acquisition_network_device.proto',
   package='ts_mon.proto',
+  syntax='proto2',
+  serialized_options=None,
   serialized_pb=_b('\n acquisition_network_device.proto\x12\x0cts_mon.proto\"\x88\x02\n\rNetworkDevice\x12\x19\n\x11proxy_environment\x18\x05 \x01(\t\x12\x18\n\x10\x61\x63quisition_name\x18\n \x01(\t\x12\x0b\n\x03pop\x18\x1e \x01(\t\x12\x11\n\talertable\x18\x65 \x01(\x08\x12\r\n\x05realm\x18\x66 \x01(\t\x12\x0b\n\x03\x61sn\x18g \x01(\x03\x12\r\n\x05metro\x18h \x01(\t\x12\x0c\n\x04role\x18i \x01(\t\x12\x10\n\x08hostname\x18j \x01(\t\x12\x0e\n\x06vendor\x18\x46 \x01(\t\x12\x11\n\thostgroup\x18l \x01(\t\x12\x12\n\nproxy_zone\x18\x64 \x01(\t\" \n\x06TypeId\x12\x16\n\x0fMESSAGE_TYPE_ID\x10\xd5\x9d\x9e\x10')
 )
-_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 
 
@@ -32,11 +32,11 @@ _NETWORKDEVICE_TYPEID = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='MESSAGE_TYPE_ID', index=0, number=34049749,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
+  serialized_options=None,
   serialized_start=283,
   serialized_end=315,
 )
@@ -56,84 +56,84 @@ _NETWORKDEVICE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='acquisition_name', full_name='ts_mon.proto.NetworkDevice.acquisition_name', index=1,
       number=10, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='pop', full_name='ts_mon.proto.NetworkDevice.pop', index=2,
       number=30, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='alertable', full_name='ts_mon.proto.NetworkDevice.alertable', index=3,
       number=101, type=8, cpp_type=7, label=1,
       has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='realm', full_name='ts_mon.proto.NetworkDevice.realm', index=4,
       number=102, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='asn', full_name='ts_mon.proto.NetworkDevice.asn', index=5,
       number=103, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='metro', full_name='ts_mon.proto.NetworkDevice.metro', index=6,
       number=104, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='role', full_name='ts_mon.proto.NetworkDevice.role', index=7,
       number=105, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='hostname', full_name='ts_mon.proto.NetworkDevice.hostname', index=8,
       number=106, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='vendor', full_name='ts_mon.proto.NetworkDevice.vendor', index=9,
       number=70, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='hostgroup', full_name='ts_mon.proto.NetworkDevice.hostgroup', index=10,
       number=108, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='proxy_zone', full_name='ts_mon.proto.NetworkDevice.proxy_zone', index=11,
       number=100, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -141,8 +141,9 @@ _NETWORKDEVICE = _descriptor.Descriptor(
   enum_types=[
     _NETWORKDEVICE_TYPEID,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
+  syntax='proto2',
   extension_ranges=[],
   oneofs=[
   ],
@@ -152,6 +153,7 @@ _NETWORKDEVICE = _descriptor.Descriptor(
 
 _NETWORKDEVICE_TYPEID.containing_type = _NETWORKDEVICE
 DESCRIPTOR.message_types_by_name['NetworkDevice'] = _NETWORKDEVICE
+_sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 NetworkDevice = _reflection.GeneratedProtocolMessageType('NetworkDevice', (_message.Message,), dict(
   DESCRIPTOR = _NETWORKDEVICE,

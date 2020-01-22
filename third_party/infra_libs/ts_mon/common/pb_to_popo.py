@@ -5,6 +5,8 @@
 import logging
 
 from google.protobuf.descriptor import FieldDescriptor as fd
+import six
+
 
 def convert(pb):
   """Convert protobuf to plain-old-python-object"""
@@ -22,24 +24,24 @@ def _get_json_func(field_type):
     return _FD_TO_JSON[field_type]
   else: # pragma: no cover
     logging.warning("pb_to_popo doesn't support converting %s", field_type)
-    return unicode
+    return six.text_type
 
 
-_FD_TO_JSON  = {
-  fd.TYPE_BOOL: bool,
-  fd.TYPE_DOUBLE: float,
-  fd.TYPE_ENUM: int,
-  fd.TYPE_FIXED32: float,
-  fd.TYPE_FIXED64: float,
-  fd.TYPE_FLOAT: float,
-  fd.TYPE_INT32: int,
-  fd.TYPE_INT64: long,
-  fd.TYPE_SFIXED32: float,
-  fd.TYPE_SFIXED64: float,
-  fd.TYPE_SINT32: int,
-  fd.TYPE_SINT64: long,
-  fd.TYPE_STRING: unicode,
-  fd.TYPE_UINT32: int,
-  fd.TYPE_UINT64: long,
-  fd.TYPE_MESSAGE: convert
+_FD_TO_JSON = {
+    fd.TYPE_BOOL: bool,
+    fd.TYPE_DOUBLE: float,
+    fd.TYPE_ENUM: int,
+    fd.TYPE_FIXED32: float,
+    fd.TYPE_FIXED64: float,
+    fd.TYPE_FLOAT: float,
+    fd.TYPE_INT32: int,
+    fd.TYPE_INT64: int,
+    fd.TYPE_SFIXED32: float,
+    fd.TYPE_SFIXED64: float,
+    fd.TYPE_SINT32: int,
+    fd.TYPE_SINT64: int,
+    fd.TYPE_STRING: six.text_type,
+    fd.TYPE_UINT32: int,
+    fd.TYPE_UINT64: int,
+    fd.TYPE_MESSAGE: convert
 }
