@@ -1007,13 +1007,13 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
   @staticmethod
   def _ParseLLVMHeadSHA(version_string):
     # The first line of clang's version string looks something like:
-    # Chromium OS 9.0_pre353983_p20190325-r13 clang version 9.0.0 \
+    # Chromium OS 10.0_pre377782_p20200113-r1 clang version 10.0.0 \
     # (/var/cache/chromeos-cache/distfiles/host/egit-src/llvm-project \
-    # de7a0a152648d1a74cf4319920b1848aa00d1ca3) (based on LLVM 9.0.0svn)
+    # 4e8231b5cf0f5f62c7a51a857e29f5be5cb55734)
     #
     # The SHA after llvm-project is the SHA we're looking for.
-    # Note that len('de7a0a152648d1a74cf4319920b1848aa00d1ca3') == 40.
-    sha_re = re.compile(r'([A-Fa-f0-9]{40})\)\s+\(based on LLVM [\d+.]+svn\)$')
+    # Note that len('4e8231b5cf0f5f62c7a51a857e29f5be5cb55734') == 40.
+    sha_re = re.compile(r'llvm-project ([A-Fa-f0-9]{40})\)$')
     first_line = version_string.splitlines()[0].strip()
     match = sha_re.search(first_line)
     if not match:

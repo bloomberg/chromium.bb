@@ -538,11 +538,11 @@ class CollectPGOProfilesStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   RELEASE_TAG = ''
 
-  _VALID_CLANG_VERSION_SHA = 'de7a0a152648d1a74cf4319920b1848aa00d1ca3'
+  _VALID_CLANG_VERSION_SHA = '4e8231b5cf0f5f62c7a51a857e29f5be5cb55734'
   _VALID_CLANG_VERSION_STRING = (
-      'Chromium OS 9.0_pre353983_p20190325-r13 clang version 9.0.0 '
+      'Chromium OS 10.0_pre377782_p20200113-r1 clang version 10.0.0 '
       '(/var/cache/chromeos-cache/distfiles/host/egit-src/llvm-project '
-      'de7a0a152648d1a74cf4319920b1848aa00d1ca3) (based on LLVM 9.0.0svn)\n'
+      '4e8231b5cf0f5f62c7a51a857e29f5be5cb55734)\n'
       'Target: x86_64-pc-linux-gnu\n'
       'Thread model: posix\n'
       'InstalledDir: /usr/bin\n'
