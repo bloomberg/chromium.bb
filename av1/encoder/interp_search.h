@@ -65,14 +65,13 @@ static const int_interpfilters filter_sets[DUAL_FILTER_SET_SIZE] = {
   { 0x00000002 }, { 0x00010002 }, { 0x00020002 },  // y = 2
 };
 
-int find_interp_filter_match(MB_MODE_INFO *const mbmi,
-                             const AV1_COMP *const cpi,
-                             const InterpFilter assign_filter,
-                             const int need_search,
-                             INTERPOLATION_FILTER_STATS *interp_filter_stats,
-                             int interp_filter_stats_idx);
+int av1_find_interp_filter_match(
+    MB_MODE_INFO *const mbmi, const AV1_COMP *const cpi,
+    const InterpFilter assign_filter, const int need_search,
+    INTERPOLATION_FILTER_STATS *interp_filter_stats,
+    int interp_filter_stats_idx);
 
-int64_t interpolation_filter_search(
+int64_t av1_interpolation_filter_search(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize,
     const BUFFER_SET *const tmp_dst, const BUFFER_SET *const orig_dst,

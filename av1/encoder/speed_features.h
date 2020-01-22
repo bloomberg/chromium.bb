@@ -662,7 +662,7 @@ typedef struct INTERP_FILTER_SPEED_FEATURES {
   // Disable dual filter
   int disable_dual_filter;
 
-  // Save results of interpolation_filter_search for a block
+  // Save results of av1_interpolation_filter_search for a block
   // Check mv and ref_frames before search, if they are very close with previous
   // saved results, filter search can be skipped.
   int use_interp_filter;

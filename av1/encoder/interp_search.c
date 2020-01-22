@@ -90,12 +90,11 @@ static INLINE int find_interp_filter_in_stats(
   return -1;  // no match result found
 }
 
-int find_interp_filter_match(MB_MODE_INFO *const mbmi,
-                             const AV1_COMP *const cpi,
-                             const InterpFilter assign_filter,
-                             const int need_search,
-                             INTERPOLATION_FILTER_STATS *interp_filter_stats,
-                             int interp_filter_stats_idx) {
+int av1_find_interp_filter_match(
+    MB_MODE_INFO *const mbmi, const AV1_COMP *const cpi,
+    const InterpFilter assign_filter, const int need_search,
+    INTERPOLATION_FILTER_STATS *interp_filter_stats,
+    int interp_filter_stats_idx) {
   int match_found_idx = -1;
   if (cpi->sf.interp_sf.use_interp_filter && need_search)
     match_found_idx = find_interp_filter_in_stats(
@@ -593,7 +592,7 @@ static INLINE void calc_interp_skip_pred_flag(MACROBLOCK *const x,
   }
 }
 
-int64_t interpolation_filter_search(
+int64_t av1_interpolation_filter_search(
     MACROBLOCK *const x, const AV1_COMP *const cpi,
     const TileDataEnc *tile_data, BLOCK_SIZE bsize,
     const BUFFER_SET *const tmp_dst, const BUFFER_SET *const orig_dst,
@@ -615,7 +614,7 @@ int64_t interpolation_filter_search(
   int match_found_idx = -1;
   const InterpFilter assign_filter = cm->interp_filter;
 
-  match_found_idx = find_interp_filter_match(
+  match_found_idx = av1_find_interp_filter_match(
       mbmi, cpi, assign_filter, need_search, args->interp_filter_stats,
       args->interp_filter_stats_idx);
 

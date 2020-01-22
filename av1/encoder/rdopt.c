@@ -4670,9 +4670,9 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
       const int need_search = av1_is_interp_needed(xd);
       const InterpFilter assign_filter = cm->interp_filter;
       int is_luma_interp_done = 0;
-      find_interp_filter_match(mbmi, cpi, assign_filter, need_search,
-                               args->interp_filter_stats,
-                               args->interp_filter_stats_idx);
+      av1_find_interp_filter_match(mbmi, cpi, assign_filter, need_search,
+                                   args->interp_filter_stats,
+                                   args->interp_filter_stats_idx);
 
       int64_t best_rd_compound;
       int64_t rd_thresh;
@@ -4712,9 +4712,9 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
 #if CONFIG_COLLECT_COMPONENT_TIMING
     start_timing(cpi, interpolation_filter_search_time);
 #endif
-    ret_val = interpolation_filter_search(x, cpi, tile_data, bsize, &tmp_dst,
-                                          &orig_dst, &rd, &rs, &skip_build_pred,
-                                          args, ref_best_rd);
+    ret_val = av1_interpolation_filter_search(
+        x, cpi, tile_data, bsize, &tmp_dst, &orig_dst, &rd, &rs,
+        &skip_build_pred, args, ref_best_rd);
 #if CONFIG_COLLECT_COMPONENT_TIMING
     end_timing(cpi, interpolation_filter_search_time);
 #endif
