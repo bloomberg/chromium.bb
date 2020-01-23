@@ -21,6 +21,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <type_traits>
 
 #include "src/frame_buffer2.h"
 #include "src/utils/constants.h"
@@ -144,12 +145,36 @@ class YuvBuffer {
         vertical_shift * stride_[plane] + horizontal_shift * pixel_size;
   }
 
+  // Backup the current set of warnings and disable -Warray-bounds for the
+  // following three functions as the compiler cannot, in all cases, determine
+  // whether |plane| is within [0, kMaxPlanes), e.g., with a variable based for
+  // loop.
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
   // Returns the data buffer for |plane|.
-  uint8_t* data(int plane) { return buffer_[plane]; }
-  const uint8_t* data(int plane) const { return buffer_[plane]; }
+  uint8_t* data(int plane) {
+    assert(plane >= 0);
+    assert(static_cast<size_t>(plane) < std::extent<decltype(buffer_)>::value);
+    return buffer_[plane];
+  }
+  const uint8_t* data(int plane) const {
+    assert(plane >= 0);
+    assert(static_cast<size_t>(plane) < std::extent<decltype(buffer_)>::value);
+    return buffer_[plane];
+  }
 
   // Returns the stride in bytes for |plane|.
-  int stride(int plane) const { return stride_[plane]; }
+  int stride(int plane) const {
+    assert(plane >= 0);
+    assert(static_cast<size_t>(plane) < std::extent<decltype(stride_)>::value);
+    return stride_[plane];
+  }
+  // Restore the previous set of compiler warnings.
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
  private:
   // |shift| is in pixels.
