@@ -387,12 +387,11 @@ LIBGAV1_ALWAYS_INLINE void ButterflyRotation_FirstIsZero(int16x8_t* a,
                                                          const bool flip) {
   const int16_t cos128 = Cos128(angle);
   const int16_t sin128 = Sin128(angle);
-  const int32x4_t x0 = vmlsl_n_s16(vdupq_n_s32(0), vget_low_s16(*b), sin128);
-  const int32x4_t x0_hi =
-      vmlsl_n_s16(vdupq_n_s32(0), vget_high_s16(*b), sin128);
-  const int16x4_t x1 = vqrshrn_n_s32(x0, 12);
-  const int16x4_t x1_hi = vqrshrn_n_s32(x0_hi, 12);
-  const int16x8_t x = vcombine_s16(x1, x1_hi);
+  // For this function, the max value returned by Sin128() is 4091, which fits
+  // inside 12 bits.  This leaves room for the sign bit and the 3 left shifted
+  // bits.
+  assert(sin128 <= 0xfff);
+  const int16x8_t x = vqrdmulhq_s16(*b, vdupq_n_s16(-sin128 << 3));
   const int16x8_t y = vqrdmulhq_s16(*b, vdupq_n_s16(cos128 << 3));
   if (flip) {
     *a = y;
