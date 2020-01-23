@@ -239,6 +239,11 @@ if(NOT BUILD_SHARED_LIBS)
                      "${AOM_ROOT}/test/av1_quantize_test.cc")
   endif()
 
+  if(NOT (HAVE_SSE2 OR HAVE_NEON))
+    list(REMOVE_ITEM AOM_UNIT_TEST_ENCODER_SOURCES
+                     "${AOM_ROOT}/test/quantize_func_test.cc")
+  endif()
+
   if(HAVE_SSE4_1)
     list(APPEND AOM_UNIT_TEST_ENCODER_SOURCES
                 "${AOM_ROOT}/test/av1_convolve_scale_test.cc"
