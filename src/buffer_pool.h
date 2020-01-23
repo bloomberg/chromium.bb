@@ -78,7 +78,7 @@ class RefCountedBuffer {
   // frame header. In a reference frame, this implements the RefFrameType array
   // in the spec.
   FrameType frame_type() const { return frame_type_; }
-  void set_frame_type(enum FrameType frame_type) { frame_type_ = frame_type; }
+  void set_frame_type(FrameType frame_type) { frame_type_ = frame_type; }
 
   // The sample position for subsampled streams. This is the
   // chroma_sample_position syntax element in the sequence header.
@@ -88,8 +88,7 @@ class RefCountedBuffer {
   ChromaSamplePosition chroma_sample_position() const {
     return chroma_sample_position_;
   }
-  void set_chroma_sample_position(
-      enum ChromaSamplePosition chroma_sample_position) {
+  void set_chroma_sample_position(ChromaSamplePosition chroma_sample_position) {
     chroma_sample_position_ = chroma_sample_position;
   }
 
@@ -209,9 +208,8 @@ class RefCountedBuffer {
   YuvBuffer yuv_buffer_;
   bool in_use_ = false;  // Only used by BufferPool.
 
-  enum FrameType frame_type_ = kFrameKey;
-  enum ChromaSamplePosition chroma_sample_position_ =
-      kChromaSamplePositionUnknown;
+  FrameType frame_type_ = kFrameKey;
+  ChromaSamplePosition chroma_sample_position_ = kChromaSamplePositionUnknown;
   bool showable_frame_ = false;
 
   std::array<uint8_t, kNumReferenceFrameTypes> order_hint_ = {};
