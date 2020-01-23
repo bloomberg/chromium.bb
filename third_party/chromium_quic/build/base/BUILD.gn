@@ -621,7 +621,6 @@ source_set("base") {
       "../../src/base/files/file_util_mac.mm",
       "../../src/base/mac/authorization_util.h",
       "../../src/base/mac/authorization_util.mm",
-      "../../src/base/mac/availability.h",
       "../../src/base/mac/bundle_locations.h",
       "../../src/base/mac/bundle_locations.mm",
       "../../src/base/mac/call_with_eh_frame.cc",
