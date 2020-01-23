@@ -26,19 +26,19 @@ typedef struct {
   int best_compmode_interinter_cost;
 } BEST_COMP_TYPE_STATS;
 
-int handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                            BLOCK_SIZE bsize, MB_MODE_INFO *mbmi,
-                            HandleInterModeArgs *args, int64_t ref_best_rd,
-                            int *rate_mv, int *tmp_rate2,
-                            const BUFFER_SET *orig_dst);
+int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                                BLOCK_SIZE bsize, MB_MODE_INFO *mbmi,
+                                HandleInterModeArgs *args, int64_t ref_best_rd,
+                                int *rate_mv, int *tmp_rate2,
+                                const BUFFER_SET *orig_dst);
 
-int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                     int_mv *cur_mv, int mode_search_mask,
-                     int masked_compound_used, const BUFFER_SET *orig_dst,
-                     const BUFFER_SET *tmp_dst,
-                     const CompoundTypeRdBuffers *buffers, int *rate_mv,
-                     int64_t *rd, RD_STATS *rd_stats, int64_t ref_best_rd,
-                     int *is_luma_interp_done, int64_t rd_thresh);
+int av1_compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                         BLOCK_SIZE bsize, int_mv *cur_mv, int mode_search_mask,
+                         int masked_compound_used, const BUFFER_SET *orig_dst,
+                         const BUFFER_SET *tmp_dst,
+                         const CompoundTypeRdBuffers *buffers, int *rate_mv,
+                         int64_t *rd, RD_STATS *rd_stats, int64_t ref_best_rd,
+                         int *is_luma_interp_done, int64_t rd_thresh);
 
 #ifdef __cplusplus
 }  // extern "C"

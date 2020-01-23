@@ -3811,8 +3811,8 @@ static int64_t motion_mode_rd(
       }
     } else if (is_interintra_mode) {
       const int ret =
-          handle_inter_intra_mode(cpi, x, bsize, mbmi, args, ref_best_rd,
-                                  &tmp_rate_mv, &tmp_rate2, orig_dst);
+          av1_handle_inter_intra_mode(cpi, x, bsize, mbmi, args, ref_best_rd,
+                                      &tmp_rate_mv, &tmp_rate2, orig_dst);
       if (ret < 0) continue;
     }
 
@@ -4684,7 +4684,7 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
       const int comp_type_rd_scale = COMP_TYPE_RD_THRESH_SCALE;
       rd_thresh = get_rd_thresh_from_best_rd(
           ref_best_rd, (1 << comp_type_rd_shift), comp_type_rd_scale);
-      compmode_interinter_cost = compound_type_rd(
+      compmode_interinter_cost = av1_compound_type_rd(
           cpi, x, bsize, cur_mv, mode_search_mask, masked_compound_used,
           &orig_dst, &tmp_dst, rd_buffers, &rate_mv, &best_rd_compound,
           rd_stats, ref_best_rd, &is_luma_interp_done, rd_thresh);
@@ -4696,7 +4696,7 @@ static int64_t handle_inter_mode(AV1_COMP *const cpi, TileDataEnc *tile_data,
       }
       // No need to call av1_enc_build_inter_predictor for luma if
       // COMPOUND_AVERAGE is selected because it is the first
-      // candidate in compound_type_rd, and the following
+      // candidate in av1_compound_type_rd, and the following
       // compound types searching uses tmp_dst buffer
 
       if (mbmi->interinter_comp.type == COMPOUND_AVERAGE &&

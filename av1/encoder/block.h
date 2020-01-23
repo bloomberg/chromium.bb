@@ -203,7 +203,7 @@ typedef struct {
   INTERINTER_COMPOUND_DATA interinter_comp;
 } COMP_RD_STATS;
 
-// Struct for buffers used by compound_type_rd() function.
+// Struct for buffers used by av1_compound_type_rd() function.
 // For sizes and alignment of these arrays, refer to
 // alloc_compound_type_rd_buffers() function.
 typedef struct {
