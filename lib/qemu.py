@@ -11,6 +11,7 @@ import array
 import errno
 import os
 import re
+import tempfile
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
@@ -197,6 +198,31 @@ class Qemu(object):
         return -1
       raise
 
+  @staticmethod
+  def _AttemptHardLink(src, dst):
+    """Try to hardlink |src| to |dst|."""
+    temp_dir, temp_name = os.path.split(dst)
+    with tempfile.NamedTemporaryFile(
+        dir=temp_dir, prefix=temp_name, delete=False) as temp:
+      # Use hardlinks so that the update process is atomic.
+      os.unlink(temp.name)
+
+      # Maybe another process created the same unique name (after we
+      # unlinked it above).  Or the target exists because another qemu
+      # process created it in parallel).  Ignore that failure & retry.
+      try:
+        os.link(src, temp.name)
+        os.rename(temp.name, dst)
+        # If we made it all the way here, we won!
+        return True
+      except OSError as e:
+        if e.errno != errno.EEXISTS:
+          raise
+
+      # We only reach here when the rename above failed, so this cleans up.
+      osutils.SafeUnlink(temp.name)
+      return False
+
   def Install(self, sysroot=None):
     """Install qemu into |sysroot| safely"""
     if sysroot is None:
@@ -217,18 +243,11 @@ class Qemu(object):
     for src_path, sysroot_path in paths:
       src_path = os.path.normpath(src_path)
       sysroot_path = os.path.normpath(sysroot_path)
-      if self.inode(sysroot_path) != self.inode(src_path):
-        # Use hardlinks so that the process is atomic.
-        temp_path = '%s.%s' % (sysroot_path, os.getpid())
-        os.link(src_path, temp_path)
-        os.rename(temp_path, sysroot_path)
-        # Clear out the temp path in case it exists (another process already
-        # swooped in and created the target link for us).
-        try:
-          os.unlink(temp_path)
-        except OSError as e:
-          if e.errno != errno.ENOENT:
-            raise
+      # We use a loop here, but in practice, this should only ever execute once
+      # or twice at most.
+      while self.inode(sysroot_path) != self.inode(src_path):
+        if self._AttemptHardLink(src_path, sysroot_path):
+          break
 
   @staticmethod
   def GetFullInterpPath(interp):
