@@ -1992,11 +1992,7 @@ get_tx_mask(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
     txk_allowed = DCT_DCT;
   }
 
-  if (cpi->oxcf.enable_flip_idtx == 0) {
-    for (TX_TYPE tx_type = FLIPADST_DCT; tx_type <= H_FLIPADST; ++tx_type) {
-      ext_tx_used_flag &= ~(1 << tx_type);
-    }
-  }
+  if (cpi->oxcf.enable_flip_idtx == 0) ext_tx_used_flag &= DCT_ADST_TX_MASK;
 
   uint16_t allowed_tx_mask = 0;  // 1: allow; 0: skip.
   if (txk_allowed < TX_TYPES) {
