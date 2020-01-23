@@ -58,48 +58,55 @@ class HWTestList(object):
     Args:
       *kwargs: overrides for the configs
     """
-    installer_kwargs = kwargs.copy()
-    # Force au suite to run first.
-    installer_kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
-    # Context: crbug.com/976834
-    # Because this blocking suite fails a fair bit, it effectively acts as a
-    # rate limiter to the Autotest scheduling system since all of the subsequent
-    # test suites aren't run if this fails.
-    # Making this non-blocking and async will cause Autotest scheduling to fail.
-    installer_kwargs['blocking'] = True
-    installer_kwargs['async'] = False
-
-    async_kwargs = kwargs.copy()
-    async_kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
-    async_kwargs['async'] = True
-    async_kwargs['suite_min_duts'] = 1
-    async_kwargs['timeout'] = config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT
-
-    if self.is_release_branch:
-      bvt_inline_kwargs = async_kwargs
-    else:
-      bvt_inline_kwargs = kwargs.copy()
-      bvt_inline_kwargs['timeout'] = (
-          config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT)
-
-    # BVT + INSTALLER suite.
     return [
         config_lib.HWTestConfig(constants.HWTEST_BVT_SUITE,
-                                **bvt_inline_kwargs),
+                                **self._bvtInlineHWTestArgs(kwargs)),
         config_lib.HWTestConfig(constants.HWTEST_ARC_COMMIT_SUITE,
-                                **bvt_inline_kwargs),
-        self.TastConfig(constants.HWTEST_TAST_CQ_SUITE, **bvt_inline_kwargs),
+                                **self._bvtInlineHWTestArgs(kwargs)),
+        self.TastConfig(constants.HWTEST_TAST_CQ_SUITE,
+                        **self._bvtInlineHWTestArgs(kwargs)),
         # Start informational Tast tests before the installer suite to let the
         # former run even if the latter fails: https://crbug.com/911921
         self.TastConfig(constants.HWTEST_TAST_INFORMATIONAL_SUITE,
-                        **async_kwargs),
+                        **self._asyncHWTestArgs(kwargs)),
+        # Context: crbug.com/976834
+        # Because this blocking suite fails a fair bit, it effectively acts as a
+        # rate limiter to the Autotest scheduling system since all of the
+        # subsequent test suites aren't run if this fails.
+        # Making this non-blocking and async will cause Autotest scheduling to
+        # fail.
         config_lib.HWTestConfig(constants.HWTEST_INSTALLER_SUITE,
-                                **installer_kwargs),
+                                **self._blockingHWTestArgs(kwargs)),
         config_lib.HWTestConfig(constants.HWTEST_COMMIT_SUITE,
-                                **async_kwargs),
+                                **self._asyncHWTestArgs(kwargs)),
         config_lib.HWTestConfig(constants.HWTEST_CANARY_SUITE,
-                                **async_kwargs),
+                                **self._asyncHWTestArgs(kwargs)),
     ]
+
+  def _asyncHWTestArgs(self, kwargs):
+    """Get updated kwargs for asynchronous hardware tests."""
+    kwargs = kwargs.copy()
+    kwargs['priority'] = constants.HWTEST_POST_BUILD_PRIORITY
+    kwargs['async'] = True
+    kwargs['suite_min_duts'] = 1
+    kwargs['timeout'] = config_lib.HWTestConfig.ASYNC_HW_TEST_TIMEOUT
+    return kwargs
+
+  def _blockingHWTestArgs(self, kwargs):
+    """Get updated kwargs for blockiong hardware tests."""
+    kwargs = kwargs.copy()
+    kwargs['blocking'] = True
+    kwargs['async'] = False
+    kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
+    return kwargs
+
+  def _bvtInlineHWTestArgs(self, kwargs):
+    """Get updated kwargs for bvt-inline hardware tests."""
+    if self.is_release_branch:
+      return self._asyncHWTestArgs(kwargs)
+    kwargs = kwargs.copy()
+    kwargs['timeout'] = config_lib.HWTestConfig.SHARED_HW_TEST_TIMEOUT
+    return kwargs
 
   def DefaultListCanary(self, **kwargs):
     """Returns a default list of config_lib.HWTestConfig's for a canary build.
