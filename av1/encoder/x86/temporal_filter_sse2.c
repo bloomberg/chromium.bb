@@ -109,7 +109,7 @@ static void apply_temporal_filter_planewise(
   uint16_t frame_sse[SSE_STRIDE * BH];
   uint32_t acc_5x5_sse[BH][BW];
 
-  assert(PLANEWISE_FILTER_WINDOW_LENGTH == 5);
+  assert(TF_PLANEWISE_FILTER_WINDOW_LENGTH == 5);
   assert(((block_width == 32) && (block_height == 32)) ||
          ((block_width == 16) && (block_height == 16)));
 
@@ -173,14 +173,14 @@ static void apply_temporal_filter_planewise(
       const int pixel_value = frame2[i * stride2 + j];
 
       int diff_sse = acc_5x5_sse[i][j];
-      diff_sse /=
-          (PLANEWISE_FILTER_WINDOW_LENGTH * PLANEWISE_FILTER_WINDOW_LENGTH);
+      diff_sse /= (TF_PLANEWISE_FILTER_WINDOW_LENGTH *
+                   TF_PLANEWISE_FILTER_WINDOW_LENGTH);
 
       double scaled_diff = -diff_sse / (2 * beta * h * h);
       // clamp the value to avoid underflow in exp()
       if (scaled_diff < -15) scaled_diff = -15;
       double w = exp(scaled_diff);
-      const int weight = (int)(w * PLANEWISE_FILTER_WEIGHT_SCALE);
+      const int weight = (int)(w * TF_PLANEWISE_FILTER_WEIGHT_SCALE);
 
       count[k] += weight;
       accumulator[k] += weight * pixel_value;

@@ -193,9 +193,8 @@ static INLINE int get_weight_by_thresh(const int value, const int low,
 //   use_planewise_strategy: Whether to use plane-wise filtering strategy. This
 //                           field will affect the filter weight for the
 //                           to-filter frame.
-//   use_second_altref: Whether to perform temporal filtering on a second
-//                         Alternate Reference Frame (ARF). This field will
-//                         affect the filter weight for the to-filter frame.
+//   is_second_arf: Whether the to-filter frame is the second ARF. This field
+//                  will affect the filter weight for the to-filter frame.
 //   subblock_filter_weights: Pointer to the assigned filter weight for each
 //                            sub-block. If not using sub-blocks, the first
 //                            element will be used for the entire block.
@@ -203,21 +202,21 @@ static INLINE int get_weight_by_thresh(const int value, const int low,
 static int tf_get_filter_weight(const int block_error,
                                 const int *subblock_errors,
                                 const int use_planewise_strategy,
-                                const int use_second_altref,
+                                const int is_second_arf,
                                 int *subblock_filter_weights) {
   // `block_error` is initialized as INT_MAX and will be overwritten after
   // motion search with reference frame, therefore INT_MAX can ONLY be accessed
   // by to-filter frame.
   if (block_error == INT_MAX) {
-    const int weight = use_planewise_strategy ? PLANEWISE_FILTER_WEIGHT_SCALE
-                                              : use_second_altref ? 64 : 32;
+    const int weight = use_planewise_strategy ? TF_PLANEWISE_FILTER_WEIGHT_SCALE
+                                              : is_second_arf ? 64 : 32;
     subblock_filter_weights[0] = subblock_filter_weights[1] =
         subblock_filter_weights[2] = subblock_filter_weights[3] = weight;
     return 0;
   }
 
-  const int thresh_low = use_second_altref ? 5000 : 10000;
-  const int thresh_high = use_second_altref ? 10000 : 20000;
+  const int thresh_low = is_second_arf ? 5000 : 10000;
+  const int thresh_high = is_second_arf ? 10000 : 20000;
 
   int min_subblock_error = INT_MAX;
   int max_subblock_error = INT_MIN;
@@ -493,13 +492,13 @@ static const uint64_t highbd_filter_weight_adjustment_lookup_table_yuv[14] = {
 //   strength: Strength for filter weight adjustment.
 //   is_high_bitdepth: Whether apply temporal filter to high bie-depth video.
 // Returns:
-//   Adjusted filter weight which will finally be used for filtering..
+//   Adjusted filter weight which will finally be used for filtering.
 static INLINE int adjust_filter_weight_yuv(const int filter_weight,
                                            const uint64_t sum_square_diff,
                                            const int num_ref_pixels,
                                            const int strength,
                                            const int is_high_bitdepth) {
-  assert(YUV_FILTER_WINDOW_LENGTH == 3);
+  assert(TF_YUV_FILTER_WINDOW_LENGTH == 3);
   assert(num_ref_pixels >= 0 && num_ref_pixels <= 13);
 
   const uint64_t multiplier =
@@ -574,8 +573,8 @@ void av1_apply_temporal_filter_yuv_c(const YV12_BUFFER_CONFIG *frame_to_filter,
   }
 
   // Get window size for pixel-wise filtering.
-  assert(YUV_FILTER_WINDOW_LENGTH % 2 == 1);
-  const int half_window = YUV_FILTER_WINDOW_LENGTH >> 1;
+  assert(TF_YUV_FILTER_WINDOW_LENGTH % 2 == 1);
+  const int half_window = TF_YUV_FILTER_WINDOW_LENGTH >> 1;
 
   // Handle Y-plane, U-plane, V-plane in sequence.
   plane_offset = 0;
@@ -666,7 +665,7 @@ static INLINE int adjust_filter_weight_yonly(const int filter_weight,
                                              const uint64_t sum_square_diff,
                                              const int num_ref_pixels,
                                              const int strength) {
-  assert(YONLY_FILTER_WINDOW_LENGTH == 3);
+  assert(TF_YONLY_FILTER_WINDOW_LENGTH == 3);
 
   int modifier = (int)(AOMMIN(sum_square_diff * 3, INT32_MAX));
   modifier /= num_ref_pixels;
@@ -684,7 +683,7 @@ static INLINE int adjust_filter_weight_yonly(const int filter_weight,
 //   frame_to_filter: Pointer to the frame to be filtered, which is used as
 //                    reference to compute squared differece from the predictor.
 //   mbd: Pointer to the block for filtering, which is ONLY used to get
-//        subsampling information of Y plane.
+//        subsampling information of Y-plane.
 //   block_size: Size of the block.
 //   mb_row: Row index of the block in the entire frame.
 //   mb_col: Column index of the block in the entire frame.
@@ -730,8 +729,8 @@ void av1_apply_temporal_filter_yonly(const YV12_BUFFER_CONFIG *frame_to_filter,
                       is_high_bitdepth, square_diff);
 
   // Get window size for pixel-wise filtering.
-  assert(YONLY_FILTER_WINDOW_LENGTH % 2 == 1);
-  const int half_window = YONLY_FILTER_WINDOW_LENGTH >> 1;
+  assert(TF_YONLY_FILTER_WINDOW_LENGTH % 2 == 1);
+  const int half_window = TF_YONLY_FILTER_WINDOW_LENGTH >> 1;
 
   // Perform filtering.
   int idx = 0;
@@ -783,7 +782,7 @@ void av1_apply_temporal_filter_yonly(const YV12_BUFFER_CONFIG *frame_to_filter,
 //   mb_row: Row index of the block in the entire frame.
 //   mb_col: Column index of the block in the entire frame.
 //   num_planes: Number of planes in the frame.
-//   noise_level: Noise level of the to-filter frame, estimated with Y plane.
+//   noise_level: Noise level of the to-filter frame, estimated with Y-plane.
 //   pred: Pointer to the well-built predictors.
 //   accum: Pointer to the pixel-wise accumulator for filtering.
 //   count: Pointer to the pixel-wise counter fot filtering.
@@ -832,8 +831,8 @@ void av1_apply_temporal_filter_planewise_c(
   }
 
   // Get window size for pixel-wise filtering.
-  assert(PLANEWISE_FILTER_WINDOW_LENGTH % 2 == 1);
-  const int half_window = PLANEWISE_FILTER_WINDOW_LENGTH >> 1;
+  assert(TF_PLANEWISE_FILTER_WINDOW_LENGTH % 2 == 1);
+  const int half_window = TF_PLANEWISE_FILTER_WINDOW_LENGTH >> 1;
 
   // Handle planes in sequence.
   plane_offset = 0;
@@ -865,7 +864,7 @@ void av1_apply_temporal_filter_planewise_c(
         const double scaled_diff = AOMMAX(
             -(double)(sum_square_diff / num_ref_pixels) / (2 * r * r), -15.0);
         const int adjusted_weight =
-            (int)(exp(scaled_diff) * PLANEWISE_FILTER_WEIGHT_SCALE);
+            (int)(exp(scaled_diff) * TF_PLANEWISE_FILTER_WEIGHT_SCALE);
         accum[idx] += adjusted_weight * pred_value;
         count[idx] += adjusted_weight;
 
@@ -900,7 +899,7 @@ void av1_apply_temporal_filter_planewise_c(
 //                            order). If `use_subblock` is set as 0, the first
 //                            weight will be applied to the entire block. (Used
 //                            in YUV filtering and YONLY filtering.)
-//   noise_level: Noise level of the to-filter frame, estimated with Y plane.
+//   noise_level: Noise level of the to-filter frame, estimated with Y-plane.
 //                (Used in plane-wise filtering.)
 //   pred: Pointer to the well-built predictors.
 //   accum: Pointer to the pixel-wise accumulator for filtering.
@@ -955,7 +954,7 @@ void av1_apply_temporal_filter_others(
 //   accum: Pointer to the pre-computed accumulator.
 //   conut: Pointer to the pre-computed count.
 //   result_buffer: Pointer to result buffer.
-// Return:
+// Returns:
 //   Nothing will be returned. But the content to which `result_buffer` point
 //   will be modified.
 static void tf_normalize_filtered_frame(
@@ -1040,20 +1039,19 @@ typedef struct {
 //   num_frames: Number of frames in the frame buffer.
 //   filter_frame_idx: Index of the frame to be filtered.
 //   is_key_frame: Whether the to-filter is a key frame.
-//   use_second_altref: Whether to filter a second Alternate Reference Frame
-//                      (ARF) in the entire temporal filtering pipeline. This
-//                      field is ONLY used for assigning filter weight in this
-//                      function.
+//   is_second_arf: Whether the to-filter frame is the second ARF. This field
+//                  is ONLY used for assigning filter weight.
 //   block_size: Block size used for temporal filtering.
 //   scale: Scaling factor.
 //   strength: Pre-estimated strength for filter weight adjustment.
-//   noise_level: Noise level of the to-filter frame, estimated with Y plane.
+//   noise_level: Noise level of the to-filter frame, estimated with Y-plane.
+// Returns:
+//   Difference between filtered frame and the original frame.
 static FRAME_DIFF tf_do_filtering(
     AV1_COMP *cpi, YV12_BUFFER_CONFIG **frames, const int num_frames,
-    const int filter_frame_idx, const int is_key_frame,
-    const int use_second_altref, const BLOCK_SIZE block_size,
-    const struct scale_factors *scale, const int strength,
-    const double noise_level) {
+    const int filter_frame_idx, const int is_key_frame, const int is_second_arf,
+    const BLOCK_SIZE block_size, const struct scale_factors *scale,
+    const int strength, const double noise_level) {
   // Basic information.
   const YV12_BUFFER_CONFIG *const frame_to_filter = frames[filter_frame_idx];
   const int frame_height = frame_to_filter->y_crop_height;
@@ -1096,7 +1094,7 @@ static FRAME_DIFF tf_do_filtering(
   // Do filtering.
   FRAME_DIFF diff = { 0, 0 };
   const int use_planewise_strategy =
-      ENABLE_PLANEWISE_STRATEGY &&
+      TF_ENABLE_PLANEWISE_STRATEGY &&
       (cpi->common.allow_screen_content_tools == 0) &&
       AOMMIN(frame_height, frame_width) >= 480;
   // Perform temporal filtering block by block.
@@ -1134,8 +1132,8 @@ static FRAME_DIFF tf_do_filtering(
           }
         }
         int use_subblock = tf_get_filter_weight(
-            block_error, subblock_errors, use_planewise_strategy,
-            use_second_altref, subblock_filter_weights);
+            block_error, subblock_errors, use_planewise_strategy, is_second_arf,
+            subblock_filter_weights);
         if (subblock_filter_weights[0] || subblock_filter_weights[1] ||
             subblock_filter_weights[2] || subblock_filter_weights[3]) {
           tf_build_predictor(frames[frame], mbd, block_size, mb_row, mb_col,
@@ -1192,303 +1190,256 @@ static FRAME_DIFF tf_do_filtering(
   return diff;
 }
 
-// This is an adaptation of the mehtod in the following paper:
-// Shen-Chuan Tai, Shih-Ming Yang, "A fast method for image noise
-// estimation using Laplacian operator and adaptive edge detection,"
-// Proc. 3rd International Symposium on Communications, Control and
-// Signal Processing, 2008, St Julians, Malta.
-//
-// Return noise estimate, or -1.0 if there was a failure
-double estimate_noise(const uint8_t *src, int width, int height, int stride,
-                      int edge_thresh) {
-  int64_t sum = 0;
-  int64_t num = 0;
+// A constant number, sqrt(pi / 2),  used for noise estimation.
+static const double SQRT_PI_BY_2 = 1.25331413732;
+
+double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
+                                            const int plane,
+                                            const int bit_depth) {
+  const int is_y_plane = (plane == 0);
+  const int height = frame->crop_heights[is_y_plane ? 0 : 1];
+  const int width = frame->crop_widths[is_y_plane ? 0 : 1];
+  const int stride = frame->strides[is_y_plane ? 0 : 1];
+  const uint8_t *src = frame->buffers[plane];
+  const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
+  const int is_high_bitdepth = is_frame_high_bitdepth(frame);
+
+  int64_t accum = 0;
+  int count = 0;
   for (int i = 1; i < height - 1; ++i) {
     for (int j = 1; j < width - 1; ++j) {
-      const int k = i * stride + j;
-      // Sobel gradients
-      const int Gx = (src[k - stride - 1] - src[k - stride + 1]) +
-                     (src[k + stride - 1] - src[k + stride + 1]) +
-                     2 * (src[k - 1] - src[k + 1]);
-      const int Gy = (src[k - stride - 1] - src[k + stride - 1]) +
-                     (src[k - stride + 1] - src[k + stride + 1]) +
-                     2 * (src[k - stride] - src[k + stride]);
-      const int Ga = abs(Gx) + abs(Gy);
-      if (Ga < edge_thresh) {  // Smooth pixels
-        // Find Laplacian
-        const int v =
-            4 * src[k] -
-            2 * (src[k - 1] + src[k + 1] + src[k - stride] + src[k + stride]) +
-            (src[k - stride - 1] + src[k - stride + 1] + src[k + stride - 1] +
-             src[k + stride + 1]);
-        sum += abs(v);
-        ++num;
+      // Setup a small 3x3 matrix.
+      const int center_idx = i * stride + j;
+      int mat[3][3];
+      for (int ii = -1; ii <= 1; ++ii) {
+        for (int jj = -1; jj <= 1; ++jj) {
+          const int idx = center_idx + ii * stride + jj;
+          mat[ii + 1][jj + 1] = is_high_bitdepth ? src16[idx] : src[idx];
+        }
+      }
+      // Compute sobel gradients.
+      const int Gx = (mat[0][0] - mat[0][2]) + (mat[2][0] - mat[2][2]) +
+                     2 * (mat[1][0] - mat[1][2]);
+      const int Gy = (mat[0][0] - mat[2][0]) + (mat[0][2] - mat[2][2]) +
+                     2 * (mat[0][1] - mat[2][1]);
+      const int Ga = ROUND_POWER_OF_TWO(abs(Gx) + abs(Gy), bit_depth - 8);
+      // Accumulate Laplacian.
+      if (Ga < NOISE_ESTIMATION_EDGE_THRESHOLD) {  // Only count smooth pixels.
+        const int v = 4 * mat[1][1] -
+                      2 * (mat[0][1] + mat[2][1] + mat[1][0] + mat[1][2]) +
+                      (mat[0][0] + mat[0][2] + mat[2][0] + mat[2][2]);
+        accum += ROUND_POWER_OF_TWO(abs(v), bit_depth - 8);
+        ++count;
       }
     }
   }
-  // If very few smooth pels, return -1 since the estimate is unreliable
-  if (num < 16) return -1.0;
 
-  const double sigma = (double)sum / (6 * num) * SQRT_PI_BY_2;
-  return sigma;
+  // Return -1.0 (unreliable estimation) if there are too few smooth pixels.
+  return (count < 16) ? -1.0 : (double)accum / (6 * count) * SQRT_PI_BY_2;
 }
 
-// Return noise estimate, or -1.0 if there was a failure
-double highbd_estimate_noise(const uint8_t *src8, int width, int height,
-                             int stride, int bd, int edge_thresh) {
-  uint16_t *src = CONVERT_TO_SHORTPTR(src8);
-  int64_t sum = 0;
-  int64_t num = 0;
-  for (int i = 1; i < height - 1; ++i) {
-    for (int j = 1; j < width - 1; ++j) {
-      const int k = i * stride + j;
-      // Sobel gradients
-      const int Gx = (src[k - stride - 1] - src[k - stride + 1]) +
-                     (src[k + stride - 1] - src[k + stride + 1]) +
-                     2 * (src[k - 1] - src[k + 1]);
-      const int Gy = (src[k - stride - 1] - src[k + stride - 1]) +
-                     (src[k - stride + 1] - src[k + stride + 1]) +
-                     2 * (src[k - stride] - src[k + stride]);
-      const int Ga = ROUND_POWER_OF_TWO(abs(Gx) + abs(Gy), bd - 8);
-      if (Ga < edge_thresh) {  // Smooth pixels
-        // Find Laplacian
-        const int v =
-            4 * src[k] -
-            2 * (src[k - 1] + src[k + 1] + src[k - stride] + src[k + stride]) +
-            (src[k - stride - 1] + src[k - stride + 1] + src[k + stride - 1] +
-             src[k + stride + 1]);
-        sum += ROUND_POWER_OF_TWO(abs(v), bd - 8);
-        ++num;
-      }
+// Exsimates the strength for filter weight adjustment, which is used in YUV
+// filtering and YONLY filtering. This estimation is based on the pre-estimated
+// noise level of the to-filter frame.
+// Inputs:
+//   cpi: Pointer to the composed information of input video.
+//   noise_level: Noise level of the to-filter frame, estimated with Y-plane.
+//   group_boost: Boost level for the current group of frames.
+// Returns:
+//   Estimated strength which will be used for filter weight adjustment.
+static int tf_estimate_strength(const AV1_COMP *cpi, const double noise_level,
+                                const int group_boost) {
+  int strength = cpi->oxcf.arnr_strength;
+
+  // Adjust the strength based on the estimated noise level.
+  if (noise_level > 0) {       // Adjust when the noise level is reliable.
+    if (noise_level < 0.75) {  // Noise level lies in range (0, 0.75).
+      strength = strength - 2;
+    } else if (noise_level < 1.75) {  // Noise level lies in range [0.75, 1.75).
+      strength = strength - 1;
+    } else if (noise_level < 4.0) {  // Noise level lies in range [1.75, 4.0).
+      strength = strength + 0;
+    } else {  // Noise level lies in range [4.0, +inf).
+      strength = strength + 1;
     }
   }
-  // If very few smooth pels, return -1 since the estimate is unreliable
-  if (num < 16) return -1.0;
 
-  const double sigma = (double)sum / (6 * num) * SQRT_PI_BY_2;
-  return sigma;
-}
-
-static int estimate_strength(AV1_COMP *cpi, int distance, int group_boost,
-                             double *sigma) {
   // Adjust the strength based on active max q.
-  int q;
-  if (cpi->common.current_frame.frame_number > 1)
-    q = ((int)av1_convert_qindex_to_q(cpi->rc.avg_frame_qindex[INTER_FRAME],
-                                      cpi->common.seq_params.bit_depth));
-  else
-    q = ((int)av1_convert_qindex_to_q(cpi->rc.avg_frame_qindex[KEY_FRAME],
-                                      cpi->common.seq_params.bit_depth));
-  MACROBLOCKD *mbd = &cpi->td.mb.e_mbd;
-  struct lookahead_entry *buf =
-      av1_lookahead_peek(cpi->lookahead, distance, cpi->compressor_stage);
-  int strength;
-  double noiselevel;
-  if (is_cur_buf_hbd(mbd)) {
-    noiselevel = highbd_estimate_noise(
-        buf->img.y_buffer, buf->img.y_crop_width, buf->img.y_crop_height,
-        buf->img.y_stride, mbd->bd, EDGE_THRESHOLD);
-    *sigma = noiselevel;
-  } else {
-    noiselevel = estimate_noise(buf->img.y_buffer, buf->img.y_crop_width,
-                                buf->img.y_crop_height, buf->img.y_stride,
-                                EDGE_THRESHOLD);
-    *sigma = noiselevel;
-  }
-  int adj_strength = cpi->oxcf.arnr_strength;
-  if (noiselevel > 0) {
-    // Get 4 integer adjustment levels in [-2, 1]
-    int noiselevel_adj;
-    if (noiselevel < 0.75)
-      noiselevel_adj = -2;
-    else if (noiselevel < 1.75)
-      noiselevel_adj = -1;
-    else if (noiselevel < 4.0)
-      noiselevel_adj = 0;
-    else
-      noiselevel_adj = 1;
-    adj_strength += noiselevel_adj;
-  }
-  // printf("[noise level: %g, strength = %d]\n", noiselevel, adj_strength);
+  const FRAME_TYPE frame_type =
+      (cpi->common.current_frame.frame_number > 1) ? INTER_FRAME : KEY_FRAME;
+  const int q = (int)av1_convert_qindex_to_q(
+      cpi->rc.avg_frame_qindex[frame_type], cpi->common.seq_params.bit_depth);
+  strength = strength - AOMMAX(0, (16 - q) / 2);
 
-  if (q > 16) {
-    strength = adj_strength;
-  } else {
-    strength = adj_strength - ((16 - q) / 2);
-    if (strength < 0) strength = 0;
-  }
-
-  if (strength > group_boost / 300) {
-    strength = group_boost / 300;
-  }
-
-  return strength;
+  return CLIP(strength, 0, group_boost / 300);
 }
 
-// Apply buffer limits and context specific adjustments to arnr filter.
-static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
-                               int *arnr_frames, int *arnr_strength,
-                               double *sigma, int *frm_bwd, int *frm_fwd,
-                               int second_alt_ref) {
-  int frames = cpi->oxcf.arnr_max_frames;
+// Setups the frame buffer for temporal filtering. Basically, this fuction
+// determines how many frames will be used for temporal filtering and then
+// groups them into a buffer.
+// Inputs:
+//   cpi: Pointer to the composed information of input video.
+//   filter_frame_lookahead_idx: The index of the to-filter frame in the
+//                               lookahead buffer `cpi->lookahead`.
+//   is_second_arf: Whether the to-filter frame is the second ARF. This field
+//                  will affect the number of frames used for filtering.
+//   frames: Pointer to the frame buffer to setup.
+//   num_frames_for_filtering: Number of frames used for filtering.
+//   filter_frame_idx: Index of the to-filter frame in the setup frame buffer.
+// Returns:
+//   Nothing will be returned. But the frame buffer `frames`, number of frames
+//   in the buffer `num_frames_for_filtering`, and the index of the to-filter
+//   frame in the buffer `filter_frame_idx` will be updated in this function.
+static void tf_setup_filtering_buffer(const AV1_COMP *cpi,
+                                      const int filter_frame_lookahead_idx,
+                                      const int is_second_arf,
+                                      YV12_BUFFER_CONFIG **frames,
+                                      int *num_frames_for_filtering,
+                                      int *filter_frame_idx) {
+  int num_frames = 0;          // Number of frames used for filtering.
+  int num_frames_before = -1;  // Number of frames before the to-filter frame.
 
-  // Only use the 2 nearest frames in second alt ref's temporal filtering.
-  if (second_alt_ref) frames = AOMMIN(frames, 3);
-
-  // Adjust number of frames in filter and strength based on gf boost level.
-  if (frames > group_boost / 150) {
-    frames = group_boost / 150;
-    frames += !(frames & 1);
+  if (filter_frame_lookahead_idx == -1) {  // Key frame.
+    num_frames = TF_NUM_FILTERING_FRAMES_FOR_KEY_FRAME;
+    num_frames_before = 0;
+  } else if (filter_frame_lookahead_idx < -1) {  // Key frame in one-pass mode.
+    num_frames = TF_NUM_FILTERING_FRAMES_FOR_KEY_FRAME;
+    num_frames_before = num_frames - 1;
+  } else {
+    num_frames = cpi->oxcf.arnr_max_frames;
+    if (is_second_arf) {  // Only use 2 neighbours for the second ARF.
+      num_frames = AOMMIN(num_frames, 3);
+    }
+    if (num_frames > cpi->rc.gfu_boost / 150) {
+      num_frames = cpi->rc.gfu_boost / 150;
+      num_frames += !(num_frames & 1);
+    }
+    num_frames_before = AOMMIN(num_frames >> 1, filter_frame_lookahead_idx + 1);
+    const int lookahead_depth =
+        av1_lookahead_depth(cpi->lookahead, cpi->compressor_stage);
+    const int num_frames_after =
+        AOMMIN((num_frames - 1) >> 1,
+               lookahead_depth - filter_frame_lookahead_idx - 1);
+    num_frames = num_frames_before + 1 + num_frames_after;
   }
+  *num_frames_for_filtering = num_frames;
+  *filter_frame_idx = num_frames_before;
 
-  const int frames_after_arf =
-      av1_lookahead_depth(cpi->lookahead, cpi->compressor_stage) - distance - 1;
-  int frames_fwd = (frames - 1) >> 1;
-  int frames_bwd = frames >> 1;
-
-  // Define the forward and backwards filter limits for this arnr group.
-  if (frames_fwd > frames_after_arf) frames_fwd = frames_after_arf;
-  if (frames_bwd > distance) frames_bwd = distance;
-
-  // Set the baseline active filter size.
-  frames = frames_bwd + 1 + frames_fwd;
-
-  *arnr_frames = frames;
-  *arnr_strength = estimate_strength(cpi, distance, group_boost, sigma);
-  *frm_bwd = frames_bwd;
-  *frm_fwd = frames_fwd;
+  // Setup the frame buffer.
+  for (int frame = 0; frame < num_frames; ++frame) {
+    const int lookahead_idx =
+        frame - num_frames_before + filter_frame_lookahead_idx;
+    struct lookahead_entry *buf = av1_lookahead_peek(
+        cpi->lookahead, lookahead_idx, cpi->compressor_stage);
+    frames[frame] = (buf == NULL) ? NULL : &buf->img;
+  }
 }
 
-int av1_temporal_filter(AV1_COMP *cpi, int distance,
-                        int *show_existing_alt_ref) {
-  RATE_CONTROL *const rc = &cpi->rc;
-  int frame;
-  int frames_to_blur;
-  int start_frame;
-  int strength;
-  int frames_to_blur_backward;
-  int frames_to_blur_forward;
-  struct scale_factors sf;
-
-  YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
+int av1_temporal_filter(AV1_COMP *cpi, int filter_frame_lookahead_idx,
+                        int *show_existing_arf) {
+  // Basic informaton of the current frame.
   const GF_GROUP *const gf_group = &cpi->gf_group;
-  int rdmult = 0;
-  double sigma = 0;
+  const uint8_t group_idx = gf_group->index;
+  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[group_idx];
 
-  // Temporal filter 1 more alt ref if its distance >= 7. This frame is always
-  // a show existing frame.
-  const int second_alt_ref =
-      (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE) &&
-      (distance >= 7) && cpi->sf.hl_sf.second_alt_ref_filtering;
+  // Filter one more ARF if the lookahead index is leq 7 (w.r.t. 9-th frame).
+  // This frame is ALWAYS a show existing frame.
+  const int is_second_arf = (update_type == INTNL_ARF_UPDATE) &&
+                            (filter_frame_lookahead_idx >= 7) &&
+                            cpi->sf.hl_sf.second_alt_ref_filtering;
 
   // TODO(yunqing): For INTNL_ARF_UPDATE type, the following me initialization
   // is used somewhere unexpectedly. Should be resolved later.
   // Initialize errorperbit, sadperbit16 and sadperbit4.
-  rdmult = av1_compute_rd_mult_based_on_qindex(cpi, ARNR_FILT_QINDEX);
+  const int rdmult = av1_compute_rd_mult_based_on_qindex(cpi, TF_QINDEX);
   set_error_per_bit(&cpi->td.mb, rdmult);
-  av1_initialize_me_consts(cpi, &cpi->td.mb, ARNR_FILT_QINDEX);
+  av1_initialize_me_consts(cpi, &cpi->td.mb, TF_QINDEX);
   av1_fill_mv_costs(cpi->common.fc, cpi->common.cur_frame_force_integer_mv,
                     cpi->common.allow_high_precision_mv, &cpi->td.mb);
 
-  // Apply context specific adjustments to the arnr filter parameters.
-  if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE &&
-      !second_alt_ref) {
-    // TODO(weitinglin): Currently, we enforce the filtering strength on
-    // internal ARFs to be zeros. We should investigate in which case it is more
-    // beneficial to use non-zero strength filtering.
-    strength = 0;
-    frames_to_blur = 1;
+  // TODO(weitinglin): Currently, we enforce the filtering strength on internal
+  // ARFs to be zeros. We should investigate in which case it is more beneficial
+  // to use non-zero strength filtering.
+  if (update_type == INTNL_ARF_UPDATE && !is_second_arf) {
     return 0;
   }
 
-  if (distance < 0) {
-    frames_to_blur = NUM_KEY_FRAME_DENOISING;
-    if (distance == -1) {
-      // Apply temporal filtering on key frame.
-      strength = estimate_strength(cpi, distance, rc->gfu_boost, &sigma);
-      // Number of frames for temporal filtering, could be tuned.
-      frames_to_blur_backward = 0;
-      frames_to_blur_forward = frames_to_blur - 1;
-      start_frame = distance + frames_to_blur_forward;
-    } else {
-      // Apply temporal filtering on forward key frame. This requires filtering
-      // backwards rather than forwards.
-      strength = estimate_strength(cpi, -1 * distance, rc->gfu_boost, &sigma);
-      // Number of frames for temporal filtering, could be tuned.
-      frames_to_blur_backward = frames_to_blur - 1;
-      frames_to_blur_forward = 0;
-      start_frame = -1 * distance;
-    }
-  } else {
-    adjust_arnr_filter(cpi, distance, rc->gfu_boost, &frames_to_blur, &strength,
-                       &sigma, &frames_to_blur_backward,
-                       &frames_to_blur_forward, second_alt_ref);
-    start_frame = distance + frames_to_blur_forward;
+  // Setup frame buffer for filtering.
+  YV12_BUFFER_CONFIG *frames[MAX_LAG_BUFFERS] = { NULL };
+  int num_frames_for_filtering = 0;
+  int filter_frame_idx = -1;
+  tf_setup_filtering_buffer(cpi, filter_frame_lookahead_idx, is_second_arf,
+                            frames, &num_frames_for_filtering,
+                            &filter_frame_idx);
 
+  // Estimate noise and strength.
+  const int bit_depth = cpi->common.seq_params.bit_depth;
+  const double y_noise_level = av1_estimate_noise_from_single_plane(
+      frames[filter_frame_idx], 0, bit_depth);
+  const int strength =
+      tf_estimate_strength(cpi, y_noise_level, cpi->rc.gfu_boost);
+  if (filter_frame_lookahead_idx >= 0) {
     cpi->common.showable_frame =
-        (strength == 0 && frames_to_blur == 1) || second_alt_ref ||
+        (strength == 0 && num_frames_for_filtering == 1) || is_second_arf ||
         (cpi->oxcf.enable_overlay == 0 || cpi->sf.hl_sf.disable_overlay_frames);
   }
 
-  // Setup frame pointers, NULL indicates frame not included in filter.
-  for (frame = 0; frame < frames_to_blur; ++frame) {
-    const int which_buffer = start_frame - frame;
-    struct lookahead_entry *buf =
-        av1_lookahead_peek(cpi->lookahead, which_buffer, cpi->compressor_stage);
-    if (buf == NULL) {
-      frames[frames_to_blur - 1 - frame] = NULL;
-    } else {
-      frames[frames_to_blur - 1 - frame] = &buf->img;
-    }
-  }
-
-  if (frames_to_blur > 0 && frames[0] != NULL) {
+  // Do filtering.
+  const BLOCK_SIZE block_size = BLOCK_32X32;
+  const int is_key_frame = (filter_frame_lookahead_idx < 0);
+  FRAME_DIFF diff = { 0, 0 };
+  if (num_frames_for_filtering > 0 && frames[0] != NULL) {
     // Setup scaling factors. Scaling on each of the arnr frames is not
     // supported.
     // ARF is produced at the native frame size and resized when coded.
+    struct scale_factors sf;
     av1_setup_scale_factors_for_frame(
         &sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
         frames[0]->y_crop_width, frames[0]->y_crop_height);
+    diff = tf_do_filtering(cpi, frames, num_frames_for_filtering,
+                           filter_frame_idx, is_key_frame, is_second_arf,
+                           block_size, &sf, strength, y_noise_level);
   }
 
-  FRAME_DIFF diff = tf_do_filtering(
-      cpi, frames, frames_to_blur, frames_to_blur_backward, distance < 0,
-      second_alt_ref, TF_BLOCK, &sf, strength, sigma);
+  if (is_key_frame) {  // Key frame should always be filtered.
+    return 1;
+  }
 
-  if (distance < 0) return 1;
-
-  if ((show_existing_alt_ref != NULL &&
-       cpi->sf.hl_sf.adaptive_overlay_encoding) ||
-      second_alt_ref) {
-    AV1_COMMON *const cm = &cpi->common;
-    int top_index = 0, bottom_index = 0;
+  if ((show_existing_arf != NULL && cpi->sf.hl_sf.adaptive_overlay_encoding) ||
+      is_second_arf) {
+    const int frame_height = frames[filter_frame_idx]->y_crop_height;
+    const int frame_width = frames[filter_frame_idx]->y_crop_width;
+    const int block_height = block_size_high[block_size];
+    const int block_width = block_size_wide[block_size];
+    const int mb_rows = get_num_blocks(frame_height, block_height);
+    const int mb_cols = get_num_blocks(frame_width, block_width);
+    const int num_mbs = AOMMAX(1, mb_rows * mb_cols);
+    const float mean = (float)diff.sum / num_mbs;
+    const float std = (float)sqrt((float)diff.sse / num_mbs - mean * mean);
 
     aom_clear_system_state();
     // TODO(yunqing): This can be combined with TPL q calculation later.
-    cpi->rc.base_frame_target = gf_group->bit_allocation[gf_group->index];
-    av1_set_target_rate(cpi, cm->width, cm->height);
+    cpi->rc.base_frame_target = gf_group->bit_allocation[group_idx];
+    av1_set_target_rate(cpi, cpi->common.width, cpi->common.height);
+    int top_index = 0;
+    int bottom_index = 0;
     const int q = av1_rc_pick_q_and_bounds(cpi, &cpi->rc, cpi->oxcf.width,
-                                           cpi->oxcf.height, gf_group->index,
+                                           cpi->oxcf.height, group_idx,
                                            &bottom_index, &top_index);
-    const int ac_q = av1_ac_quant_QTX(q, 0, cm->seq_params.bit_depth);
-    const int ac_q_2 = ac_q * ac_q;
-    const int mb_cols =
-        get_num_blocks(frames[frames_to_blur_backward]->y_crop_width, BW);
-    const int mb_rows =
-        get_num_blocks(frames[frames_to_blur_backward]->y_crop_height, BH);
-    const int mbs = AOMMAX(1, mb_rows * mb_cols);
-    const float mean = (float)diff.sum / mbs;
-    const float std = (float)sqrt((float)diff.sse / mbs - mean * mean);
-    const float threshold = 0.7f;
+    const int ac_q = av1_ac_quant_QTX(q, 0, bit_depth);
+    const float threshold = 0.7f * ac_q * ac_q;
 
-    if (!second_alt_ref) {
-      *show_existing_alt_ref = 0;
-      if (mean / ac_q_2 < threshold && std < mean * 1.2)
-        *show_existing_alt_ref = 1;
-      cpi->common.showable_frame |= *show_existing_alt_ref;
+    if (!is_second_arf) {
+      *show_existing_arf = 0;
+      if (mean < threshold && std < mean * 1.2) {
+        *show_existing_arf = 1;
+      }
+      cpi->common.showable_frame |= *show_existing_arf;
     } else {
       // Use source frame if the filtered frame becomes very different.
-      if (!(mean / ac_q_2 < threshold && std < mean * 1.2)) return 0;
+      if (!(mean < threshold && std < mean * 1.2)) {
+        return 0;
+      }
     }
   }
 
