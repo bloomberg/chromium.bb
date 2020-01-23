@@ -133,10 +133,10 @@ class AbortedByUserDispatcher(object):
 
 
 _EXPECTED_RESPONSE = (
-    'HTTP/1.1 101 Switching Protocols\r\n'
-    'Upgrade: websocket\r\n'
-    'Connection: Upgrade\r\n'
-    'Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n')
+    b'HTTP/1.1 101 Switching Protocols\r\n'
+    b'Upgrade: websocket\r\n'
+    b'Connection: Upgrade\r\n'
+    b'Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n\r\n')
 
 
 class HandshakerTest(unittest.TestCase):
@@ -218,11 +218,11 @@ class HandshakerTest(unittest.TestCase):
         handshaker.do_handshake()
 
         EXPECTED_RESPONSE = (
-            'HTTP/1.1 101 Switching Protocols\r\n'
-            'Upgrade: websocket\r\n'
-            'Connection: Upgrade\r\n'
-            'Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n'
-            'Sec-WebSocket-Protocol: chat\r\n\r\n')
+            b'HTTP/1.1 101 Switching Protocols\r\n'
+            b'Upgrade: websocket\r\n'
+            b'Connection: Upgrade\r\n'
+            b'Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n'
+            b'Sec-WebSocket-Protocol: chat\r\n\r\n')
 
         self.assertEqual(EXPECTED_RESPONSE, request.connection.written_data())
         self.assertEqual('chat', request.ws_protocol)
@@ -251,13 +251,13 @@ class HandshakerTest(unittest.TestCase):
             'permessage-deflate; server_no_context_takeover')
 
         EXPECTED_RESPONSE = (
-            'HTTP/1.1 101 Switching Protocols\r\n'
-            'Upgrade: websocket\r\n'
-            'Connection: Upgrade\r\n'
-            'Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n'
-            'Sec-WebSocket-Extensions: '
-                'permessage-deflate; server_no_context_takeover\r\n'
-            '\r\n')
+            b'HTTP/1.1 101 Switching Protocols\r\n'
+            b'Upgrade: websocket\r\n'
+            b'Connection: Upgrade\r\n'
+            b'Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n'
+            b'Sec-WebSocket-Extensions: '
+                b'permessage-deflate; server_no_context_takeover\r\n'
+            b'\r\n')
 
         request = _create_request(request_def)
         handshaker = _create_handshaker(request)

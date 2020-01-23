@@ -60,6 +60,7 @@ from six import indexbytes
 
 from mod_pywebsocket import common
 from mod_pywebsocket import util
+from mod_pywebsocket.handshake import HandshakeException
 
 
 DEFAULT_PORT = 80
@@ -77,7 +78,7 @@ OPCODE_BINARY = 0x2
 _UPGRADE_HEADER = 'Upgrade: websocket\r\n'
 _CONNECTION_HEADER = 'Connection: Upgrade\r\n'
 
-WEBSOCKET_ACCEPT_UUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+WEBSOCKET_ACCEPT_UUID = b'258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
 
 # Status codes
 STATUS_NORMAL_CLOSURE = 1000
@@ -153,8 +154,8 @@ def _read_fields(socket):
     fields = {}
     while True:
         # 4.1 33. let /name/ and /value/ be empty byte arrays
-        name = ''
-        value = ''
+        name = b''
+        value = b''
         # 4.1 34. read /name/
         name = _read_name(socket)
         if name is None:
@@ -175,7 +176,7 @@ def _read_fields(socket):
         # array as a UTF-8 stream and the value given by the string
         # obtained by interpreting the /value/ byte array as a UTF-8 byte
         # stream.
-        fields.setdefault(name, []).append(value)
+        fields.setdefault(name.decode('UTF-8'), []).append(value.decode('UTF-8'))
         # 4.1 39. return to the "Field" step above
     return fields
 
@@ -318,13 +319,13 @@ class WebSocketHandshake(object):
         key = base64.b64encode(original_key)
         self._logger.debug(
             'Sec-WebSocket-Key: %s (%s)', key, util.hexify(original_key))
-        fields.append('Sec-WebSocket-Key: %s\r\n' % key)
+        fields.append(u'Sec-WebSocket-Key: %s\r\n' % key.decode('UTF-8'))
 
-        fields.append('Sec-WebSocket-Version: %d\r\n' % self._options.version)
+        fields.append(u'Sec-WebSocket-Version: %d\r\n' % self._options.version)
 
         # Setting up extensions.
         if len(self._options.extensions) > 0:
-            fields.append('Sec-WebSocket-Extensions: %s\r\n' %
+            fields.append(u'Sec-WebSocket-Extensions: %s\r\n' %
                           ', '.join(self._options.extensions))
 
         self._logger.debug('Opening handshake request headers: %r', fields)
@@ -346,20 +347,21 @@ class WebSocketHandshake(object):
 
         # Will raise a UnicodeDecodeError when the decode fails
         if len(field) < 7 or not field.endswith(b'\r\n'):
-            raise Exception('Wrong status line: %r' % field)
+            raise Exception('Wrong status line: %s' % field.decode('Latin-1'))
         m = re.match(b'[^ ]* ([^ ]*) .*', field)
         if m is None:
             raise Exception(
-                'No HTTP status code found in status line: %r' % field)
+                'No HTTP status code found in status line: %s' % field.decode('Latin-1'))
         code = m.group(1)
         if not re.match(b'[0-9][0-9][0-9]$', code):
             raise Exception(
-                'HTTP status code %r is not three digit in status line: %r' %
-                (code, field))
+                'HTTP status code %s is not three digit in status line: %s' %
+                (code.decode('Latin-1'), field.decode('Latin-1')))
         if code != b'101':
             raise HttpStatusException(
-                'Expected HTTP status code 101 but found %r in status line: '
-                '%r' % (code, field), int(code))
+                'Expected HTTP status code 101 but found %s in status line: '
+                '%r' % (code.decode('Latin-1'), field.decode('Latin-1')),
+                int(code))
         fields = _read_fields(self._socket)
         ch = receive_bytes(self._socket, 1)
         if ch != b'\n':  # 0x0A
@@ -411,7 +413,7 @@ class WebSocketHandshake(object):
                            expected_accept,
                            util.hexify(original_expected_accept))
 
-        if accept != expected_accept:
+        if accept != expected_accept.decode('UTF-8'):
             raise Exception(
                 'Invalid Sec-WebSocket-Accept header: %r (expected) != %r '
                 '(actual)' % (accept, expected_accept))
@@ -420,7 +422,7 @@ class WebSocketHandshake(object):
         accepted_extensions = []
         if server_extensions_header is not None:
             accepted_extensions = common.parse_extensions(
-                    ', '.join(server_extensions_header))
+                ', '.join(server_extensions_header))
 
         # Scan accepted extension list to check if there is any unrecognized
         # extensions or extensions we didn't request in it. Then, for
@@ -459,9 +461,9 @@ class WebSocketStream(object):
         count = 0
         for c in iterbytes(s):
             result.append(
-                    util.pack_byte(c ^ indexbytes(masking_nonce, count)))
+                util.pack_byte(c ^ indexbytes(masking_nonce, count)))
             count = (count + 1) % len(masking_nonce)
-        return ''.join(result)
+        return b''.join(result)
 
     def send_frame_of_arbitrary_bytes(self, header, body):
         self._socket.sendall(header + self._mask_hybi(body))

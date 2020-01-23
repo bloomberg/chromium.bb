@@ -69,9 +69,9 @@ class MockConnTest(unittest.TestCase):
         self.assertEqual(b'', self._conn.readline())
 
     def test_write(self):
-        self._conn.write('Hello\r\n')
-        self._conn.write('World\r\n')
-        self.assertEqual('Hello\r\nWorld\r\n', self._conn.written_data())
+        self._conn.write(b'Hello\r\n')
+        self._conn.write(b'World\r\n')
+        self.assertEqual(b'Hello\r\nWorld\r\n', self._conn.written_data())
 
 
 class MockBlockingConnTest(unittest.TestCase):

@@ -46,6 +46,7 @@ import set_sys_path  # Update sys.path to locate mod_pywebsocket module.
 from mod_pywebsocket import util
 from six.moves import range
 from six import PY3
+from six import int2byte
 
 
 _TEST_DATA_DIR = os.path.join(os.path.split(__file__)[0], 'testdata')
@@ -107,7 +108,7 @@ class RepeatedXorMaskerTest(unittest.TestCase):
         self.assertEqual(b'\x00\x00\x00', result)
 
     def test_mask_twice(self):
-        masker = util.RepeatedXorMasker('\x00\x7f\xff\x20')
+        masker = util.RepeatedXorMasker(b'\x00\x7f\xff\x20')
         # mask[0], mask[1], ... will be used.
         result = masker.mask('\x00\x00\x00\x00\x00')
         self.assertEqual(b'\x00\x7f\xff\x20\x00', result)
@@ -176,8 +177,8 @@ class InflaterDeflaterTest(unittest.TestCase):
 
     def test_random_section(self):
         random.seed(a=0)
-        source = ''.join(
-            [chr(random.randint(0, 255)) for i in range(100 * 1024)])
+        source = b''.join(
+            [int2byte(random.randint(0, 255)) for i in range(100 * 1024)])
 
         chunked_input = get_random_section(source, 10)
         print("Input chunk sizes: %r" % [len(c) for c in chunked_input])
@@ -186,19 +187,19 @@ class InflaterDeflaterTest(unittest.TestCase):
         compressed = []
         for chunk in chunked_input:
             compressed.append(deflater.compress(chunk))
-        compressed.append(deflater.compress_and_finish(''))
+        compressed.append(deflater.compress_and_finish(b''))
 
         chunked_expectation = get_random_section(source, 10)
         print("Expectation chunk sizes: %r" %
                [len(c) for c in chunked_expectation])
 
         inflater = util._Inflater(15)
-        inflater.append(''.join(compressed))
+        inflater.append(b''.join(compressed))
         for chunk in chunked_expectation:
             decompressed = inflater.decompress(len(chunk))
             self.assertEqual(chunk, decompressed)
 
-        self.assertEqual('', inflater.decompress(-1))
+        self.assertEqual(b'', inflater.decompress(-1))
 
 
 if __name__ == '__main__':

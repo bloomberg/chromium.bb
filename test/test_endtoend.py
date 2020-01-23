@@ -265,7 +265,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
     def test_echo_permessage_deflate(self):
         def test_function(client):
             # From the examples in the spec.
-            compressed_hello = '\xf2\x48\xcd\xc9\xc9\x07\x00'
+            compressed_hello = b'\xf2\x48\xcd\xc9\xc9\x07\x00'
             client._stream.send_data(
                     compressed_hello,
                     client_for_testing.OPCODE_TEXT,
@@ -299,7 +299,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
                     b'\xc9\xc9\x07\x00',
                     client_for_testing.OPCODE_TEXT)
             client._stream.assert_receive_binary(
-                    '\xf2\x48\xcd\xc9\xc9\x07\x00',
+                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
                     opcode=client_for_testing.OPCODE_TEXT,
                     rsv1=1)
 
@@ -327,11 +327,11 @@ class EndToEndHyBiTest(EndToEndTestBase):
                     client_for_testing.OPCODE_TEXT,
                     rsv1=1)
             client._stream.assert_receive_binary(
-                    '\xf2\x48\xcd\xc9\xc9\x07\x00',
+                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
                     opcode=client_for_testing.OPCODE_TEXT,
                     rsv1=1)
             client._stream.assert_receive_binary(
-                    '\xf2\x00\x11\x00\x00',
+                    b'\xf2\x00\x11\x00\x00',
                     opcode=client_for_testing.OPCODE_TEXT,
                     rsv1=1)
 
@@ -359,11 +359,11 @@ class EndToEndHyBiTest(EndToEndTestBase):
                     client_for_testing.OPCODE_TEXT,
                     rsv1=1)
             client._stream.assert_receive_binary(
-                    '\xf2\x48\xcd\xc9\xc9\x07\x00',
+                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
                     opcode=client_for_testing.OPCODE_TEXT,
                     rsv1=1)
             client._stream.assert_receive_binary(
-                    '\xf2\x48\xcd\xc9\xc9\x07\x00',
+                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
                     opcode=client_for_testing.OPCODE_TEXT,
                     rsv1=1)
 
@@ -383,7 +383,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
     def test_echo_permessage_deflate_preference(self):
         def test_function(client):
             # From the examples in the spec.
-            compressed_hello = '\xf2\x48\xcd\xc9\xc9\x07\x00'
+            compressed_hello = b'\xf2\x48\xcd\xc9\xc9\x07\x00'
             client._stream.send_data(
                     compressed_hello,
                     client_for_testing.OPCODE_TEXT,
@@ -408,7 +408,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
     def test_echo_permessage_deflate_with_parameters(self):
         def test_function(client):
             # From the examples in the spec.
-            compressed_hello = '\xf2\x48\xcd\xc9\xc9\x07\x00'
+            compressed_hello = b'\xf2\x48\xcd\xc9\xc9\x07\x00'
             client._stream.send_data(
                     compressed_hello,
                     client_for_testing.OPCODE_TEXT,
@@ -492,7 +492,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
 
             # Intermediate frame without any preceding start of fragmentation
             # frame.
-            client.send_frame_of_arbitrary_bytes('\x80\x80', '')
+            client.send_frame_of_arbitrary_bytes(b'\x80\x80', '')
             client.assert_receive_close(
                 client_for_testing.STATUS_PROTOCOL_ERROR)
 
@@ -508,7 +508,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
             client.connect()
 
             # Text frame with RSV3 bit raised.
-            client.send_frame_of_arbitrary_bytes('\x91\x80', '')
+            client.send_frame_of_arbitrary_bytes(b'\x91\x80', '')
             client.assert_receive_close(
                 client_for_testing.STATUS_UNSUPPORTED_DATA)
 

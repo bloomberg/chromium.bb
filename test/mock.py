@@ -92,8 +92,8 @@ class MockConn(_MockConnBase):
         """Override mod_python.apache.mp_conn.readline."""
 
         if self._read_pos >= len(self._read_data):
-            return ''
-        end_index = self._read_data.find('\n', self._read_pos) + 1
+            return b''
+        end_index = self._read_data.find(b'\n', self._read_pos) + 1
         if not end_index:
             end_index = len(self._read_data)
         return self._read_up_to(end_index)
@@ -102,7 +102,7 @@ class MockConn(_MockConnBase):
         """Override mod_python.apache.mp_conn.read."""
 
         if self._read_pos >= len(self._read_data):
-            return ''
+            return b''
         end_index = min(len(self._read_data), self._read_pos + length)
         return self._read_up_to(end_index)
 

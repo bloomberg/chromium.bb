@@ -83,7 +83,7 @@ def _install_extension_processor(processor, request, stream_options):
 def _create_request_from_rawdata(
         read_data,
         permessage_deflate_request=None):
-    req = mock.MockRequest(connection=mock.MockConn(b''.join(read_data)))
+    req = mock.MockRequest(connection=mock.MockConn(read_data))
     req.ws_version = common.VERSION_HYBI_LATEST
     req.ws_extension_processors = []
 
@@ -111,7 +111,7 @@ def _create_request(*frames):
     for (header, body) in frames:
         read_data.append(header + _mask_hybi(body))
 
-    return _create_request_from_rawdata(read_data)
+    return _create_request_from_rawdata(b''.join(read_data))
 
 
 def _create_blocking_request():
@@ -135,30 +135,31 @@ class BasicMessageTest(unittest.TestCase):
         msgutil.send_message(request, 'Hello')
         self.assertEqual(b'\x81\x05Hello', request.connection.written_data())
 
-        payload = b'a' * 125
+        payload = 'a' * 125
         request = _create_request()
         msgutil.send_message(request, payload)
-        self.assertEqual(b'\x81\x7d' + payload,
+        self.assertEqual(b'\x81\x7d' + payload.encode('UTF-8'),
                          request.connection.written_data())
 
     def test_send_medium_message(self):
-        payload = b'a' * 126
+        payload = 'a' * 126
         request = _create_request()
         msgutil.send_message(request, payload)
-        self.assertEqual(b'\x81\x7e\x00\x7e' + payload,
+        self.assertEqual(b'\x81\x7e\x00\x7e' + payload.encode('UTF-8'),
                          request.connection.written_data())
 
         payload = 'a' * ((1 << 16) - 1)
         request = _create_request()
         msgutil.send_message(request, payload)
-        self.assertEqual('\x81\x7e\xff\xff' + payload,
+        self.assertEqual(b'\x81\x7e\xff\xff' + payload.encode('UTF-8'),
                          request.connection.written_data())
 
     def test_send_large_message(self):
-        payload = b'a' * (1 << 16)
+        payload = 'a' * (1 << 16)
         request = _create_request()
         msgutil.send_message(request, payload)
-        self.assertEqual(b'\x81\x7f\x00\x00\x00\x00\x00\x01\x00\x00' + payload,
+        self.assertEqual(b'\x81\x7f\x00\x00\x00\x00\x00\x01\x00\x00'
+                            + payload.encode('UTF-8'),
                          request.connection.written_data())
 
     def test_send_message_unicode(self):
@@ -291,10 +292,12 @@ class BasicMessageTest(unittest.TestCase):
         self.assertEqual('Good bye', request.ws_close_reason)
 
     def test_send_longest_close(self):
-        reason = b'a' * 123
+        reason = 'a' * 123
         request = _create_request(
             (b'\x88\xfd',
-             struct.pack('!H', common.STATUS_NORMAL_CLOSURE) + reason))
+             struct.pack(
+                 '!H',
+                 common.STATUS_NORMAL_CLOSURE) + reason.encode('UTF-8')))
         request.ws_stream.close_connection(common.STATUS_NORMAL_CLOSURE,
                                            reason)
         self.assertEqual(request.ws_close_code, common.STATUS_NORMAL_CLOSURE)
@@ -320,13 +323,13 @@ class BasicMessageTest(unittest.TestCase):
     def test_send_ping(self):
         request = _create_request()
         msgutil.send_ping(request, 'Hello World!')
-        self.assertEqual('\x89\x0cHello World!',
+        self.assertEqual(b'\x89\x0cHello World!',
                          request.connection.written_data())
 
     def test_send_longest_ping(self):
         request = _create_request()
         msgutil.send_ping(request, 'a' * 125)
-        self.assertEqual('\x89\x7d' + 'a' * 125,
+        self.assertEqual(b'\x89\x7d' + b'a' * 125,
                          request.connection.written_data())
 
     def test_send_ping_too_long(self):
@@ -347,7 +350,7 @@ class BasicMessageTest(unittest.TestCase):
         request = _create_request(
             (b'\x89\x85', 'Hello'), (b'\x81\x85', 'World'))
         self.assertEqual('World', msgutil.receive_message(request))
-        self.assertEqual('\x8a\x05Hello',
+        self.assertEqual(b'\x8a\x05Hello',
                          request.connection.written_data())
 
         request = _create_request(
@@ -360,7 +363,7 @@ class BasicMessageTest(unittest.TestCase):
         request = _create_request(
             (b'\x89\xfd', 'a' * 125), (b'\x81\x85', 'World'))
         self.assertEqual('World', msgutil.receive_message(request))
-        self.assertEqual('\x8a\x7d' + 'a' * 125,
+        self.assertEqual(b'\x8a\x7d' + b'a' * 125,
                          request.connection.written_data())
 
     def test_receive_ping_too_long(self):
@@ -379,12 +382,12 @@ class BasicMessageTest(unittest.TestCase):
             (b'\x8a\x85', 'Hello'), (b'\x81\x85', 'World'))
         request.on_pong_handler = handler
         msgutil.send_ping(request, 'Hello')
-        self.assertEqual('\x89\x05Hello',
+        self.assertEqual(b'\x89\x05Hello',
                          request.connection.written_data())
         # Valid pong is received, but receive_message won't return for it.
         self.assertEqual('World', msgutil.receive_message(request))
         # Check that nothing was written after receive_message call.
-        self.assertEqual('\x89\x05Hello',
+        self.assertEqual(b'\x89\x05Hello',
                          request.connection.written_data())
 
         self.assertTrue(request.called)
@@ -506,7 +509,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
         msgutil.send_message(request, 'Hello')
         msgutil.send_message(request, 'World')
 
@@ -533,7 +536,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
         msgutil.send_message(request, 'Hello', end=False)
         msgutil.send_message(request, 'Goodbye', end=False)
         msgutil.send_message(request, 'World')
@@ -559,7 +562,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
         msgutil.send_message(request, '', end=False)
         msgutil.send_message(request, 'Hello')
 
@@ -581,7 +584,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
         msgutil.send_message(request, 'Hello', end=False)
         msgutil.send_message(request, '')
 
@@ -599,14 +602,14 @@ class PerMessageDeflateTest(unittest.TestCase):
         self.assertEqual(expected, request.connection.written_data())
 
     def test_send_message_using_small_window(self):
-        common_part = b'abcdefghijklmnopqrstuvwxyz'
-        test_message = common_part + b'-' * 30000 + common_part
+        common_part = 'abcdefghijklmnopqrstuvwxyz'
+        test_message = common_part + '-' * 30000 + common_part
 
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         extension.add_parameter('server_max_window_bits', '8')
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
         msgutil.send_message(request, test_message)
 
         expected_websocket_header_size = 2
@@ -625,7 +628,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         decompressed_message = decompress.decompress(
                 actual_payload + b'\x00\x00\xff\xff')
         decompressed_message += decompress.flush()
-        self.assertEqual(test_message, decompressed_message)
+        self.assertEqual(test_message, decompressed_message.decode('UTF-8'))
         self.assertEqual(0, len(decompress.unused_data))
         self.assertEqual(0, len(decompress.unconsumed_tail))
 
@@ -634,7 +637,7 @@ class PerMessageDeflateTest(unittest.TestCase):
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         extension.add_parameter('server_no_context_takeover', None)
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
         for i in range(3):
             msgutil.send_message(request, 'Hello', end=False)
             msgutil.send_message(request, 'Hello', end=True)
@@ -660,7 +663,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         extension = common.ExtensionParameter(
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         request = _create_request_from_rawdata(
-                '', permessage_deflate_request=extension)
+                b'', permessage_deflate_request=extension)
         self.assertEquals(1, len(request.ws_extension_processors))
         request.ws_extension_processors[0].set_bfinal(True)
         msgutil.send_message(request, 'Hello', end=False)
@@ -869,7 +872,7 @@ class PerMessageDeflateTest(unittest.TestCase):
         data += _mask_hybi(compressed_payload)
 
         # Close frame
-        data += '\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + 'Good bye')
+        data += b'\x88\x8a' + _mask_hybi(struct.pack('!H', 1000) + b'Good bye')
 
         extension = common.ExtensionParameter(
             common.PERMESSAGE_DEFLATE_EXTENSION)

@@ -176,32 +176,32 @@ class DispatcherTest(unittest.TestCase):
         request.ws_resource = '/origin_check'
         request.ws_protocol = 'p1'
         dispatcher.transfer_data(request)
-        self.assertEqual('origin_check_wsh.py is called for /origin_check, p1'
-                         '\x88\x02\x03\xe8',
+        self.assertEqual(b'origin_check_wsh.py is called for /origin_check, p1'
+                         b'\x88\x02\x03\xe8',
                          request.connection.written_data())
 
         request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
-        self.assertEqual('sub/plain_wsh.py is called for /sub/plain, None'
-                         '\x88\x02\x03\xe8',
+        self.assertEqual(b'sub/plain_wsh.py is called for /sub/plain, None'
+                         b'\x88\x02\x03\xe8',
                          request.connection.written_data())
 
         request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain?'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
-        self.assertEqual('sub/plain_wsh.py is called for /sub/plain?, None'
-                         '\x88\x02\x03\xe8',
+        self.assertEqual(b'sub/plain_wsh.py is called for /sub/plain?, None'
+                         b'\x88\x02\x03\xe8',
                          request.connection.written_data())
 
         request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain?q=v'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
-        self.assertEqual('sub/plain_wsh.py is called for /sub/plain?q=v, None'
-                         '\x88\x02\x03\xe8',
+        self.assertEqual(b'sub/plain_wsh.py is called for /sub/plain?q=v, None'
+                         b'\x88\x02\x03\xe8',
                          request.connection.written_data())
 
     def test_transfer_data_no_handler(self):
