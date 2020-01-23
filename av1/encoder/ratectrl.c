@@ -894,23 +894,24 @@ static int get_active_cq_level(const RATE_CONTROL *rc,
 
 static int get_q_using_fixed_offsets(const AV1EncoderConfig *const oxcf,
                                      const GF_GROUP *const gf_group,
-                                     int cq_level, int is_keyframe,
+                                     int gf_index, int cq_level,
                                      int frames_to_key) {
   assert(oxcf->use_fixed_qp_offsets);
   assert(oxcf->rc_mode == AOM_Q);
-  const int frame_index = gf_group->index;
-  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[frame_index];
+  const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_index];
 
   int offset_idx = -1;
-  if (is_keyframe) {
-    // Ignore offsets for image coding.
-    if (frames_to_key == 1) return cq_level;
+  if (update_type == KF_UPDATE) {
+    if (frames_to_key == 1) {
+      // Image / intra-only coding: ignore offsets.
+      return cq_level;
+    }
     offset_idx = 0;
   } else if (update_type == ARF_UPDATE || update_type == GF_UPDATE) {
     offset_idx = 1;
   } else if (update_type == INTNL_ARF_UPDATE) {
     offset_idx =
-        AOMMIN(gf_group->layer_depth[frame_index], FIXED_QP_OFFSET_COUNT - 1);
+        AOMMIN(gf_group->layer_depth[gf_index], FIXED_QP_OFFSET_COUNT - 1);
   } else {  // Leaf level / overlay frame.
     assert(update_type == LF_UPDATE || update_type == OVERLAY_UPDATE ||
            update_type == INTNL_OVERLAY_UPDATE);
@@ -933,9 +934,8 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
                                            cm->superres_scale_denominator);
 
   if (oxcf->use_fixed_qp_offsets) {
-    return get_q_using_fixed_offsets(oxcf, &cpi->gf_group, cq_level,
-                                     frame_is_intra_only(cm),
-                                     rc->frames_to_key);
+    return get_q_using_fixed_offsets(oxcf, &cpi->gf_group, cpi->gf_group.index,
+                                     cq_level, rc->frames_to_key);
   }
 
   int active_best_quality;
@@ -1385,8 +1385,8 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
                                            cm->superres_scale_denominator);
 
   if (oxcf->use_fixed_qp_offsets) {
-    return get_q_using_fixed_offsets(
-        oxcf, gf_group, cq_level, frame_is_intra_only(cm), rc->frames_to_key);
+    return get_q_using_fixed_offsets(oxcf, gf_group, gf_group->index, cq_level,
+                                     rc->frames_to_key);
   }
 
   int active_best_quality = 0;
