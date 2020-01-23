@@ -20,6 +20,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 
+from chromite.licensing  import licenses_lib
 from chromite.scripts import cros_set_lsb_release
 
 assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
@@ -27,6 +28,7 @@ assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 DLC_META_DIR = 'opt/google/dlc/'
 DLC_TMP_META_DIR = 'meta'
 DLC_BUILD_DIR = 'build/rootfs/dlc/'
+LICENSE = 'LICENSE'
 LSB_RELEASE = 'etc/lsb-release'
 DLC_IMAGE = 'dlc.img'
 IMAGELOADER_JSON = 'imageloader.json'
@@ -94,10 +96,11 @@ class EbuildParams(object):
     description: (str) DLC description.
     preload: (bool) allow for preloading DLC.
     used_by: (str) The user of this DLC, e.g. "system" or "user"
+    fullnamerev: (str) The full package & version name.
   """
 
   def __init__(self, dlc_id, dlc_package, fs_type, pre_allocated_blocks,
-               version, name, description, preload, used_by):
+               version, name, description, preload, used_by, fullnamerev):
     self.dlc_id = dlc_id
     self.dlc_package = dlc_package
     self.fs_type = fs_type
@@ -107,6 +110,7 @@ class EbuildParams(object):
     self.description = description
     self.preload = preload
     self.used_by = used_by
+    self.fullnamerev = fullnamerev
 
   def StoreDlcParameters(self, install_root_dir, sudo):
     """Store DLC parameters defined in the ebuild.
@@ -178,13 +182,15 @@ class DlcGenerator(object):
   # The DLC root path inside the DLC module.
   _DLC_ROOT_DIR = 'root'
 
-  def __init__(self, ebuild_params, sysroot, install_root_dir, src_dir=None):
+  def __init__(self, ebuild_params, sysroot, install_root_dir, board,
+               src_dir=None):
     """Object initializer.
 
     Args:
       sysroot: (str) The path to the build root directory.
       install_root_dir: (str) The path to the root installation directory.
       ebuild_params: (EbuildParams) Ebuild variables.
+      board: (str) The target board we are building for.
       src_dir: (str) Optional path to the DLC source root directory. When None,
                the default directory in |DLC_BUILD_DIR| is used.
     """
@@ -194,6 +200,7 @@ class DlcGenerator(object):
     self.src_dir = src_dir
     self.sysroot = sysroot
     self.install_root_dir = install_root_dir
+    self.board = board
     self.ebuild_params = ebuild_params
     # If the client is not overriding the src_dir, use the default one.
     if not self.src_dir:
@@ -294,6 +301,7 @@ class DlcGenerator(object):
     osutils.SafeMakedirs(dlc_root_dir)
     osutils.CopyDirContents(self.src_dir, dlc_root_dir, symlinks=True)
     self.PrepareLsbRelease(dlc_dir)
+    self.AddLicensingFile(dlc_dir)
     self.CollectExtraResources(dlc_dir)
     self.SquashOwnerships(dlc_dir)
 
@@ -303,8 +311,7 @@ class DlcGenerator(object):
     This file is used dropping some identification parameters for the DLC.
 
     Args:
-      dlc_dir: (str) The path to root directory of the DLC. e.g. mounted point
-        when we are creating the image.
+      dlc_dir: (str) The path to the mounted point during image creation.
     """
     # Reading the platform APPID and creating the DLC APPID.
     platform_lsb_release = osutils.ReadFile(
@@ -333,14 +340,31 @@ class DlcGenerator(object):
     content = ''.join('%s=%s\n' % (k, v) for k, v in fields)
     osutils.WriteFile(lsb_release, content)
 
+  def AddLicensingFile(self, dlc_dir):
+    """Add the licensing file for this DLC.
+
+    Args:
+      dlc_dir: (str) The path to the mounted point during image creation.
+    """
+    if not self.ebuild_params.fullnamerev:
+      return
+
+    licensing = licenses_lib.Licensing(self.board,
+                                       [self.ebuild_params.fullnamerev], True)
+    licensing.LoadPackageInfo()
+    licensing.ProcessPackageLicenses()
+    license_path = os.path.join(dlc_dir, LICENSE)
+    # The first (and only) item contains the values for |self.fullnamerev|.
+    _, license_txt = next(iter(licensing.GenerateLicenseText().items()))
+    osutils.WriteFile(license_path, license_txt)
+
   def CollectExtraResources(self, dlc_dir):
     """Collect the extra resources needed by the DLC module.
 
     Look at the documentation around _EXTRA_RESOURCES.
 
     Args:
-      dlc_dir: (str) The path to root directory of the DLC. e.g. mounted point
-        when we are creating the image.
+      dlc_dir: (str) The path to the mounted point during image creation.
     """
     for r in _EXTRA_RESOURCES:
       source_path = os.path.join(self.sysroot, r)
@@ -500,8 +524,8 @@ def IsDlcPreloadingAllowed(dlc_id, dlc_build_dir):
   return True
 
 
-def InstallDlcImages(sysroot, dlc_id=None, install_root_dir=None, preload=False,
-                     rootfs=None, src_dir=None):
+def InstallDlcImages(sysroot, board, dlc_id=None, install_root_dir=None,
+                     preload=False, rootfs=None, src_dir=None):
   """Copies all DLC image files into the images directory.
 
   Copies the DLC image files in the given build directory into the given DLC
@@ -510,6 +534,7 @@ def InstallDlcImages(sysroot, dlc_id=None, install_root_dir=None, preload=False,
 
   Args:
     sysroot: Path to directory containing DLC images, e.g /build/<board>.
+    board: The target board we are building for.
     dlc_id: (str) DLC ID. If None, all the DLCs will be installed.
     install_root_dir: Path to DLC output directory, e.g.
       src/build/images/<board>/<version>. If None, the image will be generated
@@ -561,6 +586,7 @@ def InstallDlcImages(sysroot, dlc_id=None, install_root_dir=None, preload=False,
             src_dir=src_dir,
             sysroot=sysroot,
             install_root_dir=sysroot,
+            board=board,
             ebuild_params=params)
         dlc_generator.GenerateDLC()
 
@@ -661,6 +687,10 @@ def GetParser():
       '--description',
       help='The description for the DLC.')
   one_dlc.add_argument(
+      '--board', metavar='BOARD', help='The target board we are building for.')
+  one_dlc.add_argument('--fullnamerev', metavar='FULL_NAME_REV',
+                       help='The full ebuild package name.')
+  one_dlc.add_argument(
       '--fs-type',
       metavar='FS_TYPE',
       default=_SQUASHFS_TYPE,
@@ -759,7 +789,7 @@ def main(argv):
                          'description', 'package', 'install_root_dir']
     per_dlc_invalid_args += ['src_dir', 'sysroot']
   else:
-    per_dlc_req_args += ['sysroot']
+    per_dlc_req_args += ['sysroot', 'board']
     per_dlc_invalid_args += ['name', 'pre_allocated_blocks', 'version',
                              'package']
 
@@ -776,7 +806,8 @@ def main(argv):
         pre_allocated_blocks=opts.pre_allocated_blocks,
         version=opts.version,
         preload=opts.preload,
-        used_by=opts.used_by)
+        used_by=opts.used_by,
+        fullnamerev=opts.fullnamerev)
     params.StoreDlcParameters(install_root_dir=opts.install_root_dir, sudo=True)
 
   else:
@@ -786,4 +817,5 @@ def main(argv):
         install_root_dir=opts.install_root_dir,
         preload=opts.preload,
         src_dir=opts.src_dir,
-        rootfs=opts.rootfs)
+        rootfs=opts.rootfs,
+        board=opts.board)

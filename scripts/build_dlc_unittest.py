@@ -32,7 +32,8 @@ _NAME = 'name'
 _DESCRIPTION = 'description'
 _META_DIR = 'opt/google/dlc/'
 _IMAGE_DIR = 'build/rootfs/dlc/'
-
+_BOARD = 'test_board'
+_FULLNAME_REV = None
 _BLOCK_SIZE = 4096
 
 # pylint: disable=protected-access
@@ -89,7 +90,8 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
                   pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
                   version=_VERSION,
                   preload=False,
-                  used_by=build_dlc._USED_BY_SYSTEM):
+                  used_by=build_dlc._USED_BY_SYSTEM,
+                  fullnamerev=_FULLNAME_REV):
     """Tests EbuildParams JSON values"""
     self.assertDictEqual(ebuild_params,
                          {'dlc_id': dlc_id,
@@ -100,7 +102,8 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
                           'name': name,
                           'description': description,
                           'preload': preload,
-                          'used_by': used_by})
+                          'used_by': used_by,
+                          'fullnamerev': fullnamerev})
 
   def GenerateParams(self,
                      install_root_dir,
@@ -112,7 +115,8 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
                      pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
                      version=_VERSION,
                      preload=False,
-                     used_by=build_dlc._USED_BY_SYSTEM):
+                     used_by=build_dlc._USED_BY_SYSTEM,
+                     fullnamerev=_FULLNAME_REV):
     """Creates and Stores DLC params at install_root_dir"""
     params = build_dlc.EbuildParams(
         dlc_id=dlc_id,
@@ -123,7 +127,8 @@ class EbuildParamsTest(cros_test_lib.TempDirTestCase):
         pre_allocated_blocks=pre_allocated_blocks,
         version=version,
         preload=preload,
-        used_by=used_by)
+        used_by=used_by,
+        fullnamerev=fullnamerev)
     return params.StoreDlcParameters(
         install_root_dir=install_root_dir, sudo=False)
 
@@ -175,12 +180,14 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
         pre_allocated_blocks=_PRE_ALLOCATED_BLOCKS,
         version=_VERSION,
         preload=False,
-        used_by=build_dlc._USED_BY_SYSTEM)
+        used_by=build_dlc._USED_BY_SYSTEM,
+        fullnamerev=_FULLNAME_REV)
     return build_dlc.DlcGenerator(
         ebuild_params=params,
         src_dir=src_dir,
         sysroot=sysroot,
-        install_root_dir=sysroot)
+        install_root_dir=sysroot,
+        board=_BOARD)
 
   def testSquashOwnerships(self):
     """Test build_dlc.SquashOwnershipsTest"""
@@ -316,14 +323,16 @@ class FinalizeDlcsTest(cros_test_lib.MockTempDirTestCase):
         makedirs=True)
     osutils.SafeMakedirs(os.path.join(sysroot, _IMAGE_DIR, _ID, 'pkg'))
     output = os.path.join(self.tempdir, 'output')
-    build_dlc.InstallDlcImages(sysroot=sysroot, install_root_dir=output)
+    build_dlc.InstallDlcImages(board=_BOARD, sysroot=sysroot,
+                               install_root_dir=output)
     self.assertExists(os.path.join(output, _ID, 'pkg', build_dlc.DLC_IMAGE))
 
   def testInstallDlcImagesNoDlc(self):
     copy_contents_mock = self.PatchObject(osutils, 'CopyDirContents')
     sysroot = os.path.join(self.tempdir, 'sysroot')
     output = os.path.join(self.tempdir, 'output')
-    build_dlc.InstallDlcImages(sysroot=sysroot, install_root_dir=output)
+    build_dlc.InstallDlcImages(board=_BOARD, sysroot=sysroot,
+                               install_root_dir=output)
     copy_contents_mock.assert_not_called()
 
   def testInstallDlcImagesWithPreloadAllowed(self):
@@ -343,8 +352,8 @@ class FinalizeDlcsTest(cros_test_lib.MockTempDirTestCase):
           preload_allowed_json,
           makedirs=True)
     output = os.path.join(self.tempdir, 'output')
-    build_dlc.InstallDlcImages(sysroot=sysroot, install_root_dir=output,
-                               preload=True)
+    build_dlc.InstallDlcImages(board=_BOARD, sysroot=sysroot,
+                               install_root_dir=output, preload=True)
     for package_num in range(package_nums):
       self.assertExists(
           os.path.join(output, _ID, _PACKAGE + str(package_num),
@@ -367,8 +376,8 @@ class FinalizeDlcsTest(cros_test_lib.MockTempDirTestCase):
           preload_not_allowed_json,
           makedirs=True)
     output = os.path.join(self.tempdir, 'output')
-    build_dlc.InstallDlcImages(sysroot=sysroot, install_root_dir=output,
-                               preload=True)
+    build_dlc.InstallDlcImages(board=_BOARD, sysroot=sysroot,
+                               install_root_dir=output, preload=True)
     for package_num in range(package_nums):
       self.assertNotExists(
           os.path.join(output, _ID, _PACKAGE + str(package_num),

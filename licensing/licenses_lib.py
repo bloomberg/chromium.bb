@@ -808,7 +808,6 @@ class Licensing(object):
     # ready for us, but in case they're not, they can be generated.
     self.gen_licenses = gen_licenses
 
-    self.package_text = {}
     self.entry_template = None
 
     # We need to have a dict for the list of packages objects, index by package
@@ -1143,23 +1142,22 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
       template = template.replace('{{%s}}' % key, val)
     return template
 
-  def _GeneratePackageLicenseText(self, pkg):
-    """Concatenate all licenses related to a pkg.
+  def _GeneratePackageLicenseHTML(self, pkg, license_text):
+    """Concatenate all licenses related to a pkg in HTML format.
 
     This means a combination of ebuild shared licenses and licenses read from
     the pkg source tree, if any.
 
     Args:
       pkg: PackageInfo object
+      license_text: the license in plain text.
+
+    Returns:
+      The license for a file->package in HTML format.
 
     Raises:
       AssertionError: on runtime errors
     """
-    license_text = []
-    for license_text_scanned in pkg.license_text_scanned:
-      license_text.append(license_text_scanned)
-      license_text.append('%s\n' % ('-=' * 40))
-
     license_pointers = []
     # sln: shared license name.
     for sln in pkg.license_names:
@@ -1181,23 +1179,27 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
         'licenses_txt': cgi.escape('\n'.join(license_text)) or '',
         'licenses_ptr': '\n'.join(license_pointers) or '',
     }
-    self.package_text[pkg] = self.EvaluateTemplate(self.entry_template, env)
+    return self.EvaluateTemplate(self.entry_template, env)
 
-  def GenerateHTMLLicenseOutput(self, output_file,
-                                output_template=TMPL,
-                                entry_template=ENTRY_TMPL,
-                                license_template=SHARED_LICENSE_TMPL):
-    """Generate the combined html license file used in ChromeOS.
+  def _GeneratePackageLicenseText(self, pkg):
+    """Concatenate all licenses related to a pkg.
+
+    This means a combination of ebuild shared licenses and licenses read from
+    the pkg source tree, if any.
 
     Args:
-      output_file: resulting HTML license output.
-      output_template: template for the entire HTML file.
-      entry_template: template for per package entries.
-      license_template: template for shared license entries.
+      pkg: PackageInfo object
     """
-    self.entry_template = ReadUnknownEncodedFile(entry_template)
-    sorted_license_txt = []
+    license_text = []
+    for license_text_scanned in pkg.license_text_scanned:
+      license_text.append(license_text_scanned)
+      license_text.append('%s\n' % ('-=' * 40))
 
+    return license_text
+
+  def GenerateLicenseText(self):
+    """Generate the license text for all packages."""
+    license_txts = {}
     # Keep track of which licenses are used by which packages.
     for pkg in self.packages.values():
       if pkg.skip:
@@ -1222,13 +1224,34 @@ after fixing the license.""" % (license_name, '\n'.join(set(stock + custom))))
         pkg.license_names.remove(sln)
         del self.licenses[sln]
 
-    for pkg in sorted(self.packages.values(),
-                      key=lambda x: (x.name.lower(), x.version, x.revision)):
+    for pkg in self.packages.values():
       if pkg.skip:
         logging.debug('Skipping package %s', pkg.fullnamerev)
         continue
-      self._GeneratePackageLicenseText(pkg)
-      sorted_license_txt += [self.package_text[pkg]]
+      license_txts[pkg] = self._GeneratePackageLicenseText(pkg)
+
+    return license_txts
+
+  def GenerateHTMLLicenseOutput(self, output_file,
+                                output_template=TMPL,
+                                entry_template=ENTRY_TMPL,
+                                license_template=SHARED_LICENSE_TMPL):
+    """Generate the combined html license file.
+
+    Args:
+      output_file: resulting HTML license output.
+      output_template: template for the entire HTML file.
+      entry_template: template for per package entries.
+      license_template: template for shared license entries.
+    """
+    self.entry_template = ReadUnknownEncodedFile(entry_template)
+    license_txts = self.GenerateLicenseText()
+    sorted_license_txt = []
+    for pkg in sorted(license_txts.keys(),
+                      key=lambda x: (x.name.lower(), x.version, x.revision)):
+      sorted_license_txt += [
+          self._GeneratePackageLicenseHTML(pkg, license_txts[pkg])]
+
 
     # Now generate the bottom of the page that will contain all the shared
     # licenses and a list of who is pointing to them.
