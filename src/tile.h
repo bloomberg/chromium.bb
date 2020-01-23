@@ -109,6 +109,22 @@ class Tile : public Allocable {
            column4x4 >= column4x4_start_ && column4x4 < column4x4_end_;
   }
 
+  bool IsLeftInside(int column4x4) const {
+    assert(column4x4 < column4x4_end_);
+    return column4x4 >= column4x4_start_;
+  }
+
+  bool IsTopInside(int row4x4) const {
+    assert(row4x4 < row4x4_end_);
+    return row4x4 >= row4x4_start_;
+  }
+
+  bool IsTopLeftInside(int row4x4, int column4x4) const {
+    assert(row4x4 < row4x4_end_);
+    assert(column4x4 < column4x4_end_);
+    return row4x4 >= row4x4_start_ && column4x4 >= column4x4_start_;
+  }
+
   // Returns true if Parameters() can be called with |row| and |column| as
   // inputs, false otherwise.
   bool HasParameters(int row, int column) const {
@@ -664,8 +680,8 @@ struct Tile::Block {
         height(kBlockHeightPixels[size]),
         width4x4(kNum4x4BlocksWide[size]),
         height4x4(kNum4x4BlocksHigh[size]),
-        left_available(tile.IsInside(row4x4, column4x4 - 1)),
-        top_available(tile.IsInside(row4x4 - 1, column4x4)),
+        left_available(tile.IsLeftInside(column4x4 - 1)),
+        top_available(tile.IsTopInside(row4x4 - 1)),
         residual_size{kPlaneResidualSize[size][0][0],
                       kPlaneResidualSize[size][tile.subsampling_x_[kPlaneU]]
                                         [tile.subsampling_y_[kPlaneU]]},
@@ -703,7 +719,7 @@ struct Tile::Block {
     if (!HasChroma()) return false;
     if ((tile.sequence_header_.color_config.subsampling_y &
          kNum4x4BlocksHigh[size]) == 1) {
-      return tile.IsInside(row4x4 - 2, column4x4);
+      return tile.IsTopInside(row4x4 - 2);
     }
     return top_available;
   }
@@ -711,7 +727,7 @@ struct Tile::Block {
   bool LeftAvailableChroma() const {
     if (!HasChroma()) return false;
     if ((tile.sequence_header_.color_config.subsampling_x & width4x4) == 1) {
-      return tile.IsInside(row4x4, column4x4 - 2);
+      return tile.IsLeftInside(column4x4 - 2);
     }
     return left_available;
   }

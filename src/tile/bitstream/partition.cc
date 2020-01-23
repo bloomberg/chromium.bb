@@ -85,13 +85,13 @@ uint16_t* Tile::GetPartitionCdf(int row4x4, int column4x4,
                                 BlockSize block_size) {
   const int block_size_log2 = k4x4WidthLog2[block_size];
   int top = 0;
-  if (IsInside(row4x4 - 1, column4x4)) {
+  if (IsTopInside(row4x4 - 1)) {
     top = static_cast<int>(
         k4x4WidthLog2[block_parameters_holder_.Find(row4x4 - 1, column4x4)
                           ->size] < block_size_log2);
   }
   int left = 0;
-  if (IsInside(row4x4, column4x4 - 1)) {
+  if (IsLeftInside(column4x4 - 1)) {
     left = static_cast<int>(
         k4x4HeightLog2[block_parameters_holder_.Find(row4x4, column4x4 - 1)
                            ->size] < block_size_log2);
