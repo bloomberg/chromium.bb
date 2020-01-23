@@ -98,6 +98,7 @@ class HWTestList(object):
     kwargs['blocking'] = True
     kwargs['async'] = False
     kwargs['priority'] = constants.HWTEST_CQ_PRIORITY
+    kwargs['quota_account'] = 'bvt-sync'
     return kwargs
 
   def _bvtInlineHWTestArgs(self, kwargs):
