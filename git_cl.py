@@ -4530,8 +4530,10 @@ def CMDsplit(parser, args):
 
   Creates a branch and uploads a CL for each group of files modified in the
   current branch that share a common OWNERS file. In the CL description and
-  comment, the string '$directory', is replaced with the directory containing
-  the shared OWNERS file.
+  comment, '$directory' is replaced with the directory containing the changes
+  in this CL, '$cl_index' is replaced with the index of the CL we're currently
+  sending out, and '$num_cls' is replaced with the total number of CLs that
+  we're sending out in this split.
   """
   parser.add_option('-d', '--description', dest='description_file',
                     help='A text file containing a CL description in which '
