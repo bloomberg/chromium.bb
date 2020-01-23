@@ -318,7 +318,8 @@ C = Conditions
 
 # Files shared between all deployment types.
 _COPY_PATHS_COMMON = (
-    Path('icudtl.dat'),
+    # TODO(honglinyu): remove copying "icudtl.dat" after libicu is installed.
+    Path('icudtl.dat', optional=True),
     Path('libosmesa.so', exe=True, optional=True),
     # Do not strip the nacl_helper_bootstrap binary because the binutils
     # objcopy/strip mangles the ELF program headers.
