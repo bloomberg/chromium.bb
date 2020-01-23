@@ -409,7 +409,6 @@
   chrome-airmont-release-afdo-verify
   chrome-broadwell-release-afdo-verify
   chrome-silvermont-release-afdo-verify
-  kernel-3_14-release-afdo-verify
   kernel-3_18-release-afdo-verify
   kernel-4_4-release-afdo-verify
   llvm-clang-tidy-toolchain
@@ -1218,7 +1217,6 @@
   kefka-payloads-tryjob
   kefka-release-tryjob
   kefka-unittest-stress
-  kernel-3_14-release-afdo-verify-tryjob
   kernel-3_18-release-afdo-verify-tryjob
   kernel-4_4-release-afdo-verify-tryjob
   kevin-arc64-full-tryjob

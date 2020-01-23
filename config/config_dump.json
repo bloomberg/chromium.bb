@@ -18162,33 +18162,6 @@
             "chrome_internal"
         ]
     },
-    "kernel-3_14-release-afdo-verify": {
-        "_template": "release_afdo_verify",
-        "boards": [
-            "lulu"
-        ],
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
-        "kernel_afdo_verify": true,
-        "schedule": "0 11 * * *"
-    },
-    "kernel-3_14-release-afdo-verify-tryjob": {
-        "_template": "release_afdo_verify",
-        "boards": [
-            "lulu"
-        ],
-        "debug": true,
-        "display_label": "tryjob",
-        "health_alert_recipients": [
-            "c-compiler-chrome@google.com"
-        ],
-        "health_threshold": 1,
-        "hw_tests_override": null,
-        "kernel_afdo_verify": true,
-        "luci_builder": "Try"
-    },
     "kernel-3_18-release-afdo-verify": {
         "_template": "release_afdo_verify",
         "boards": [

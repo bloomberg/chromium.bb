@@ -1150,7 +1150,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   # rolled every Monday, but we run these builders daily (instead of
   # weekly), in case the Monday profile drop is red, or in case
   # the tree is red for unrelated reasons on Monday.
-  KernelAFDOPublishBuilders('kernel-3_14', 'lulu', '0 11 * * *')
   KernelAFDOPublishBuilders('kernel-3_18', 'chell', '0 17 * * *')
   KernelAFDOPublishBuilders('kernel-4_4', 'eve', '0 23 * * *')
 
