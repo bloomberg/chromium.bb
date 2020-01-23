@@ -285,7 +285,7 @@ bool ObuParser::ParseOperatingParameters(ObuSequenceHeader* sequence_header,
   return true;
 }
 
-bool ObuParser::ParseSequenceHeader() {
+bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
   ObuSequenceHeader sequence_header = {};
   int64_t scratch;
   OBU_READ_LITERAL_OR_FAIL(3);
@@ -442,6 +442,12 @@ bool ObuParser::ParseSequenceHeader() {
   // Compare new sequence header with old sequence header.
   if (has_sequence_header_ &&
       sequence_header.ParametersChanged(sequence_header_)) {
+    // Between the frame header OBU and the last tile group OBU of the frame,
+    // do not allow the sequence header to change.
+    if (seen_frame_header) {
+      LIBGAV1_DLOG(ERROR, "Sequence header changed in the middle of a frame.");
+      return false;
+    }
     decoder_state_.ClearReferenceFrames();
   }
   sequence_header_ = sequence_header;
@@ -1982,6 +1988,20 @@ bool ObuParser::ParseFrameParameters() {
         }
       }
     }
+    // Validate frame_header_.primary_reference_frame.
+    if (frame_header_.primary_reference_frame != kPrimaryReferenceNone) {
+      const int index =
+          frame_header_
+              .reference_frame_index[frame_header_.primary_reference_frame];
+      if (decoder_state_.reference_frame[index] == nullptr) {
+        LIBGAV1_DLOG(ERROR,
+                     "primary_ref_frame is %d but ref_frame_idx[%d] (%d) is "
+                     "not a decoded frame.",
+                     frame_header_.primary_reference_frame,
+                     frame_header_.primary_reference_frame, index);
+        return false;
+      }
+    }
     if (frame_header_.frame_size_override_flag &&
         !frame_header_.error_resilient_mode) {
       // Section 5.9.7.
@@ -2592,7 +2612,7 @@ StatusCode ObuParser::ParseOneFrame() {
       case kObuTemporalDelimiter:
         break;
       case kObuSequenceHeader:
-        if (!ParseSequenceHeader()) {
+        if (!ParseSequenceHeader(seen_frame_header)) {
           LIBGAV1_DLOG(ERROR, "Failed to parse SequenceHeader OBU.");
           return kLibgav1StatusBitstreamError;
         }

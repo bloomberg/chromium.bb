@@ -479,11 +479,11 @@ class ObuParser : public Allocable {
   bool ParseTimingInfo(ObuSequenceHeader* sequence_header);        // 5.5.3.
   bool ParseDecoderModelInfo(ObuSequenceHeader* sequence_header);  // 5.5.4.
   bool ParseOperatingParameters(ObuSequenceHeader* sequence_header,
-                                int index);  // 5.5.5.
-  bool ParseSequenceHeader();                // 5.5.1.
-  bool ParseFrameParameters();               // 5.9.2, 5.9.7 and 5.9.10.
-  void MarkInvalidReferenceFrames();         // 5.9.4.
-  bool ParseFrameSizeAndRenderSize();        // 5.9.5 and 5.9.6.
+                                int index);          // 5.5.5.
+  bool ParseSequenceHeader(bool seen_frame_header);  // 5.5.1.
+  bool ParseFrameParameters();                       // 5.9.2, 5.9.7 and 5.9.10.
+  void MarkInvalidReferenceFrames();                 // 5.9.4.
+  bool ParseFrameSizeAndRenderSize();                // 5.9.5 and 5.9.6.
   bool ParseSuperResParametersAndComputeImageSize();  // 5.9.8 and 5.9.9.
   // Checks the bitstream conformance requirement in Section 6.8.6.
   bool ValidateInterFrameSize() const;
