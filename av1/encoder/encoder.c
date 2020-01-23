@@ -5218,7 +5218,17 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       }
       scale_references(cpi);
     }
-    av1_set_quantizer(cm, q);
+#if CONFIG_TUNE_VMAF
+    if (cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
+        cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING) {
+      av1_set_quantizer(cm, av1_get_vmaf_base_qindex(cpi, q));
+    } else {
+#endif
+      av1_set_quantizer(cm, q);
+#if CONFIG_TUNE_VMAF
+    }
+#endif
+
     if (cpi->oxcf.deltaq_mode != NO_DELTA_Q) av1_init_quantizer(cpi);
 
     av1_set_variance_partition_thresholds(cpi, q, 0);
@@ -6631,6 +6641,13 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       generate_psnr_packet(cpi);
     }
   }
+
+#if CONFIG_TUNE_VMAF
+  if (oxcf->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
+      oxcf->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING) {
+    update_vmaf_curve(cpi, cpi->source, &cpi->common.cur_frame->buf);
+  }
+#endif
 
   if (cpi->keep_level_stats && !is_stat_generation_stage(cpi)) {
     // Initialize level info. at the beginning of each sequence.
