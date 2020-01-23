@@ -212,7 +212,7 @@ static INLINE int64_t interpolation_filter_rd(
       this_rd_stats = this_rd_stats_luma;
 #if CONFIG_COLLECT_RD_STATS == 3
       RD_STATS rd_stats_y;
-      pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+      av1_pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
       PrintPredictionUnitStats(cpi, tile_data, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
       AOM_FALLTHROUGH_INTENDED;
@@ -638,7 +638,7 @@ int64_t av1_interpolation_filter_search(
 
 #if CONFIG_COLLECT_RD_STATS == 3
   RD_STATS rd_stats_y;
-  pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+  av1_pick_tx_size_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
   PrintPredictionUnitStats(cpi, tile_data, x, &rd_stats_y, bsize);
 #endif  // CONFIG_COLLECT_RD_STATS == 3
   // Chroma MC
