@@ -27,6 +27,13 @@ AppServiceAppIconLoader::AppServiceAppIconLoader(
 AppServiceAppIconLoader::~AppServiceAppIconLoader() = default;
 
 bool AppServiceAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
+  if (!proxy || proxy->AppRegistryCache().GetAppType(app_id) ==
+                    apps::mojom::AppType::kUnknown) {
+    return false;
+  }
+
   return true;
 }
 
