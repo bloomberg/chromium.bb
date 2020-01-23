@@ -7,10 +7,8 @@
 
 from __future__ import print_function
 
-import collections
 import contextlib
 import os
-import re
 import sys
 from xml.etree import ElementTree
 from xml.dom import minidom
@@ -385,9 +383,6 @@ class SyncStage(generic_stages.BuilderStage):
       # Print the blamelist.
       if fresh_sync:
         logging.PrintBuildbotStepText('(From scratch)')
-      # Disable Blamelist printing: crbug.com/1032340
-      # elif self._run.options.buildbot:
-      #   lkgm_manager.GenerateBlameList(self.repo, old_filename)
 
 
 class ManifestVersionedSyncStage(SyncStage):
@@ -659,9 +654,6 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
   # If we are using an internal manifest, but need to be able to create an
   # external manifest, we create a second manager for that manifest.
   external_manager = None
-  MAX_BUILD_HISTORY_LENGTH = 10
-  MilestoneVersion = collections.namedtuple('MilestoneVersion',
-                                            ['milestone', 'platform'])
   category = constants.CI_INFRA_STAGE
 
   def __init__(self, builder_run, buildstore, **kwargs):
@@ -759,40 +751,6 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     return cros_mark_chrome_as_stable.GetLatestRelease(
         constants.CHROMIUM_GOB_URL)
 
-  def GetLastChromeOSVersion(self):
-    """Fetching ChromeOS version from the last run.
-
-    Fetching the chromeos version from the last run that published a manifest
-    by querying CIDB. Master builds that failed before publishing a manifest
-    will be ignored.
-
-    Returns:
-      A namedtuple MilestoneVersion,
-      e.g. MilestoneVersion(milestone='44', platform='7072.0.0-rc4')
-      or None if failed to retrieve milestone and platform versions.
-    """
-    build_identifier, _ = self._run.GetCIDBHandle()
-    buildbucket_id = build_identifier.buildbucket_id
-
-    if not self.buildstore.AreClientsReady():
-      return None
-
-    builds = self.buildstore.GetBuildHistory(
-        build_config=self._run.config.name,
-        num_results=self.MAX_BUILD_HISTORY_LENGTH,
-        ignore_build_id=buildbucket_id)
-    full_versions = [b.get('full_version') for b in builds]
-    old_versions = [x for x in full_versions if x]
-    if old_versions:
-      old_version = old_versions[0]
-      pattern = r'^R(\d+)-(\d+.\d+.\d+(-rc\d+)*)'
-      m = re.match(pattern, old_version)
-      if m:
-        milestone = m.group(1)
-        platform = m.group(2)
-      return self.MilestoneVersion(milestone=milestone, platform=platform)
-    return None
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     """Performs the stage."""
@@ -810,17 +768,3 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
       logging.info('Latest chrome version is: %s', self._chrome_version)
 
     ManifestVersionedSyncStage.PerformStage(self)
-
-    # Generate blamelist
-    # TODO(crbug.com/1034118): Delete this if no one complains.
-    # cros_version = self.GetLastChromeOSVersion()
-    # if cros_version:
-    #   old_filename = self.manifest_manager.GetBuildSpecFilePath(
-    #       cros_version.milestone, cros_version.platform)
-    #   if not os.path.exists(old_filename):
-    #     logging.error(
-    #         'Could not generate blamelist, '
-    #         'manifest file does not exist: %s', old_filename)
-    #   else:
-    #     logging.debug('Generate blamelist against: %s', old_filename)
-    #     lkgm_manager.GenerateBlameList(self.repo, old_filename)

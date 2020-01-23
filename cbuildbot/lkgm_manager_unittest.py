@@ -245,68 +245,6 @@ class LKGMManagerTest(cros_test_lib.MockTempDirTestCase):
 
     return exists_mock, link_mock
 
-  def testGenerateBlameListHasChumpCL(self):
-    """Test GenerateBlameList with chump CLs."""
-    fake_git_log = """
-commit 1234
-Author: Sammy Sosa <fake@fake.com>
-Commit: Chris Sosa <sosa@chromium.org>
-
-    Add in a test for cbuildbot
-
-    TEST=So much testing
-    BUG=chromium-os:99999
-
-    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: https://chromium-review.googlesource.com/1234
-    Reviewed-by: Fake person <fake@fake.org>
-    Tested-by: Sammy Sosa <fake@fake.com>
-    """
-    project = {
-        'name': 'fake/repo',
-        'path': 'fake/path',
-        'revision': '1234567890',
-    }
-    _, link_mock = self._MockParseGitLog(fake_git_log, project)
-    has_chump_cls = lkgm_manager.GenerateBlameList(
-        self.manager.cros_source, self.manager.lkgm_path)
-
-    self.assertTrue(has_chump_cls)
-    link_mock.assert_has_calls([
-        mock.call('CHUMP | repo | fake | 1234',
-                  'https://chromium-review.googlesource.com/1234')])
-
-  def testGenerateBlameListNoChumpCL(self):
-    """Test GenerateBlameList without chump CLs."""
-    fake_git_log = """
-commit 5678
-Author: Sammy Sosa <fake@fake.com>
-Commit: Gerrit <chrome-bot@chromium.org>
-
-    Add in a test for cbuildbot
-
-    TEST=So much testing
-    BUG=chromium-os:99999
-
-    Change-Id: Ib72a742fd2cee3c4a5223b8easwasdgsdgfasdf
-    Reviewed-on: https://chromium-review.googlesource.com/1235
-    Reviewed-by: Fake person <fake@fake.org>
-    Tested-by: Sammy Sosa <fake@fake.com>
-    """
-    project = {
-        'name': 'fake/repo',
-        'path': 'fake/path',
-        'revision': '1234567890',
-    }
-    _, link_mock = self._MockParseGitLog(fake_git_log, project)
-    has_chump_cl = lkgm_manager.GenerateBlameList(
-        self.manager.cros_source, self.manager.lkgm_path)
-
-    self.assertFalse(has_chump_cl)
-    link_mock.assert_has_calls([
-        mock.call('repo | fake | 1235',
-                  'https://chromium-review.googlesource.com/1235')])
-
   def testAddChromeVersionToManifest(self):
     """Tests whether we can write the chrome version to the manifest file."""
     with TemporaryManifest() as f:

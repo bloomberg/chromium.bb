@@ -24,7 +24,6 @@ from chromite.lib import cidb
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import fake_cidb
-from chromite.lib import metadata_lib
 from chromite.lib.buildstore import FakeBuildStore
 
 # It's normal for unittests to access protected members.
@@ -280,33 +279,6 @@ class MasterSlaveLKGMSyncTest(generic_stages_unittest.StageTestCase):
         self._run, self.buildstore)
     self.sync_stage.manifest_manager = self.manager
     self._run.attrs.manifest_manager = self.manager
-
-  def testGetLastChromeOSVersion(self):
-    """Test GetLastChromeOSVersion"""
-    id1 = self.buildstore.InsertBuild(
-        builder_name='test_builder',
-        build_number=666,
-        build_config='master-mst-android-pfq',
-        bot_hostname='test_hostname')
-    id2 = self.buildstore.InsertBuild(
-        builder_name='test_builder',
-        build_number=667,
-        build_config='master-mst-android-pfq',
-        bot_hostname='test_hostname')
-    metadata_1 = metadata_lib.CBuildbotMetadata()
-    metadata_1.UpdateWithDict({'version': {'full': 'R42-7140.0.0-rc1'}})
-    metadata_2 = metadata_lib.CBuildbotMetadata()
-    metadata_2.UpdateWithDict({'version': {'full': 'R43-7141.0.0-rc1'}})
-    self._run.attrs.metadata.UpdateWithDict({
-        'version': {
-            'full': 'R44-7142.0.0-rc1'
-        }
-    })
-    self.fake_db.UpdateMetadata(id1, metadata_1)
-    self.fake_db.UpdateMetadata(id2, metadata_2)
-    v = self.sync_stage.GetLastChromeOSVersion()
-    self.assertEqual(v.milestone, '43')
-    self.assertEqual(v.platform, '7141.0.0-rc1')
 
   def testGetInitializedManager(self):
     self.sync_stage.repo = self.repo

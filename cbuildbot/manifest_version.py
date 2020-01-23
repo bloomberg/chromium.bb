@@ -701,18 +701,6 @@ class BuildSpecsManager(object):
 
     return True
 
-  def GetBuildSpecFilePath(self, milestone, platform):
-    """Get the file path given milestone and platform versions.
-
-    Args:
-      milestone: a string representing milestone, e.g. '44'
-      platform: a string representing platform version, e.g. '7072.0.0-rc4'
-
-    Returns:
-      A string, representing the path to its spec file.
-    """
-    return os.path.join(self.buildspecs_dir, milestone, platform + '.xml')
-
   def GetCurrentVersionInfo(self):
     """Returns the current version info from the version file."""
     version_file_path = self.cros_source.GetRelativePath(constants.VERSION_FILE)
