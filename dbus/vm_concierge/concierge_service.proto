@@ -292,6 +292,40 @@ message VmStoppedSignal {
   int64 cid = 3;
 }
 
+// Information that must be included with every SuspendVm dbus message.
+message SuspendVmRequest {
+  // The name of the VM to be stopped.
+  string name = 1;
+
+  // The owner of the vm.
+  string owner_id = 2;
+}
+
+message SuspendVmResponse {
+  // If true, the requested VM was suspended.
+  bool success = 1;
+
+  // The failure_reason if the requested VM could not be suspended.
+  string failure_reason = 2;
+}
+
+// Information that must be included with every ResumeVm dbus message.
+message ResumeVmRequest {
+  // The name of the VM to be stopped.
+  string name = 1;
+
+  // The owner of the vm.
+  string owner_id = 2;
+}
+
+message ResumeVmResponse {
+  // If true, the requested VM was suspended.
+  bool success = 1;
+
+  // The failure_reason if the requested VM could not be suspended.
+  string failure_reason = 2;
+}
+
 // Response to a SyncTimes RPC.
 message SyncVmTimesResponse {
   // The total number of VMs we attempted to update.
