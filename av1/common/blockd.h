@@ -954,6 +954,7 @@ static INLINE int bsize_to_max_depth(BLOCK_SIZE bsize) {
  * assert(depth < 10);
  */
 static INLINE int bsize_to_tx_size_cat(BLOCK_SIZE bsize) {
+  assert(bsize < BLOCK_SIZES_ALL);
   static const uint8_t bsize_to_tx_size_depth_table[BLOCK_SIZES_ALL] = {
     0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 4, 2, 2, 3, 3, 4, 4,
   };

@@ -91,11 +91,6 @@ static INLINE int mode_offset(const PREDICTION_MODE mode) {
   }
 }
 
-typedef struct {
-  PREDICTION_MODE mode;
-  MV_REFERENCE_FRAME ref_frame[2];
-} MODE_DEFINITION;
-
 enum {
   //  INTER_ALL = (1 << NEARESTMV) | (1 << NEARMV) | (1 << NEWMV),
   INTER_NEAREST = (1 << NEARESTMV),
