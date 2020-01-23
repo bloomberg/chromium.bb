@@ -90,6 +90,15 @@ class UpdateArgumentsTest(cros_test_lib.TestCase):
     for arg in expected:
       self.assertIn(arg, result)
 
+  def testToolchainTargetsIgnoredForSource(self):
+    """Test the toolchain boards argument."""
+    expected = ['--nousepkg']
+    result = self._GetArgList(toolchain_targets=['board1', 'board2'],
+                              build_source=True)
+    self.assertNotIn('--toolchain_boards', result)
+    for arg in expected:
+      self.assertIn(arg, result)
+
   def testNoToolchainTargets(self):
     """Test no toolchain boards argument."""
     self.assertIn('--skip_toolchain_update',
