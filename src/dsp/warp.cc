@@ -46,7 +46,34 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
-  constexpr int kSingleRoundOffset = (1 << bitdepth) + (1 << (bitdepth - 1));
+  // Compound calculations are the only ones which use a different value for
+  // |inter_round_bits_vertical|. Inter/intra will be able to use the |clip|
+  // path when the offset value is removed.
+  assert(!clip || inter_round_bits_vertical == ((bitdepth == 12) ? 9 : 11));
+  // These offsets allow intermediate calculations to remain in 16 bits when
+  // |bitdepth| is 8.
+  // The worst case calculations for |kWarpedFilters| are a set of positive taps
+  // which sum to 175 or negative taps which sum to -47.
+  // For |bitdepth| == 8 the right set of input values could generate
+  // intermediate values of 255 * 175 = 44625 / 0xAE51 or 255 * -47 = -11985.
+  // Both situations end up using the MSB which makes it impossible to
+  // distinguish between negative values or positive values over 32768.
+  // In order to compensate for this we add a constant value:
+  // |horizontal_offset|. This shifts the range up. It is now 61009 to 4399 and
+  // fits comfortably in uint16_t.
+  // |vertical_offset| ensures the result of the second pass is unsigned but can
+  // not keep the value within 16 bits.
+  // |unsigned_offset| is the delta between the compensated result and the
+  // natural result.
+  // These are not beneficial for |bitdepth| > 8 because it will always be
+  // necessary to step up to 32 bit intermediates.
+  // TODO(b/146439793): Remove the offset before storing the result.
+  const int unsigned_offset =
+      ((1 << bitdepth) + (1 << (bitdepth - 1)))
+      << ((14 - kRoundBitsHorizontal) - inter_round_bits_vertical);
+  constexpr int horizontal_offset = (1 << (bitdepth - 1)) << kFilterBits;
+  constexpr int vertical_offset = (1 << bitdepth)
+                                  << (2 * kFilterBits - kRoundBitsHorizontal);
   constexpr int kMaxPixel = (1 << bitdepth) - 1;
   union {
     // Intermediate_result is the output of the horizontal filtering and
@@ -56,9 +83,6 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
     // same, store one sample per row in a column vector.
     uint16_t intermediate_result_column[15];
   };
-  constexpr int horizontal_offset = 1 << (bitdepth + kFilterBits - 1);
-  constexpr int vertical_offset =
-      1 << (bitdepth + 2 * kFilterBits - kRoundBitsHorizontal);
   const auto* const src = static_cast<const Pixel*>(source);
   source_stride /= sizeof(Pixel);
   using DestType = typename std::conditional<clip, Pixel, uint16_t>::type;
@@ -157,8 +181,9 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           if (clip) {
             Memset(dst_row, row_border_pixel, 8);
           } else {
-            int sum = row_border_pixel + kSingleRoundOffset;
-            sum <<= ((14 - kRoundBitsHorizontal) - inter_round_bits_vertical);
+            int sum = row_border_pixel << ((14 - kRoundBitsHorizontal) -
+                                           inter_round_bits_vertical);
+            sum += unsigned_offset;
             Memset(dst_row, sum, 8);
           }
           const DestType* const first_dst_row = dst_row;
@@ -177,13 +202,12 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           // We may over-read up to 13 pixels above the top source row, or up
           // to 13 pixels below the bottom source row. This is proved below.
           const int row = iy4 + y;
-          const Pixel row_border_pixel = first_row_border[row * source_stride];
-          // Every sample is equal to |row_border_pixel|. Since the sum of the
+          int sum = horizontal_offset;
+          // Every sample is equal to |first_row_border[]|. Since the sum of the
           // warped filter coefficients is 128 (= 2^7), the filtering is
           // equivalent to multiplying |row_border_pixel| by 128.
-          intermediate_result_column[y + 7] =
-              (horizontal_offset >> kRoundBitsHorizontal) +
-              (row_border_pixel << (7 - kRoundBitsHorizontal));
+          sum += first_row_border[row * source_stride] << kFilterBits;
+          intermediate_result_column[y + 7] = sum >> kRoundBitsHorizontal;
         }
         // Vertical filter.
         DestType* dst_row = dst + start_x - block_start_x;
@@ -206,7 +230,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             sum = RightShiftWithRounding(sum, inter_round_bits_vertical);
             if (clip) {
               dst_row[x] = static_cast<DestType>(
-                  Clip3(sum - kSingleRoundOffset, 0, kMaxPixel));
+                  Clip3(sum - unsigned_offset, 0, kMaxPixel));
             } else {
               dst_row[x] = static_cast<DestType>(sum);
             }
@@ -384,7 +408,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           sum = RightShiftWithRounding(sum, inter_round_bits_vertical);
           if (clip) {
             dst_row[x] = static_cast<DestType>(
-                Clip3(sum - kSingleRoundOffset, 0, kMaxPixel));
+                Clip3(sum - unsigned_offset, 0, kMaxPixel));
           } else {
             // Warp output is a predictor, whose type is uint16_t.
             // Clipping is applied at the stage of final pixel value output.
