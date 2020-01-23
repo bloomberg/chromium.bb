@@ -580,6 +580,10 @@ int main(int argc, char **argv) {
   memset(&input_ctx, 0, sizeof(input_ctx));
   memset(&svc_params, 0, sizeof(svc_params));
 
+  // Flag to test dynamic scaling of source frames for single
+  // spatial stream, using the scaling_mode control.
+  const int test_dynamic_scaling_single_layer = 0;
+
   /* Setup default input stream settings */
   input_ctx.framerate.numerator = 30;
   input_ctx.framerate.denominator = 1;
@@ -793,6 +797,18 @@ int main(int argc, char **argv) {
 
       layer = slx * ts_number_layers + layer_id.temporal_layer_id;
       if (frame_avail && slx == 0) ++rc.layer_input_frames[layer];
+
+      if (test_dynamic_scaling_single_layer) {
+        if (frame_cnt >= 200 && frame_cnt <= 400) {
+          // Scale source down by 2x2.
+          struct aom_scaling_mode mode = { AOME_ONETWO, AOME_ONETWO };
+          aom_codec_control(&codec, AOME_SET_SCALEMODE, &mode);
+        } else {
+          // Source back up to original resolution (no scaling).
+          struct aom_scaling_mode mode = { AOME_NORMAL, AOME_NORMAL };
+          aom_codec_control(&codec, AOME_SET_SCALEMODE, &mode);
+        }
+      }
 
       // Do the layer encode.
       aom_usec_timer_start(&timer);

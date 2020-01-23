@@ -369,7 +369,7 @@ int av1_rc_drop_frame(AV1_COMP *cpi) {
   }
 }
 
-static int adjust_q_cbr(const AV1_COMP *cpi, int q) {
+static int adjust_q_cbr(const AV1_COMP *cpi, int q, int active_worst_quality) {
   const RATE_CONTROL *const rc = &cpi->rc;
   const AV1_COMMON *const cm = &cpi->common;
   const int max_delta = 16;
@@ -396,6 +396,12 @@ static int adjust_q_cbr(const AV1_COMP *cpi, int q) {
     // Limit the decrease in Q from previous frame.
     if (rc->q_1_frame - q > max_delta) q = rc->q_1_frame - max_delta;
   }
+  // For single spatial layer: if resolution has increased push q closer
+  // to the active_worst to avoid excess overshoot.
+  if (cpi->svc.number_spatial_layers == 1 && cm->prev_frame &&
+      (cm->width * cm->height >
+       1.5 * cm->prev_frame->width * cm->prev_frame->height))
+    q = (q + active_worst_quality) >> 1;
   return AOMMAX(AOMMIN(q, cpi->rc.worst_quality), cpi->rc.best_quality);
 }
 
@@ -611,9 +617,8 @@ int av1_rc_regulate_q(const AV1_COMP *cpi, int target_bits_per_frame,
   int q =
       find_closest_qindex_by_rate(target_bits_per_mb, cpi, correction_factor,
                                   active_best_quality, active_worst_quality);
-
   if (cpi->oxcf.rc_mode == AOM_CBR && has_no_stats_stage(cpi))
-    return adjust_q_cbr(cpi, q);
+    return adjust_q_cbr(cpi, q, active_worst_quality);
 
   return q;
 }
@@ -1976,6 +1981,10 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   GF_GROUP *const gf_group = &cpi->gf_group;
   int target;
+  const int resize_pending =
+      (cpi->resize_pending_width && cpi->resize_pending_height &&
+       (cm->width != cpi->resize_pending_width ||
+        cm->height != cpi->resize_pending_height));
   // Turn this on to explicitly set the reference structure rather than
   // relying on internal/default structure.
   const int set_reference_structure = 1;
@@ -2000,8 +2009,10 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     frame_params->frame_type = INTER_FRAME;
     gf_group->update_type[gf_group->index] = LF_UPDATE;
   }
-  if (rc->frames_till_gf_update_due == 0 && cpi->svc.temporal_layer_id == 0 &&
-      cpi->svc.spatial_layer_id == 0) {
+  // GF update based on frames_till_gf_update_due, also
+  // force upddate on resize pending frame.
+  if ((resize_pending || rc->frames_till_gf_update_due == 0) &&
+      cpi->svc.temporal_layer_id == 0 && cpi->svc.spatial_layer_id == 0) {
     if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ)
       av1_cyclic_refresh_set_golden_update(cpi);
     else
