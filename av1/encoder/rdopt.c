@@ -55,7 +55,7 @@
 #include "av1/encoder/ml.h"
 #include "av1/encoder/mode_prune_model_weights.h"
 #include "av1/encoder/model_rd.h"
-#include "av1/encoder/motion_search.h"
+#include "av1/encoder/motion_search_facade.h"
 #include "av1/encoder/palette.h"
 #include "av1/encoder/pustats.h"
 #include "av1/encoder/random.h"

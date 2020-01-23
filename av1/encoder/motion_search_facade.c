@@ -11,7 +11,7 @@
 
 #include "av1/common/reconinter.h"
 #include "av1/encoder/encodemv.h"
-#include "av1/encoder/motion_search.h"
+#include "av1/encoder/motion_search_facade.h"
 #include "av1/encoder/reconinter_enc.h"
 
 void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
