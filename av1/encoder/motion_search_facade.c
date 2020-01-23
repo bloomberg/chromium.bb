@@ -14,8 +14,8 @@
 #include "av1/encoder/motion_search_facade.h"
 #include "av1/encoder/reconinter_enc.h"
 
-void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
-                          BLOCK_SIZE bsize, int ref_idx, int *rate_mv) {
+void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
+                              BLOCK_SIZE bsize, int ref_idx, int *rate_mv) {
   MACROBLOCKD *xd = &x->e_mbd;
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -217,9 +217,10 @@ void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
     x->pred_mv[ref] = x->best_mv.as_mv;
 }
 
-void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-                         int_mv *cur_mv, const uint8_t *mask, int mask_stride,
-                         int *rate_mv) {
+void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
+                             BLOCK_SIZE bsize, int_mv *cur_mv,
+                             const uint8_t *mask, int mask_stride,
+                             int *rate_mv) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   const int pw = block_size_wide[bsize];
@@ -401,11 +402,11 @@ void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
 // Search for the best mv for one component of a compound,
 // given that the other component is fixed.
-void compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
-                                   BLOCK_SIZE bsize, MV *this_mv,
-                                   const uint8_t *second_pred,
-                                   const uint8_t *mask, int mask_stride,
-                                   int *rate_mv, int ref_idx) {
+void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
+                                       BLOCK_SIZE bsize, MV *this_mv,
+                                       const uint8_t *second_pred,
+                                       const uint8_t *mask, int mask_stride,
+                                       int *rate_mv, int ref_idx) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   const int pw = block_size_wide[bsize];
@@ -557,9 +558,9 @@ static AOM_INLINE void build_second_inter_pred(const AV1_COMP *cpi,
                                   &xd->jcp_param.use_dist_wtd_comp_avg, 1);
 }
 
-// Wrapper for compound_single_motion_search, for the common case
+// Wrapper for av1_compound_single_motion_search, for the common case
 // where the second prediction is also an inter mode.
-void compound_single_motion_search_interinter(
+void av1_compound_single_motion_search_interinter(
     const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize, int_mv *cur_mv,
     const uint8_t *mask, int mask_stride, int *rate_mv, int ref_idx) {
   MACROBLOCKD *xd = &x->e_mbd;
@@ -577,8 +578,8 @@ void compound_single_motion_search_interinter(
   MV *this_mv = &cur_mv[ref_idx].as_mv;
   const MV *other_mv = &cur_mv[!ref_idx].as_mv;
   build_second_inter_pred(cpi, x, bsize, other_mv, ref_idx, second_pred);
-  compound_single_motion_search(cpi, x, bsize, this_mv, second_pred, mask,
-                                mask_stride, rate_mv, ref_idx);
+  av1_compound_single_motion_search(cpi, x, bsize, this_mv, second_pred, mask,
+                                    mask_stride, rate_mv, ref_idx);
 }
 
 static AOM_INLINE void do_masked_motion_search_indexed(
@@ -597,17 +598,18 @@ static AOM_INLINE void do_masked_motion_search_indexed(
   tmp_mv[0].as_int = cur_mv[0].as_int;
   tmp_mv[1].as_int = cur_mv[1].as_int;
   if (which == 0 || which == 1) {
-    compound_single_motion_search_interinter(cpi, x, bsize, tmp_mv, mask,
-                                             mask_stride, rate_mv, which);
+    av1_compound_single_motion_search_interinter(cpi, x, bsize, tmp_mv, mask,
+                                                 mask_stride, rate_mv, which);
   } else if (which == 2) {
-    joint_motion_search(cpi, x, bsize, tmp_mv, mask, mask_stride, rate_mv);
+    av1_joint_motion_search(cpi, x, bsize, tmp_mv, mask, mask_stride, rate_mv);
   }
 }
 
-int interinter_compound_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                      const int_mv *const cur_mv,
-                                      const BLOCK_SIZE bsize,
-                                      const PREDICTION_MODE this_mode) {
+int av1_interinter_compound_motion_search(const AV1_COMP *const cpi,
+                                          MACROBLOCK *x,
+                                          const int_mv *const cur_mv,
+                                          const BLOCK_SIZE bsize,
+                                          const PREDICTION_MODE this_mode) {
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = xd->mi[0];
   int_mv tmp_mv[2];

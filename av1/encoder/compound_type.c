@@ -705,8 +705,8 @@ int av1_handle_inter_intra_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
       // get negative of mask
       const uint8_t *mask =
           av1_get_contiguous_soft_mask(mbmi->interintra_wedge_index, 1, bsize);
-      compound_single_motion_search(cpi, x, bsize, &tmp_mv.as_mv, intrapred,
-                                    mask, bw, &tmp_rate_mv, 0);
+      av1_compound_single_motion_search(cpi, x, bsize, &tmp_mv.as_mv, intrapred,
+                                        mask, bw, &tmp_rate_mv, 0);
       if (mbmi->mv[0].as_int != tmp_mv.as_int) {
         mbmi->mv[0].as_int = tmp_mv.as_int;
         av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, orig_dst, bsize,
@@ -1058,15 +1058,15 @@ static int64_t masked_compound_type_rd(
 
     // Search for new MV if needed and build predictor
     if (wedge_newmv_search) {
-      *out_rate_mv =
-          interinter_compound_motion_search(cpi, x, cur_mv, bsize, this_mode);
+      *out_rate_mv = av1_interinter_compound_motion_search(cpi, x, cur_mv,
+                                                           bsize, this_mode);
       const int mi_row = xd->mi_row;
       const int mi_col = xd->mi_col;
       av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, ctx, bsize,
                                     AOM_PLANE_Y, AOM_PLANE_Y);
     } else if (diffwtd_newmv_search) {
-      *out_rate_mv =
-          interinter_compound_motion_search(cpi, x, cur_mv, bsize, this_mode);
+      *out_rate_mv = av1_interinter_compound_motion_search(cpi, x, cur_mv,
+                                                           bsize, this_mode);
       // we need to update the mask according to the new motion vector
       CompoundTypeRdBuffers tmp_buf;
       int64_t tmp_rd = INT64_MAX;

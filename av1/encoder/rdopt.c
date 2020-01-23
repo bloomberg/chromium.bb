@@ -3520,7 +3520,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       // aomenc1
       if (cpi->sf.inter_sf.comp_inter_joint_search_thresh <= bsize ||
           !valid_mv0 || !valid_mv1) {
-        joint_motion_search(cpi, x, bsize, cur_mv, NULL, 0, rate_mv);
+        av1_joint_motion_search(cpi, x, bsize, cur_mv, NULL, 0, rate_mv);
       } else {
         *rate_mv = 0;
         for (int i = 0; i < 2; ++i) {
@@ -3539,8 +3539,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       // aomenc2
       if (cpi->sf.inter_sf.comp_inter_joint_search_thresh <= bsize ||
           !valid_mv1) {
-        compound_single_motion_search_interinter(cpi, x, bsize, cur_mv, NULL, 0,
-                                                 rate_mv, 1);
+        av1_compound_single_motion_search_interinter(cpi, x, bsize, cur_mv,
+                                                     NULL, 0, rate_mv, 1);
       } else {
         const int_mv ref_mv = av1_get_ref_mv(x, 1);
         *rate_mv =
@@ -3557,8 +3557,8 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       // aomenc3
       if (cpi->sf.inter_sf.comp_inter_joint_search_thresh <= bsize ||
           !valid_mv0) {
-        compound_single_motion_search_interinter(cpi, x, bsize, cur_mv, NULL, 0,
-                                                 rate_mv, 0);
+        av1_compound_single_motion_search_interinter(cpi, x, bsize, cur_mv,
+                                                     NULL, 0, rate_mv, 0);
       } else {
         const int_mv ref_mv = av1_get_ref_mv(x, 0);
         *rate_mv =
@@ -3567,7 +3567,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     }
   } else {
-    single_motion_search(cpi, x, bsize, 0, rate_mv);
+    av1_single_motion_search(cpi, x, bsize, 0, rate_mv);
     if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
 
     args->single_newmv[ref_mv_idx][refs[0]] = x->best_mv;
@@ -3739,7 +3739,7 @@ static int64_t motion_mode_rd(
       const uint32_t cur_mv = mbmi->mv[0].as_int;
       assert(!is_comp_pred);
       if (have_newmv_in_inter_mode(this_mode)) {
-        single_motion_search(cpi, x, bsize, 0, &tmp_rate_mv);
+        av1_single_motion_search(cpi, x, bsize, 0, &tmp_rate_mv);
         mbmi->mv[0].as_int = x->best_mv.as_int;
         tmp_rate2 = rate2_nocoeff - rate_mv0 + tmp_rate_mv;
       }
