@@ -25,9 +25,11 @@ if (use_sysroot) {
     assert(false, "No linux sysroot for cpu: $target_cpu")
   }
   _script_arch = current_cpu
-  assert(
-      exec_script("//build/scripts/dir_exists.py",
+
+  if (exec_script("//build/scripts/dir_exists.py",
                   [ rebase_path(sysroot) ],
-                  "string") == "True",
-      "Missing sysroot ($sysroot). To fix, run: build/scripts/install-sysroot.py $_script_arch")
+                  "string") != "True") {
+    print("Missing sysroot for $current_cpu, downloading...")
+    exec_script("//build/scripts/install-sysroot.py", [ "$current_cpu" ])
+  }
 }
