@@ -2568,7 +2568,7 @@
 <translation id="4664482161435122549">‏خطأ في تصدير PKCS #12</translation>
 <translation id="4665014895760275686">جهة التصنيع</translation>
 <translation id="4665446389743427678">سيتم حذف جميع البيانات المُخزَّنة من خلال <ph name="SITE" />.</translation>
-<translation id="4668721319092543482">انقر لتمكين <ph name="PLUGIN_NAME" /></translation>
+<translation id="4668721319092543482">انقر لتفعيل <ph name="PLUGIN_NAME" /></translation>
 <translation id="4672657274720418656">صفحة التنقية</translation>
 <translation id="46733273239502219">سيتم أيضًا محو البيانات المتوفرة بلا اتصال بالإنترنت في التطبيقات المثبّتة.</translation>
 <translation id="4673442866648850031">فتح أدوات قلم الشاشة عندما تتم إزالة قلم الشاشة</translation>
@@ -4216,7 +4216,7 @@
 <translation id="7078120482318506217">جميع الشبكات</translation>
 <translation id="708060913198414444">ن&amp;سخ عنوان الصوت</translation>
 <translation id="7081952801286122383">أنت تستخدم وضع التصفُّح المُتخفِّي</translation>
-<translation id="708278670402572152">قطع الاتصال لتمكين الفحص</translation>
+<translation id="708278670402572152">قطع الاتصال لتفعيل الفحص</translation>
 <translation id="7085389578340536476">‏هل تسمح لمتصفح Chrome بتسجيل الصوت؟</translation>
 <translation id="7088434364990739311">تعذّر بدء التحقق من التحديثات (رمز الخطأ <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">‏Zip Archiver - فتح ملفات ZIP وتجميعها في تطبيق "الملفات".</translation>

@@ -755,7 +755,7 @@
 <translation id="2075959085554270910">הגדרות אלה מאפשרות להפעיל או להשבית את תכונות הנגיעה הקלה וההקשה לגרירה</translation>
 <translation id="2076269580855484719">הסתר פלאגין זה</translation>
 <translation id="2076672359661571384">בינוני (מומלץ)</translation>
-<translation id="2077129598763517140">השתמש בהאצת חומרה כשניתן</translation>
+<translation id="2077129598763517140">יש להשתמש בהאצת חומרה, כשזה אפשרי</translation>
 <translation id="2078019350989722914">הזהר לפני היציאה (<ph name="KEY_EQUIVALENT" />)</translation>
 <translation id="2079053412993822885">אם תמחק את אחד מהאישורים שלך, לא תוכל להמשיך ולהשתמש בו כדי לזהות את עצמך.</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
@@ -2980,7 +2980,7 @@
 <translation id="52895863590846877">הדף לא ב<ph name="LANGUAGE" /></translation>
 <translation id="52912272896845572">קובץ המפתח הפרטי אינו חוקי</translation>
 <translation id="529175790091471945">פרמט מכשיר זה</translation>
-<translation id="5293170712604732402">שחזר את ההגדרות לברירות המחדל המקוריות שלהן</translation>
+<translation id="5293170712604732402">שחזור ההגדרות לברירות המחדל המקוריות שלהן</translation>
 <translation id="5296471962619441686">צריך לפתור השגיאה כדי להמשיך בסנכרון</translation>
 <translation id="5297082477358294722">הסיסמה נשמרה. אפשר להציג סיסמאות שמורות ולנהל אותן דרך <ph name="SAVED_PASSWORDS_STORE" />.</translation>
 <translation id="5298219193514155779">נושא שנוצר על ידי</translation>
