@@ -22,6 +22,10 @@
 extern "C" {
 #endif
 
+#define MAX_REF_MV_SEARCH 3
+#define INTER_INTRA_RD_THRESH_SCALE 9
+#define INTER_INTRA_RD_THRESH_SHIFT 4
+
 typedef struct {
   PREDICTION_MODE mode;
   MV_REFERENCE_FRAME ref_frame[2];
