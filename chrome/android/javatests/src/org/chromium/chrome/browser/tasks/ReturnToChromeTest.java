@@ -98,6 +98,7 @@ public class ReturnToChromeTest {
     @SmallTest
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/0"})
+    @FlakyTest(message = "crbug.com/1040895")
     public void testTabSwitcherModeTriggeredBeyondThreshold() throws Exception {
         TabUiTestHelper.prepareTabsWithThumbnail(mActivityTestRule, 2, 0, mUrl);
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
