@@ -23,7 +23,11 @@ enum {
   kIvfHeaderVersion = 0,
   kIvfFrameHeaderSize = 12,
   kIvfFileHeaderSize = 32,
+#ifdef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+  kMaxTemporalUnitSize = 512 * 1024,
+#else
   kMaxTemporalUnitSize = 256 * 1024 * 1024,
+#endif
 };
 
 extern const char kIvfSignature[4];
