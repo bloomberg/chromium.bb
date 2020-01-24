@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 // This structure represents an allocated frame buffer.
-struct Libgav1FrameBuffer2 {
+typedef struct Libgav1FrameBuffer2 {
   // In the |plane| and |stride| arrays, the elements at indexes 0, 1, and 2
   // are for the Y, U, and V planes, respectively.
   uint8_t* plane[3];   // Pointers to the plane buffers.
@@ -43,7 +43,7 @@ struct Libgav1FrameBuffer2 {
                        // release frame buffer callback. Also copied to the
                        // |buffer_private_data| field of DecoderBuffer for use
                        // by the consumer of a DecoderBuffer.
-};
+} Libgav1FrameBuffer2;
 
 // This callback is invoked by the decoder to provide information on the
 // subsequent frames in the video, until the next invocation of this callback
