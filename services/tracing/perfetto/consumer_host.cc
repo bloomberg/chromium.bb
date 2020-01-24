@@ -397,7 +397,15 @@ void ConsumerHost::TracingSession::DisableTracingAndEmitJson(
   // Chrome uses a smaller block size than the default even on 64-bit machines,
   // because the sandbox for our utility process may restrict our address space.
   // The string pool can still grow larger across multiple blocks if necessary.
-  processor_config.string_pool_block_size_bytes = 32 * 1024 * 1024;  // 32 mB.
+  if (sizeof(void*) == 8) {
+    // Work-around for crbug.com/1041573: To make it less likely that we need
+    // more than one block, use a larger block size. This is to avoid a bug in
+    // trace processor that could lead to a crash during trace processing
+    // otherwise.
+    processor_config.string_pool_block_size_bytes = 256 * 1024 * 1024;
+  } else {
+    processor_config.string_pool_block_size_bytes = 32 * 1024 * 1024;
+  }
   trace_processor_ =
       perfetto::trace_processor::TraceProcessorStorage::CreateInstance(
           processor_config);
