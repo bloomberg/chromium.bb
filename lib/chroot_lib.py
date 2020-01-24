@@ -98,6 +98,5 @@ class Chroot(object):
     env = self._env.copy() if self._env else {}
     if self.goma:
       env.update(self.goma.GetChrootExtraEnv())
-      env['USE_GOMA'] = 'true'
 
     return env

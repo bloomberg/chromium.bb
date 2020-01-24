@@ -181,6 +181,9 @@ class BuildPackagesRunConfig(object):
     if self.HasUseFlags():
       env['USE'] = self.GetUseFlags()
 
+    if self.use_goma:
+      env['USE_GOMA'] = 'true'
+
     return env
 
 
