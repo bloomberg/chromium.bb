@@ -1915,7 +1915,7 @@ int av1_calc_iframe_target_size_one_pass_cbr(const AV1_COMP *cpi) {
   return av1_rc_clamp_iframe_target_size(cpi, target);
 }
 
-static void set_reference_structure_one_pass_rt(AV1_COMP *cpi) {
+static void set_reference_structure_one_pass_rt(AV1_COMP *cpi, int gf_update) {
   AV1_COMMON *const cm = &cpi->common;
   // Specify the reference prediction structure, for 1 layer nonrd mode.
   // Current structue is to use 3 references (LAST, GOLDEN, ALTREF),
@@ -1964,8 +1964,7 @@ static void set_reference_structure_one_pass_rt(AV1_COMP *cpi) {
   // Refresh this slot, which will become LAST on next frame.
   cpi->svc.refresh[last_idx_refresh] = 1;
   // Update GOLDEN on period for fixed slot case.
-  if (gld_fixed_slot &&
-      cpi->rc.frames_till_gf_update_due == cpi->rc.baseline_gf_interval) {
+  if (gld_fixed_slot && gf_update) {
     cpi->ext_refresh_golden_frame = 1;
     cpi->svc.refresh[gld_idx] = 1;
   }
@@ -1980,6 +1979,7 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
   RATE_CONTROL *const rc = &cpi->rc;
   AV1_COMMON *const cm = &cpi->common;
   GF_GROUP *const gf_group = &cpi->gf_group;
+  int gf_update = 0;
   int target;
   const int resize_pending =
       (cpi->resize_pending_width && cpi->resize_pending_height &&
@@ -2046,6 +2046,7 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
     gf_group->size = rc->baseline_gf_interval;
     gf_group->update_type[0] =
         (frame_params->frame_type == KEY_FRAME) ? KF_UPDATE : GF_UPDATE;
+    gf_update = 1;
   }
   if (cpi->oxcf.rc_mode == AOM_CBR) {
     if (frame_params->frame_type == KEY_FRAME) {
@@ -2066,5 +2067,5 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
   rc->base_frame_target = target;
   if (set_reference_structure && cpi->oxcf.speed >= 6 &&
       cm->number_spatial_layers == 1 && cm->number_temporal_layers == 1)
-    set_reference_structure_one_pass_rt(cpi);
+    set_reference_structure_one_pass_rt(cpi, gf_update);
 }
