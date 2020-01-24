@@ -90,17 +90,14 @@ macro(libgav1_add_decoder_targets)
       # Windows users of the libgav1 build can have a DLL and an import library,
       # or they can have a static library; they cannot have both from a single
       # configuration of the build.
-      list(APPEND libgav1_shared_lib_sources ${libgav1_api_includes}
-                  ${libgav1_api_sources})
+      list(APPEND libgav1_shared_lib_sources ${libgav1_api_sources})
       list(APPEND libgav1_static_lib_sources ${libgav1_api_includes})
     else()
       list(APPEND libgav1_shared_lib_sources ${libgav1_api_includes})
-      list(APPEND libgav1_static_lib_sources ${libgav1_api_includes}
-                  ${libgav1_api_sources})
+      list(APPEND libgav1_static_lib_sources ${libgav1_api_sources})
     endif()
   else()
-    list(APPEND libgav1_static_lib_sources ${libgav1_api_includes}
-                ${libgav1_api_sources})
+    list(APPEND libgav1_static_lib_sources ${libgav1_api_sources})
   endif()
 
   if(NOT ANDROID)

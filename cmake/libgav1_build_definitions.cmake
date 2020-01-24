@@ -58,6 +58,9 @@ macro(libgav1_set_build_definitions)
 
   if(BUILD_SHARED_LIBS)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(libgav1_dependency libgav1_shared)
+  else()
+    set(libgav1_dependency libgav1_static)
   endif()
 
   list(APPEND libgav1_clang_cxx_flags "-Wmissing-prototypes"

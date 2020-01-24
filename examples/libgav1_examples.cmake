@@ -43,12 +43,6 @@ macro(libgav1_add_examples_targets)
                       ${libgav1_file_writer_sources} DEFINES ${libgav1_defines}
                       INCLUDES ${libgav1_include_paths})
 
-  if(BUILD_SHARED_LIBS)
-    set(libgav1_dependency libgav1_shared)
-  else()
-    set(libgav1_dependency libgav1_static)
-  endif()
-
   libgav1_add_executable(NAME
                          gav1_decode
                          SOURCES
