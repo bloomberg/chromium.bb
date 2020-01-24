@@ -528,6 +528,14 @@ def _make_try_job_schedule_requests(changelist, buckets, options, patchset):
               ] + shared_tags,
           }
       })
+
+      if options.revision:
+        requests[-1]['scheduleBuild']['gitilesCommit'] = {
+            'host': gerrit_changes[0]['host'],
+            'project': gerrit_changes[0]['project'],
+            'id': options.revision
+         }
+
   return requests
 
 

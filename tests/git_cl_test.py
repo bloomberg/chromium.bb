@@ -3303,6 +3303,83 @@ class CMDTryTestCase(CMDTestCaseBase):
     mockCallBuildbucket.assert_called_with(
         mock.ANY, 'cr-buildbucket.appspot.com', 'Batch', expected_request)
 
+  @mock.patch('git_cl._call_buildbucket')
+  def testScheduleOnBuildbucketWithRevision(self, mockCallBuildbucket):
+    mockCallBuildbucket.return_value = {}
+
+    self.assertEqual(0, git_cl.main([
+        'try', '-B', 'luci.chromium.try', '-b', 'win', '-b', 'linux',
+        '-p', 'key=val', '-p', 'json=[{"a":1}, null]',
+        '-r', 'beeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeef']))
+    self.assertIn(
+        'Scheduling jobs on:\nBucket: luci.chromium.try',
+        git_cl.sys.stdout.getvalue())
+
+    expected_request = {
+        "requests": [{
+            "scheduleBuild": {
+                "requestId": "uuid4",
+                "builder": {
+                    "project": "chromium",
+                    "builder": "linux",
+                    "bucket": "try",
+                },
+                "gerritChanges": [{
+                    "project": "depot_tools",
+                    "host": "chromium-review.googlesource.com",
+                    "patchset": 7,
+                    "change": 123456,
+                }],
+                "properties": {
+                    "category": "git_cl_try",
+                    "json": [{"a": 1}, None],
+                    "key": "val",
+                },
+                "tags": [
+                    {"value": "linux", "key": "builder"},
+                    {"value": "git_cl_try", "key": "user_agent"},
+                ],
+                "gitilesCommit": {
+                    "host": "chromium-review.googlesource.com",
+                    "project": "depot_tools",
+                    "id": "beeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeef",
+                }
+            },
+        },
+        {
+            "scheduleBuild": {
+                "requestId": "uuid4",
+                "builder": {
+                    "project": "chromium",
+                    "builder": "win",
+                    "bucket": "try",
+                },
+                "gerritChanges": [{
+                    "project": "depot_tools",
+                    "host": "chromium-review.googlesource.com",
+                    "patchset": 7,
+                    "change": 123456,
+                }],
+                "properties": {
+                    "category": "git_cl_try",
+                    "json": [{"a": 1}, None],
+                    "key": "val",
+                },
+                "tags": [
+                    {"value": "win", "key": "builder"},
+                    {"value": "git_cl_try", "key": "user_agent"},
+                ],
+                "gitilesCommit": {
+                    "host": "chromium-review.googlesource.com",
+                    "project": "depot_tools",
+                    "id": "beeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeef",
+                }
+            },
+        }],
+    }
+    mockCallBuildbucket.assert_called_with(
+        mock.ANY, 'cr-buildbucket.appspot.com', 'Batch', expected_request)
+
   def testScheduleOnBuildbucket_WrongBucket(self):
     self.assertEqual(0, git_cl.main([
         'try', '-B', 'not-a-bucket', '-b', 'win',
