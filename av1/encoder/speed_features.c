@@ -469,9 +469,14 @@ static void set_good_speed_features_framesize_independent(
             : gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE ? 1
                                                                          : 2;
 
+    // TODO(any): evaluate if these lpf features can be moved to speed 2.
     sf->lpf_sf.prune_sgr_based_on_wiener =
         cm->allow_screen_content_tools ? 0 : 2;
-    sf->lpf_sf.reduce_wiener_window_size = is_boosted_arf2_bwd_type ? 0 : 1;
+    sf->lpf_sf.disable_loop_restoration_chroma =
+        (boosted || cm->allow_screen_content_tools) ? 0 : 1;
+    sf->lpf_sf.reduce_wiener_window_size = !boosted;
+    sf->lpf_sf.prune_wiener_based_on_src_var = 2;
+
     sf->hl_sf.second_alt_ref_filtering = 0;
   }
 
@@ -515,11 +520,6 @@ static void set_good_speed_features_framesize_independent(
     sf->winner_mode_sf.enable_multiwinner_mode_process =
         frame_is_intra_only(&cpi->common) ? 1 : 0;
     sf->winner_mode_sf.enable_winner_mode_for_tx_size_srch = 1;
-
-    sf->lpf_sf.disable_loop_restoration_chroma =
-        (boosted || cm->allow_screen_content_tools) ? 0 : 1;
-    sf->lpf_sf.reduce_wiener_window_size = !boosted;
-    sf->lpf_sf.prune_wiener_based_on_src_var = 2;
 
     // TODO(any): The following features have no impact on quality and speed,
     // and are disabled.
