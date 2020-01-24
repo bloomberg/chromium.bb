@@ -185,7 +185,7 @@ def InstallPackages(input_proto, output_proto, _config):
     if archiver_tuple.stats_file:
       output_proto.goma_artifacts.stats_file = archiver_tuple.stats_file
     if archiver_tuple.counterz_file:
-      output_proto.goma_artifacts.stats_file = archiver_tuple.counterz_file
+      output_proto.goma_artifacts.counterz_file = archiver_tuple.counterz_file
     output_proto.goma_artifacts.log_files[:] = archiver_tuple.log_files
 
   # Read metric events log and pipe them into output_proto.events.

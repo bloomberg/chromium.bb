@@ -121,8 +121,9 @@ Instead it copies Goma files to a client-specified archive directory.
       logging.warning('Goma expected file specified, not found %s', file_path)
       return None
     else:
-      shutil.copyfile(file_path,
-                      os.path.join(self._dest_dir, filename))
+      dest_path = os.path.join(self._dest_dir, filename)
+      logging.info('Copying Goma file from %s to %s', file_path, dest_path)
+      shutil.copyfile(file_path, dest_path)
       return filename
 
   def _ArchiveInfoFiles(self, pattern):

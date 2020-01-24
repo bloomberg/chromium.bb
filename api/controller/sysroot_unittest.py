@@ -542,6 +542,10 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase,
         'compiler_proxy-subproc.host.log.INFO.20180921-120100.000000.gz',
         'compiler_proxy.host.log.INFO.20180921-120000.000000.gz',
         'gomacc.host.log.INFO.20180921-120200.000000.tar.gz'])
+    self.assertEqual(out_proto.goma_artifacts.counterz_file,
+                     'counterz.binaryproto')
+    self.assertEqual(out_proto.goma_artifacts.stats_file,
+                     'stats.binaryproto')
 
   def testFailureMissingGomaStatsCounterzFiles(self):
     """Test successful call with goma including stats and counterz files."""
