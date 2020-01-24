@@ -467,10 +467,11 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
         memcpy(*buffer, &tuheader[0], length_of_temporal_unit_size);
         offset = length_of_temporal_unit_size;
       } else {
-        memcpy(*buffer, obu_ctx->buffer, obu_ctx->bytes_buffered);
-        offset = obu_ctx->bytes_buffered;
-        data_size = tu_size - obu_ctx->bytes_buffered;
-        obu_ctx->bytes_buffered = 0;
+        const size_t copy_size = AOMMIN(obu_ctx->bytes_buffered, tu_size);
+        memcpy(*buffer, obu_ctx->buffer, copy_size);
+        offset = copy_size;
+        data_size = tu_size - copy_size;
+        obu_ctx->bytes_buffered -= copy_size;
       }
 
       if (fread(*buffer + offset, 1, data_size, f) != data_size) {
