@@ -24,6 +24,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -148,6 +149,7 @@ public class ReturnToChromeTest {
     @MediumTest
     @Feature({"ReturnToChrome"})
     @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS + "/0"})
+    @FlakyTest(message = "crbug.com/1040896")
     public void testTabSwitcherModeTriggeredBeyondThreshold_WarmStart() throws Exception {
         testTabSwitcherModeTriggeredBeyondThreshold();
 
