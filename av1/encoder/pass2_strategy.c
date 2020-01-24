@@ -1478,8 +1478,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   int use_alt_ref =
       !is_almost_static(zero_motion_accumulator, twopass->kf_zeromotion_pct) &&
       allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
-      (i >= rc->min_gf_interval) &&
-      (cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
+      (i >= MIN_GF_INTERVAL) && (cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
 
   // TODO(urvang): Improve and use model for VBR, CQ etc as well.
   if (use_alt_ref && cpi->oxcf.rc_mode == AOM_Q && cpi->oxcf.cq_level <= 200) {
