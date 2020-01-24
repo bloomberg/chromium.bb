@@ -979,14 +979,13 @@ class ChromeSDKCommand(command.CliCommand):
     # Either we are forcing the use of clang through options or GN
     # args say we should be using clang.
     if options.clang or gn_is_clang:
-      clang_prepend_flags = ['-Wno-unknown-warning-option']
       # crbug.com/686903
       clang_append_flags = ['-Wno-inline-asm']
 
       env['CC'] = ' '.join([sdk_ctx.target_tc + '-clang'] +
-                           env['CC'].split()[1:] + clang_prepend_flags)
+                           env['CC'].split()[1:])
       env['CXX'] = ' '.join([sdk_ctx.target_tc + '-clang++'] +
-                            env['CXX'].split()[1:] + clang_prepend_flags)
+                            env['CXX'].split()[1:])
       env['CFLAGS'] = ' '.join(env['CFLAGS'].split() + clang_append_flags)
       env['CXXFLAGS'] = ' '.join(env['CXXFLAGS'].split() + clang_append_flags)
       env['LD'] = env['CXX']
