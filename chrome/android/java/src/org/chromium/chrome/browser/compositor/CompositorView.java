@@ -134,7 +134,7 @@ public class CompositorView
             return;
         }
 
-        mCompositorSurfaceManager = new CompositorSurfaceManagerImpl(this, this, false);
+        mCompositorSurfaceManager = new CompositorSurfaceManagerImpl(this, this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             mScreenStateReceiver = new ScreenStateReceiverWorkaround();
         }
@@ -487,7 +487,6 @@ public class CompositorView
     @CalledByNative
     private void notifyWillUseSurfaceControl() {
         mIsSurfaceControlEnabled = true;
-        mCompositorSurfaceManager.recreateTranslucentSurfaceForSurfaceControl();
     }
 
     /**
@@ -603,14 +602,13 @@ public class CompositorView
     }
 
     private void createCompositorSurfaceManager() {
-        mCompositorSurfaceManager =
-                new CompositorSurfaceManagerImpl(this, this, mIsSurfaceControlEnabled);
+        mCompositorSurfaceManager = new CompositorSurfaceManagerImpl(this, this);
         mCompositorSurfaceManager.requestSurface(getSurfacePixelFormat());
         CompositorViewJni.get().setNeedsComposite(mNativeCompositorView, CompositorView.this);
         mCompositorSurfaceManager.setVisibility(getVisibility());
     }
 
-    @NativeMethods
+   @NativeMethods
     interface Natives {
         long init(CompositorView caller, boolean lowMemDevice, WindowAndroid windowAndroid,
                 LayerTitleCache layerTitleCache, TabContentManager tabContentManager);
