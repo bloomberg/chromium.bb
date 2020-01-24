@@ -50,7 +50,6 @@ list(APPEND libgav1_decoder_sources
             "${libgav1_source}/reconstruction.h"
             "${libgav1_source}/residual_buffer_pool.cc"
             "${libgav1_source}/residual_buffer_pool.h"
-            "${libgav1_source}/status_code.cc"
             "${libgav1_source}/symbol_decoder_context.cc"
             "${libgav1_source}/symbol_decoder_context.h"
             "${libgav1_source}/symbol_decoder_context_cdfs.inc"
@@ -63,7 +62,6 @@ list(APPEND libgav1_decoder_sources
             "${libgav1_source}/tile/bitstream/transform_size.cc"
             "${libgav1_source}/tile/prediction.cc"
             "${libgav1_source}/tile/tile.cc"
-            "${libgav1_source}/version.cc"
             "${libgav1_source}/warp_prediction.cc"
             "${libgav1_source}/warp_prediction.h"
             "${libgav1_source}/yuv_buffer.cc"
@@ -78,6 +76,8 @@ list(APPEND libgav1_api_includes "${libgav1_source}/gav1/decoder.h"
             "${libgav1_source}/gav1/version.h")
 
 list(APPEND libgav1_api_sources "${libgav1_source}/decoder.cc"
+            "${libgav1_source}/status_code.cc"
+            "${libgav1_source}/version.cc"
             ${libgav1_api_includes})
 
 macro(libgav1_add_decoder_targets)
