@@ -451,6 +451,8 @@ static void set_good_speed_features_framesize_independent(
     sf->intra_sf.prune_palette_search_level = 2;
 
     sf->tpl_sf.skip_alike_starting_mv = 2;
+    sf->tpl_sf.prune_intra_modes = 1;
+    sf->tpl_sf.reduce_first_step_size = 6;
 
     sf->tx_sf.tx_type_search.use_skip_flag_prediction =
         cm->allow_screen_content_tools ? 1 : 2;
@@ -541,9 +543,6 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 5) {
-    sf->tpl_sf.prune_intra_modes = 1;
-    sf->tpl_sf.reduce_first_step_size = 6;
-
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;
