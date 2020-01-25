@@ -59,8 +59,8 @@ extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
                                      int bottom_border, int stride_alignment,
                                      Libgav1FrameBuffer2* frame_buffer2);
 
-extern "C" int ReleaseFrameBufferAdaptor(void* callback_private_data,
-                                         void* buffer_private_data);
+extern "C" void ReleaseFrameBufferAdaptor(void* callback_private_data,
+                                          void* buffer_private_data);
 
 }  // namespace libgav1
 

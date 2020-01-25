@@ -59,11 +59,11 @@ int GetInternalFrameBuffer(void* callback_private_data, int bitdepth,
       top_border, bottom_border, stride_alignment, frame_buffer);
 }
 
-int ReleaseInternalFrameBuffer(void* callback_private_data,
-                               void* buffer_private_data) {
+void ReleaseInternalFrameBuffer(void* callback_private_data,
+                                void* buffer_private_data) {
   auto* buffer_list =
       static_cast<InternalFrameBufferList*>(callback_private_data);
-  return buffer_list->ReleaseFrameBuffer(buffer_private_data);
+  buffer_list->ReleaseFrameBuffer(buffer_private_data);
 }
 
 int V1GetInternalFrameBuffer(void* private_data, size_t y_plane_min_size,
@@ -222,10 +222,9 @@ int InternalFrameBufferList::GetFrameBuffer(
   return 0;
 }
 
-int InternalFrameBufferList::ReleaseFrameBuffer(void* buffer_private_data) {
+void InternalFrameBufferList::ReleaseFrameBuffer(void* buffer_private_data) {
   auto* const buffer = static_cast<Buffer*>(buffer_private_data);
   buffer->in_use = false;
-  return 0;
 }
 
 int InternalFrameBufferList::V1GetFrameBuffer(size_t y_plane_min_size,

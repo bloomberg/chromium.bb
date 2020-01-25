@@ -157,15 +157,17 @@ extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
   return 0;
 }
 
-extern "C" int ReleaseFrameBufferAdaptor(void* callback_private_data,
-                                         void* buffer_private_data) {
+extern "C" void ReleaseFrameBufferAdaptor(void* callback_private_data,
+                                          void* buffer_private_data) {
   auto* v1_callbacks =
       static_cast<V1FrameBufferCallbacks*>(callback_private_data);
   auto* frame_buffer1 = static_cast<FrameBuffer*>(buffer_private_data);
   assert(frame_buffer1->data[0] != nullptr);
-  v1_callbacks->release(v1_callbacks->callback_private_data, frame_buffer1);
+  const int rv =
+      v1_callbacks->release(v1_callbacks->callback_private_data, frame_buffer1);
+  static_cast<void>(rv);
+  assert(rv == 0);
   delete frame_buffer1;
-  return 0;
 }
 
 }  // namespace libgav1

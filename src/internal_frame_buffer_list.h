@@ -39,8 +39,8 @@ extern "C" int GetInternalFrameBuffer(void* callback_private_data, int bitdepth,
                                       int bottom_border, int stride_alignment,
                                       Libgav1FrameBuffer2* frame_buffer);
 
-extern "C" int ReleaseInternalFrameBuffer(void* callback_private_data,
-                                          void* buffer_private_data);
+extern "C" void ReleaseInternalFrameBuffer(void* callback_private_data,
+                                           void* buffer_private_data);
 
 extern "C" int V1GetInternalFrameBuffer(void* private_data,
                                         size_t y_plane_min_size,
@@ -70,7 +70,7 @@ class InternalFrameBufferList : public Allocable {
                      int top_border, int bottom_border, int stride_alignment,
                      Libgav1FrameBuffer2* frame_buffer);
 
-  int ReleaseFrameBuffer(void* buffer_private_data);
+  void ReleaseFrameBuffer(void* buffer_private_data);
 
   int V1GetFrameBuffer(size_t y_plane_min_size, size_t uv_plane_min_size,
                        FrameBuffer* frame_buffer);

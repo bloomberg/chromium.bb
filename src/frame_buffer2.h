@@ -91,10 +91,8 @@ typedef int (*Libgav1GetFrameBufferCallback2)(
 // application by calling the Libgav1ReleaseFrameBufferCallback.
 
 // This callback is invoked by the decoder to release a frame buffer.
-//
-// Returns 0 on success, -1 on failure.
-typedef int (*Libgav1ReleaseFrameBufferCallback2)(void* callback_private_data,
-                                                  void* buffer_private_data);
+typedef void (*Libgav1ReleaseFrameBufferCallback2)(void* callback_private_data,
+                                                   void* buffer_private_data);
 
 #if defined(__cplusplus)
 }  // extern "C"
