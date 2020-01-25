@@ -42,7 +42,8 @@ const uint8_t kMetadataObuT35[kMetadataObuSizeT35] = {
   0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
   0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x80
 };
-const uint8_t kMetadataObuMdcv[kMetadataObuSizeT35] = {
+const size_t kMetadataObuSizeMdcv = 28;
+const uint8_t kMetadataObuMdcv[kMetadataObuSizeMdcv] = {
   0x2A, 0x1A, 0x02, 0xB5, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
   0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10,
   0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x80
@@ -117,18 +118,24 @@ class MetadataEncodeTest
 
       // Testing for HDR MDCV metadata
       bool hdr_mdcv_metadata_found = false;
-      for (size_t i = 0; i < bitstream_size; ++i) {
-        if (memcmp(bitstream + i, kMetadataObuMdcv, kMetadataObuSizeT35) == 0) {
-          hdr_mdcv_metadata_found = true;
+      if (bitstream_size >= kMetadataObuSizeMdcv) {
+        for (size_t i = 0; i <= bitstream_size - kMetadataObuSizeMdcv; ++i) {
+          if (memcmp(bitstream + i, kMetadataObuMdcv, kMetadataObuSizeMdcv) ==
+              0) {
+            hdr_mdcv_metadata_found = true;
+          }
         }
       }
       ASSERT_TRUE(hdr_mdcv_metadata_found);
 
       // Testing for HDR CLL metadata
       bool hdr_cll_metadata_found = false;
-      for (size_t i = 0; i < bitstream_size; ++i) {
-        if (memcmp(bitstream + i, kMetadataObuCll, kMetadataObuSizeCll) == 0) {
-          hdr_cll_metadata_found = true;
+      if (bitstream_size >= kMetadataObuSizeCll) {
+        for (size_t i = 0; i <= bitstream_size - kMetadataObuSizeCll; ++i) {
+          if (memcmp(bitstream + i, kMetadataObuCll, kMetadataObuSizeCll) ==
+              0) {
+            hdr_cll_metadata_found = true;
+          }
         }
       }
       ASSERT_TRUE(hdr_cll_metadata_found);
