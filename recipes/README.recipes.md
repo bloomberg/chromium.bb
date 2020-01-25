@@ -757,13 +757,13 @@ Raises:
 
 [DEPS](/recipes/recipe_modules/presubmit/__init__.py#11): [bot\_update](#recipe_modules-bot_update), [depot\_tools](#recipe_modules-depot_tools), [gclient](#recipe_modules-gclient), [git](#recipe_modules-git), [tryserver](#recipe_modules-tryserver), [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/cq][recipe_engine/recipe_modules/cq], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/step][recipe_engine/recipe_modules/step]
 
-#### **class [PresubmitApi](/recipes/recipe_modules/presubmit/api.py#11)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
+#### **class [PresubmitApi](/recipes/recipe_modules/presubmit/api.py#16)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
-&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/presubmit/api.py#26)(self, \*args, \*\*kwargs):**
+&mdash; **def [\_\_call\_\_](/recipes/recipe_modules/presubmit/api.py#28)(self, \*args, \*\*kwargs):**
 
 Return a presubmit step.
 
-&mdash; **def [execute](/recipes/recipe_modules/presubmit/api.py#75)(self, bot_update_step):**
+&mdash; **def [execute](/recipes/recipe_modules/presubmit/api.py#77)(self, bot_update_step):**
 
 Runs presubmit and sets summary markdown if applicable.
 
@@ -772,7 +772,7 @@ Args:
 Returns:
   a RawResult object, suitable for being returned from RunSteps.
 
-&mdash; **def [prepare](/recipes/recipe_modules/presubmit/api.py#39)(self):**
+&mdash; **def [prepare](/recipes/recipe_modules/presubmit/api.py#41)(self):**
 
 Set up a presubmit run.
 
@@ -787,7 +787,7 @@ This expects the gclient configuration to already have been set.
 Returns:
   the StepResult from the bot_update step.
 
-&emsp; **@property**<br>&mdash; **def [presubmit\_support\_path](/recipes/recipe_modules/presubmit/api.py#22)(self):**
+&emsp; **@property**<br>&mdash; **def [presubmit\_support\_path](/recipes/recipe_modules/presubmit/api.py#24)(self):**
 ### *recipe_modules* / [tryserver](/recipes/recipe_modules/tryserver)
 
 [DEPS](/recipes/recipe_modules/tryserver/__init__.py#5): [gerrit](#recipe_modules-gerrit), [git](#recipe_modules-git), [git\_cl](#recipe_modules-git_cl), [recipe\_engine/buildbucket][recipe_engine/recipe_modules/buildbucket], [recipe\_engine/context][recipe_engine/recipe_modules/context], [recipe\_engine/json][recipe_engine/recipe_modules/json], [recipe\_engine/path][recipe_engine/recipe_modules/path], [recipe\_engine/platform][recipe_engine/recipe_modules/platform], [recipe\_engine/properties][recipe_engine/recipe_modules/properties], [recipe\_engine/python][recipe_engine/recipe_modules/python], [recipe\_engine/raw\_io][recipe_engine/recipe_modules/raw_io], [recipe\_engine/step][recipe_engine/recipe_modules/step]

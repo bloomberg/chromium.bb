@@ -7,6 +7,11 @@ from recipe_engine import recipe_api
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
+# 8 minutes seems like a reasonable upper bound on presubmit timings.
+# According to event mon data we have, it seems like anything longer than
+# this is a bug, and should just instant fail.
+_DEFAULT_TIMEOUT_S = 480
+
 
 class PresubmitApi(recipe_api.RecipeApi):
 
@@ -14,10 +19,7 @@ class PresubmitApi(recipe_api.RecipeApi):
     super(PresubmitApi, self).__init__(**kwargs)
 
     self._runhooks = properties.runhooks
-    # 8 minutes seems like a reasonable upper bound on presubmit timings.
-    # According to event mon data we have, it seems like anything longer than
-    # this is a bug, and should just instant fail.
-    self._timeout_s = properties.timeout_s
+    self._timeout_s = properties.timeout_s or _DEFAULT_TIMEOUT_S
 
   @property
   def presubmit_support_path(self):
