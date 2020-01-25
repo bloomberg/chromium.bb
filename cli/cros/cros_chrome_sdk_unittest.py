@@ -324,12 +324,6 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
 
     self.assertIn('use_goma = false', self.cmd_mock.env['GN_ARGS'])
 
-  def testClang(self):
-    """Verifies clang codepath."""
-    with cros_test_lib.LoggingCapturer():
-      self.SetupCommandMock(extra_args=['--clang'])
-      self.cmd_mock.inst.Run()
-
   def testGnArgsStalenessCheckNoMatch(self):
     """Verifies the GN args are checked for staleness with a mismatch."""
     with cros_test_lib.LoggingCapturer() as logs:
