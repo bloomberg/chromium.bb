@@ -23,7 +23,15 @@
 // IWYU pragma: begin_exports
 
 // ARM:
-#include "src/dsp/arm/super_res_neon.h"
+#include "src/dsp/arm/weight_mask_neon.h"
+
+// x86:
+// Note includes should be sorted in logical order avx2/avx/sse4, etc.
+// The order of includes is important as each tests for a superior version
+// before setting the base.
+// clang-format off
+#include "src/dsp/x86/weight_mask_sse4.h"
+// clang-format on
 
 // IWYU pragma: end_exports
 
