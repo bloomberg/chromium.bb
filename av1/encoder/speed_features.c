@@ -491,10 +491,12 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.alt_ref_search_fp = 1;
     sf->inter_sf.prune_ref_mv_idx_search = 1;
     sf->inter_sf.selective_ref_frame = 4;
+    sf->inter_sf.disable_smooth_interintra = 1;
 
     sf->interp_sf.cb_pred_filter_search = 1;
     sf->interp_sf.skip_sharp_interp_filter_search = 1;
     sf->interp_sf.use_interp_filter = 2;
+    sf->interp_sf.adaptive_interp_filter_search = 2;
 
     sf->intra_sf.intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
     sf->intra_sf.intra_uv_mode_mask[TX_32X32] = UV_INTRA_DC_H_V_CFL;
@@ -546,11 +548,8 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;
-    sf->inter_sf.disable_smooth_interintra = 1;
 
     sf->lpf_sf.disable_lr_filter = 1;
-
-    sf->interp_sf.adaptive_interp_filter_search = 2;
   }
 }
 
