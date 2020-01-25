@@ -130,4 +130,8 @@ source_set("unittests") {
     "certificate/proto:certificate_unittest_proto",
     "channel/proto:channel_proto",
   ]
+
+  data = [
+    "../../test/data/cast/common/certificate",
+  ]
 }
