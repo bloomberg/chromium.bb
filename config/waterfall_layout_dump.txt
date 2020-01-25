@@ -317,6 +317,7 @@
     hana-kernelnext-release
     hana-release
     hatch-diskswap-release
+    hatch-kvm-release
     hatch-release
     heli-release
     jacuzzi-release
@@ -1167,6 +1168,11 @@
   hatch-diskswap-unittest-stress
   hatch-factory-hatch-12692.B-factorybranch-tryjob
   hatch-full-tryjob
+  hatch-kvm-full-tryjob
+  hatch-kvm-llvm-next-toolchain-tryjob
+  hatch-kvm-llvm-toolchain-tryjob
+  hatch-kvm-release-tryjob
+  hatch-kvm-unittest-stress
   hatch-llvm-next-toolchain-tryjob
   hatch-llvm-toolchain-tryjob
   hatch-payloads-tryjob
@@ -1450,6 +1456,7 @@
     hana-kernelnext-release-tryjob
     hana-release-tryjob
     hatch-diskswap-release-tryjob
+    hatch-kvm-release-tryjob
     hatch-release-tryjob
     heli-release-tryjob
     jacuzzi-release-tryjob
