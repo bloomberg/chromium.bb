@@ -448,6 +448,8 @@ static void set_good_speed_features_framesize_independent(
       sf->inter_sf.disable_smooth_interintra = boosted ? 0 : 1;
     sf->inter_sf.reuse_compound_type_decision = 1;
 
+    sf->interp_sf.cb_pred_filter_search = 1;
+
     sf->intra_sf.prune_palette_search_level = 2;
 
     sf->tpl_sf.skip_alike_starting_mv = 2;
@@ -493,7 +495,6 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.selective_ref_frame = 4;
     sf->inter_sf.disable_smooth_interintra = 1;
 
-    sf->interp_sf.cb_pred_filter_search = 1;
     sf->interp_sf.skip_sharp_interp_filter_search = 1;
     sf->interp_sf.use_interp_filter = 2;
     sf->interp_sf.adaptive_interp_filter_search = 2;
