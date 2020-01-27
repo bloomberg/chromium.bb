@@ -788,7 +788,7 @@
 <translation id="4791134497475588553">Linux アプリがインストールされ、最後に使用されたとき</translation>
 <translation id="4798078619018708837">カード情報を更新するには <ph name="CREDIT_CARD" /> の有効期限と CVC を入力します。確認後、Google アカウントのカード情報がこのサイトと共有されます。</translation>
 <translation id="4800132727771399293">有効期限と CVC を確認してからもう一度お試しください</translation>
-<translation id="480334179571489655">元のポリシーエラー</translation>
+<translation id="480334179571489655">オリジン ポリシーエラー</translation>
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4807049035289105102"><ph name="SITE" /> から、Google Chrome で処理できない暗号化された認証情報が返されたため、現在このウェブサイトにはアクセスできません。通常、ネットワーク エラーや不正な操作は一時的なものです。少し時間をおくと、ページにアクセスできるようになる可能性があります。</translation>
 <translation id="4813512666221746211">ネットワーク エラー</translation>
