@@ -1363,8 +1363,8 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     return PrepareForBuildReturn.NEEDED
 
   def _PrepareChromeClangWarningsFile(self):
-    # TODO(crbug/1019868): implement
-    return PrepareForBuildReturn.UNKNOWN
+    # We always build this artifact.
+    return PrepareForBuildReturn.NEEDED
 
   def _PrepareUnverifiedLlvmPgoFile(self):
     # TODO(crbug/1019868): implement
@@ -1428,8 +1428,22 @@ class BundleArtifactHandler(_CommonPrepareBundle):
     return [verified_orderfile]
 
   def _BundleChromeClangWarningsFile(self):
-    # TODO(crbug/1019868): implement
-    return []
+    """Bundle clang-tidy warnings file."""
+    with self.chroot.tempdir() as tempdir:
+      in_chroot_path = self.chroot.chroot_path(tempdir)
+      clang_tidy_tarball = '%s.%s.clang_tidy_warnings.tar.xz' % (
+          self.build_target,
+          datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d'))
+      cmd = [
+          'cros_generate_tidy_warnings', '--out-file', clang_tidy_tarball,
+          '--out-dir', in_chroot_path, '--board', self.build_target,
+          '--logs-dir', os.path.join('/tmp/clang-tidy-logs', self.build_target)
+      ]
+      cros_build_lib.run(cmd, cwd=self.chroot.path, enter_chroot=True)
+      artifact_path = os.path.join(self.output_dir, clang_tidy_tarball)
+      shutil.copy2(
+          os.path.join(tempdir, clang_tidy_tarball), artifact_path)
+    return [artifact_path]
 
   def _BundleUnverifiedLlvmPgoFile(self):
     # TODO(crbug/1019868): implement

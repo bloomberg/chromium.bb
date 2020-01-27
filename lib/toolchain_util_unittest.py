@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import base64
 import collections
+import datetime
 import glob
 import io
 import json
@@ -478,6 +479,24 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
         os.path.join(self.chroot.path, 'build', self.board,
                      'opt/google/chrome', '%s.xz' % self.orderfile_name),
         artifact)
+
+  def testBundleChromeClangWarningsFile(self):
+    """Test that BundleChromeClangWarningsFile works."""
+    class mock_datetime(object):
+      """Class for mocking datetime.datetime."""
+      @staticmethod
+      def strftime(_when, _fmt):
+        return 'DATE'
+      @staticmethod
+      def now():
+        return -1
+
+    self.PatchObject(datetime, 'datetime', new=mock_datetime)
+    self.SetUpBundle('ChromeClangWarningsFile')
+    artifact = os.path.join(
+        self.outdir, '%s.DATE.clang_tidy_warnings.tar.xz' % self.board)
+    self.assertEqual([artifact], self.obj.Bundle())
+    self.copy2.assert_called_once_with(mock.ANY, artifact)
 
 
 class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
