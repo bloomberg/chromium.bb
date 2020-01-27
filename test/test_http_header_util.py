@@ -78,15 +78,10 @@ class UnitTest(unittest.TestCase):
         host, port, resource = http_header_util.parse_uri('ws:///')
         self.assertEqual(None, resource)
 
-        host, port, resource = http_header_util.parse_uri('ws://localhost:')
-        if six.PY3:
-            self.assertEqual(None, resource)
-        else:
-            self.assertEqual('localhost', host)
-            self.assertEqual(80, port)
-            self.assertEqual('/', resource)
+        host, port, resource = http_header_util.parse_uri('ws://localhost:INVALID_PORT')
+        self.assertEqual(None, resource)
 
-        host, port, resource = http_header_util.parse_uri('ws://localhost:/ws')
+        host, port, resource = http_header_util.parse_uri('ws://localhost:-1/ws')
         if six.PY3:
             self.assertEqual(None, resource)
         else:

@@ -678,7 +678,7 @@ class PerMessageDeflateTest(unittest.TestCase):
                 common.PERMESSAGE_DEFLATE_EXTENSION)
         request = _create_request_from_rawdata(
                 b'', permessage_deflate_request=extension)
-        self.assertEquals(1, len(request.ws_extension_processors))
+        self.assertEqual(1, len(request.ws_extension_processors))
         request.ws_extension_processors[0].set_bfinal(True)
         msgutil.send_message(request, 'Hello', end=False)
         msgutil.send_message(request, 'World', end=True)

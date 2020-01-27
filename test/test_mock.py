@@ -103,7 +103,7 @@ class MockBlockingConnTest(unittest.TestCase):
         conn = mock.MockBlockingConn()
         queue = six.moves.queue.Queue()
         reader = LineReader(conn, queue)
-        self.failUnless(queue.empty())
+        self.assertTrue(queue.empty())
         conn.put_bytes(b'Foo bar\r\n')
         read = queue.get()
         self.assertEqual(b'Foo bar\r\n', read)

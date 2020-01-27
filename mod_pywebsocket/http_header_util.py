@@ -232,9 +232,11 @@ def parse_uri(uri):
     try:
         port = parsed.port
     except ValueError:
-        # port property cause ValueError on invalid null port description like
-        # 'ws://host:/path' on python 3.6 and later. For earlier versions, it
-        # simply returns None and ignores invalid port attributes.
+        # The port property cause ValueError on invalid null port descriptions
+        # like 'ws://host:INVALID_PORT/path', where the assigned port is not
+        # *DIGIT. For python 3.6 and later, ValueError also raises when
+        # assigning invalid port numbers such as 'ws://host:-1/path'. Earlier
+        # versions simply return None and ignore invalid port attributes.
         return None, None, None
 
     if port is None:

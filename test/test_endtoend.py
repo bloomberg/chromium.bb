@@ -292,8 +292,8 @@ class EndToEndHyBiTest(EndToEndTestBase):
             client.assert_receive_close()
 
         def response_checker(parameter):
-            self.assertEquals('permessage-deflate', parameter.name())
-            self.assertEquals([], parameter.get_parameters())
+            self.assertEqual('permessage-deflate', parameter.name())
+            self.assertEqual([], parameter.get_parameters())
 
         self._run_permessage_deflate_test(
                 ['permessage-deflate'],
@@ -320,8 +320,8 @@ class EndToEndHyBiTest(EndToEndTestBase):
             client.assert_receive_close()
 
         def response_checker(parameter):
-            self.assertEquals('permessage-deflate', parameter.name())
-            self.assertEquals([], parameter.get_parameters())
+            self.assertEqual('permessage-deflate', parameter.name())
+            self.assertEqual([], parameter.get_parameters())
 
         self._run_permessage_deflate_test(
                 ['permessage-deflate'],
@@ -352,8 +352,8 @@ class EndToEndHyBiTest(EndToEndTestBase):
             client.assert_receive_close()
 
         def response_checker(parameter):
-            self.assertEquals('permessage-deflate', parameter.name())
-            self.assertEquals([], parameter.get_parameters())
+            self.assertEqual('permessage-deflate', parameter.name())
+            self.assertEqual([], parameter.get_parameters())
 
         self._run_permessage_deflate_test(
                 ['permessage-deflate'],
@@ -384,8 +384,8 @@ class EndToEndHyBiTest(EndToEndTestBase):
             client.assert_receive_close()
 
         def response_checker(parameter):
-            self.assertEquals('permessage-deflate', parameter.name())
-            self.assertEquals([('server_no_context_takeover', None)],
+            self.assertEqual('permessage-deflate', parameter.name())
+            self.assertEqual([('server_no_context_takeover', None)],
                               parameter.get_parameters())
 
         self._run_permessage_deflate_test(
@@ -410,8 +410,8 @@ class EndToEndHyBiTest(EndToEndTestBase):
             client.assert_receive_close()
 
         def response_checker(parameter):
-            self.assertEquals('permessage-deflate', parameter.name())
-            self.assertEquals([], parameter.get_parameters())
+            self.assertEqual('permessage-deflate', parameter.name())
+            self.assertEqual([], parameter.get_parameters())
 
         self._run_permessage_deflate_test(
                 ['permessage-deflate', 'deflate-frame'],
@@ -435,8 +435,8 @@ class EndToEndHyBiTest(EndToEndTestBase):
             client.assert_receive_close()
 
         def response_checker(parameter):
-            self.assertEquals('permessage-deflate', parameter.name())
-            self.assertEquals([('server_max_window_bits', '10'),
+            self.assertEqual('permessage-deflate', parameter.name())
+            self.assertEqual([('server_max_window_bits', '10'),
                                ('server_no_context_takeover', None)],
                               parameter.get_parameters())
 
