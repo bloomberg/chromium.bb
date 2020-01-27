@@ -1197,6 +1197,10 @@ enum aome_enc_control_id {
    * 0 : off, 1 : on
    */
   AV1E_ENABLE_SB_MULTIPASS_UNIT_TEST = 155,
+
+  /*!\brief Control to select minimum height for the GF group pyramid structure
+   * (valid values: 0 - 4) */
+  AV1E_SET_GF_MIN_PYRAMID_HEIGHT = 156,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1647,6 +1651,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_INTRA_DEFAULT_TX_ONLY, int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_QUANT_B_ADAPT, int)
 #define AOM_CTRL_AV1E_SET_QUANT_B_ADAPT
+
+AOM_CTRL_USE_TYPE(AV1E_SET_GF_MIN_PYRAMID_HEIGHT, unsigned int)
+#define AOM_CTRL_AV1E_SET_GF_MIN_PYRAMID_HEIGHT
 
 AOM_CTRL_USE_TYPE(AV1E_SET_GF_MAX_PYRAMID_HEIGHT, unsigned int)
 #define AOM_CTRL_AV1E_SET_GF_MAX_PYRAMID_HEIGHT

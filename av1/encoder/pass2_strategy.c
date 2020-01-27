@@ -1311,6 +1311,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   double abs_mv_in_out_accumulator = 0.0;
 
   unsigned int allow_alt_ref = is_altref_enabled(cpi);
+  const int can_disable_arf = (oxcf->gf_min_pyr_height == MIN_PYRAMID_LVL);
 
   int flash_detected;
   int64_t gf_group_bits;
@@ -1427,7 +1428,8 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
       // Break clause to detect very still sections after motion. For example,
       // a static image after a fade or other transition.
-      if (detect_transition_to_still(cpi, i, 5, loop_decay_rate,
+      if (can_disable_arf &&
+          detect_transition_to_still(cpi, i, 5, loop_decay_rate,
                                      last_loop_decay_rate)) {
         allow_alt_ref = 0;
       }
@@ -1469,22 +1471,28 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   //   avg_sr_coded_error:      average of the SSE per pixel of each frame;
   //   avg_raw_err_stdev:       average of the standard deviation of (0,0)
   //                            motion error per block of each frame.
-  if (zero_motion_accumulator > MIN_ZERO_MOTION &&
+  const int can_disable_internal_arfs =
+      (oxcf->gf_min_pyr_height <= MIN_PYRAMID_LVL + 1);
+  if (can_disable_internal_arfs && zero_motion_accumulator > MIN_ZERO_MOTION &&
       avg_sr_coded_error / num_mbs < MAX_SR_CODED_ERROR &&
       avg_raw_err_stdev < MAX_RAW_ERR_VAR) {
     cpi->internal_altref_allowed = 0;
   }
 
-  int use_alt_ref =
-      !is_almost_static(zero_motion_accumulator, twopass->kf_zeromotion_pct) &&
-      allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
-      (i >= MIN_GF_INTERVAL) && (cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
+  int use_alt_ref;
+  if (can_disable_arf) {
+    use_alt_ref = !is_almost_static(zero_motion_accumulator,
+                                    twopass->kf_zeromotion_pct) &&
+                  allow_alt_ref && (i < cpi->oxcf.lag_in_frames) &&
+                  (i >= MIN_GF_INTERVAL) &&
+                  (cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
 
-  // TODO(urvang): Improve and use model for VBR, CQ etc as well.
-  if (use_alt_ref && cpi->oxcf.rc_mode == AOM_Q && cpi->oxcf.cq_level <= 200) {
-    aom_clear_system_state();
+    // TODO(urvang): Improve and use model for VBR, CQ etc as well.
+    if (use_alt_ref && cpi->oxcf.rc_mode == AOM_Q &&
+        cpi->oxcf.cq_level <= 200) {
+      aom_clear_system_state();
 
-    /* clang-format off */
+      /* clang-format off */
     // Generate features.
     const float features[] = {
       (float)abs_mv_in_out_accumulator,
@@ -1509,11 +1517,15 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
       (float)mv_ratio_accumulator,
       (float)non_zero_stdev_count
     };
-    /* clang-format on */
-    // Infer using ML model.
-    float score;
-    av1_nn_predict(features, &av1_use_flat_gop_nn_config, 1, &score);
-    use_alt_ref = (score <= 0.0);
+      /* clang-format on */
+      // Infer using ML model.
+      float score;
+      av1_nn_predict(features, &av1_use_flat_gop_nn_config, 1, &score);
+      use_alt_ref = (score <= 0.0);
+    }
+  } else {
+    assert(cpi->oxcf.gf_max_pyr_height > MIN_PYRAMID_LVL);
+    use_alt_ref = allow_alt_ref && (i < cpi->oxcf.lag_in_frames) && (i > 2);
   }
 
 #define REDUCE_GF_LENGTH_THRESH 4

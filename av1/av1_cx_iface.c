@@ -45,6 +45,7 @@ struct av1_extracfg {
   unsigned int arnr_strength;
   unsigned int min_gf_interval;
   unsigned int max_gf_interval;
+  unsigned int gf_min_pyr_height;
   unsigned int gf_max_pyr_height;
   aom_tune_metric tuning;
   const char *vmaf_model_path;
@@ -167,6 +168,7 @@ static struct av1_extracfg default_extra_cfg = {
   5,              // arnr_strength
   0,              // min_gf_interval; 0 -> default decision
   0,              // max_gf_interval; 0 -> default decision
+  0,              // gf_min_pyr_height
   4,              // gf_max_pyr_height
   AOM_TUNE_PSNR,  // tuning
   "/usr/local/share/model/vmaf_v0.6.1.pkl",  // VMAF model path
@@ -393,7 +395,13 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
     RANGE_CHECK(extra_cfg, max_gf_interval,
                 AOMMAX(2, extra_cfg->min_gf_interval), (MAX_LAG_BUFFERS - 1));
   }
+  RANGE_CHECK_HI(extra_cfg, gf_min_pyr_height, 4);
   RANGE_CHECK_HI(extra_cfg, gf_max_pyr_height, 4);
+  if (extra_cfg->gf_min_pyr_height > extra_cfg->gf_max_pyr_height) {
+    ERROR(
+        "gf_min_pyr_height must be less than or equal to "
+        "gf_max_pyramid_height");
+  }
 
   RANGE_CHECK_HI(cfg, rc_resize_mode, RESIZE_MODES - 1);
   RANGE_CHECK(cfg, rc_resize_denominator, SCALE_NUMERATOR,
@@ -865,6 +873,7 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
   oxcf->arnr_strength = extra_cfg->arnr_strength;
   oxcf->min_gf_interval = extra_cfg->min_gf_interval;
   oxcf->max_gf_interval = extra_cfg->max_gf_interval;
+  oxcf->gf_min_pyr_height = extra_cfg->gf_min_pyr_height;
   oxcf->gf_max_pyr_height = extra_cfg->gf_max_pyr_height;
 
   oxcf->tuning = extra_cfg->tuning;
@@ -1736,6 +1745,13 @@ static aom_codec_err_t ctrl_set_max_gf_interval(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.max_gf_interval = CAST(AV1E_SET_MAX_GF_INTERVAL, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_gf_min_pyr_height(aom_codec_alg_priv_t *ctx,
+                                                  va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.gf_min_pyr_height = CAST(AV1E_SET_GF_MIN_PYRAMID_HEIGHT, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -2704,6 +2720,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_NOISE_SENSITIVITY, ctrl_set_noise_sensitivity },
   { AV1E_SET_MIN_GF_INTERVAL, ctrl_set_min_gf_interval },
   { AV1E_SET_MAX_GF_INTERVAL, ctrl_set_max_gf_interval },
+  { AV1E_SET_GF_MIN_PYRAMID_HEIGHT, ctrl_set_gf_min_pyr_height },
   { AV1E_SET_GF_MAX_PYRAMID_HEIGHT, ctrl_set_gf_max_pyr_height },
   { AV1E_SET_RENDER_SIZE, ctrl_set_render_size },
   { AV1E_SET_SUPERBLOCK_SIZE, ctrl_set_superblock_size },
