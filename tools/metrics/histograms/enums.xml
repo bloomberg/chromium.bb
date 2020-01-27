@@ -30896,6 +30896,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="6" label="Below probability limit"/>
   <int value="7" label="Trigger string mismatch"/>
   <int value="8" label="Not regular browser"/>
+  <int value="9" label="Incognito mode disabled"/>
 </enum>
 
 <enum name="HeapProfilingMode">
