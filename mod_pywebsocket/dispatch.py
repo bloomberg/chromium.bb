@@ -376,7 +376,8 @@ class Dispatcher(object):
                     path)
                 continue
             try:
-                handler_suite = _source_handler_file(open(path).read())
+                with open(path) as handler_file:
+                    handler_suite = _source_handler_file(handler_file.read())
             except DispatchException as e:
                 self._source_warnings.append('%s: %s' % (path, e))
                 continue

@@ -34,6 +34,7 @@
 from __future__ import absolute_import
 import array
 import errno
+import six
 from six import iterbytes
 from six.moves import map
 from six.moves import range
@@ -159,7 +160,7 @@ class RepeatedXorMasker(object):
 
     """A masking object that applies XOR on the string.
 
-    Applies XOR on the string given to mask method with the masking bytes
+    Applies XOR on the byte string given to mask method with the masking bytes
     given to the constructor repeatedly. This object remembers the position
     in the masking bytes the last mask method call ended and resumes from
     that point on the next mask method call.
@@ -179,8 +180,11 @@ class RepeatedXorMasker(object):
 
     def _mask_using_array(self, s):
         """Perform the mask via python."""
-        result = array.array('B')
-        result.fromstring(s)
+        if isinstance(s, six.text_type):
+            raise Exception(
+                'Masking Operation should not process unicode strings')
+
+        result = bytearray(s)
 
         # Use temporary local variables to eliminate the cost to access
         # attributes
@@ -194,7 +198,7 @@ class RepeatedXorMasker(object):
 
         self._masking_key_index = masking_key_index
 
-        return result.tostring()
+        return bytes(result)
 
     if 'fast_masking' in globals():
         mask = _mask_using_swig

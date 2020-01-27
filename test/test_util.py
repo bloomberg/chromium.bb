@@ -83,25 +83,25 @@ class RepeatedXorMaskerTest(unittest.TestCase):
 
     def test_mask(self):
         # Sample input e6,97,a5 is U+65e5 in UTF-8
-        masker = util.RepeatedXorMasker('\xff\xff\xff\xff')
-        result = masker.mask('\xe6\x97\xa5')
+        masker = util.RepeatedXorMasker(b'\xff\xff\xff\xff')
+        result = masker.mask(b'\xe6\x97\xa5')
         self.assertEqual(b'\x19\x68\x5a', result)
 
-        masker = util.RepeatedXorMasker('\x00\x00\x00\x00')
-        result = masker.mask('\xe6\x97\xa5')
+        masker = util.RepeatedXorMasker(b'\x00\x00\x00\x00')
+        result = masker.mask(b'\xe6\x97\xa5')
         self.assertEqual(b'\xe6\x97\xa5', result)
 
-        masker = util.RepeatedXorMasker('\xe6\x97\xa5\x20')
-        result = masker.mask('\xe6\x97\xa5')
+        masker = util.RepeatedXorMasker(b'\xe6\x97\xa5\x20')
+        result = masker.mask(b'\xe6\x97\xa5')
         self.assertEqual(b'\x00\x00\x00', result)
 
     def test_mask_twice(self):
         masker = util.RepeatedXorMasker(b'\x00\x7f\xff\x20')
         # mask[0], mask[1], ... will be used.
-        result = masker.mask('\x00\x00\x00\x00\x00')
+        result = masker.mask(b'\x00\x00\x00\x00\x00')
         self.assertEqual(b'\x00\x7f\xff\x20\x00', result)
         # mask[2], mask[0], ... will be used for the next call.
-        result = masker.mask('\x00\x00\x00\x00\x00')
+        result = masker.mask(b'\x00\x00\x00\x00\x00')
         self.assertEqual(b'\x7f\xff\x20\x00\x7f', result)
 
     def test_mask_large_data(self):
@@ -112,15 +112,15 @@ class RepeatedXorMaskerTest(unittest.TestCase):
                 [util.pack_byte((i % 256) ^ ord('mASk'[i % 4])) for i in range(1000)])
         self.assertEqual(expected, result)
 
-        masker = util.RepeatedXorMasker('MaSk')
-        first_part = 'The WebSocket Protocol enables two-way communication.'
+        masker = util.RepeatedXorMasker(b'MaSk')
+        first_part = b'The WebSocket Protocol enables two-way communication.'
         result = masker.mask(first_part)
         self.assertEqual(
                 b'\x19\t6K\x1a\x0418"\x028\x0e9A\x03\x19"\x15<\x08"\rs\x0e#'
                 b'\x001\x07(\x12s\x1f:\x0e~\x1c,\x18s\x08"\x0c>\x1e#\x080\n9'
                 b'\x08<\x05c',
                 result)
-        second_part = 'It has two parts: a handshake and the data transfer.'
+        second_part = b'It has two parts: a handshake and the data transfer.'
         result = masker.mask(second_part)
         self.assertEqual(
                 b"('K%\x00 K9\x16<K=\x00!\x1f>[s\nm\t2\x05)\x12;\n&\x04s\n#"
