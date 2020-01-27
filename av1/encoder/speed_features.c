@@ -443,6 +443,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.perform_best_rd_based_gating_for_chroma = 1;
     sf->inter_sf.prune_comp_search_by_single_result = boosted ? 4 : 2;
     sf->inter_sf.prune_motion_mode_level = boosted ? 2 : 3;
+    sf->inter_sf.selective_ref_frame = 4;
     sf->inter_sf.skip_repeated_ref_mv = 1;
     if (cpi->oxcf.enable_smooth_interintra)
       sf->inter_sf.disable_smooth_interintra = boosted ? 0 : 1;
@@ -454,6 +455,7 @@ static void set_good_speed_features_framesize_independent(
     sf->tpl_sf.prune_intra_modes = 1;
     sf->tpl_sf.reduce_first_step_size = 6;
 
+    sf->tx_sf.adaptive_txb_search_level = boosted ? 2 : 3;
     sf->tx_sf.tx_type_search.use_skip_flag_prediction =
         cm->allow_screen_content_tools ? 1 : 2;
 
@@ -490,7 +492,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.adaptive_mode_search = 1;
     sf->inter_sf.alt_ref_search_fp = 1;
     sf->inter_sf.prune_ref_mv_idx_search = 1;
-    sf->inter_sf.selective_ref_frame = 4;
+
     sf->inter_sf.disable_smooth_interintra = 1;
 
     sf->interp_sf.cb_pred_filter_search = 1;
@@ -508,7 +510,6 @@ static void set_good_speed_features_framesize_independent(
     // presets as well
     sf->intra_sf.skip_intra_in_interframe = 2;
 
-    sf->tx_sf.adaptive_txb_search_level = boosted ? 2 : 3;
     sf->tx_sf.tx_type_search.enable_winner_mode_tx_type_pruning = 1;
     sf->tx_sf.tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_sf.tx_type_search.prune_mode = PRUNE_2D_MORE;
