@@ -166,12 +166,25 @@ class EndToEndTestBase(unittest.TestCase):
         return self._run_python_command(args,
                                         stderr=self.server_stderr)
 
-    def _kill_process(self, pid):
-        if sys.platform in ('win32', 'cygwin'):
-            subprocess.call(
-                ('taskkill.exe', '/f', '/pid', str(pid)), close_fds=True)
-        else:
-            os.kill(pid, signal.SIGKILL)
+
+    def _close_server(self, server):
+        """
+
+        This method mimics Popen.__exit__ to gracefully kill the server process.
+        Its main purpose is to maintain comptaibility between python 2 and 3,
+        since Popen in python 2 does not have __exit__ attribute.
+
+        """
+        server.kill()
+
+        if server.stdout:
+            server.stdout.close()
+        if server.stderr:
+            server.stderr.close()
+        if server.stdin:
+            server.stdin.close()
+
+        server.wait()
 
 
 class EndToEndHyBiTest(EndToEndTestBase):
@@ -191,7 +204,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
             finally:
                 client.close_socket()
         finally:
-            self._kill_process(server.pid)
+            self._close_server(server)
 
     def _run_test(self, test_function):
         self._run_test_with_client_options(test_function, self._options)
@@ -216,7 +229,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
             finally:
                 client.close_socket()
         finally:
-            self._kill_process(server.pid)
+            self._close_server(server)
 
     def _run_close_with_code_and_reason_test(self, test_function, code,
                                                   reason):
@@ -230,7 +243,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
             finally:
                 client.close_socket()
         finally:
-            self._kill_process(server.pid)
+            self._close_server(server)
 
     def _run_http_fallback_test(self, options, status):
         server = self._run_server()
@@ -248,7 +261,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
             finally:
                 client.close_socket()
         finally:
-            self._kill_process(server.pid)
+            self._close_server(server)
 
     def test_echo(self):
         self._run_test(_echo_check_procedure)
@@ -632,7 +645,7 @@ class EndToEndTestWithEchoClient(EndToEndTestBase):
             self._check_example_echo_client_result(
                     default_expectation, stdoutdata, stderrdata)
         finally:
-            self._kill_process(server.pid)
+            self._close_server(server)
 
 
 if __name__ == '__main__':
