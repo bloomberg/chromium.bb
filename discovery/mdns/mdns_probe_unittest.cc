@@ -26,7 +26,7 @@ class MockMdnsSender : public MdnsSender {
  public:
   MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
   MOCK_METHOD1(SendMulticast, Error(const MdnsMessage& message));
-  MOCK_METHOD2(SendUnicast,
+  MOCK_METHOD2(SendMessage,
                Error(const MdnsMessage& message, const IPEndpoint& endpoint));
 };
 

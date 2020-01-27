@@ -62,7 +62,7 @@ class MockMdnsSender : public MdnsSender {
   MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
 
   MOCK_METHOD1(SendMulticast, Error(const MdnsMessage& message));
-  MOCK_METHOD2(SendUnicast,
+  MOCK_METHOD2(SendMessage,
                Error(const MdnsMessage& message, const IPEndpoint& endpoint));
 };
 
@@ -222,7 +222,7 @@ TEST_F(MdnsResponderTest, UnicastMessageSentOverUnicast) {
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakeSrvRecord(domain_));
-  EXPECT_CALL(sender_, SendUnicast(_, endpoint_)).Times(1);
+  EXPECT_CALL(sender_, SendMessage(_, endpoint_)).Times(1);
   OnMessageReceived(message, endpoint_);
 }
 

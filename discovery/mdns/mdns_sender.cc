@@ -33,10 +33,10 @@ Error MdnsSender::SendMulticast(const MdnsMessage& message) {
   const IPEndpoint& endpoint = socket_->IsIPv6()
                                    ? GetIPv6MdnsMulticastEndpoint()
                                    : GetIPv4MdnsMulticastEndpoint();
-  return SendUnicast(message, endpoint);
+  return SendMessage(message, endpoint);
 }
 
-Error MdnsSender::SendUnicast(const MdnsMessage& message,
+Error MdnsSender::SendMessage(const MdnsMessage& message,
                               const IPEndpoint& endpoint) {
   // Always try to write the message into the buffer even if MaxWireSize is
   // greater than maximum message size. Domain name compression might reduce the

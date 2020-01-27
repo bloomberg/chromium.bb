@@ -26,7 +26,7 @@ class MdnsSender {
   virtual ~MdnsSender() = default;
 
   virtual Error SendMulticast(const MdnsMessage& message);
-  virtual Error SendUnicast(const MdnsMessage& message,
+  virtual Error SendMessage(const MdnsMessage& message,
                             const IPEndpoint& endpoint);
 
  private:

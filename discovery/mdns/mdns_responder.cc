@@ -234,7 +234,7 @@ void MdnsResponder::OnMessageReceived(const MdnsMessage& message,
       } else {
         OSP_DCHECK(question.response_type() == ResponseType::kUnicast);
         send_response = [this, src](const MdnsMessage& message) {
-          sender_->SendUnicast(message, src);
+          sender_->SendMessage(message, src);
         };
       }
 

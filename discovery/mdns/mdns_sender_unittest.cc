@@ -133,7 +133,7 @@ TEST_F(MdnsSenderTest, SendUnicastIPv4) {
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
   EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
-  EXPECT_EQ(sender.SendUnicast(response_message_, endpoint),
+  EXPECT_EQ(sender.SendMessage(response_message_, endpoint),
             Error::Code::kNone);
   EXPECT_EQ(socket_info->send_queue_size(), size_t{0});
 }
@@ -149,7 +149,7 @@ TEST_F(MdnsSenderTest, SendUnicastIPv6) {
   MdnsSender sender(socket_info.get());
   socket_info->EnqueueSendResult(Error::Code::kNone);
   EXPECT_CALL(*socket_info->client_mock(), OnSendError(_, _)).Times(0);
-  EXPECT_EQ(sender.SendUnicast(response_message_, endpoint),
+  EXPECT_EQ(sender.SendMessage(response_message_, endpoint),
             Error::Code::kNone);
   EXPECT_EQ(socket_info->send_queue_size(), size_t{0});
 }

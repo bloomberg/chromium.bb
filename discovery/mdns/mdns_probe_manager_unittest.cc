@@ -33,7 +33,7 @@ class MockMdnsSender : public MdnsSender {
   MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
 
   MOCK_METHOD1(SendMulticast, Error(const MdnsMessage& message));
-  MOCK_METHOD2(SendUnicast,
+  MOCK_METHOD2(SendMessage,
                Error(const MdnsMessage& message, const IPEndpoint& endpoint));
 };
 
@@ -236,7 +236,7 @@ TEST_F(MdnsProbeManagerTests, RespondToProbeQueryWorksForCompletedProbes) {
   SetUpCompletedProbe(name_, address_a_);
 
   const MdnsMessage query = CreateProbeQueryMessage(name_, address_c_);
-  EXPECT_CALL(sender_, SendUnicast(_, endpoint_))
+  EXPECT_CALL(sender_, SendMessage(_, endpoint_))
       .WillOnce([this](const MdnsMessage& message,
                        const IPEndpoint& endpoint) -> Error {
         EXPECT_EQ(message.answers().size(), size_t{1});
