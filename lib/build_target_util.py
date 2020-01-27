@@ -58,6 +58,22 @@ class BuildTarget(object):
   def name(self):
     return self._name
 
+  def get_command(self, base_command):
+    """Get the build target's variant of the given base command.
+
+    We create wrappers for many scripts that handle the build target's
+    arguments. Build the target-specific variant for such a command.
+    e.g. emerge -> emerge-eve.
+
+    TODO: Add optional validation the command exists.
+
+    Args:
+      base_command (str): The wrapped command.
+
+    Returns:
+      str: The build target's command wrapper.
+    """
+    return '%s-%s' % (base_command, self.name)
 
 def GetDefaultSysrootPath(target_name):
   if target_name:
