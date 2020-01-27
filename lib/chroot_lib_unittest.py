@@ -60,6 +60,17 @@ class ChrootTest(cros_test_lib.TempDirTestCase):
     chroot = chroot_lib.Chroot(os.path.join(self.tempdir, 'DOES_NOT_EXIST'))
     self.assertFalse(chroot.exists())
 
+  def testChrootPath(self):
+    """Test chroot_path functionality."""
+    chroot = chroot_lib.Chroot(self.tempdir)
+    path1 = os.path.join(self.tempdir, 'some/path')
+    path2 = '/bad/path'
+
+    # Make sure that it gives an absolute path inside the chroot.
+    self.assertEqual('/some/path', chroot.chroot_path(path1))
+    # Make sure it raises an error for paths not inside the chroot.
+    self.assertRaises(chroot_lib.ChrootError, chroot.chroot_path, path2)
+
   def testFullPath(self):
     """Test full_path functionality."""
     chroot = chroot_lib.Chroot(self.tempdir)

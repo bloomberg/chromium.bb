@@ -18,6 +18,14 @@ from chromite.lib import osutils
 from chromite.lib import constants
 
 
+class Error(Exception):
+  """Base chroot_lib error class."""
+
+
+class ChrootError(Error):
+  """An exception raised when something went wrong with a chroot object."""
+
+
 class Chroot(object):
   """Chroot class."""
 
@@ -64,6 +72,12 @@ class Chroot(object):
   def tempdir(self):
     """Get a TempDir in the chroot's tmp dir."""
     return osutils.TempDir(base_dir=self.tmp)
+
+  def chroot_path(self, path):
+    """Turn an absolute path into a chroot relative path."""
+    if not path.startswith(self.path + os.path.sep):
+      raise ChrootError('Path not in chroot: %s' % path)
+    return path[len(self.path):]
 
   def full_path(self, *args):
     """Turn a chroot-relative path into an absolute path."""
