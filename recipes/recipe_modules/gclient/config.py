@@ -11,14 +11,14 @@ from . import api as gclient_api
 
 
 def BaseConfig(USE_MIRROR=True, CACHE_DIR=None,
-               BUILDSPEC_VERSION=None, **_kwargs):
+               BUILDSPEC_VERSION=None, deps_file='.DEPS.git', **_kwargs):
   cache_dir = str(CACHE_DIR) if CACHE_DIR else None
   return ConfigGroup(
     solutions = ConfigList(
       lambda: ConfigGroup(
         name = Single(basestring),
         url = Single((basestring, type(None)), empty_val=''),
-        deps_file = Single(basestring, empty_val='.DEPS.git', required=False,
+        deps_file = Single(basestring, empty_val=deps_file, required=False,
                            hidden=False),
         managed = Single(bool, empty_val=True, required=False, hidden=False),
         custom_deps = Dict(value_type=(basestring, types.NoneType)),
