@@ -404,7 +404,7 @@ def uprev_ebuild_from_pin(package_path, version_pin_path):
   os.rename(ebuild_path, new_ebuild_path)
 
   result = UprevVersionedPackageResult()
-  result.add_result(version, [ebuild_path, new_ebuild_path])
+  result.add_result(version, [new_ebuild_path, ebuild_path])
   return result
 
 

@@ -137,12 +137,12 @@ class UprevEbuildFromPinTest(cros_test_lib.TempDirTestCase):
 
     old_ebuild_path = os.path.join(package_path,
                                    self.ebuild_template % self.version)
-    self.assertEqual(mod.files[0], old_ebuild_path,
+    self.assertEqual(mod.files[1], old_ebuild_path,
                      'unexpected deleted ebuild file: %s' % mod.files[0])
 
     new_ebuild_path = os.path.join(package_path,
                                    self.ebuild_template % self.new_version)
-    self.assertEqual(mod.files[1], new_ebuild_path,
+    self.assertEqual(mod.files[0], new_ebuild_path,
                      'unexpected updated ebuild file: %s' % mod.files[1])
 
   def test_no_ebuild(self):
