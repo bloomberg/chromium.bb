@@ -2864,10 +2864,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     }
   }
 
-  // TODO(kyslov,marpan): remove this condition after we figure out why
-  // resetting it in aq_cyclic_refresh is not bit-exact
-  if (oxcf->mode != REALTIME || oxcf->aq_mode != CYCLIC_REFRESH_AQ)
-    av1_reset_segment_features(cm);
+  av1_reset_segment_features(cm);
 
   av1_set_high_precision_mv(cpi, 1, 0);
 

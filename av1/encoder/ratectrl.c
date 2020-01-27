@@ -559,8 +559,8 @@ static int find_closest_qindex_by_rate(int desired_bits_per_mb,
                                        const AV1_COMP *cpi,
                                        double correction_factor,
                                        int best_qindex, int worst_qindex) {
-  const int use_cyclic_refresh =
-      cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cpi->common.seg.enabled;
+  const int use_cyclic_refresh = cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ &&
+                                 cpi->cyclic_refresh->apply_cyclic_refresh;
 
   // Find 'qindex' based on 'desired_bits_per_mb'.
   assert(best_qindex <= worst_qindex);
