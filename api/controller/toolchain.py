@@ -31,19 +31,24 @@ _TOOLCHAIN_ARTIFACT_HANDLERS = {
                   toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.CHROME_CLANG_WARNINGS_FILE:
         _Handlers('ChromeClangWarningsFile',
-                  toolchain_util.PrepareForBuild, None),
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.UNVERIFIED_LLVM_PGO_FILE:
         _Handlers('UnverifiedLlvmPgoFile',
-                  toolchain_util.PrepareForBuild, None),
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.UNVERIFIED_CHROME_AFDO_FILE:
         _Handlers('UnverifiedChromeAfdoFile',
-                  toolchain_util.PrepareForBuild, None),
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.VERIFIED_CHROME_AFDO_FILE:
         _Handlers('VerifiedChromeAfdoFile',
-                  toolchain_util.PrepareForBuild, None),
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
     BuilderConfig.Artifacts.VERIFIED_KERNEL_AFDO_FILE:
         _Handlers('VerifiedKernelAfdoFile',
-                  toolchain_util.PrepareForBuild, None),
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
 }
 
 
