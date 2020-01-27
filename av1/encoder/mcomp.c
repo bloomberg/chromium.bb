@@ -1120,35 +1120,39 @@ static INLINE void calc_int_cost_list(const MACROBLOCK *x,
   const MV fcenter_mv = { ref_mv->row >> 3, ref_mv->col >> 3 };
   const int br = best_mv->row;
   const int bc = best_mv->col;
-  int i;
   unsigned int sse;
-  const MV this_mv = { br, bc };
 
   cost_list[0] =
-      fn_ptr->vf(what->buf, what->stride, get_buf_from_mv(in_what, &this_mv),
+      fn_ptr->vf(what->buf, what->stride, get_buf_from_mv(in_what, best_mv),
                  in_what->stride, &sse) +
-      mvsad_err_cost(x, &this_mv, &fcenter_mv, sadpb);
+      mvsad_err_cost(x, best_mv, &fcenter_mv, sadpb);
   if (check_bounds(&x->mv_limits, br, bc, 1)) {
-    for (i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
       const MV neighbor_mv = { br + neighbors[i].row, bc + neighbors[i].col };
-      cost_list[i + 1] = fn_ptr->vf(what->buf, what->stride,
-                                    get_buf_from_mv(in_what, &neighbor_mv),
-                                    in_what->stride, &sse) +
-                         mv_err_cost(&neighbor_mv, &fcenter_mv, x->nmv_vec_cost,
-                                     x->mv_cost_stack, x->errorperbit);
+      const MV neighbor_mv_subpel = { neighbor_mv.row * 8,
+                                      neighbor_mv.col * 8 };
+      cost_list[i + 1] =
+          fn_ptr->vf(what->buf, what->stride,
+                     get_buf_from_mv(in_what, &neighbor_mv), in_what->stride,
+                     &sse) +
+          mv_err_cost(&neighbor_mv_subpel, ref_mv, x->nmv_vec_cost,
+                      x->mv_cost_stack, x->errorperbit);
     }
   } else {
-    for (i = 0; i < 4; i++) {
+    for (int i = 0; i < 4; i++) {
       const MV neighbor_mv = { br + neighbors[i].row, bc + neighbors[i].col };
-      if (!is_mv_in(&x->mv_limits, &neighbor_mv))
+      if (!is_mv_in(&x->mv_limits, &neighbor_mv)) {
         cost_list[i + 1] = INT_MAX;
-      else
+      } else {
+        const MV neighbor_mv_subpel = { neighbor_mv.row * 8,
+                                        neighbor_mv.col * 8 };
         cost_list[i + 1] =
             fn_ptr->vf(what->buf, what->stride,
                        get_buf_from_mv(in_what, &neighbor_mv), in_what->stride,
                        &sse) +
-            mv_err_cost(&neighbor_mv, &fcenter_mv, x->nmv_vec_cost,
+            mv_err_cost(&neighbor_mv_subpel, ref_mv, x->nmv_vec_cost,
                         x->mv_cost_stack, x->errorperbit);
+      }
     }
   }
 }
@@ -1161,22 +1165,21 @@ static INLINE void calc_int_sad_list(const MACROBLOCK *x,
   static const MV neighbors[4] = { { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
   const struct buf_2d *const what = &x->plane[0].src;
   const struct buf_2d *const in_what = &x->e_mbd.plane[0].pre[0];
-  const MV fcenter_mv = { ref_mv->row >> 3, ref_mv->col >> 3 };
-  int i;
   const int br = best_mv->row;
   const int bc = best_mv->col;
+  const MV ref_mv_fullpel = { ref_mv->row >> 3, ref_mv->col >> 3 };
 
   if (cost_list[0] == INT_MAX) {
     cost_list[0] = bestsad;
     if (check_bounds(&x->mv_limits, br, bc, 1)) {
-      for (i = 0; i < 4; i++) {
+      for (int i = 0; i < 4; i++) {
         const MV this_mv = { br + neighbors[i].row, bc + neighbors[i].col };
         cost_list[i + 1] =
             fn_ptr->sdf(what->buf, what->stride,
                         get_buf_from_mv(in_what, &this_mv), in_what->stride);
       }
     } else {
-      for (i = 0; i < 4; i++) {
+      for (int i = 0; i < 4; i++) {
         const MV this_mv = { br + neighbors[i].row, bc + neighbors[i].col };
         if (!is_mv_in(&x->mv_limits, &this_mv))
           cost_list[i + 1] = INT_MAX;
@@ -1188,10 +1191,11 @@ static INLINE void calc_int_sad_list(const MACROBLOCK *x,
     }
   } else {
     if (use_mvcost) {
-      for (i = 0; i < 4; i++) {
+      for (int i = 0; i < 4; i++) {
         const MV this_mv = { br + neighbors[i].row, bc + neighbors[i].col };
         if (cost_list[i + 1] != INT_MAX) {
-          cost_list[i + 1] += mvsad_err_cost(x, &this_mv, &fcenter_mv, sadpb);
+          cost_list[i + 1] +=
+              mvsad_err_cost(x, &this_mv, &ref_mv_fullpel, sadpb);
         }
       }
     }
