@@ -191,7 +191,8 @@ void CflSubsampler444_8xH_SSE4_1(
   do {
     __m128i samples0 = LoadLo8(src);
     if (!inside) {
-      const __m128i border0 = _mm_set1_epi8(src[visible_width - 1]);
+      const __m128i border0 =
+          _mm_set1_epi8(static_cast<int8_t>(src[visible_width - 1]));
       samples0 = _mm_blendv_epi8(samples0, border0, blend_mask);
     }
     src += stride;
@@ -203,7 +204,8 @@ void CflSubsampler444_8xH_SSE4_1(
 
     samples1 = LoadLo8(src);
     if (!inside) {
-      const __m128i border1 = _mm_set1_epi8(src[visible_width - 1]);
+      const __m128i border1 =
+          _mm_set1_epi8(static_cast<int8_t>(src[visible_width - 1]));
       samples1 = _mm_blendv_epi8(samples1, border1, blend_mask);
     }
     src += stride;
@@ -315,7 +317,8 @@ void CflSubsampler444_SSE4_1(
     __m128i samples01 = LoadUnaligned16(src);
 
     if (!inside) {
-      const __m128i border16 = _mm_set1_epi8(src[visible_width_16 - 1]);
+      const __m128i border16 =
+          _mm_set1_epi8(static_cast<int8_t>(src[visible_width_16 - 1]));
       samples01 = _mm_blendv_epi8(samples01, border16, blend_mask_16);
     }
     samples0 = _mm_slli_epi16(_mm_cvtepu8_epi16(samples01), 3);
@@ -341,7 +344,8 @@ void CflSubsampler444_SSE4_1(
 #else
       __m128i samples23 = LoadUnaligned16(src + 16);
       if (!inside) {
-        const __m128i border32 = _mm_set1_epi8(src[visible_width_32 - 1]);
+        const __m128i border32 =
+            _mm_set1_epi8(static_cast<int8_t>(src[visible_width_32 - 1]));
         samples23 = _mm_blendv_epi8(samples23, border32, blend_mask_32);
       }
       samples2 = _mm_slli_epi16(_mm_cvtepu8_epi16(samples23), 3);

@@ -1023,7 +1023,7 @@ void Paeth16x4_SSE4_1(void* const dest, ptrdiff_t stride,
 
   const auto* const top_ptr = static_cast<const uint8_t*>(top_row);
   const __m128i top_lefts16 = _mm_set1_epi16(top_ptr[-1]);
-  const __m128i top_lefts8 = _mm_set1_epi8(top_ptr[-1]);
+  const __m128i top_lefts8 = _mm_set1_epi8(static_cast<int8_t>(top_ptr[-1]));
 
   // Given that the spec defines "base" as top[x] + left[y] - top[-1],
   // pLeft = abs(base - left[y]) = abs(top[x] - top[-1])
@@ -1067,7 +1067,7 @@ inline void WritePaeth16x8(void* const dest, ptrdiff_t stride,
   const __m128i top_hi = _mm_cvtepu8_epi16(_mm_srli_si128(top, 8));
 
   const __m128i top_lefts16 = _mm_set1_epi16(top_left);
-  const __m128i top_lefts8 = _mm_set1_epi8(top_left);
+  const __m128i top_lefts8 = _mm_set1_epi8(static_cast<int8_t>(top_left));
 
   // Given that the spec defines "base" as top[x] + left[y] - top_left,
   // pLeft = abs(base - left[y]) = abs(top[x] - top[-1])
@@ -1133,7 +1133,7 @@ void WritePaeth16x16(void* const dest, ptrdiff_t stride, const uint8_t top_left,
   const __m128i top_hi = _mm_cvtepu8_epi16(_mm_srli_si128(top, 8));
 
   const __m128i top_lefts16 = _mm_set1_epi16(top_left);
-  const __m128i top_lefts8 = _mm_set1_epi8(top_left);
+  const __m128i top_lefts8 = _mm_set1_epi8(static_cast<int8_t>(top_left));
 
   // Given that the spec defines "base" as top[x] + left[y] - top[-1],
   // pLeft = abs(base - left[y]) = abs(top[x] - top[-1])

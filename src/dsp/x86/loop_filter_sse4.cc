@@ -50,7 +50,7 @@ inline __m128i AbsDiff(const __m128i& a, const __m128i& b) {
 
 inline __m128i CheckOuterThreshF4(const __m128i& q1q0, const __m128i& p1p0,
                                   const __m128i& outer_thresh) {
-  const __m128i fe = _mm_set1_epi8(0xfe);
+  const __m128i fe = _mm_set1_epi8(static_cast<int8_t>(0xfe));
   //  abs(p0 - q0) * 2 + abs(p1 - q1) / 2 <= outer_thresh;
   const __m128i abs_pmq = AbsDiff(p1p0, q1q0);
   const __m128i a = _mm_adds_epu8(abs_pmq, abs_pmq);
@@ -104,7 +104,7 @@ inline __m128i NeedsFilter4(const __m128i& q1q0, const __m128i& p1p0,
 
 inline void Filter4(const __m128i& qp1, const __m128i& qp0, __m128i* oqp1,
                     __m128i* oqp0, const __m128i& mask, const __m128i& hev) {
-  const __m128i t80 = _mm_set1_epi8(0x80);
+  const __m128i t80 = _mm_set1_epi8(static_cast<int8_t>(0x80));
   const __m128i t1 = _mm_set1_epi8(0x1);
   const __m128i qp1qp0 = _mm_unpacklo_epi64(qp0, qp1);
   const __m128i qps1qps0 = _mm_xor_si128(qp1qp0, t80);
