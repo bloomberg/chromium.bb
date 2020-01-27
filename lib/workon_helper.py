@@ -248,7 +248,7 @@ class WorkonHelper(object):
   def _arch(self):
     if self._cached_arch is None:
       self._cached_arch = sysroot_lib.Sysroot(
-          self._sysroot).GetStandardField('ARCH')
+          self._sysroot).GetStandardField(sysroot_lib.STANDARD_FIELD_ARCH)
 
     return self._cached_arch
 
@@ -331,7 +331,7 @@ class WorkonHelper(object):
   def _GetCanonicalAtom(self, package, find_stale=False):
     """Transform a package name or name fragment to the canonical atom.
 
-    If there a multiple atoms that a package name fragment could map to,
+    If there are multiple atoms that a package name fragment could map to,
     picks an arbitrary one and prints a warning.
 
     Args:
@@ -442,7 +442,7 @@ class WorkonHelper(object):
 
   def _GetWorkonEbuilds(self, filter_workon=False, filter_on_arch=True,
                         include_chrome=True):
-    """Get a list of of all cros-workon ebuilds in the current system.
+    """Get a list of all cros-workon ebuilds in the current system.
 
     Args:
       filter_workon: True iff we should filter the list of ebuilds to those
@@ -551,8 +551,8 @@ class WorkonHelper(object):
     """Mark a list of packages as being worked on locally.
 
     Args:
-      packages: list of package name fragments.  While each fragment could be a
-          a complete portage atom, this helper will attempt to infer intent by
+      packages: list of package name fragments. While each fragment could be a
+          complete portage atom, this helper will attempt to infer intent by
           looking for fragments in a list of all possible atoms for the system
           in question.
       use_all: True iff we should ignore the package list, and instead consider
