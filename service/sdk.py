@@ -108,9 +108,8 @@ class UpdateArguments(object):
       toolchain_changed (bool): Whether a toolchain change has occurred. Implies
         build_source.
     """
-    self.build_source = build_source
+    self.build_source = build_source or toolchain_changed
     self.toolchain_targets = toolchain_targets
-    self.toolchain_changed = toolchain_changed
 
   def GetArgList(self):
     """Get the list of the corresponding command line arguments.
@@ -120,13 +119,13 @@ class UpdateArguments(object):
     """
     args = []
 
-    if self.build_source or self.toolchain_changed:
+    if self.build_source:
       args.append('--nousepkg')
 
     if self.toolchain_targets:
       if not self.build_source:
         args.extend(['--toolchain_boards', ','.join(self.toolchain_targets)])
-    elif not self.toolchain_changed:
+    else:
       args.append('--skip_toolchain_update')
 
     return args
