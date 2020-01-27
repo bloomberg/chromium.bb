@@ -86,7 +86,6 @@ def GetSysrootDict(target_platform, target_arch):
 
 def DownloadFile(url, local_path):
     """Uses urllib to download a remote file into local_path."""
-    print('Downloading %s' % url)
     for _ in range(3):
         try:
             response = urlopen(url)
