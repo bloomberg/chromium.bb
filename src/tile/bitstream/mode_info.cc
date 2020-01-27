@@ -137,17 +137,17 @@ bool IsBlockDimensionLessThan64(BlockSize size) {
 
 bool Tile::ReadSegmentId(const Block& block) {
   int top_left = -1;
-  if (block.top_available && block.left_available) {
+  if (block.top_available[kPlaneY] && block.left_available[kPlaneY]) {
     top_left =
         block_parameters_holder_.Find(block.row4x4 - 1, block.column4x4 - 1)
             ->segment_id;
   }
   int top = -1;
-  if (block.top_available) {
+  if (block.top_available[kPlaneY]) {
     top = block.bp_top->segment_id;
   }
   int left = -1;
-  if (block.left_available) {
+  if (block.left_available[kPlaneY]) {
     left = block.bp_left->segment_id;
   }
   int pred;
@@ -209,10 +209,10 @@ void Tile::ReadSkip(const Block& block) {
     return;
   }
   int context = 0;
-  if (block.top_available && block.bp_top->skip) {
+  if (block.top_available[kPlaneY] && block.bp_top->skip) {
     ++context;
   }
-  if (block.left_available && block.bp_left->skip) {
+  if (block.left_available[kPlaneY] && block.bp_left->skip) {
     ++context;
   }
   uint16_t* const skip_cdf = symbol_decoder_context_.skip_cdf[context];
@@ -233,8 +233,11 @@ void Tile::ReadSkipMode(const Block& block) {
     return;
   }
   const int context =
-      (block.left_available ? static_cast<int>(block.bp_left->skip_mode) : 0) +
-      (block.top_available ? static_cast<int>(block.bp_top->skip_mode) : 0);
+      (block.left_available[kPlaneY]
+           ? static_cast<int>(block.bp_left->skip_mode)
+           : 0) +
+      (block.top_available[kPlaneY] ? static_cast<int>(block.bp_top->skip_mode)
+                                    : 0);
   bp.skip_mode =
       reader_.ReadSymbol(symbol_decoder_context_.skip_mode_cdf[context]);
 }
@@ -330,9 +333,10 @@ void Tile::ReadPredictionModeY(const Block& block, bool intra_y_mode) {
   uint16_t* cdf;
   if (intra_y_mode) {
     const PredictionMode top_mode =
-        block.top_available ? block.bp_top->y_mode : kPredictionModeDc;
-    const PredictionMode left_mode =
-        block.left_available ? block.bp_left->y_mode : kPredictionModeDc;
+        block.top_available[kPlaneY] ? block.bp_top->y_mode : kPredictionModeDc;
+    const PredictionMode left_mode = block.left_available[kPlaneY]
+                                         ? block.bp_left->y_mode
+                                         : kPredictionModeDc;
     const int top_context = kIntraYModeContext[top_mode];
     const int left_context = kIntraYModeContext[left_mode];
     cdf = symbol_decoder_context_
@@ -391,7 +395,7 @@ void Tile::ReadPredictionModeUV(const Block& block) {
   BlockParameters& bp = *block.bp;
   bool chroma_from_luma_allowed;
   if (frame_header_.segmentation.lossless[bp.segment_id]) {
-    chroma_from_luma_allowed = block.residual_size[kPlaneTypeUV] == kBlock4x4;
+    chroma_from_luma_allowed = block.residual_size[kPlaneU] == kBlock4x4;
   } else {
     chroma_from_luma_allowed = IsBlockDimensionLessThan64(block.size);
   }
@@ -576,10 +580,10 @@ bool Tile::ReadInterSegmentId(const Block& block, bool pre_skip) {
   }
   if (frame_header_.segmentation.temporal_update) {
     const int context =
-        (block.left_available
+        (block.left_available[kPlaneY]
              ? static_cast<int>(block.bp_left->use_predicted_segment_id)
              : 0) +
-        (block.top_available
+        (block.top_available[kPlaneY]
              ? static_cast<int>(block.bp_top->use_predicted_segment_id)
              : 0);
     bp.use_predicted_segment_id = reader_.ReadSymbol(
@@ -612,13 +616,14 @@ void Tile::ReadIsInter(const Block& block) {
     return;
   }
   int context = 0;
-  if (block.top_available && block.left_available) {
+  if (block.top_available[kPlaneY] && block.left_available[kPlaneY]) {
     context = (block.IsTopIntra() && block.IsLeftIntra())
                   ? 3
                   : static_cast<int>(block.IsTopIntra() || block.IsLeftIntra());
-  } else if (block.top_available || block.left_available) {
-    context = 2 * static_cast<int>(block.top_available ? block.IsTopIntra()
-                                                       : block.IsLeftIntra());
+  } else if (block.top_available[kPlaneY] || block.left_available[kPlaneY]) {
+    context = 2 * static_cast<int>(block.top_available[kPlaneY]
+                                       ? block.IsTopIntra()
+                                       : block.IsLeftIntra());
   }
   bp.is_inter =
       reader_.ReadSymbol(symbol_decoder_context_.is_inter_cdf[context]);
@@ -643,7 +648,7 @@ bool Tile::ReadIntraBlockModeInfo(const Block& block, bool intra_y_mode) {
 }
 
 int Tile::GetUseCompoundReferenceContext(const Block& block) {
-  if (block.top_available && block.left_available) {
+  if (block.top_available[kPlaneY] && block.left_available[kPlaneY]) {
     if (block.IsTopSingle() && block.IsLeftSingle()) {
       return static_cast<int>(IsBackwardReference(block.TopReference(0))) ^
              static_cast<int>(IsBackwardReference(block.LeftReference(0)));
@@ -658,12 +663,12 @@ int Tile::GetUseCompoundReferenceContext(const Block& block) {
     }
     return 4;
   }
-  if (block.top_available) {
+  if (block.top_available[kPlaneY]) {
     return block.IsTopSingle()
                ? static_cast<int>(IsBackwardReference(block.TopReference(0)))
                : 3;
   }
-  if (block.left_available) {
+  if (block.left_available[kPlaneY]) {
     return block.IsLeftSingle()
                ? static_cast<int>(IsBackwardReference(block.LeftReference(0)))
                : 3;
@@ -673,10 +678,10 @@ int Tile::GetUseCompoundReferenceContext(const Block& block) {
 
 CompoundReferenceType Tile::ReadCompoundReferenceType(const Block& block) {
   // compound and inter.
-  const bool top_comp_inter =
-      block.top_available && !block.IsTopIntra() && !block.IsTopSingle();
-  const bool left_comp_inter =
-      block.left_available && !block.IsLeftIntra() && !block.IsLeftSingle();
+  const bool top_comp_inter = block.top_available[kPlaneY] &&
+                              !block.IsTopIntra() && !block.IsTopSingle();
+  const bool left_comp_inter = block.left_available[kPlaneY] &&
+                               !block.IsLeftIntra() && !block.IsLeftSingle();
   // unidirectional compound.
   const bool top_uni_comp =
       top_comp_inter && IsSameDirectionReferencePair(block.TopReference(0),
@@ -685,8 +690,8 @@ CompoundReferenceType Tile::ReadCompoundReferenceType(const Block& block) {
       left_comp_inter && IsSameDirectionReferencePair(block.LeftReference(0),
                                                       block.LeftReference(1));
   int context;
-  if (block.top_available && !block.IsTopIntra() && block.left_available &&
-      !block.IsLeftIntra()) {
+  if (block.top_available[kPlaneY] && !block.IsTopIntra() &&
+      block.left_available[kPlaneY] && !block.IsLeftIntra()) {
     const int same_direction = static_cast<int>(IsSameDirectionReferencePair(
         block.TopReference(0), block.LeftReference(0)));
     if (!top_comp_inter && !left_comp_inter) {
@@ -706,7 +711,7 @@ CompoundReferenceType Tile::ReadCompoundReferenceType(const Block& block) {
                           (block.LeftReference(0) == kReferenceFrameBackward));
       }
     }
-  } else if (block.top_available && block.left_available) {
+  } else if (block.top_available[kPlaneY] && block.left_available[kPlaneY]) {
     if (top_comp_inter) {
       context = 1 + MultiplyBy2(static_cast<int>(top_uni_comp));
     } else if (left_comp_inter) {
@@ -1078,14 +1083,14 @@ void Tile::ReadMotionMode(const Block& block, bool is_compound) {
 
 uint16_t* Tile::GetIsExplicitCompoundTypeCdf(const Block& block) {
   int context = 0;
-  if (block.top_available) {
+  if (block.top_available[kPlaneY]) {
     if (!block.IsTopSingle()) {
       context += static_cast<int>(block.bp_top->is_explicit_compound_type);
     } else if (block.TopReference(0) == kReferenceFrameAlternate) {
       context += 3;
     }
   }
-  if (block.left_available) {
+  if (block.left_available[kPlaneY]) {
     if (!block.IsLeftSingle()) {
       context += static_cast<int>(block.bp_left->is_explicit_compound_type);
     } else if (block.LeftReference(0) == kReferenceFrameAlternate) {
@@ -1105,14 +1110,14 @@ uint16_t* Tile::GetIsCompoundTypeAverageCdf(const Block& block) {
       current_frame_.order_hint(bp.reference_frame[1]),
       frame_header_.order_hint, sequence_header_.order_hint_shift_bits));
   int context = (forward == backward) ? 3 : 0;
-  if (block.top_available) {
+  if (block.top_available[kPlaneY]) {
     if (!block.IsTopSingle()) {
       context += static_cast<int>(block.bp_top->is_compound_type_average);
     } else if (block.TopReference(0) == kReferenceFrameAlternate) {
       ++context;
     }
   }
-  if (block.left_available) {
+  if (block.left_available[kPlaneY]) {
     if (!block.IsLeftSingle()) {
       context += static_cast<int>(block.bp_left->is_compound_type_average);
     } else if (block.LeftReference(0) == kReferenceFrameAlternate) {
@@ -1192,14 +1197,14 @@ uint16_t* Tile::GetInterpolationFilterCdf(const Block& block, int direction) {
                 MultiplyBy4(static_cast<int>(bp.reference_frame[1] >
                                              kReferenceFrameIntra));
   int top_type = kNumExplicitInterpolationFilters;
-  if (block.top_available) {
+  if (block.top_available[kPlaneY]) {
     if (block.bp_top->reference_frame[0] == bp.reference_frame[0] ||
         block.bp_top->reference_frame[1] == bp.reference_frame[0]) {
       top_type = block.bp_top->interpolation_filter[direction];
     }
   }
   int left_type = kNumExplicitInterpolationFilters;
-  if (block.left_available) {
+  if (block.left_available[kPlaneY]) {
     if (block.bp_left->reference_frame[0] == bp.reference_frame[0] ||
         block.bp_left->reference_frame[1] == bp.reference_frame[0]) {
       left_type = block.bp_left->interpolation_filter[direction];

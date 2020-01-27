@@ -110,19 +110,25 @@ class Tile : public Allocable {
   }
 
   bool IsLeftInside(int column4x4) const {
-    assert(column4x4 < column4x4_end_);
-    return column4x4 >= column4x4_start_;
+    // We use "larger than" as the condition. Don't pass in the left column
+    // offset column4x4 - 1.
+    assert(column4x4 <= column4x4_end_);
+    return column4x4 > column4x4_start_;
   }
 
   bool IsTopInside(int row4x4) const {
-    assert(row4x4 < row4x4_end_);
-    return row4x4 >= row4x4_start_;
+    // We use "larger than" as the condition. Don't pass in the top row offset
+    // row4x4 - 1.
+    assert(row4x4 <= row4x4_end_);
+    return row4x4 > row4x4_start_;
   }
 
   bool IsTopLeftInside(int row4x4, int column4x4) const {
-    assert(row4x4 < row4x4_end_);
-    assert(column4x4 < column4x4_end_);
-    return row4x4 >= row4x4_start_ && column4x4 >= column4x4_start_;
+    // We use "larger than" as the condition. Don't pass in the top row offset
+    // row4x4 - 1 or the left column offset column4x4 - 1.
+    assert(row4x4 <= row4x4_end_);
+    assert(column4x4 <= column4x4_end_);
+    return row4x4 > row4x4_start_ && column4x4 > column4x4_start_;
   }
 
   // Returns true if Parameters() can be called with |row| and |column| as
@@ -670,84 +676,84 @@ class Tile : public Allocable {
 
 struct Tile::Block {
   Block(const Tile& tile, int row4x4, int column4x4, BlockSize size,
-        DecoderScratchBuffer* const scratch_buffer, ResidualPtr* residual,
-        BlockParameters* const parameters)
+        DecoderScratchBuffer* const scratch_buffer, ResidualPtr* residual)
       : tile(tile),
         row4x4(row4x4),
         column4x4(column4x4),
         size(size),
         width(kBlockWidthPixels[size]),
         height(kBlockHeightPixels[size]),
-        width4x4(kNum4x4BlocksWide[size]),
-        height4x4(kNum4x4BlocksHigh[size]),
-        left_available(tile.IsLeftInside(column4x4 - 1)),
-        top_available(tile.IsTopInside(row4x4 - 1)),
-        residual_size{kPlaneResidualSize[size][0][0],
-                      kPlaneResidualSize[size][tile.subsampling_x_[kPlaneU]]
-                                        [tile.subsampling_y_[kPlaneU]]},
-        bp_top(top_available
-                   ? tile.block_parameters_holder_.Find(row4x4 - 1, column4x4)
-                   : nullptr),
-        bp_left(left_available
-                    ? tile.block_parameters_holder_.Find(row4x4, column4x4 - 1)
-                    : nullptr),
-        bp(parameters),
+        width4x4(width >> 2),
+        height4x4(height >> 2),
         scratch_buffer(scratch_buffer),
         residual(residual) {
     assert(size != kBlockInvalid);
-    assert(residual_size[kPlaneTypeY] != kBlockInvalid);
+    residual_size[kPlaneY] = kPlaneResidualSize[size][0][0];
+    residual_size[kPlaneU] = residual_size[kPlaneV] =
+        kPlaneResidualSize[size][tile.subsampling_x_[kPlaneU]]
+                          [tile.subsampling_y_[kPlaneU]];
+    assert(residual_size[kPlaneY] != kBlockInvalid);
     if (tile.PlaneCount() > 1) {
-      assert(residual_size[kPlaneTypeUV] != kBlockInvalid);
+      assert(residual_size[kPlaneU] != kBlockInvalid);
+    }
+    if ((row4x4 & 1) == 0 &&
+        (tile.sequence_header_.color_config.subsampling_y & height4x4) == 1) {
+      has_chroma = false;
+    } else if ((column4x4 & 1) == 0 &&
+               (tile.sequence_header_.color_config.subsampling_x & width4x4) ==
+                   1) {
+      has_chroma = false;
+    } else {
+      has_chroma = !tile.sequence_header_.color_config.is_monochrome;
+    }
+    top_available[kPlaneY] = tile.IsTopInside(row4x4);
+    left_available[kPlaneY] = tile.IsLeftInside(column4x4);
+    if (has_chroma) {
+      // top_available[kPlaneU] and top_available[kPlaneV] are valid only if
+      // has_chroma is true.
+      // The next 3 lines are equivalent to:
+      // top_available[kPlaneU] = top_available[kPlaneV] =
+      //     top_available[kPlaneY] &&
+      //     ((tile.sequence_header_.color_config.subsampling_y & height4x4) ==
+      //     0 || tile.IsTopInside(row4x4 - 1));
+      top_available[kPlaneU] = top_available[kPlaneV] = tile.IsTopInside(
+          row4x4 -
+          (tile.sequence_header_.color_config.subsampling_y & height4x4));
+      // left_available[kPlaneU] and left_available[kPlaneV] are valid only if
+      // has_chroma is true.
+      // The next 3 lines are equivalent to:
+      // left_available[kPlaneU] = left_available[kPlaneV] =
+      //     left_available[kPlaneY] &&
+      //     ((tile.sequence_header_.color_config.subsampling_x & width4x4) == 0
+      //      || tile.IsLeftInside(column4x4 - 1));
+      left_available[kPlaneU] = left_available[kPlaneV] = tile.IsLeftInside(
+          column4x4 -
+          (tile.sequence_header_.color_config.subsampling_x & width4x4));
+    }
+    const ptrdiff_t stride = tile.block_parameters_holder_.columns4x4();
+    BlockParameters** const bps = tile.block_parameters_holder_.BaseAddress() +
+                                  row4x4 * stride + column4x4;
+    bp = *bps;
+    // bp_top is valid only if top_available[kPlaneY] is true.
+    if (top_available[kPlaneY]) {
+      bp_top = *(bps - stride);
+    }
+    // bp_left is valid only if left_available[kPlaneY] is true.
+    if (left_available[kPlaneY]) {
+      bp_left = *(bps - 1);
     }
   }
 
-  bool HasChroma() const {
-    if (kNum4x4BlocksHigh[size] == 1 &&
-        tile.sequence_header_.color_config.subsampling_y != 0 &&
-        (row4x4 & 1) == 0) {
-      return false;
-    }
-    if (width4x4 == 1 &&
-        tile.sequence_header_.color_config.subsampling_x != 0 &&
-        (column4x4 & 1) == 0) {
-      return false;
-    }
-    return !tile.sequence_header_.color_config.is_monochrome;
-  }
-
-  bool TopAvailableChroma() const {
-    if (!HasChroma()) return false;
-    if ((tile.sequence_header_.color_config.subsampling_y &
-         kNum4x4BlocksHigh[size]) == 1) {
-      return tile.IsTopInside(row4x4 - 2);
-    }
-    return top_available;
-  }
-
-  bool LeftAvailableChroma() const {
-    if (!HasChroma()) return false;
-    if ((tile.sequence_header_.color_config.subsampling_x & width4x4) == 1) {
-      return tile.IsLeftInside(column4x4 - 2);
-    }
-    return left_available;
-  }
+  bool HasChroma() const { return has_chroma; }
 
   // These return values of these group of functions are valid only if the
   // corresponding top_available or left_available is true.
   ReferenceFrameType TopReference(int index) const {
-    const ReferenceFrameType default_type =
-        (index == 0) ? kReferenceFrameIntra : kReferenceFrameNone;
-    return top_available
-               ? tile.Parameters(row4x4 - 1, column4x4).reference_frame[index]
-               : default_type;
+    return bp_top->reference_frame[index];
   }
 
   ReferenceFrameType LeftReference(int index) const {
-    const ReferenceFrameType default_type =
-        (index == 0) ? kReferenceFrameIntra : kReferenceFrameNone;
-    return left_available
-               ? tile.Parameters(row4x4, column4x4 - 1).reference_frame[index]
-               : default_type;
+    return bp_left->reference_frame[index];
   }
 
   bool IsTopIntra() const { return TopReference(0) <= kReferenceFrameIntra; }
@@ -757,10 +763,14 @@ struct Tile::Block {
   bool IsLeftSingle() const { return LeftReference(1) <= kReferenceFrameIntra; }
 
   int CountReferences(ReferenceFrameType type) const {
-    return static_cast<int>(TopReference(0) == type) +
-           static_cast<int>(TopReference(1) == type) +
-           static_cast<int>(LeftReference(0) == type) +
-           static_cast<int>(LeftReference(1) == type);
+    return static_cast<int>(top_available[kPlaneY] &&
+                            bp_top->reference_frame[0] == type) +
+           static_cast<int>(top_available[kPlaneY] &&
+                            bp_top->reference_frame[1] == type) +
+           static_cast<int>(left_available[kPlaneY] &&
+                            bp_left->reference_frame[0] == type) +
+           static_cast<int>(left_available[kPlaneY] &&
+                            bp_left->reference_frame[1] == type);
   }
 
   // 7.10.3.
@@ -768,25 +778,31 @@ struct Tile::Block {
   // returns true indicating that the block has neighbors that are suitable for
   // use by overlapped motion compensation.
   bool HasOverlappableCandidates() const {
-    if (top_available) {
-      for (int x = column4x4;
-           x < std::min(tile.frame_header_.columns4x4, column4x4 + width4x4);
-           x += 2) {
-        if (tile.Parameters(row4x4 - 1, x | 1).reference_frame[0] >
-            kReferenceFrameIntra) {
+    const ptrdiff_t stride = tile.block_parameters_holder_.columns4x4();
+    BlockParameters** const bps = tile.block_parameters_holder_.BaseAddress();
+    if (top_available[kPlaneY]) {
+      BlockParameters** bps_top = bps + (row4x4 - 1) * stride + (column4x4 | 1);
+      const int columns = std::min(tile.frame_header_.columns4x4 - column4x4,
+                                   static_cast<int>(width4x4));
+      BlockParameters** const bps_top_end = bps_top + columns;
+      do {
+        if ((*bps_top)->reference_frame[0] > kReferenceFrameIntra) {
           return true;
         }
-      }
+        bps_top += 2;
+      } while (bps_top < bps_top_end);
     }
-    if (left_available) {
-      for (int y = row4x4; y < std::min(tile.frame_header_.rows4x4,
-                                        row4x4 + kNum4x4BlocksHigh[size]);
-           y += 2) {
-        if (tile.Parameters(y | 1, column4x4 - 1).reference_frame[0] >
-            kReferenceFrameIntra) {
+    if (left_available[kPlaneY]) {
+      BlockParameters** bps_left = bps + (row4x4 | 1) * stride + column4x4 - 1;
+      const int rows = std::min(tile.frame_header_.rows4x4 - row4x4,
+                                static_cast<int>(height4x4));
+      BlockParameters** const bps_left_end = bps_left + rows * stride;
+      do {
+        if ((*bps_left)->reference_frame[0] > kReferenceFrameIntra) {
           return true;
         }
-      }
+        bps_left += 2 * stride;
+      } while (bps_left < bps_left_end);
     }
     return false;
   }
@@ -799,12 +815,13 @@ struct Tile::Block {
   const uint8_t height;
   const uint8_t width4x4;
   const uint8_t height4x4;
-  const bool left_available;
-  const bool top_available;
-  const BlockSize residual_size[kNumPlaneTypes];
-  BlockParameters* const bp_top;
-  BlockParameters* const bp_left;
-  BlockParameters* const bp;
+  bool has_chroma;
+  BlockSize residual_size[kMaxPlanes];
+  bool top_available[kMaxPlanes];
+  bool left_available[kMaxPlanes];
+  const BlockParameters* bp_top;
+  const BlockParameters* bp_left;
+  BlockParameters* bp;
   DecoderScratchBuffer* const scratch_buffer;
   ResidualPtr* const residual;
 };

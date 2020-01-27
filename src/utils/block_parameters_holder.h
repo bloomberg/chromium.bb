@@ -50,6 +50,10 @@ class BlockParametersHolder {
     return block_parameters_cache_[row4x4][column4x4];
   }
 
+  BlockParameters** BaseAddress() { return block_parameters_cache_.data(); }
+
+  int columns4x4() const { return columns4x4_; }
+
   // Returns the ParameterTree corresponding to superblock starting at (|row|,
   // |column|).
   ParameterTree* Tree(int row, int column) { return trees_[row][column].get(); }

@@ -230,7 +230,7 @@ void ScanRow(const Tile::Block& block, int delta_row, bool is_compound,
   const int min_step = GetMinimumStep(block.width4x4, delta_row);
   for (int step, mv_column = block.column4x4 + delta_column;
        mv_column < end_mv_column; mv_column += step) {
-    if (!block.tile.IsTopInside(mv_row)) break;
+    if (!block.tile.IsTopInside(mv_row + 1)) break;
     const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
     step = std::max(static_cast<int>(std::min(block.width4x4,
                                               kNum4x4BlocksWide[mv_bp.size])),
@@ -259,7 +259,7 @@ void ScanColumn(const Tile::Block& block, int delta_column, bool is_compound,
   const int min_step = GetMinimumStep(block.height4x4, delta_column);
   for (int step, mv_row = block.row4x4 + delta_row; mv_row < end_mv_row;
        mv_row += step) {
-    if (!block.tile.IsLeftInside(mv_column)) break;
+    if (!block.tile.IsLeftInside(mv_column + 1)) break;
     const BlockParameters& mv_bp = block.tile.Parameters(mv_row, mv_column);
     step = std::max(static_cast<int>(std::min(block.height4x4,
                                               kNum4x4BlocksHigh[mv_bp.size])),
@@ -503,7 +503,7 @@ void ExtraSearch(
     for (int i = 0; i < num4x4;) {
       const int mv_row = block.row4x4 + ((pass == 0) ? -1 : i);
       const int mv_column = block.column4x4 + ((pass == 0) ? i : -1);
-      if (!block.tile.IsTopLeftInside(mv_row, mv_column)) break;
+      if (!block.tile.IsTopLeftInside(mv_row + 1, mv_column + 1)) break;
       if (is_compound) {
         AddExtraCompoundMvCandidate(block, mv_row, mv_column,
                                     reference_frame_sign_bias, ref_id_count,
@@ -762,7 +762,7 @@ void FindWarpSamples(const Tile::Block& block, int* const num_warp_samples,
   bool top_left = true;
   bool top_right = true;
   int step = 1;
-  if (block.top_available) {
+  if (block.top_available[kPlaneY]) {
     BlockSize source_size =
         block.tile.Parameters(block.row4x4 - 1, block.column4x4).size;
     const int source_width4x4 = kNum4x4BlocksWide[source_size];
@@ -788,7 +788,7 @@ void FindWarpSamples(const Tile::Block& block, int* const num_warp_samples,
       }
     }
   }
-  if (block.left_available) {
+  if (block.left_available[kPlaneY]) {
     BlockSize source_size =
         block.tile.Parameters(block.row4x4, block.column4x4 - 1).size;
     const int source_height4x4 = kNum4x4BlocksHigh[source_size];

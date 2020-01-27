@@ -375,8 +375,7 @@ bool Tile::IsSmoothPrediction(int row, int column, Plane plane) const {
 int Tile::GetIntraEdgeFilterType(const Block& block, Plane plane) const {
   const int subsampling_x = subsampling_x_[plane];
   const int subsampling_y = subsampling_y_[plane];
-  if ((plane == kPlaneY && block.top_available) ||
-      (plane != kPlaneY && block.TopAvailableChroma())) {
+  if (block.top_available[plane]) {
     const int row =
         block.row4x4 - 1 -
         static_cast<int>(subsampling_y != 0 && (block.row4x4 & 1) != 0);
@@ -385,8 +384,7 @@ int Tile::GetIntraEdgeFilterType(const Block& block, Plane plane) const {
         static_cast<int>(subsampling_x != 0 && (block.column4x4 & 1) == 0);
     if (IsSmoothPrediction(row, column, plane)) return 1;
   }
-  if ((plane == kPlaneY && block.left_available) ||
-      (plane != kPlaneY && block.LeftAvailableChroma())) {
+  if (block.left_available[plane]) {
     const int row = block.row4x4 + static_cast<int>(subsampling_y != 0 &&
                                                     (block.row4x4 & 1) == 0);
     const int column =
@@ -811,8 +809,8 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
                           const int round_bits) {
   const int subsampling_x = subsampling_x_[plane];
   const int subsampling_y = subsampling_y_[plane];
-  if (block.top_available &&
-      !IsBlockSmallerThan8x8(block.residual_size[GetPlaneType(plane)])) {
+  if (block.top_available[kPlaneY] &&
+      !IsBlockSmallerThan8x8(block.residual_size[plane])) {
     const int num_limit = std::min(uint8_t{4}, k4x4WidthLog2[block.size]);
     const int column4x4_max =
         std::min(block.column4x4 + block.width4x4, frame_header_.columns4x4);
@@ -844,7 +842,7 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
     }
   }
 
-  if (block.left_available) {
+  if (block.left_available[kPlaneY]) {
     const int num_limit = std::min(uint8_t{4}, k4x4HeightLog2[block.size]);
     const int row4x4_max =
         std::min(block.row4x4 + block.height4x4, frame_header_.rows4x4);

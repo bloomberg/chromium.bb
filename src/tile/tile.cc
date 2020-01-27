@@ -727,7 +727,7 @@ int Tile::GetTransformAllZeroContext(const Block& block, Plane plane,
 
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
-  const BlockSize plane_size = block.residual_size[GetPlaneType(plane)];
+  const BlockSize plane_size = block.residual_size[plane];
   const int block_width = kBlockWidthPixels[plane_size];
   const int block_height = kBlockHeightPixels[plane_size];
 
@@ -1445,12 +1445,8 @@ bool Tile::TransformBlock(const Block& block, Plane plane, int base_x,
           (sub_block_column4x4 >> subsampling_x) + step_x + 1;
       const int bl_row4x4 = (sub_block_row4x4 >> subsampling_y) + step_y + 1;
       const int bl_column4x4 = (sub_block_column4x4 >> subsampling_x);
-      const bool has_left =
-          x > 0 || (plane == kPlaneY ? block.left_available
-                                     : block.LeftAvailableChroma());
-      const bool has_top =
-          y > 0 ||
-          (plane == kPlaneY ? block.top_available : block.TopAvailableChroma());
+      const bool has_left = x > 0 || block.left_available[plane];
+      const bool has_top = y > 0 || block.top_available[plane];
 
       CALL_BITDEPTH_FUNCTION(
           IntraPrediction, block, plane, start_x, start_y, has_left, has_top,
@@ -1814,8 +1810,7 @@ void Tile::ComputePrediction(const Block& block) {
   do {
     const int8_t subsampling_x = subsampling_x_[plane];
     const int8_t subsampling_y = subsampling_y_[plane];
-    const BlockSize plane_size =
-        block.residual_size[GetPlaneType(static_cast<Plane>(plane))];
+    const BlockSize plane_size = block.residual_size[plane];
     const int block_width4x4 = kNum4x4BlocksWide[plane_size];
     const int block_height4x4 = kNum4x4BlocksHigh[plane_size];
     const int block_width = MultiplyBy4(block_width4x4);
@@ -1832,10 +1827,8 @@ void Tile::ComputePrediction(const Block& block) {
       const TransformSize tx_size =
           k4x4SizeToTransformSize[k4x4WidthLog2[plane_size]]
                                  [k4x4HeightLog2[plane_size]];
-      const bool has_left =
-          plane == kPlaneY ? block.left_available : block.LeftAvailableChroma();
-      const bool has_top =
-          plane == kPlaneY ? block.top_available : block.TopAvailableChroma();
+      const bool has_left = block.left_available[plane];
+      const bool has_top = block.top_available[plane];
       CALL_BITDEPTH_FUNCTION(
           IntraPrediction, block, static_cast<Plane>(plane), base_x, base_y,
           has_left, has_top,
@@ -1931,26 +1924,23 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
       column4x4 >= frame_header_.columns4x4) {
     return true;
   }
-  Block block(*this, row4x4, column4x4, block_size, scratch_buffer, residual,
-              tree->parameters());
-  block.bp->size = block_size;
-  block_parameters_holder_.FillCache(row4x4, column4x4, block_size,
-                                     tree->parameters());
-  block.bp->prediction_parameters =
+  BlockParameters& bp = *tree->parameters();
+  block_parameters_holder_.FillCache(row4x4, column4x4, block_size, &bp);
+  Block block(*this, row4x4, column4x4, block_size, scratch_buffer, residual);
+  bp.size = block_size;
+  bp.prediction_parameters =
       split_parse_and_decode_ ? std::unique_ptr<PredictionParameters>(
                                     new (std::nothrow) PredictionParameters())
                               : std::move(prediction_parameters_);
-  if (block.bp->prediction_parameters == nullptr) return false;
+  if (bp.prediction_parameters == nullptr) return false;
   if (!DecodeModeInfo(block)) return false;
   PopulateDeblockFilterLevel(block);
   if (!ReadPaletteTokens(block)) return false;
   DecodeTransformSize(block);
-  BlockParameters& bp = *block.bp;
   // Part of Section 5.11.37 in the spec (implemented as a simple lookup).
-  bp.uv_transform_size =
-      frame_header_.segmentation.lossless[bp.segment_id]
-          ? kTransformSize4x4
-          : kUVTransformSize[block.residual_size[kPlaneTypeUV]];
+  bp.uv_transform_size = frame_header_.segmentation.lossless[bp.segment_id]
+                             ? kTransformSize4x4
+                             : kUVTransformSize[block.residual_size[kPlaneU]];
   if (bp.skip) ResetEntropyContext(block);
   if (split_parse_and_decode_) {
     if (!Residual(block, kProcessingModeParseOnly)) return false;
@@ -1981,7 +1971,7 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
   }
   if (!split_parse_and_decode_) {
     StoreMotionFieldMvsIntoCurrentFrame(block);
-    prediction_parameters_ = std::move(block.bp->prediction_parameters);
+    prediction_parameters_ = std::move(bp.prediction_parameters);
   }
   return true;
 }
@@ -1996,8 +1986,7 @@ bool Tile::DecodeBlock(ParameterTree* const tree,
     return true;
   }
   const BlockSize block_size = tree->block_size();
-  Block block(*this, row4x4, column4x4, block_size, scratch_buffer, residual,
-              tree->parameters());
+  Block block(*this, row4x4, column4x4, block_size, scratch_buffer, residual);
   ComputePrediction(block);
   if (!Residual(block, kProcessingModeDecodeOnly)) return false;
   if (kDeblockFilterBitMask && !build_bit_mask_when_parsing_) {
