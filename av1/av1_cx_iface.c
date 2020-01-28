@@ -180,7 +180,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                                         // lossless
   1,                                         // enable_cdef
   1,                                         // enable_restoration
-  1,                                         // force_video_mode
+  0,                                         // force_video_mode
   1,                                         // enable_obmc
   3,                                         // disable_trellis_quant
   0,                                         // enable_qm
