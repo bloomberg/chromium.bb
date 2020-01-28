@@ -23,8 +23,9 @@ enum class ShouldSwapBrowsingInstance {
   kNo_ErrorPage = 8,
   kNo_AlreadyHasMatchingBrowsingInstance = 9,
   kNo_RendererDebugURL = 10,
+  kNo_NotNeededForBackForwardCache = 11,
 
-  kMaxValue = kNo_RendererDebugURL
+  kMaxValue = kNo_NotNeededForBackForwardCache
 };
 
 }  // namespace content

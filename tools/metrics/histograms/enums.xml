@@ -4904,6 +4904,7 @@ Unknown properties are collapsed to zero. -->
   <int value="8" label="Error page"/>
   <int value="9" label="Already has matching browsing instance"/>
   <int value="10" label="Renderer debug URL"/>
+  <int value="11" label="Not enabled and not needed for back-forward cache"/>
 </enum>
 
 <enum name="BackForwardCacheDisabledForRenderFrameHostReason">

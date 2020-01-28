@@ -116,7 +116,10 @@ bool ShouldSwapBrowsingInstancesForDynamicIsolation(
 ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
     RenderFrameHostImpl* current_rfh,
     const GURL& destination_effective_url) {
-  if (!IsProactivelySwapBrowsingInstanceEnabled())
+  // Back-forward cache triggers proactive swap when the current url can be
+  // stored in the back-forward cache.
+  if (!IsProactivelySwapBrowsingInstanceEnabled() &&
+      !IsBackForwardCacheEnabled())
     return ShouldSwapBrowsingInstance::kNo_ProactiveSwapDisabled;
 
   // Only main frames are eligible to swap BrowsingInstances.
@@ -155,7 +158,20 @@ ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
     return ShouldSwapBrowsingInstance::kNo_SameSiteNavigation;
   }
 
-  return ShouldSwapBrowsingInstance::kYes;
+  if (IsProactivelySwapBrowsingInstanceEnabled())
+    return ShouldSwapBrowsingInstance::kYes;
+
+  // If BackForwardCache is enabled, swap BrowsingInstances only when needed
+  // for back-forward cache.
+  DCHECK(IsBackForwardCacheEnabled());
+  NavigationControllerImpl* controller = static_cast<NavigationControllerImpl*>(
+      current_rfh->frame_tree_node()->navigator()->GetController());
+  if (controller->GetBackForwardCache().IsAllowed(
+          current_rfh->GetLastCommittedURL())) {
+    return ShouldSwapBrowsingInstance::kYes;
+  } else {
+    return ShouldSwapBrowsingInstance::kNo_NotNeededForBackForwardCache;
+  }
 }
 
 }  // namespace
