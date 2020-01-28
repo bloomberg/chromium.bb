@@ -34,7 +34,8 @@ enum {
   // InterRound0, Section 7.11.3.2.
   kInterRoundBitsHorizontal = 3,  // 8 & 10-bit.
   kInterRoundBitsHorizontal12bpp = 5,
-  kInterRoundBitsVertical = 11,  // 8 & 10-bit, single prediction.
+  kInterRoundBitsCompoundVertical = 7,  // 8, 10 & 12-bit compound prediction.
+  kInterRoundBitsVertical = 11,         // 8 & 10-bit, single prediction.
   kInterRoundBitsVertical12bpp = 9,
 };  // anonymous enum
 
