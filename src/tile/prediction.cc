@@ -321,9 +321,7 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
   Pixel* const dest = &buffer[y][x];
   const ptrdiff_t dest_stride = buffer_[plane].columns();
   if (use_filter_intra) {
-    dsp_.filter_intra_predictor(reinterpret_cast<uint8_t*>(dest), dest_stride,
-                                reinterpret_cast<uint8_t*>(top_row),
-                                reinterpret_cast<uint8_t*>(left_column),
+    dsp_.filter_intra_predictor(dest, dest_stride, top_row, left_column,
                                 prediction_parameters.filter_intra_mode, width,
                                 height);
   } else if (is_directional_mode) {
@@ -334,10 +332,8 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
     const dsp::IntraPredictor predictor =
         GetIntraPredictor(mode, has_left, has_top);
     assert(predictor != dsp::kNumIntraPredictors);
-    dsp_.intra_predictors[tx_size][predictor](
-        reinterpret_cast<uint8_t*>(dest), dest_stride,
-        reinterpret_cast<uint8_t*>(top_row),
-        reinterpret_cast<uint8_t*>(left_column));
+    dsp_.intra_predictors[tx_size][predictor](dest, dest_stride, top_row,
+                                              left_column);
   }
 }
 
@@ -448,37 +444,32 @@ void Tile::DirectionalPrediction(const Block& block, Plane plane, int x, int y,
   Array2DView<Pixel> buffer(buffer_[plane].rows(),
                             buffer_[plane].columns() / sizeof(Pixel),
                             reinterpret_cast<Pixel*>(&buffer_[plane][0][0]));
-  auto* const dest = reinterpret_cast<uint8_t* const>(&buffer[y][x]);
+  Pixel* const dest = &buffer[y][x];
   const ptrdiff_t stride = buffer_[plane].columns();
   if (prediction_angle == 90) {
     dsp_.intra_predictors[tx_size][dsp::kIntraPredictorVertical](
-        dest, stride, reinterpret_cast<uint8_t*>(top_row),
-        reinterpret_cast<uint8_t*>(left_column));
+        dest, stride, top_row, left_column);
   } else if (prediction_angle == 180) {
     dsp_.intra_predictors[tx_size][dsp::kIntraPredictorHorizontal](
-        dest, stride, reinterpret_cast<uint8_t*>(top_row),
-        reinterpret_cast<uint8_t*>(left_column));
+        dest, stride, top_row, left_column);
   } else if (prediction_angle < 90) {
     const int dx = GetDirectionalIntraPredictorDerivative(prediction_angle);
-    dsp_.directional_intra_predictor_zone1(dest, stride,
-                                           reinterpret_cast<uint8_t*>(top_row),
-                                           width, height, dx, upsampled_top);
+    dsp_.directional_intra_predictor_zone1(dest, stride, top_row, width, height,
+                                           dx, upsampled_top);
   } else if (prediction_angle < 180) {
     const int dx =
         GetDirectionalIntraPredictorDerivative(180 - prediction_angle);
     const int dy =
         GetDirectionalIntraPredictorDerivative(prediction_angle - 90);
-    dsp_.directional_intra_predictor_zone2(
-        dest, stride, reinterpret_cast<uint8_t*>(top_row),
-        reinterpret_cast<uint8_t*>(left_column), width, height, dx, dy,
-        upsampled_top, upsampled_left);
+    dsp_.directional_intra_predictor_zone2(dest, stride, top_row, left_column,
+                                           width, height, dx, dy, upsampled_top,
+                                           upsampled_left);
   } else {
     assert(prediction_angle < 270);
     const int dy =
         GetDirectionalIntraPredictorDerivative(270 - prediction_angle);
-    dsp_.directional_intra_predictor_zone3(
-        dest, stride, reinterpret_cast<uint8_t*>(left_column), width, height,
-        dy, upsampled_left);
+    dsp_.directional_intra_predictor_zone3(dest, stride, left_column, width,
+                                           height, dy, upsampled_left);
   }
 }
 
