@@ -124,6 +124,16 @@ macro(libgav1_set_build_definitions)
 
   list(APPEND libgav1_defines "LIBGAV1_MAX_BITDEPTH=${LIBGAV1_MAX_BITDEPTH}")
 
+  if(DEFINED LIBGAV1_THREADPOOL_USE_STD_MUTEX)
+    if(NOT LIBGAV1_THREADPOOL_USE_STD_MUTEX EQUAL 0
+       AND NOT LIBGAV1_THREADPOOL_USE_STD_MUTEX EQUAL 1)
+      libgav1_die("LIBGAV1_THREADPOOL_USE_STD_MUTEX must be 0 or 1.")
+    endif()
+
+    list(APPEND libgav1_defines
+         "LIBGAV1_THREADPOOL_USE_STD_MUTEX=${LIBGAV1_THREADPOOL_USE_STD_MUTEX}")
+  endif()
+
   # Source file names ending in these suffixes will have the appropriate
   # compiler flags added to their compile commands to enable intrinsics.
   set(libgav1_neon_source_file_suffix "neon.cc")

@@ -85,6 +85,9 @@ libgav1_track_configuration_variable(LIBGAV1_SANITIZE)
 # Generated source file directory.
 libgav1_track_configuration_variable(LIBGAV1_GENERATED_SOURCES_DIRECTORY)
 
+# Controls use of std::mutex and absl::Mutex in ThreadPool.
+libgav1_track_configuration_variable(LIBGAV1_THREADPOOL_USE_STD_MUTEX)
+
 if(LIBGAV1_VERBOSE)
   libgav1_dump_cmake_flag_variables()
   libgav1_dump_tracked_configuration_variables()
