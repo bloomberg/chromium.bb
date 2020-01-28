@@ -81,8 +81,7 @@ void ConvolveScale2D_C(
       for (int k = 0; k < kSubPixelTaps; ++k) {
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] * src_x[k];
       }
-      intermediate[x] = static_cast<int16_t>(
-          RightShiftWithRounding(sum, kRoundBitsHorizontal - 1));
+      intermediate[x] = RightShiftWithRounding(sum, kRoundBitsHorizontal - 1);
       p += step_x;
     } while (++x < width);
 
@@ -106,9 +105,8 @@ void ConvolveScale2D_C(
             intermediate[((p >> kScaleSubPixelBits) + k) * intermediate_stride +
                          x];
       }
-      dest[x] = static_cast<Pixel>(
-          Clip3(RightShiftWithRounding(sum, kRoundBitsVertical - 1), 0,
-                max_pixel_value));
+      dest[x] = Clip3(RightShiftWithRounding(sum, kRoundBitsVertical - 1), 0,
+                      max_pixel_value);
     } while (++x < width);
 
     dest += dest_stride;
@@ -161,8 +159,7 @@ void ConvolveCompoundScale2D_C(
       for (int k = 0; k < kSubPixelTaps; ++k) {
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] * src_x[k];
       }
-      intermediate[x] = static_cast<int16_t>(
-          RightShiftWithRounding(sum, kRoundBitsHorizontal - 1));
+      intermediate[x] = RightShiftWithRounding(sum, kRoundBitsHorizontal - 1);
       p += step_x;
     } while (++x < width);
 
@@ -188,8 +185,8 @@ void ConvolveCompoundScale2D_C(
             intermediate[((p >> kScaleSubPixelBits) + k) * intermediate_stride +
                          x];
       }
-      dest[x] = static_cast<uint16_t>(
-          RightShiftWithRounding(sum, kRoundBitsVertical - 1) + blend_offset);
+      dest[x] =
+          RightShiftWithRounding(sum, kRoundBitsVertical - 1) + blend_offset;
     } while (++x < width);
 
     dest += pred_stride;
@@ -237,8 +234,7 @@ void ConvolveCompound2D_C(const void* const reference,
       for (int k = 0; k < kSubPixelTaps; ++k) {
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] * src[x + k];
       }
-      intermediate[x] = static_cast<int16_t>(
-          RightShiftWithRounding(sum, kRoundBitsHorizontal - 1));
+      intermediate[x] = RightShiftWithRounding(sum, kRoundBitsHorizontal - 1);
     } while (++x < width);
 
     src += src_stride;
@@ -260,8 +256,8 @@ void ConvolveCompound2D_C(const void* const reference,
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] *
                intermediate[k * intermediate_stride + x];
       }
-      dest[x] = static_cast<uint16_t>(
-          RightShiftWithRounding(sum, kRoundBitsVertical - 1) + blend_offset);
+      dest[x] =
+          RightShiftWithRounding(sum, kRoundBitsVertical - 1) + blend_offset;
     } while (++x < width);
 
     dest += pred_stride;
@@ -315,8 +311,7 @@ void Convolve2D_C(const void* const reference, const ptrdiff_t reference_stride,
       for (int k = 0; k < kSubPixelTaps; ++k) {
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] * src[x + k];
       }
-      intermediate[x] = static_cast<int16_t>(
-          RightShiftWithRounding(sum, kRoundBitsHorizontal - 1));
+      intermediate[x] = RightShiftWithRounding(sum, kRoundBitsHorizontal - 1);
     } while (++x < width);
 
     src += src_stride;
@@ -336,9 +331,8 @@ void Convolve2D_C(const void* const reference, const ptrdiff_t reference_stride,
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] *
                intermediate[k * intermediate_stride + x];
       }
-      dest[x] = static_cast<Pixel>(
-          Clip3(RightShiftWithRounding(sum, kRoundBitsVertical - 1), 0,
-                max_pixel_value));
+      dest[x] = Clip3(RightShiftWithRounding(sum, kRoundBitsVertical - 1), 0,
+                      max_pixel_value);
     } while (++x < width);
 
     dest += dest_stride;
@@ -380,8 +374,7 @@ void ConvolveHorizontal_C(const void* const reference,
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] * src[x + k];
       }
       sum = RightShiftWithRounding(sum, kRoundBitsHorizontal - 1);
-      dest[x] = static_cast<Pixel>(
-          Clip3(RightShiftWithRounding(sum, bits), 0, max_pixel_value));
+      dest[x] = Clip3(RightShiftWithRounding(sum, bits), 0, max_pixel_value);
     } while (++x < width);
 
     src += src_stride;
@@ -434,8 +427,8 @@ void ConvolveVertical_C(const void* const reference,
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] *
                src[k * src_stride + x];
       }
-      dest[x] = static_cast<Pixel>(Clip3(
-          RightShiftWithRounding(sum, kFilterBits - 1), 0, max_pixel_value));
+      dest[x] = Clip3(RightShiftWithRounding(sum, kFilterBits - 1), 0,
+                      max_pixel_value);
     } while (++x < width);
 
     src += src_stride;
@@ -484,7 +477,7 @@ void ConvolveCompoundCopy_C(const void* const reference,
     do {
       int sum = (1 << bitdepth) + (1 << (bitdepth - 1));
       sum += src[x];
-      dest[x] = static_cast<uint16_t>(sum << kRoundBitsVertical);
+      dest[x] = sum << kRoundBitsVertical;
     } while (++x < width);
     src += src_stride;
     dest += pred_stride;
@@ -612,8 +605,8 @@ void ConvolveIntraBlockCopy2D_C(
   do {
     int x = 0;
     do {
-      dest[x] = static_cast<Pixel>(
-          RightShiftWithRounding(intermediate[x] + intermediate[x + width], 2));
+      dest[x] =
+          RightShiftWithRounding(intermediate[x] + intermediate[x + width], 2);
     } while (++x < width);
 
     intermediate += width;
@@ -645,8 +638,7 @@ void ConvolveIntraBlockCopy1D_C(
   do {
     int x = 0;
     do {
-      dest[x] = static_cast<Pixel>(
-          RightShiftWithRounding(src[x] + src[x + offset], 1));
+      dest[x] = RightShiftWithRounding(src[x] + src[x + offset], 1);
     } while (++x < width);
 
     src += src_stride;
