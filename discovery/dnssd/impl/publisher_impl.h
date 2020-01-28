@@ -22,7 +22,7 @@ class PublisherImpl : public DnsSdPublisher,
   ~PublisherImpl() override;
 
   // DnsSdPublisher overrides.
-  Error Register(const DnsSdInstanceRecord& record) override;
+  Error Register(const DnsSdInstanceRecord& record, Client* client) override;
   Error UpdateRegistration(const DnsSdInstanceRecord& record) override;
   int DeregisterAll(const std::string& service) override;
 
@@ -35,7 +35,7 @@ class PublisherImpl : public DnsSdPublisher,
 
   // The set of records which will be published once the mDNS Probe phase
   // completes.
-  std::vector<DnsSdInstanceRecord> pending_records_;
+  std::map<DnsSdInstanceRecord, Client* const> pending_records_;
 
   // Maps from the requested record to the record which was published after
   // the mDNS Probe phase was completed. The only difference between these

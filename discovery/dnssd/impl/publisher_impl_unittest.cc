@@ -16,6 +16,12 @@ using testing::_;
 using testing::Return;
 using testing::StrictMock;
 
+class MockClient : public DnsSdPublisher::Client {
+ public:
+  MOCK_METHOD2(OnInstanceClaimed,
+               void(const DnsSdInstanceRecord&, const DnsSdInstanceRecord&));
+};
+
 class MockMdnsService : public MdnsService {
  public:
   void StartQuery(const DomainName& name,
@@ -61,9 +67,13 @@ TEST(DnsSdPublisherImplTests, TestRegistrationAndDegrestration) {
   const DomainName domain2{"instance2", "_service", "_udp", "domain"};
   const DnsSdInstanceRecord record("instance", "_service._udp", "domain",
                                    {address, 80}, {});
+  const DnsSdInstanceRecord record2("instance2", "_service._udp", "domain",
+                                    {address, 80}, {});
+  MockClient client;
+
   EXPECT_CALL(publisher.mdns_service(), StartProbe(&publisher, domain, _))
       .Times(1);
-  publisher.Register(record);
+  publisher.Register(record, &client);
   testing::Mock::VerifyAndClearExpectations(&publisher.mdns_service());
 
   int seen = 0;
@@ -89,9 +99,11 @@ TEST(DnsSdPublisherImplTests, TestRegistrationAndDegrestration) {
         }
         return Error::None();
       });
+  EXPECT_CALL(client, OnInstanceClaimed(record, record2));
   publisher.OnDomainFound(domain, domain2);
   EXPECT_EQ(seen, 2);
   testing::Mock::VerifyAndClearExpectations(&publisher.mdns_service());
+  testing::Mock::VerifyAndClearExpectations(&client);
 
   seen = 0;
   EXPECT_CALL(publisher.mdns_service(), UnregisterRecord(_))
@@ -124,14 +136,15 @@ TEST(DnsSdPublisherImplTests, TestUpdate) {
   txt.SetFlag("id", true);
   DnsSdInstanceRecord record("instance", "_service._udp", "domain",
                              {address, 80}, std::move(txt));
+  MockClient client;
 
   // Update a non-existent record
   EXPECT_FALSE(publisher.UpdateRegistration(record).ok());
 
-  // Update a record during hte probing phase
+  // Update a record during the probing phase
   EXPECT_CALL(publisher.mdns_service(), StartProbe(&publisher, domain, _))
       .Times(1);
-  EXPECT_EQ(publisher.Register(record), Error::None());
+  EXPECT_EQ(publisher.Register(record, &client), Error::None());
   testing::Mock::VerifyAndClearExpectations(&publisher.mdns_service());
 
   IPAddress address2 = IPAddress(1, 2, 3, 4, 5, 6, 7, 8);
@@ -151,9 +164,11 @@ TEST(DnsSdPublisherImplTests, TestUpdate) {
         }
         return Error::None();
       });
+  EXPECT_CALL(client, OnInstanceClaimed(record2, record2));
   publisher.OnDomainFound(domain, domain);
   EXPECT_TRUE(seen_v6);
   testing::Mock::VerifyAndClearExpectations(&publisher.mdns_service());
+  testing::Mock::VerifyAndClearExpectations(&client);
 
   // Update a record once it has been published.
   EXPECT_CALL(publisher.mdns_service(), RegisterRecord(_))

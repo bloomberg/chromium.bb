@@ -39,7 +39,8 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
   // This function type is responsible for converting from a DNS service
   // instance (received from another mDNS endpoint) to a T type to be returned
   // to the caller.
-  using ServiceConverter = std::function<T(const DnsSdInstanceRecord&)>;
+  using ServiceConverter =
+      std::function<ErrorOr<T>(const DnsSdInstanceRecord&)>;
 
   DnsSdServiceWatcher(DnsSdService* service,
                       std::string service_name,
@@ -118,15 +119,27 @@ class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
   void OnInstanceCreated(const DnsSdInstanceRecord& new_record) override {
     // NOTE: existence is not checked because records may be overwritten after
     // querier_->ReinitializeQueries() is called.
+    ErrorOr<T> record = conversion_(new_record);
+    if (record.is_error()) {
+      OSP_LOG << "Conversion of received record failed with error: "
+              << record.error();
+      return;
+    }
     records_[new_record.instance_id()] =
-        std::make_unique<T>(conversion_(new_record));
+        std::make_unique<T>(std::move(record.value()));
     callback_(GetServices());
   }
 
   void OnInstanceUpdated(const DnsSdInstanceRecord& modified_record) override {
     auto it = records_.find(modified_record.instance_id());
     if (it != records_.end()) {
-      auto ptr = std::make_unique<T>(conversion_(modified_record));
+      ErrorOr<T> record = conversion_(modified_record);
+      if (record.is_error()) {
+        OSP_LOG << "Conversion of received record failed with error: "
+                << record.error();
+        return;
+      }
+      auto ptr = std::make_unique<T>(std::move(record.value()));
       it->second.swap(ptr);
 
       callback_(GetServices());

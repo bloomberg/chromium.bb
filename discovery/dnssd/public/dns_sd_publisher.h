@@ -13,6 +13,20 @@ namespace discovery {
 
 class DnsSdPublisher {
  public:
+  class Client {
+   public:
+    virtual ~Client() = default;
+
+    // Callback called when a record is successfully claimed and published via
+    // the Register() method. These records are expected to only differ in
+    // the DnsSdInstanceRecord::instance_id() field, or to be equal. This
+    // callback is purely for informational purposes and the caller is not
+    // required to act on it.
+    virtual void OnInstanceClaimed(
+        const DnsSdInstanceRecord& requested_record,
+        const DnsSdInstanceRecord& claimed_record) = 0;
+  };
+
   virtual ~DnsSdPublisher() = default;
 
   // Publishes the PTR, SRV, TXT, A, and AAAA records provided in the
@@ -21,7 +35,7 @@ class DnsSdPublisher {
   // NOTE: Some embedders may return errors on other conditions (for instance,
   // android will return an error if the resulting TXT record has values not
   // encodable with UTF8).
-  virtual Error Register(const DnsSdInstanceRecord& record) = 0;
+  virtual Error Register(const DnsSdInstanceRecord& record, Client* client) = 0;
 
   // Updates the TXT, A, and AAAA records associated with the provided record,
   // if any changes have occurred. The instance and domain names must match
@@ -31,8 +45,10 @@ class DnsSdPublisher {
   virtual Error UpdateRegistration(const DnsSdInstanceRecord& record) = 0;
 
   // Unpublishes any PTR, SRV, TXT, A, and AAAA records associated with this
-  // service id. If no such records are published, this operation will be a
-  // no-op. Returns the number of records which were removed.
+  // service id, where the service id is the second part of the
+  // <instance>.<service>.<domain> domain name as described in RFC 6763. If no
+  // such records are published, this operation will be a no-op. Returns the
+  // number of records which were removed.
   virtual int DeregisterAll(const std::string& service) = 0;
 };
 

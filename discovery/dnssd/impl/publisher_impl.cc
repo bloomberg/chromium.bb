@@ -33,31 +33,22 @@ DnsSdInstanceRecord UpdateDomain(const DomainName& domain,
   }
 }
 
-inline std::vector<DnsSdInstanceRecord>::iterator FindKey(
-    std::vector<DnsSdInstanceRecord>* records,
-    const InstanceKey& key) {
-  return std::find_if(records->begin(), records->end(),
-                      [&key](const DnsSdInstanceRecord& record) {
-                        return key == InstanceKey(record);
-                      });
-}
-
 template <typename T>
 inline typename std::map<DnsSdInstanceRecord, T>::iterator FindKey(
     std::map<DnsSdInstanceRecord, T>* records,
     const InstanceKey& key) {
-  return std::find_if(
-      records->begin(), records->end(),
-      [&key](const std::pair<DnsSdInstanceRecord, DnsSdInstanceRecord>& pair) {
-        return key == InstanceKey(pair.first);
-      });
+  return std::find_if(records->begin(), records->end(),
+                      [&key](const std::pair<DnsSdInstanceRecord, T>& pair) {
+                        return key == InstanceKey(pair.first);
+                      });
 }
 
-int EraseRecordsWithServiceId(std::vector<DnsSdInstanceRecord>* records,
+template <typename T>
+int EraseRecordsWithServiceId(std::map<DnsSdInstanceRecord, T>* records,
                               const std::string& service_id) {
   int removed_count = 0;
   for (auto it = records->begin(); it != records->end();) {
-    if (it->service_id() == service_id) {
+    if (it->first.service_id() == service_id) {
       removed_count++;
       it = records->erase(it);
     } else {
@@ -71,24 +62,28 @@ int EraseRecordsWithServiceId(std::vector<DnsSdInstanceRecord>* records,
 }  // namespace
 
 PublisherImpl::PublisherImpl(MdnsService* publisher)
-    : mdns_publisher_(publisher) {}
+    : mdns_publisher_(publisher) {
+  OSP_DCHECK(mdns_publisher_);
+}
 
 PublisherImpl::~PublisherImpl() = default;
 
-Error PublisherImpl::Register(const DnsSdInstanceRecord& record) {
+Error PublisherImpl::Register(const DnsSdInstanceRecord& record,
+                              Client* client) {
+  OSP_DCHECK(client != nullptr);
+
   if (published_records_.find(record) != published_records_.end()) {
     return Error::Code::kItemAlreadyExists;
-  } else if (std::find(pending_records_.begin(), pending_records_.end(),
-                       record) != pending_records_.end()) {
-    return Error::Code::kItemAlreadyExists;
+  } else if (pending_records_.find(record) != pending_records_.end()) {
+    return Error::Code::kOperationInProgress;
   }
 
   InstanceKey key(record);
   IPEndpoint endpoint =
       record.address_v4() ? record.address_v4() : record.address_v6();
-  pending_records_.push_back(record);
-  mdns_publisher_->StartProbe(this, GetDomainName(key), endpoint.address);
-  return Error::None();
+  pending_records_.emplace(record, client);
+  return mdns_publisher_->StartProbe(this, GetDomainName(key),
+                                     endpoint.address);
 }
 
 Error PublisherImpl::UpdateRegistration(const DnsSdInstanceRecord& record) {
@@ -101,7 +96,9 @@ Error PublisherImpl::UpdateRegistration(const DnsSdInstanceRecord& record) {
     // The instance, service, and domain ids have not changed, so only the
     // remaining data needs to change. The ongoing probe does not need to be
     // modified.
-    *it = record;
+    Client* const client = it->second;
+    pending_records_.erase(it);
+    pending_records_.emplace(record, client);
     return Error::None();
   } else {
     return UpdatePublishedRegistration(record);
@@ -203,8 +200,9 @@ void PublisherImpl::OnDomainFound(const DomainName& requested_name,
     return;
   }
 
-  DnsSdInstanceRecord requested_record = std::move(*it);
+  DnsSdInstanceRecord requested_record = std::move(it->first);
   DnsSdInstanceRecord publication = requested_record;
+  Client* const client = it->second;
   pending_records_.erase(it);
 
   InstanceKey requested_key(requested_record);
@@ -218,8 +216,9 @@ void PublisherImpl::OnDomainFound(const DomainName& requested_name,
     mdns_publisher_->RegisterRecord(mdns_record);
   }
 
-  published_records_.emplace(std::move(requested_record),
-                             std::move(publication));
+  auto pair = published_records_.emplace(std::move(requested_record),
+                                         std::move(publication));
+  client->OnInstanceClaimed(pair.first->first, pair.first->second);
 }
 
 }  // namespace discovery
