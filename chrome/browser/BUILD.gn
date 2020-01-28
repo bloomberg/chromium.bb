@@ -1986,6 +1986,7 @@ jumbo_static_library("browser") {
     "//chrome/browser/touch_to_fill",
     "//chrome/browser/ui",
     "//chrome/browser/ui/webui/bluetooth_internals",
+    "//chrome/browser/updates/announcement_notification",
     "//chrome/common:channel_info",
     "//chrome/common/net",
     "//chrome/installer/util:with_no_strings",

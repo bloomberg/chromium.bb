@@ -3549,6 +3549,7 @@ test("unit_tests") {
     "//chrome:strings",
     "//chrome/browser/media/router:unittests",
     "//chrome/browser/notifications:unit_tests",
+    "//chrome/browser/updates/announcement_notification:unit_tests",
     "//chrome/common:test_support",
     "//chrome/common/media_router:test_support",
     "//components/account_id",
