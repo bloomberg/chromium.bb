@@ -33,7 +33,7 @@ macro(libgav1_set_build_definitions)
               "third_party/googletest/googletest/include"
               "third_party/googletest/googletest")
   list(APPEND libgav1_test_include_paths ${libgav1_include_paths}
-              ${libgav1_gtest_include_paths} ${libgav1_root})
+              ${libgav1_gtest_include_paths})
   list(APPEND libgav1_defines "LIBGAV1_CMAKE=1"
               "LIBGAV1_FLAGS_SRCDIR=\"${libgav1_root}\""
               "LIBGAV1_FLAGS_TMPDIR=\"/tmp\"")
