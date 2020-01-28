@@ -26,6 +26,34 @@ IPSubnet::IPSubnet(IPAddress address, uint8_t prefix_length)
     : address(std::move(address)), prefix_length(prefix_length) {}
 IPSubnet::~IPSubnet() = default;
 
+bool InterfaceInfo::HasIpV4Address() const {
+  if (v4_configured_ == HasEndpointTypeConfigured::Unknown) {
+    for (const auto& address : addresses) {
+      if (address.address.IsV4()) {
+        v4_configured_ = HasEndpointTypeConfigured::True;
+        return true;
+      }
+    }
+    v4_configured_ = HasEndpointTypeConfigured::False;
+  }
+
+  return v4_configured_;
+}
+
+bool InterfaceInfo::HasIpV6Address() const {
+  if (v6_configured_ == HasEndpointTypeConfigured::Unknown) {
+    for (const auto& address : addresses) {
+      if (address.address.IsV6()) {
+        v6_configured_ = HasEndpointTypeConfigured::True;
+        return true;
+      }
+    }
+    v6_configured_ = HasEndpointTypeConfigured::False;
+  }
+
+  return v6_configured_;
+}
+
 std::ostream& operator<<(std::ostream& out, const IPSubnet& subnet) {
   if (subnet.address.IsV6()) {
     out << '[';

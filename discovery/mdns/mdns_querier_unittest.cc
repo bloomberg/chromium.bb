@@ -70,7 +70,6 @@ class MdnsQuerierTest : public testing::Test {
       : clock_(Clock::now()),
         task_runner_(&clock_),
         sender_(&socket_),
-        receiver_(&socket_),
         record0_created_(DomainName{"testing", "local"},
                          DnsType::kA,
                          DnsClass::kIN,

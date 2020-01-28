@@ -42,8 +42,7 @@ class MdnsProbeTests : public testing::Test {
       : socket_(FakeUdpSocket::CreateDefault()),
         clock_(Clock::now()),
         task_runner_(&clock_),
-        sender_(socket_.get()),
-        receiver_(socket_.get()) {
+        sender_(socket_.get()) {
     EXPECT_EQ(task_runner_.delayed_tasks_.size(), size_t{0});
     probe_ = CreateProbe();
     EXPECT_EQ(task_runner_.delayed_tasks_.size(), size_t{1});

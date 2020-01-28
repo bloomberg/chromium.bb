@@ -100,7 +100,6 @@ class MdnsProbeManagerTests : public testing::Test {
         clock_(Clock::now()),
         task_runner_(&clock_),
         sender_(socket_.get()),
-        receiver_(socket_.get()),
         manager_(&sender_,
                  &receiver_,
                  &random_,

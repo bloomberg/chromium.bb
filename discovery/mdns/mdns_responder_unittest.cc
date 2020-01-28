@@ -78,7 +78,6 @@ class MdnsResponderTest : public testing::Test {
   MdnsResponderTest()
       : socket_(FakeUdpSocket::CreateDefault()),
         sender_(socket_.get()),
-        receiver_(socket_.get()),
         clock_(Clock::now()),
         task_runner_(&clock_),
         responder_(&record_handler_,

@@ -10,6 +10,7 @@
 #include "discovery/dnssd/impl/publisher_impl.h"
 #include "discovery/dnssd/impl/querier_impl.h"
 #include "discovery/dnssd/public/dns_sd_service.h"
+#include "platform/base/interface_info.h"
 
 namespace openscreen {
 
@@ -21,7 +22,7 @@ class MdnsService;
 
 class ServiceImpl final : public DnsSdService {
  public:
-  explicit ServiceImpl(TaskRunner* task_runner);
+  ServiceImpl(TaskRunner* task_runner, InterfaceInfo network_interface);
   ~ServiceImpl() override;
 
   // DnsSdService overrides.

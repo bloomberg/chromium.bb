@@ -12,12 +12,17 @@ namespace openscreen {
 namespace discovery {
 
 // static
-std::unique_ptr<DnsSdService> DnsSdService::Create(TaskRunner* task_runner) {
-  return std::make_unique<ServiceImpl>(task_runner);
+std::unique_ptr<DnsSdService> DnsSdService::Create(
+    TaskRunner* task_runner,
+    InterfaceInfo network_interface) {
+  return std::make_unique<ServiceImpl>(task_runner,
+                                       std::move(network_interface));
 }
 
-ServiceImpl::ServiceImpl(TaskRunner* task_runner)
-    : mdns_service_(MdnsService::Create(task_runner)),
+ServiceImpl::ServiceImpl(TaskRunner* task_runner,
+                         InterfaceInfo network_interface)
+    : mdns_service_(
+          MdnsService::Create(task_runner, std::move(network_interface))),
       querier_(mdns_service_.get()),
       publisher_(mdns_service_.get()) {}
 

@@ -5,10 +5,13 @@
 #ifndef DISCOVERY_MDNS_PUBLIC_MDNS_SERVICE_H_
 #define DISCOVERY_MDNS_PUBLIC_MDNS_SERVICE_H_
 
+#include <functional>
 #include <memory>
 
 #include "discovery/mdns/public/mdns_constants.h"
 #include "platform/base/error.h"
+#include "platform/base/interface_info.h"
+#include "platform/base/ip_address.h"
 
 namespace openscreen {
 
@@ -24,11 +27,13 @@ class MdnsRecordChangedCallback;
 
 class MdnsService {
  public:
-  virtual ~MdnsService() = default;
+  MdnsService();
+  virtual ~MdnsService();
 
   // Creates a new MdnsService instance, to be owned by the caller. On failure,
   // returns nullptr.
-  static std::unique_ptr<MdnsService> Create(TaskRunner* task_runner);
+  static std::unique_ptr<MdnsService> Create(TaskRunner* task_runner,
+                                             InterfaceInfo network_interface);
 
   // Starts an mDNS query with the given properties. Updated records are passed
   // to |callback|.  The caller must ensure |callback| remains alive while it is

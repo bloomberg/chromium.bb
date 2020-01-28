@@ -46,7 +46,7 @@ TEST(MdnsReceiverTest, ReceiveQuery) {
   std::unique_ptr<FakeUdpSocket> socket_info =
       FakeUdpSocket::CreateDefault(IPAddress::Version::kV4);
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver(socket_info.get());
+  MdnsReceiver receiver;
   receiver.SetQueryCallback(
       [&delegate](const MdnsMessage& message, const IPEndpoint& endpoint) {
         delegate.OnMessageReceived(message);
@@ -101,7 +101,7 @@ TEST(MdnsReceiverTest, ReceiveResponse) {
   std::unique_ptr<FakeUdpSocket> socket_info =
       FakeUdpSocket::CreateDefault(IPAddress::Version::kV6);
   MockMdnsReceiverDelegate delegate;
-  MdnsReceiver receiver(socket_info.get());
+  MdnsReceiver receiver;
   receiver.AddResponseCallback(&delegate);
   receiver.Start();
 

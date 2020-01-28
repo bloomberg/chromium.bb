@@ -14,7 +14,7 @@ namespace discovery {
 
 class MdnsMessage;
 
-class MdnsReceiver : UdpSocket::Client {
+class MdnsReceiver {
  public:
   class ResponseClient {
    public:
@@ -26,12 +26,12 @@ class MdnsReceiver : UdpSocket::Client {
   // MdnsReceiver does not own |socket| and |delegate|
   // and expects that the lifetime of these objects exceeds the lifetime of
   // MdnsReceiver.
-  explicit MdnsReceiver(UdpSocket* socket);
+  MdnsReceiver();
   MdnsReceiver(const MdnsReceiver& other) = delete;
   MdnsReceiver(MdnsReceiver&& other) noexcept = delete;
   MdnsReceiver& operator=(const MdnsReceiver& other) = delete;
   MdnsReceiver& operator=(MdnsReceiver&& other) noexcept = delete;
-  ~MdnsReceiver() override;
+  ~MdnsReceiver();
 
   void SetQueryCallback(
       std::function<void(const MdnsMessage&, const IPEndpoint& src)> callback);
@@ -45,10 +45,7 @@ class MdnsReceiver : UdpSocket::Client {
   void Start();
   void Stop();
 
-  // UdpSocket::Client overrides.
-  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
-  void OnError(UdpSocket* socket, Error error) override;
-  void OnSendError(UdpSocket* socket, Error error) override;
+  void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet);
 
  private:
   enum class State {
@@ -56,7 +53,6 @@ class MdnsReceiver : UdpSocket::Client {
     kRunning,
   };
 
-  UdpSocket* const socket_;
   std::function<void(const MdnsMessage&, const IPEndpoint& src)>
       query_callback_;
   State state_ = State::kStopped;

@@ -12,9 +12,7 @@ namespace discovery {
 
 MdnsReceiver::ResponseClient::~ResponseClient() = default;
 
-MdnsReceiver::MdnsReceiver(UdpSocket* socket) : socket_(socket) {
-  OSP_DCHECK(socket_);
-}
+MdnsReceiver::MdnsReceiver() = default;
 
 MdnsReceiver::~MdnsReceiver() {
   if (state_ == State::kRunning) {
@@ -80,16 +78,6 @@ void MdnsReceiver::OnRead(UdpSocket* socket,
       query_callback_(message, packet.source());
     }
   }
-}
-
-void MdnsReceiver::OnError(UdpSocket* socket, Error error) {
-  // This method should never be called for MdnsReciever.
-  OSP_UNIMPLEMENTED();
-}
-
-void MdnsReceiver::OnSendError(UdpSocket* socket, Error error) {
-  // This method should never be called for MdnsReciever.
-  OSP_UNIMPLEMENTED();
 }
 
 }  // namespace discovery

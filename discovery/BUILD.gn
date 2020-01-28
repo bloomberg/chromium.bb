@@ -33,6 +33,7 @@ source_set("mdns") {
     "mdns/mdns_writer.cc",
     "mdns/mdns_writer.h",
     "mdns/public/mdns_constants.h",
+    "mdns/public/mdns_service.cc",
     "mdns/public/mdns_service.h",
   ]
 

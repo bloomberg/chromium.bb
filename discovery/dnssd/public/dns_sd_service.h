@@ -5,7 +5,12 @@
 #ifndef DISCOVERY_DNSSD_PUBLIC_DNS_SD_SERVICE_H_
 #define DISCOVERY_DNSSD_PUBLIC_DNS_SD_SERVICE_H_
 
+#include <functional>
 #include <memory>
+
+#include "platform/base/error.h"
+#include "platform/base/interface_info.h"
+#include "platform/base/ip_address.h"
 
 namespace openscreen {
 
@@ -25,7 +30,8 @@ class DnsSdService {
 
   // Creates a new DnsSdService instance, to be owned by the caller. On failure,
   // return nullptr.
-  static std::unique_ptr<DnsSdService> Create(TaskRunner* task_runner);
+  static std::unique_ptr<DnsSdService> Create(TaskRunner* task_runner,
+                                              InterfaceInfo network_interface);
 
   // Returns the DnsSdQuerier owned by this DnsSdService. If queries are not
   // supported, returns nullptr.
