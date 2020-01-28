@@ -18,6 +18,10 @@ extern "C" {
 
 #include "av1/encoder/ml.h"
 
+// TODO(chiyotsai@google.com): The performance of these models are getting worse
+// due the changes in the encoder. We should retrain the models here to get
+// better performance once we have the time.
+
 #define FEATURE_SIZE 10
 #define LABEL_SIZE 16
 // nn model for ab partition pruning, 128x128.
@@ -2445,7 +2449,7 @@ static const NN_CONFIG av1_rect_partition_nnconfig_128 = {
 // Thresholds
 // The first index level is for aggresiveness, and the second is frame
 // resolution, third is bsize
-static const float av1_simple_motion_search_split_thresh[3][3][5] = {
+static const float av1_simple_motion_search_split_thresh[4][3][5] = {
   // Aggressiveness = 0
   {
       // lowres
@@ -2527,9 +2531,21 @@ static const float av1_simple_motion_search_split_thresh[3][3][5] = {
           1.655562f,  // p = 0.839641385729
       },
   },
+  // Aggressiveness = 3
+  {
+      // lowres
+      { 100.000000f, 1.41409519484f, 0.606066095487f, 0.0993410805635f,
+        0.762099214988f },
+      // midres
+      { 100.000000f, 0.702207995397f, 0.503550081119f, 0.0403228785199f,
+        0.557298794638f },
+      // hdres
+      { 1.21895384144f, 1.26798450469f, 0.872537808115f, 0.975869438148f,
+        1.86572095242f },
+  },
 };
 
-static const float av1_simple_motion_search_no_split_thresh[3][3][5] = {
+static const float av1_simple_motion_search_no_split_thresh[4][3][5] = {
   // Aggressiveness = 0
   {
       // lowres
@@ -2610,6 +2626,18 @@ static const float av1_simple_motion_search_no_split_thresh[3][3][5] = {
           -2.122691f,  // p = 0.10691083145
           -1.972387f,  // p = 0.122132728355
       },
+  },
+  // Aggressiveness = 3
+  {
+      // lowres
+      { -100.000000f, -2.04766486133f, -1.00442099188f, -1.15077982642f,
+        -1.0830321897f },
+      // midres
+      { -100.000000f, -0.985686808303f, -0.757739584866f, -0.890120107569f,
+        -0.228236297886f },
+      // hdres
+      { -1.03535679263f, -1.57431743203f, -0.564851540156f, -0.35442301663f,
+        -1.36741555171f },
   },
 };
 
@@ -3280,7 +3308,7 @@ static const NN_CONFIG *const av1_simple_motion_search_split_nn_config[5] = {
 // Model based on simple_motion_search for pruning rect
 // Thresholds. The first idx level is aggresiveness, second is frame resolution,
 // third is bsize
-static const float av1_simple_motion_search_prune_rect_thresh[3][3][5] = {
+static const float av1_simple_motion_search_prune_rect_thresh[4][3][5] = {
   // Aggressivness = 0
   {
       // Lowres
@@ -3346,6 +3374,18 @@ static const float av1_simple_motion_search_prune_rect_thresh[3][3][5] = {
           0.140924f,
           0.067608f,
       },
+  },
+  // Aggressiveness = 3
+  {
+      // Lowres
+      { 0.0f, 0.352338114654f, 0.171190796972f, 0.322629318068f,
+        0.287219697095f },
+      // Midres
+      { 0.0f, 0.30938393361f, 0.271772875141f, 0.240627957104f,
+        0.178833795641f },
+      // Hdres
+      { 0.285731215187f, 0.37521798723f, 0.142380566244f, 0.338288917819f,
+        0.21329309279f },
   },
 };
 

@@ -546,6 +546,8 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 5) {
+    sf->part_sf.simple_motion_search_prune_agg = 3;
+
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;
