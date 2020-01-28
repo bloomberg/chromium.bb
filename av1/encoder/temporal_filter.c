@@ -1335,7 +1335,7 @@ static void tf_setup_filtering_buffer(const AV1_COMP *cpi,
   }
 }
 
-int av1_temporal_filter(AV1_COMP *cpi, int filter_frame_lookahead_idx,
+int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
                         int *show_existing_arf) {
   // Basic informaton of the current frame.
   const GF_GROUP *const gf_group = &cpi->gf_group;
