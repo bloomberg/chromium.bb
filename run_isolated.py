@@ -1339,8 +1339,9 @@ def main(args):
   # TODO(crbug.com/932396): Remove this.
   use_go_isolated = (
       options.cipd_enabled and
-      # TODO(crbug.com/932396): win7 has flaky connection issue.
-      sys.platform == 'win32' and platform.release() == '10')
+      # TODO(crbug.com/1045281): 32bit win7 has flaky connection issue.
+      not (sys.platform == 'win32' and platform.release() == '7' and
+           platform.architecture()[0] == '32bit'))
 
   # TODO(maruel): CIPD caches should be defined at an higher level here too, so
   # they can be cleaned the same way.
