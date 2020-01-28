@@ -1121,10 +1121,25 @@ RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     SiteInstance* destination_site_instance,
     const GURL& destination_effective_url,
     bool destination_is_view_source_mode,
-    bool is_failure) const {
+    bool is_failure,
+    bool is_reload) const {
   // A subframe must stay in the same BrowsingInstance as its parent.
   if (!frame_tree_node_->IsMainFrame())
     return ShouldSwapBrowsingInstance::kNo_NotMainFrame;
+
+  // If this navigation is reloading an error page, do not swap BrowsingInstance
+  // and keep the error page in a related SiteInstance. If later a reload of
+  // this navigation is successful, it will correctly create a new
+  // BrowsingInstance if needed.
+  // TODO(https://crbug.com/1045524): We want to remove this, but it is kept for
+  // now as a workaround for the fact that autoreload is not working properly
+  // when we are changing RenderFrames. Remove this when autoreload logic is
+  // updated to handle different RenderFrames correctly.
+  if (is_failure && is_reload &&
+      SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+          frame_tree_node_->IsMainFrame())) {
+    return ShouldSwapBrowsingInstance::kNo_ReloadingErrorPage;
+  }
 
   // If new_entry already has a SiteInstance, assume it is correct.  We only
   // need to force a swap if it is in a different BrowsingInstance.
@@ -1235,6 +1250,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
     SiteInstanceImpl* candidate_instance,
     ui::PageTransition transition,
     bool is_failure,
+    bool is_reload,
     bool dest_is_restore,
     bool dest_is_view_source_mode,
     bool was_server_redirect) {
@@ -1288,7 +1304,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       ShouldSwapBrowsingInstancesForNavigation(
           current_effective_url, current_is_view_source_mode, dest_instance,
           SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
-          dest_is_view_source_mode, is_failure);
+          dest_is_view_source_mode, is_failure, is_reload);
   bool force_swap = force_swap_result == ShouldSwapBrowsingInstance::kYes;
   if (!force_swap) {
     render_frame_host_->set_browsing_instance_not_swapped_reason(
@@ -2168,11 +2184,21 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
           ? speculative_render_frame_host_->GetSiteInstance()
           : nullptr;
 
+  // Account for renderer-initiated reload as well.
+  // Needed as a workaround for https://crbug.com/1045524, remove it when it is
+  // fixed.
+  bool is_reload = request->common_params().navigation_type ==
+                       mojom::NavigationType::RELOAD ||
+                   request->common_params().navigation_type ==
+                       mojom::NavigationType::RELOAD_BYPASSING_CACHE ||
+                   request->common_params().navigation_type ==
+                       mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
+
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request->common_params().url, request->GetSourceSiteInstance(),
       request->dest_site_instance(), candidate_site_instance,
       request->common_params().transition,
-      request->state() >= NavigationRequest::CANCELING,
+      request->state() >= NavigationRequest::CANCELING, is_reload,
       request->GetRestoreType() != RestoreType::NONE, request->is_view_source(),
       request->WasServerRedirect());
 

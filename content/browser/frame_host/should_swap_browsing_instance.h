@@ -20,7 +20,7 @@ enum class ShouldSwapBrowsingInstance {
   kNo_SourceURLSchemeIsNotHTTPOrHTTPS = 5,
   kNo_DestinationURLSchemeIsNotHTTPOrHTTPS = 6,
   kNo_SameSiteNavigation = 7,
-  kNo_ErrorPage = 8,
+  kNo_ReloadingErrorPage = 8,
   kNo_AlreadyHasMatchingBrowsingInstance = 9,
   kNo_RendererDebugURL = 10,
   kNo_NotNeededForBackForwardCache = 11,
