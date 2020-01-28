@@ -3906,7 +3906,7 @@ static void release_scaled_references(AV1_COMP *cpi) {
 
 static void set_mv_search_params(AV1_COMP *cpi) {
   const AV1_COMMON *const cm = &cpi->common;
-  const unsigned int max_mv_def = AOMMIN(cm->width, cm->height);
+  const int max_mv_def = AOMMAX(cm->width, cm->height);
 
   // Default based on max resolution.
   cpi->mv_step_param = av1_init_search_range(max_mv_def);
@@ -3917,14 +3917,15 @@ static void set_mv_search_params(AV1_COMP *cpi) {
       // after a key/intra-only frame.
       cpi->max_mv_magnitude = max_mv_def;
     } else {
-      if (cm->show_frame) {
+      // Use cpi->max_mv_magnitude == -1 to exclude first pass case.
+      if (cm->show_frame && cpi->max_mv_magnitude != -1) {
         // Allow mv_steps to correspond to twice the max mv magnitude found
         // in the previous frame, capped by the default max_mv_magnitude based
         // on resolution.
         cpi->mv_step_param = av1_init_search_range(
             AOMMIN(max_mv_def, 2 * cpi->max_mv_magnitude));
       }
-      cpi->max_mv_magnitude = 0;
+      cpi->max_mv_magnitude = -1;
     }
   }
 }
@@ -4271,13 +4272,14 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   int ref_frame;
 
+  // TODO(yunqing): The following condition seems not work. Need to investigate.
   if (width != cm->width || height != cm->height) {
     // There has been a change in the encoded frame size
     av1_set_size_literal(cpi, width, height);
-    set_mv_search_params(cpi);
     // Recalculate 'all_lossless' in case super-resolution was (un)selected.
     cm->all_lossless = cm->coded_lossless && !av1_superres_scaled(cm);
   }
+  set_mv_search_params(cpi);
 
   if (is_stat_consumption_stage(cpi)) {
     av1_set_target_rate(cpi, cm->width, cm->height);

@@ -1891,8 +1891,7 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
               point as the best match, we will do a final 1-away diamond
               refining search  */
 static int full_pixel_diamond(MACROBLOCK *x, MV *mvp_full, int step_param,
-                              int use_var, int sadpb, int further_steps,
-                              int *cost_list,
+                              int use_var, int sadpb, int *cost_list,
                               const aom_variance_fn_ptr_t *fn_ptr,
                               const MV *ref_mv, const search_site_config *cfg,
                               uint8_t *second_pred, uint8_t *mask,
@@ -1920,6 +1919,7 @@ static int full_pixel_diamond(MACROBLOCK *x, MV *mvp_full, int step_param,
 
   // If there won't be more n-step search, check to see if refining search is
   // needed.
+  const int further_steps = cfg->ss_count - 1 - step_param;
   while (n < further_steps) {
     ++n;
 
@@ -2379,9 +2379,9 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
       break;
     case NSTEP:
     case DIAMOND:
-      var = full_pixel_diamond(x, mvp_full, step_param, use_var, error_per_bit,
-                               cfg->ss_count - 1 - step_param, cost_list,
-                               fn_ptr, ref_mv, cfg, NULL, NULL, 0, 0);
+      var =
+          full_pixel_diamond(x, mvp_full, step_param, use_var, error_per_bit,
+                             cost_list, fn_ptr, ref_mv, cfg, NULL, NULL, 0, 0);
       break;
     default: assert(0 && "Invalid search method.");
   }

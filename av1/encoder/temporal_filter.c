@@ -89,7 +89,7 @@ static int tf_motion_search(AV1_COMP *cpi,
   const search_site_config ss_cfg = cpi->ss_cfg[SS_CFG_LOOKAHEAD];
   const SEARCH_METHODS full_search_method = NSTEP;
   const int step_param = av1_init_search_range(
-      AOMMIN(frame_to_filter->y_crop_width, frame_to_filter->y_crop_height));
+      AOMMAX(frame_to_filter->y_crop_width, frame_to_filter->y_crop_height));
   const SUBPEL_SEARCH_TYPE subpel_search_type = USE_8_TAPS;
   const int allow_high_precision_mv = cpi->common.allow_high_precision_mv;
   const int subpel_iters_per_step = cpi->sf.mv_sf.subpel_iters_per_step;

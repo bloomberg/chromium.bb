@@ -1499,7 +1499,43 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
       }
     }
   } else {
-    av1_single_motion_search(cpi, x, bsize, 0, rate_mv);
+    // Single ref case.
+    const int ref_idx = 0;
+    int search_range = INT_MAX;
+
+    if (cpi->sf.mv_sf.reduce_search_range && mbmi->ref_mv_idx > 0) {
+      const MV ref_mv = av1_get_ref_mv(x, ref_idx).as_mv;
+      int min_mv_diff = INT_MAX;
+      int best_match = -1;
+      MV prev_ref_mv[2] = { { 0 } };
+      for (int idx = 0; idx < mbmi->ref_mv_idx; ++idx) {
+        prev_ref_mv[idx] = av1_get_ref_mv_from_stack(ref_idx, mbmi->ref_frame,
+                                                     idx, x->mbmi_ext)
+                               .as_mv;
+        const int ref_mv_diff = AOMMAX(abs(ref_mv.row - prev_ref_mv[idx].row),
+                                       abs(ref_mv.col - prev_ref_mv[idx].col));
+
+        if (min_mv_diff > ref_mv_diff) {
+          min_mv_diff = ref_mv_diff;
+          best_match = idx;
+        }
+      }
+
+      if (min_mv_diff < (16 << 3)) {
+        if (args->single_newmv_valid[best_match][refs[0]]) {
+          search_range = min_mv_diff;
+          search_range +=
+              AOMMAX(abs(args->single_newmv[best_match][refs[0]].as_mv.row -
+                         prev_ref_mv[best_match].row),
+                     abs(args->single_newmv[best_match][refs[0]].as_mv.col -
+                         prev_ref_mv[best_match].col));
+          // Get full pixel search range.
+          search_range = (search_range + 4) >> 3;
+        }
+      }
+    }
+
+    av1_single_motion_search(cpi, x, bsize, ref_idx, rate_mv, search_range);
     if (x->best_mv.as_int == INVALID_MV) return INT64_MAX;
 
     args->single_newmv[ref_mv_idx][refs[0]] = x->best_mv;
@@ -1671,7 +1707,7 @@ static int64_t motion_mode_rd(
       const uint32_t cur_mv = mbmi->mv[0].as_int;
       assert(!is_comp_pred);
       if (have_newmv_in_inter_mode(this_mode)) {
-        av1_single_motion_search(cpi, x, bsize, 0, &tmp_rate_mv);
+        av1_single_motion_search(cpi, x, bsize, 0, &tmp_rate_mv, INT_MAX);
         mbmi->mv[0].as_int = x->best_mv.as_int;
         tmp_rate2 = rate2_nocoeff - rate_mv0 + tmp_rate_mv;
       }

@@ -19,7 +19,8 @@ extern "C" {
 #endif
 
 void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
-                              BLOCK_SIZE bsize, int ref_idx, int *rate_mv);
+                              BLOCK_SIZE bsize, int ref_idx, int *rate_mv,
+                              int search_range);
 
 void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                              BLOCK_SIZE bsize, int_mv *cur_mv,

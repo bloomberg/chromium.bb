@@ -901,7 +901,7 @@ typedef struct AV1_COMP {
   // sf contains fine-grained config set internally based on speed
   SPEED_FEATURES sf;
 
-  unsigned int max_mv_magnitude;
+  int max_mv_magnitude;
   int mv_step_param;
 
   int all_one_sided_refs;

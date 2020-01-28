@@ -15,7 +15,8 @@
 #include "av1/encoder/reconinter_enc.h"
 
 void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
-                              BLOCK_SIZE bsize, int ref_idx, int *rate_mv) {
+                              BLOCK_SIZE bsize, int ref_idx, int *rate_mv,
+                              int search_range) {
   MACROBLOCKD *xd = &x->e_mbd;
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -93,6 +94,21 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   }
 
   const MV ref_mv = av1_get_ref_mv(x, ref_idx).as_mv;
+
+  // Further reduce the search range.
+  if (search_range < INT_MAX) {
+    const search_site_config *ss_cfg = &cpi->ss_cfg[SS_CFG_SRC];
+    // MAx step_param is ss_cfg->ss_count.
+    if (search_range < 1) {
+      step_param = ss_cfg->ss_count;
+    } else {
+      while (ss_cfg->radius[ss_cfg->ss_count - step_param - 1] >
+                 (search_range << 1) &&
+             ss_cfg->ss_count - step_param - 1 > 0)
+        step_param++;
+    }
+  }
+
   // Note: MV limits are modified here. Always restore the original values
   // after full-pixel motion search.
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
