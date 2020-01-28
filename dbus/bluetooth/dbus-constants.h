@@ -65,6 +65,7 @@ constexpr char kDiscoveringProperty[] = "Discovering";
 constexpr char kUUIDsProperty[] = "UUIDs";
 constexpr char kModaliasProperty[] = "Modalias";
 constexpr char kStackSyncQuittingProperty[] = "StackSyncQuitting";
+constexpr char kUseSuspendNotifierProperty[] = "UseSuspendNotifier";
 
 // Bluetooth Adapter errors.
 constexpr char kErrorNotReady[] = "org.bluez.Error.NotReady";
