@@ -1,0 +1,27 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package system_proxy;
+
+message SetSystemTrafficCredentialsRequest {
+  // The username for authenticating system services to the remote web proxy.
+  optional string system_services_username = 1;
+
+  // The password for authenticating system services to the remote web proxy.
+  optional string system_services_password = 2;
+}
+
+message SetSystemTrafficCredentialsResponse {
+  // Error message, empty if no error occurred.
+  optional string error_message = 1;
+}
+
+message ShutDownResponse {
+  // Error message, empty if no error occurred.
+  optional string error_message = 1;
+}
