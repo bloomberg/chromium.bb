@@ -150,7 +150,7 @@ StatusCode DecoderImpl::Init() {
     LIBGAV1_DLOG(ERROR, "encoded_frames_.Init() failed.");
     return kLibgav1StatusOutOfMemory;
   }
-  if (!GenerateWedgeMask(&state_.wedge_masks)) {
+  if (!GenerateWedgeMask(&wedge_masks_)) {
     LIBGAV1_DLOG(ERROR, "GenerateWedgeMask() failed.");
     return kLibgav1StatusOutOfMemory;
   }
@@ -719,7 +719,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
           tile_number, tile_group.data + byte_offset, tile_size,
           sequence_header, frame_header, state_.current_frame.get(),
           state_.reference_frame_sign_bias, state_.reference_frame,
-          &state_.motion_field, state_.reference_order_hint, state_.wedge_masks,
+          &state_.motion_field, state_.reference_order_hint, wedge_masks_,
           symbol_decoder_context_, &saved_symbol_decoder_context,
           prev_segment_ids, &post_filter, &block_parameters_holder,
           &cdef_index_, &inter_transform_sizes_, dsp,

@@ -100,7 +100,6 @@ struct DecoderState {
   std::array<bool, kNumReferenceFrameTypes> reference_frame_sign_bias = {};
   std::array<RefCountedBufferPtr, kNumReferenceFrameTypes> reference_frame;
   RefCountedBufferPtr current_frame;
-  WedgeMaskArray wedge_masks;
   TemporalMotionField motion_field;
 };
 
@@ -175,6 +174,7 @@ class DecoderImpl : public Allocable {
   // TODO(vigneshv): The first 4 unused rows can probably be removed by
   // adjusting the offsets.
   YuvBuffer deblock_buffer_;
+  WedgeMaskArray wedge_masks_;
 
   LoopFilterMask loop_filter_mask_;
 
