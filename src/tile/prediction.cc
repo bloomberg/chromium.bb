@@ -563,29 +563,27 @@ void Tile::InterIntraPrediction(
   // The first buffer of InterIntra is from inter prediction.
   // The second buffer is from intra prediction.
 #if LIBGAV1_MAX_BITDEPTH >= 10
-  if (sequence_header_.color_config.bitdepth == 8) {
-#endif
-    const int function_index = prediction_parameters.is_wedge_inter_intra
-                                   ? subsampling_x + subsampling_y
-                                   : 0;
-    // |is_inter_intra| prediction values are stored in a Pixel buffer but it is
-    // currently declared as a uint16_t buffer.
-    // TODO(johannkoenig): convert the prediction buffer to a uint8_t buffer and
-    // remove the reinterpret_cast.
-    dsp_.inter_intra_mask_blend_8bpp[function_index](
-        reinterpret_cast<uint8_t*>(prediction_0), prediction_stride, dest,
-        dest_stride, prediction_mask, prediction_mask_stride, prediction_width,
-        prediction_height, dest, dest_stride);
-#if LIBGAV1_MAX_BITDEPTH >= 10
+  if (sequence_header_.color_config.bitdepth > 8) {
+    GetMaskBlendFunc(dsp_, prediction_parameters.inter_intra_mode,
+                     prediction_parameters.is_wedge_inter_intra, subsampling_x,
+                     subsampling_y)(
+        prediction_0, prediction_stride, reinterpret_cast<uint16_t*>(dest),
+        dest_stride / sizeof(uint16_t), prediction_mask, prediction_mask_stride,
+        prediction_width, prediction_height, dest, dest_stride);
     return;
   }
-  GetMaskBlendFunc(dsp_, prediction_parameters.inter_intra_mode,
-                   prediction_parameters.is_wedge_inter_intra, subsampling_x,
-                   subsampling_y)(
-      prediction_0, prediction_stride, reinterpret_cast<uint16_t*>(dest),
-      dest_stride / sizeof(uint16_t), prediction_mask, prediction_mask_stride,
-      prediction_width, prediction_height, dest, dest_stride);
 #endif
+  const int function_index = prediction_parameters.is_wedge_inter_intra
+                                 ? subsampling_x + subsampling_y
+                                 : 0;
+  // |is_inter_intra| prediction values are stored in a Pixel buffer but it is
+  // currently declared as a uint16_t buffer.
+  // TODO(johannkoenig): convert the prediction buffer to a uint8_t buffer and
+  // remove the reinterpret_cast.
+  dsp_.inter_intra_mask_blend_8bpp[function_index](
+      reinterpret_cast<uint8_t*>(prediction_0), prediction_stride, dest,
+      dest_stride, prediction_mask, prediction_mask_stride, prediction_width,
+      prediction_height, dest, dest_stride);
 }
 
 void Tile::CompoundInterPrediction(
@@ -1089,7 +1087,16 @@ void Tile::BlockInterPrediction(
             pixel_size,
         kMaxAlignment);
     convolve_buffer_stride = block.scratch_buffer->convolve_block_buffer_stride;
-    if (bitdepth == 8) {
+#if LIBGAV1_MAX_BITDEPTH >= 10
+    if (bitdepth > 8) {
+      BuildConvolveBlock<uint16_t>(
+          plane, reference_frame_index, is_scaled, height, ref_start_x,
+          ref_last_x, ref_start_y, ref_last_y, step_y, ref_block_start_x,
+          ref_block_end_x, ref_block_start_y,
+          block.scratch_buffer->convolve_block_buffer.get(),
+          convolve_buffer_stride, block_extended_width);
+    } else {
+#endif
       BuildConvolveBlock<uint8_t>(
           plane, reference_frame_index, is_scaled, height, ref_start_x,
           ref_last_x, ref_start_y, ref_last_y, step_y, ref_block_start_x,
@@ -1097,15 +1104,8 @@ void Tile::BlockInterPrediction(
           block.scratch_buffer->convolve_block_buffer.get(),
           convolve_buffer_stride, block_extended_width);
 #if LIBGAV1_MAX_BITDEPTH >= 10
-    } else {
-      BuildConvolveBlock<uint16_t>(
-          plane, reference_frame_index, is_scaled, height, ref_start_x,
-          ref_last_x, ref_start_y, ref_last_y, step_y, ref_block_start_x,
-          ref_block_end_x, ref_block_start_y,
-          block.scratch_buffer->convolve_block_buffer.get(),
-          convolve_buffer_stride, block_extended_width);
-#endif
     }
+#endif
     block_start = block.scratch_buffer->convolve_block_buffer.get() +
                   (is_scaled ? 0
                              : kConvolveBorderLeftTop * convolve_buffer_stride +
@@ -1126,7 +1126,7 @@ void Tile::BlockInterPrediction(
   // convolve_func() expects |output_stride| to be in bytes and not Pixels.
   // |prediction_stride| is in units of uint16_t. Adjust |output_stride| to
   // account for this.
-  if (is_inter_intra && sequence_header_.color_config.bitdepth != 8) {
+  if (is_inter_intra && sequence_header_.color_config.bitdepth > 8) {
     output_stride *= 2;
   }
 #endif
@@ -1189,7 +1189,7 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
     // uint16_t. warp_clip() expects |output_stride| to be in bytes and not
     // Pixels. |prediction_stride| is in units of uint16_t. Adjust
     // |output_stride| to account for this.
-    if (is_inter_intra && sequence_header_.color_config.bitdepth != 8) {
+    if (is_inter_intra && sequence_header_.color_config.bitdepth > 8) {
       output_stride *= 2;
     }
 #endif
