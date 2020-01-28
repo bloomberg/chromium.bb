@@ -791,10 +791,18 @@ def _Emerge(device, pkg_path, root, extra_args=None):
       'PORTDIR': device.work_dir,
       'CONFIG_PROTECT': '-*',
   }
-  cmd = ['emerge', '--usepkg', pkg_path, '--root=%s' % root]
+  # --ignore-built-slot-operator-deps because we don't rebuild everything.
+  # It can cause errors, but that's expected with cros deploy since it's just a
+  # best effort to prevent developers avoid rebuilding an image every time.
+  cmd = ['emerge', '--ignore-built-slot-operator-deps', '--usepkg', pkg_path,
+         '--root=%s' % root]
   if extra_args:
     cmd.append(extra_args)
 
+  logging.warning('Ignoring slot dependencies! This may break things! e.g. '
+                  'packages built against the old version may not be able to '
+                  'load the new .so. This is expected, and you will just need '
+                  'to build and flash a new image if you have problems.')
   try:
     result = device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
                                capture_output=True, debug_level=logging.INFO)
@@ -1038,7 +1046,7 @@ def _GetDLCInfo(device, pkg_path, from_dut):
     data = portage.xpak.tbz2(pkg_path).get_data()
     # Extract the environment metadata.
     environment_content = bz2.decompress(
-      data[_ENVIRONMENT_FILENAME.encode('utf-8')])
+        data[_ENVIRONMENT_FILENAME.encode('utf-8')])
 
   with tempfile.NamedTemporaryFile() as f:
     # Dumps content into a file so we can use osutils.SourceEnvironment.
