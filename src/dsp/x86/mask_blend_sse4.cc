@@ -33,10 +33,6 @@ namespace low_bitdepth {
 namespace {
 
 constexpr int kBitdepth8 = 8;
-// An offset to cancel offsets used in compound predictor generation
-// that make intermediate computations non negative.
-const __m128i kSingleRoundOffset8bpp =
-    _mm_set1_epi16((1 << kBitdepth8) + (1 << (kBitdepth8 - 1)));
 
 // Width can only be 4 when it is subsampled from a block of width 8, hence
 // subsampling_x is always 1 when this function is called.
@@ -308,7 +304,7 @@ inline void MaskBlend_SSE4(
 // correspond with the "unaltered" mask.
 inline void InterIntraWriteMaskBlendLine8bpp4x2(
     const uint8_t* const pred_0, const ptrdiff_t pred_stride_0,
-    const uint16_t* const pred_1, const ptrdiff_t pred_stride_1,
+    const uint8_t* const pred_1, const ptrdiff_t pred_stride_1,
     const __m128i pred_mask_0, const __m128i pred_mask_1, uint8_t* dst,
     const ptrdiff_t dst_stride) {
   const __m128i pred_mask = _mm_unpacklo_epi8(pred_mask_0, pred_mask_1);
@@ -316,13 +312,10 @@ inline void InterIntraWriteMaskBlendLine8bpp4x2(
   __m128i pred_val_0 = Load4(pred_0);
   pred_val_0 = _mm_or_si128(_mm_slli_si128(Load4(pred_0 + pred_stride_0), 4),
                             pred_val_0);
-  __m128i pred_val_1 = LoadLo8(pred_1);
-  pred_val_1 = LoadHi8(pred_val_1, pred_1 + pred_stride_1);
-  // pred_0 and pred_1 are switched at the beginning with is_inter_intra.
-  // Clip3(prediction_0[x] - single_round_offset, 0, (1 << kBitdepth8) - 1)
-  pred_val_1 = _mm_sub_epi16(pred_val_1, kSingleRoundOffset8bpp);
-  const __m128i pred =
-      _mm_unpacklo_epi8(pred_val_0, _mm_packus_epi16(pred_val_1, pred_val_1));
+  __m128i pred_val_1 = Load4(pred_1);
+  pred_val_1 = _mm_or_si128(_mm_slli_si128(Load4(pred_1 + pred_stride_1), 4),
+                            pred_val_1);
+  const __m128i pred = _mm_unpacklo_epi8(pred_val_0, pred_val_1);
   // int res = (mask_value * prediction_0[x] +
   //      (64 - mask_value) * prediction_1[x]) >> 6;
   const __m128i compound_pred = _mm_maddubs_epi16(pred, pred_mask);
@@ -336,7 +329,7 @@ inline void InterIntraWriteMaskBlendLine8bpp4x2(
 template <int subsampling_x, int subsampling_y>
 inline void InterIntraMaskBlending8bpp4x4_SSE4(
     const uint8_t* pred_0, const ptrdiff_t prediction_stride_0,
-    const uint16_t* pred_1, const ptrdiff_t prediction_stride_1,
+    const uint8_t* pred_1, const ptrdiff_t prediction_stride_1,
     const uint8_t* mask, const ptrdiff_t mask_stride, uint8_t* dst,
     const ptrdiff_t dst_stride) {
   const __m128i mask_inverter = _mm_set1_epi8(64);
@@ -366,7 +359,7 @@ inline void InterIntraMaskBlending8bpp4x4_SSE4(
 template <int subsampling_x, int subsampling_y>
 inline void InterIntraMaskBlending8bpp4xH_SSE4(
     const uint8_t* pred_0, const ptrdiff_t pred_stride_0, const int height,
-    const uint16_t* pred_1, const ptrdiff_t pred_stride_1,
+    const uint8_t* pred_1, const ptrdiff_t pred_stride_1,
     const uint8_t* const mask_ptr, const ptrdiff_t mask_stride, uint8_t* dst,
     const ptrdiff_t dst_stride) {
   const uint8_t* mask = mask_ptr;
@@ -399,13 +392,13 @@ inline void InterIntraMaskBlending8bpp4xH_SSE4(
 
 template <int subsampling_x, int subsampling_y>
 void InterIntraMaskBlend8bpp_SSE4(
-    const uint16_t* prediction_0, const ptrdiff_t prediction_stride_0,
+    const uint8_t* prediction_0, const ptrdiff_t prediction_stride_0,
     const uint8_t* prediction_1, const ptrdiff_t prediction_stride_1,
     const uint8_t* const mask_ptr, const ptrdiff_t mask_stride, const int width,
     const int height, void* dest, const ptrdiff_t dst_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
   const uint8_t* pred_0 = prediction_1;
-  const uint16_t* pred_1 = prediction_0;
+  const uint8_t* pred_1 = prediction_0;
   const ptrdiff_t pred_stride_0 = prediction_stride_1;
   const ptrdiff_t pred_stride_1 = prediction_stride_0;
   if (width == 4) {
@@ -428,10 +421,8 @@ void InterIntraMaskBlend8bpp_SSE4(
       const __m128i pred_mask = _mm_unpacklo_epi8(pred_mask_0, pred_mask_1);
 
       const __m128i pred_val_0 = LoadLo8(pred_0 + x);
-      __m128i pred_val_1 = LoadUnaligned16(pred_1 + x);
-      pred_val_1 = _mm_sub_epi16(pred_val_1, kSingleRoundOffset8bpp);
-      const __m128i pred = _mm_unpacklo_epi8(
-          pred_val_0, _mm_packus_epi16(pred_val_1, pred_val_1));
+      const __m128i pred_val_1 = LoadLo8(pred_1 + x);
+      const __m128i pred = _mm_unpacklo_epi8(pred_val_0, pred_val_1);
       // int res = (mask_value * prediction_0[x] +
       //      (64 - mask_value) * prediction_1[x]) >> 6;
       const __m128i compound_pred = _mm_maddubs_epi16(pred, pred_mask);

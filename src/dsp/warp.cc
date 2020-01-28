@@ -34,6 +34,7 @@ namespace {
 // Number of extra bits of precision in warped filtering.
 constexpr int kWarpedDiffPrecisionBits = 10;
 
+// TODO(johannkoenig): Rename |clip| parameter.
 template <bool clip, int bitdepth, typename Pixel>
 void Warp_C(const void* const source, ptrdiff_t source_stride,
             const int source_width, const int source_height,
@@ -49,6 +50,8 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
   // Compound calculations are the only ones which use a different value for
   // |inter_round_bits_vertical|. Inter/intra will be able to use the |clip|
   // path when the offset value is removed.
+  // TODO(johannkoenig): Replace |inter_round_bits_vertical| with constants
+  // derived from |clip|.
   assert(!clip || inter_round_bits_vertical == ((bitdepth == 12) ? 9 : 11));
   // These offsets allow intermediate calculations to remain in 16 bits when
   // |bitdepth| is 8.

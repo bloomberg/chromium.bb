@@ -55,9 +55,6 @@ void MaskBlend_C(const uint16_t* prediction_0,
   const ptrdiff_t dst_stride = dest_stride / sizeof(Pixel);
   constexpr int step_y = subsampling_y ? 2 : 1;
   const uint8_t* mask_next_row = mask + mask_stride;
-  // An offset to cancel offsets used in single predictor generation that
-  // make intermediate computations non negative.
-  const int single_round_offset = (1 << bitdepth) + (1 << (bitdepth - 1));
   // An offset to cancel offsets used in compound predictor generation that
   // make intermediate computations non negative.
   const int compound_round_offset =
@@ -70,15 +67,8 @@ void MaskBlend_C(const uint16_t* prediction_0,
       const uint8_t mask_value =
           GetMaskValue<subsampling_x, subsampling_y>(mask, mask_next_row, x);
       if (is_inter_intra) {
-        // In inter intra prediction mode, the intra prediction (prediction_1)
-        // values are valid pixel values: [0, (1 << bitdepth) - 1].
-        // While the inter prediction values come from subpixel prediction
-        // from another frame, which involves interpolation and rounding.
-        // Therefore prediction_0 has to be clipped.
         dst[x] = static_cast<Pixel>(RightShiftWithRounding(
-            mask_value * prediction_1[x] +
-                (64 - mask_value) * Clip3(prediction_0[x] - single_round_offset,
-                                          0, (1 << bitdepth) - 1),
+            mask_value * prediction_1[x] + (64 - mask_value) * prediction_0[x],
             6));
       } else {
         int res = (mask_value * prediction_0[x] +
@@ -99,7 +89,7 @@ void MaskBlend_C(const uint16_t* prediction_0,
 }
 
 template <int subsampling_x, int subsampling_y>
-void InterIntraMaskBlend8bpp_C(const uint16_t* prediction_0,
+void InterIntraMaskBlend8bpp_C(const uint8_t* prediction_0,
                                const ptrdiff_t prediction_stride_0,
                                const uint8_t* prediction_1,
                                const ptrdiff_t prediction_stride_1,
@@ -111,17 +101,12 @@ void InterIntraMaskBlend8bpp_C(const uint16_t* prediction_0,
   const ptrdiff_t dst_stride = dest_stride;
   constexpr int step_y = subsampling_y ? 2 : 1;
   const uint8_t* mask_next_row = mask + mask_stride;
-  // An offset to cancel offsets used in single predictor generation that
-  // make intermediate computations non negative.
-  const int single_round_offset = (1 << 8) + (1 << (8 - 1));
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       const uint8_t mask_value =
           GetMaskValue<subsampling_x, subsampling_y>(mask, mask_next_row, x);
       dst[x] = static_cast<uint8_t>(RightShiftWithRounding(
-          mask_value * prediction_1[x] +
-              (64 - mask_value) *
-                  Clip3(prediction_0[x] - single_round_offset, 0, (1 << 8) - 1),
+          mask_value * prediction_1[x] + (64 - mask_value) * prediction_0[x],
           6));
     }
     dst += dst_stride;

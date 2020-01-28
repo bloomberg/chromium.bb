@@ -68,7 +68,11 @@ struct DecoderScratchBuffer : public MaxAlignedAllocable {
     // Union usage note: This is used only by functions in the "inter"
     // prediction path.
     //
-    // Buffers used for inter prediction process.
+    // Buffers used for inter prediction process. Compound prediction
+    // calculations always output 16-bit values. Inter/intra calculations output
+    // Pixel values.
+    // TODO(johannkoenig): Add elements to the union to represent the different
+    // possibilities.
     alignas(kMaxAlignment) uint16_t
         prediction_buffer[2][kMaxSuperBlockSizeSquareInPixels];
 

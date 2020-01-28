@@ -498,8 +498,11 @@ using DistanceWeightedBlendFunc = void (*)(const uint16_t* prediction_0,
 // (or wedge_inter_intra), this refers to the inter frame prediction.
 // |prediction_stride_0| is the stride, given in units of uint16_t.
 // |prediction_1| is the second input block. When prediction mode is inter_intra
-// (or wedge_inter_intra), this refers to the intra frame prediction.
-// |prediction_stride_1| is the stride, given in units of uint16_t.
+// (or wedge_inter_intra), this refers to the intra frame prediction and uses
+// Pixel values. It is only used for intra frame prediction when bitdepth >= 10.
+// |prediction_stride_1| is the stride, given in units of uint16_t. Because this
+// is only used for intra frame prediction with bitdepth >= 10 it is also in
+// units of Pixel.
 // |mask| is an integer array, whose value indicates the weight of the blending.
 // |mask_stride| is corresponding stride.
 // |width|, |height| are the same for both input blocks.
@@ -529,10 +532,10 @@ using MaskBlendFunc = void (*)(const uint16_t* prediction_0,
 using MaskBlendFuncs = MaskBlendFunc[3][2];
 
 // This function is similar to the MaskBlendFunc with the only difference that
-// |prediction_1| is of type uint8_t instead of uint16_t. This function is used
-// only when bitdepth is 8 and is_inter_intra is true.
+// the predictor buffers are of type uint8_t (Pixel) instead of uint16_t. This
+// function is used only when bitdepth is 8 and is_inter_intra is true.
 using InterIntraMaskBlendFunc8bpp =
-    void (*)(const uint16_t* prediction_0, ptrdiff_t prediction_stride_0,
+    void (*)(const uint8_t* prediction_0, ptrdiff_t prediction_stride_0,
              const uint8_t* prediction_1, ptrdiff_t prediction_stride_1,
              const uint8_t* mask, ptrdiff_t mask_stride, int width, int height,
              void* dest, ptrdiff_t dest_stride);

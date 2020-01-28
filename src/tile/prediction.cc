@@ -562,14 +562,21 @@ void Tile::InterIntraPrediction(
              kCompoundPredictionTypeWedge);
   // The first buffer of InterIntra is from inter prediction.
   // The second buffer is from intra prediction.
+#if LIBGAV1_MAX_BITDEPTH >= 10
   if (sequence_header_.color_config.bitdepth == 8) {
+#endif
     const int function_index = prediction_parameters.is_wedge_inter_intra
                                    ? subsampling_x + subsampling_y
                                    : 0;
+    // |is_inter_intra| prediction values are stored in a Pixel buffer but it is
+    // currently declared as a uint16_t buffer.
+    // TODO(johannkoenig): convert the prediction buffer to a uint8_t buffer and
+    // remove the reinterpret_cast.
     dsp_.inter_intra_mask_blend_8bpp[function_index](
-        prediction_0, prediction_stride, dest, dest_stride, prediction_mask,
-        prediction_mask_stride, prediction_width, prediction_height, dest,
-        dest_stride);
+        reinterpret_cast<uint8_t*>(prediction_0), prediction_stride, dest,
+        dest_stride, prediction_mask, prediction_mask_stride, prediction_width,
+        prediction_height, dest, dest_stride);
+#if LIBGAV1_MAX_BITDEPTH >= 10
     return;
   }
   GetMaskBlendFunc(dsp_, prediction_parameters.inter_intra_mode,
@@ -578,6 +585,7 @@ void Tile::InterIntraPrediction(
       prediction_0, prediction_stride, reinterpret_cast<uint16_t*>(dest),
       dest_stride / sizeof(uint16_t), prediction_mask, prediction_mask_stride,
       prediction_width, prediction_height, dest, dest_stride);
+#endif
 }
 
 void Tile::CompoundInterPrediction(
@@ -672,6 +680,8 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
   const bool is_inter_intra = bp.reference_frame[1] == kReferenceFrameIntra;
   // This ensures that each row of the prediction buffer is aligned to
   // kMaxAlignment.
+  // TODO(johannkoenig): Convert to this to byte values instead of uint16_t
+  // values.
   const ptrdiff_t prediction_stride = Align(
       prediction_width, static_cast<int>(kMaxAlignment / sizeof(uint16_t)));
 
@@ -1108,12 +1118,21 @@ void Tile::BlockInterPrediction(
       ((mv.mv[MotionVector::kRow] * (1 << (1 - subsampling_y))) & 15) != 0);
   void* const output =
       (is_compound || is_inter_intra) ? prediction : static_cast<void*>(dest);
-  const ptrdiff_t output_stride =
+  ptrdiff_t output_stride =
       (is_compound || is_inter_intra) ? prediction_stride : dest_stride;
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  // |is_inter_intra| calculations are written to the |prediction| buffer.
+  // Unlike the |is_compound| calculations the output is Pixel and not uint16_t.
+  // convolve_func() expects |output_stride| to be in bytes and not Pixels.
+  // |prediction_stride| is in units of uint16_t. Adjust |output_stride| to
+  // account for this.
+  if (is_inter_intra && sequence_header_.color_config.bitdepth != 8) {
+    output_stride *= 2;
+  }
+#endif
   assert(output != nullptr);
   if (is_scaled) {
-    dsp::ConvolveScaleFunc convolve_func =
-        dsp_.convolve_scale[is_compound || is_inter_intra];
+    dsp::ConvolveScaleFunc convolve_func = dsp_.convolve_scale[is_compound];
     assert(convolve_func != nullptr);
 
     convolve_func(block_start, convolve_buffer_stride, horizontal_filter_index,
@@ -1121,9 +1140,8 @@ void Tile::BlockInterPrediction(
                   step_y, width, height, output, output_stride);
   } else {
     dsp::ConvolveFunc convolve_func =
-        dsp_.convolve[reference_frame_index == -1]
-                     [is_compound || is_inter_intra][has_vertical_filter]
-                     [has_horizontal_filter];
+        dsp_.convolve[reference_frame_index == -1][is_compound]
+                     [has_vertical_filter][has_horizontal_filter];
     assert(convolve_func != nullptr);
 
     convolve_func(block_start, convolve_buffer_stride, horizontal_filter_index,
@@ -1156,18 +1174,30 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
       reference_frames_[reference_frame_index]->buffer()->displayed_height(
           plane);
   uint16_t* const prediction = block.scratch_buffer->prediction_buffer[index];
-  if (is_compound || is_inter_intra) {
+  if (is_compound) {
     dsp_.warp(source, source_stride, source_width, source_height,
               warp_params->params, subsampling_x_[plane], subsampling_y_[plane],
               round_bits, block_start_x, block_start_y, width, height,
               warp_params->alpha, warp_params->beta, warp_params->gamma,
               warp_params->delta, prediction, prediction_stride);
   } else {
+    void* const output = is_inter_intra ? static_cast<void*>(prediction) : dest;
+    ptrdiff_t output_stride = is_inter_intra ? prediction_stride : dest_stride;
+#if LIBGAV1_MAX_BITDEPTH >= 10
+    // |is_inter_intra| calculations are written to the |prediction| buffer.
+    // Unlike the |is_compound| calculations the output is Pixel and not
+    // uint16_t. warp_clip() expects |output_stride| to be in bytes and not
+    // Pixels. |prediction_stride| is in units of uint16_t. Adjust
+    // |output_stride| to account for this.
+    if (is_inter_intra && sequence_header_.color_config.bitdepth != 8) {
+      output_stride *= 2;
+    }
+#endif
     dsp_.warp_clip(
         source, source_stride, source_width, source_height, warp_params->params,
         subsampling_x_[plane], subsampling_y_[plane], round_bits, block_start_x,
         block_start_y, width, height, warp_params->alpha, warp_params->beta,
-        warp_params->gamma, warp_params->delta, dest, dest_stride);
+        warp_params->gamma, warp_params->delta, output, output_stride);
   }
 }
 
