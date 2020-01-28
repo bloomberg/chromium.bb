@@ -503,16 +503,16 @@ void PostFilter::SetupDeblockBuffer(int row4x4_start, int sb4x4) {
     const int row_unit = DivideBy16(row4x4);
     const int row_offset_start = MultiplyBy4(row_unit + 1);
     if (DoSuperRes()) {
-      std::array<uint8_t*, kMaxPlanes> buffers{
+      std::array<uint8_t*, kMaxPlanes> buffers = {
           deblock_buffer_.data(kPlaneY) +
               row_offset_start * deblock_buffer_.stride(kPlaneY),
           deblock_buffer_.data(kPlaneU) +
               row_offset_start * deblock_buffer_.stride(kPlaneU),
           deblock_buffer_.data(kPlaneV) +
               row_offset_start * deblock_buffer_.stride(kPlaneV)};
-      std::array<int, kMaxPlanes> strides{deblock_buffer_.stride(kPlaneY),
-                                          deblock_buffer_.stride(kPlaneU),
-                                          deblock_buffer_.stride(kPlaneV)};
+      std::array<int, kMaxPlanes> strides = {deblock_buffer_.stride(kPlaneY),
+                                             deblock_buffer_.stride(kPlaneU),
+                                             deblock_buffer_.stride(kPlaneV)};
       ApplySuperRes(buffers, strides, /*rows4x4=*/1, /*chroma_subsampling_y=*/0,
                     /*line_buffer_offset=*/0);
     }
