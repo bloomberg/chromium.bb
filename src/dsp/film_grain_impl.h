@@ -110,11 +110,6 @@ class FilmGrain {
                                   int subsampling_y, int stripe_start_offset,
                                   Array2D<GrainType>* noise_image);
 
-  static void InitializeScalingLookupTable(int num_points,
-                                           const uint8_t point_value[],
-                                           const uint8_t point_scaling[],
-                                           uint8_t scaling_lut[256]);
-
   // Combines the film grain with the image data.
   bool AddNoise(const void* source_plane_y, ptrdiff_t source_stride_y,
                 const void* source_plane_u, ptrdiff_t source_stride_u,
