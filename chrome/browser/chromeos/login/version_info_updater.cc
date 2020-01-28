@@ -206,8 +206,12 @@ void VersionInfoUpdater::OnQueryAdbSideload(
       break;
   }
 
-  if (delegate_)
-    delegate_->OnAdbSideloadStatusUpdated(enabled);
+  // M80: Never show login screen warning. The entry to turn on the feature is
+  // disabled, but there are some expected errors that triggers the warning
+  // message (since we conservatively show the security warning if something goes
+  // wrong).
+  //if (delegate_)
+  //  delegate_->OnAdbSideloadStatusUpdated(enabled);
 }
 
 }  // namespace chromeos
