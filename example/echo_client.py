@@ -58,6 +58,7 @@ import re
 import socket
 import struct
 import sys
+from hashlib import sha1
 
 from mod_pywebsocket import common
 from mod_pywebsocket.extensions import PerMessageDeflateExtensionProcessor
@@ -512,7 +513,7 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
             'Response for challenge : %r (%s)',
             accept, util.hexify(binary_accept))
 
-        binary_expected_accept = util.sha1_hash(
+        binary_expected_accept = sha1(
             self._key + common.WEBSOCKET_ACCEPT_UUID).digest()
         expected_accept = base64.b64encode(binary_expected_accept)
 

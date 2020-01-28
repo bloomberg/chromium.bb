@@ -41,6 +41,7 @@ import base64
 import logging
 import os
 import re
+from hashlib import sha1
 
 from mod_pywebsocket import common
 from mod_pywebsocket.extensions import get_extension_processor
@@ -77,7 +78,7 @@ def compute_accept(key):
     Sec-WebSocket-Key header.
     """
 
-    accept_binary = util.sha1_hash(
+    accept_binary = sha1(
         key + common.WEBSOCKET_ACCEPT_UUID).digest()
     accept = base64.b64encode(accept_binary)
 

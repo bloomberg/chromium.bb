@@ -447,14 +447,6 @@ class Stream(object):
                     'Receiving %d byte failed. Peer (%r) closed connection' %
                     (length, (self._request.connection.remote_addr,)))
             return read_bytes
-        except socket.error as e:
-            # Catch a socket.error. Because it's not a child class of the
-            # IOError prior to Python 2.6, we cannot omit this except clause.
-            # Use %s rather than %r for the exception to use human friendly
-            # format.
-            raise ConnectionTerminatedException(
-                'Receiving %d byte failed. socket.error (%s) occurred' %
-                (length, e))
         except IOError as e:
             # Also catch an IOError because mod_python throws it.
             raise ConnectionTerminatedException(
@@ -575,7 +567,7 @@ class Stream(object):
 
         if binary and isinstance(message, six.text_type):
             raise BadOperationException(
-                'Message for binary frame must be instance of str')
+                'Message for binary frame must not be instance of Unicode')
 
         for message_filter in self._options.outgoing_message_filters:
             message = message_filter.filter(message, end, binary)
@@ -908,7 +900,8 @@ class Stream(object):
                     'close reason must not be specified if code is None')
             reason = ''
         else:
-            if not isinstance(reason, bytes) and not isinstance(reason, six.text_type):
+            if not isinstance(reason, bytes) and not isinstance(
+                reason, six.text_type):
                 raise BadOperationException(
                     'close reason must be an instance of bytes or unicode')
 

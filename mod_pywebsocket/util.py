@@ -34,21 +34,16 @@
 from __future__ import absolute_import
 import array
 import errno
-import six
-from six import iterbytes
-from six.moves import map
-from six.moves import range
-
-import hashlib
-md5_hash = hashlib.md5
-sha1_hash = hashlib.sha1
-
 import logging
 import os
 import re
+import six
+from six.moves import map
+from six.moves import range
 import socket
-import zlib
 import struct
+import zlib
+
 
 try:
     from mod_pywebsocket import fast_masking
@@ -126,7 +121,7 @@ def wrap_popen3_for_win(cygwin_path):
 
 
 def hexify(s):
-    return ' '.join(['%02x' % x for x in iterbytes(s)])
+    return ' '.join(['%02x' % x for x in six.iterbytes(s)])
 
 
 def get_class_logger(o):
@@ -188,7 +183,7 @@ class RepeatedXorMasker(object):
 
         # Use temporary local variables to eliminate the cost to access
         # attributes
-        masking_key = [c for c in iterbytes(self._masking_key)]
+        masking_key = [c for c in six.iterbytes(self._masking_key)]
         masking_key_size = len(masking_key)
         masking_key_index = self._masking_key_index
 
@@ -279,16 +274,9 @@ class _Inflater(object):
         data = b''
 
         while True:
-            if size == -1:
-                data += self._decompress.decompress(self._unconsumed)
-                # See Python bug http://bugs.python.org/issue12050 to
-                # understand why the same code cannot be used for updating
-                # self._unconsumed for here and else block.
-                self._unconsumed = b''
-            else:
-                data += self._decompress.decompress(
-                    self._unconsumed, size - len(data))
-                self._unconsumed = self._decompress.unconsumed_tail
+            data += self._decompress.decompress(
+                self._unconsumed, max(0, size - len(data)))
+            self._unconsumed = self._decompress.unconsumed_tail
             if self._decompress.unused_data:
                 # Encountered a last block (i.e. a block with BFINAL = 1) and
                 # found a new stream (unused_data). We cannot use the same

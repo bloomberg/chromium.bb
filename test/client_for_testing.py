@@ -55,6 +55,7 @@ import re
 import socket
 import struct
 import time
+from hashlib import sha1
 from six import iterbytes
 from six import indexbytes
 
@@ -405,7 +406,7 @@ class WebSocketHandshake(object):
         self._logger.debug('Actual Sec-WebSocket-Accept: %r (%s)',
                            accept, util.hexify(decoded_accept))
 
-        original_expected_accept = util.sha1_hash(
+        original_expected_accept = sha1(
             key + WEBSOCKET_ACCEPT_UUID).digest()
         expected_accept = base64.b64encode(original_expected_accept)
 
