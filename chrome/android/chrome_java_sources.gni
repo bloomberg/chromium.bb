@@ -68,6 +68,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/accessibility_tab_switcher/AccessibilityTabModelListView.java",
   "java/src/org/chromium/chrome/browser/accessibility_tab_switcher/AccessibilityTabModelWrapper.java",
   "java/src/org/chromium/chrome/browser/accessibility_tab_switcher/OverviewListLayout.java",
+  "java/src/org/chromium/chrome/browser/announcement/AnnouncementNotificationManager.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuIconRowFooter.java",
   "java/src/org/chromium/chrome/browser/appmenu/AppMenuPropertiesDelegateImpl.java",
   "java/src/org/chromium/chrome/browser/appmenu/UpdateMenuItemViewBinder.java",

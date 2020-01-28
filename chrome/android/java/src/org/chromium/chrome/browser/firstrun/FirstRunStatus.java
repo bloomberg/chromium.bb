@@ -12,6 +12,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
  * Gets and sets preferences related to the status of the first run experience.
  */
 public class FirstRunStatus {
+    // Whether the first run flow is triggered in the current browser session.
+    private static boolean sFirstRunTriggered;
 
     // Needed by ChromeBackupAgent
     public static final String FIRST_RUN_FLOW_COMPLETE = "first_run_flow";
@@ -41,6 +43,22 @@ public class FirstRunStatus {
         }
         return CommandLine.getInstance().hasSwitch(
                 ChromeSwitches.FORCE_FIRST_RUN_FLOW_COMPLETE_FOR_TESTING);
+    }
+
+    /**
+     * Sets whether the first run flow is triggered in the current browser session.
+     * @param triggered
+     * @return
+     */
+    public static void setFirstRunTriggered(boolean triggered) {
+        sFirstRunTriggered = triggered;
+    }
+
+    /**
+     * Returns whether first run flow is triggered in the current browser session.
+     */
+    public static boolean isFirstRunTriggered() {
+        return sFirstRunTriggered;
     }
 
     /**
