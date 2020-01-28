@@ -3407,7 +3407,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6464074037294098618">Ativa o Preenchimento automático de endereços</translation>
 <translation id="6467613372414922590">Permitir hosts de mensagens nativas no nível do usuário (instalados sem permissão do administrador)</translation>
 <translation id="6468980648680553776">O uso desta política foi suspenso. Use RemoteAccessHostClientDomainList.</translation>
-<translation id="6473623140202114570">Configure a lista de domínios em que a política Safe Browsing não acionará avisos.</translation>
+<translation id="6473623140202114570">Configure a lista de domínios em que a política Navegação segura não acionará avisos.</translation>
 <translation id="6488627892044759800">Configura o tipo de página inicial padrão no <ph name="PRODUCT_NAME" /> e evita que os usuários alterem as preferências de página inicial. A página inicial pode ser definida como um URL especificado por você ou como a página nova guia.
 
           Se você ativar essa configuração, a página nova guia será sempre usada como página inicial, e o local do URL da página inicial será ignorado.

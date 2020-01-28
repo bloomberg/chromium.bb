@@ -1275,7 +1275,7 @@
 <translation id="7186367841673660872">Diese Seite wurde von<ph name="ORIGINAL_LANGUAGE" />in<ph name="LANGUAGE_LANGUAGE" />übersetzt.</translation>
 <translation id="7192203810768312527">Freigabe von <ph name="SIZE" /> Speicherplatz. Manche Websites werden beim nächsten Öffnen eventuell langsamer geladen.</translation>
 <translation id="719464814642662924">Visa</translation>
-<translation id="7201591969684833065">Ihr Administrator hat Zugriff auf:</translation>
+<translation id="7201591969684833065">Ihr Administrator hat Zugriff auf Folgendes:</translation>
 <translation id="7202346780273620635">Letter-Extra</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> erfüllt die Sicherheitsstandards nicht.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /> zu diesem Problem.</translation>
@@ -1358,7 +1358,7 @@ Weitere Details:
 <translation id="7542995811387359312">Die Funktion zur automatischen Ausfüllung der Kreditkartendaten ist deaktiviert, da dieses Formular keine sichere Verbindung nutzt.</translation>
 <translation id="7548892272833184391">Verbindungsfehler beheben</translation>
 <translation id="7549584377607005141">Damit diese Webseite richtig angezeigt wird, werden die Daten benötigt, die Sie vorher eingegeben haben. Sie können diese Daten noch einmal senden, dabei werden jedoch sämtliche Aktionen wiederholt, die vorher durch diese Seite ausgeführt wurden.</translation>
-<translation id="7550637293666041147">Der Nutzername für Ihr Gerät und Ihr Chrome-Nutzername</translation>
+<translation id="7550637293666041147">Nutzername für Ihr Gerät und Chrome-Nutzername</translation>
 <translation id="7552846755917812628">Probieren Sie folgende Tipps aus:</translation>
 <translation id="7554791636758816595">Neuer Tab</translation>
 <translation id="7564049878696755256">Sie könnten den Zugriff auf Ihr <ph name="ORG_NAME" />-Konto verlieren oder zum Opfer von Identitätsdiebstahl werden. Chrome empfiehlt Ihnen, Ihr Passwort jetzt zu ändern.</translation>

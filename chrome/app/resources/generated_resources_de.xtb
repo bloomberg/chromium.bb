@@ -1710,7 +1710,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3439153939049640737"><ph name="HOST" /> immer Zugriff auf Ihr Mikrofon gestatten</translation>
 <translation id="3439970425423980614">PDF-Vorschau wird geöffnet...</translation>
 <translation id="3440663250074896476">Weitere Aktionen für <ph name="BOOKMARK_NAME" /></translation>
-<translation id="3440761377721825626">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf Ihren Computer verwenden möchte</translation>
+<translation id="3440761377721825626">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf meinen Computer verwenden möchte</translation>
 <translation id="3441653493275994384">Bildschirm</translation>
 <translation id="3445925074670675829">USB-C-Gerät</translation>
 <translation id="344630545793878684">Ihre Daten auf verschiedenen Websites lesen</translation>
@@ -1768,7 +1768,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3515983984924808886">Tippen Sie noch einmal auf Ihren Sicherheitsschlüssel, um das Zurücksetzen zu bestätigen. Damit werden alle auf dem Sicherheitsschlüssel gespeicherten Informationen und die zugehörige PIN gelöscht.</translation>
 <translation id="3518985090088779359">Akzeptieren &amp; weiter</translation>
 <translation id="351952459507671940">Neuer Gruppe hinzufügen</translation>
-<translation id="3523642406908660543">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf Ihren Computer verwenden möchte (empfohlen)</translation>
+<translation id="3523642406908660543">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf meinen Computer verwenden möchte (empfohlen)</translation>
 <translation id="3524965460886318643">Aktivitäten exportieren</translation>
 <translation id="3526034519184079374">Daten der Website können nicht gelesen oder geändert werden</translation>
 <translation id="3527085408025491307">Ordner</translation>
