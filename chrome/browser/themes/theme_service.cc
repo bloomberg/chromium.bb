@@ -662,7 +662,9 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
     }
   }
 
-  return TP::GetDefaultColor(id, incognito && !ForceLightDefaultColors());
+  return TP::GetDefaultColor(
+      id, incognito && !ForceLightDefaultColors() &&
+              (!theme_supplier_ || theme_supplier_->CanUseIncognitoColors()));
 }
 
 color_utils::HSL ThemeService::GetTint(int id, bool incognito) const {
@@ -672,7 +674,9 @@ color_utils::HSL ThemeService::GetTint(int id, bool incognito) const {
   if (theme_supplier_ && theme_supplier_->GetTint(id, &hsl))
     return hsl;
 
-  return TP::GetDefaultTint(id, incognito && !ForceLightDefaultColors());
+  return TP::GetDefaultTint(
+      id, incognito && !ForceLightDefaultColors() &&
+              (!theme_supplier_ || theme_supplier_->CanUseIncognitoColors()));
 }
 
 void ThemeService::ClearAllThemeData() {
