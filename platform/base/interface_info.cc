@@ -4,6 +4,8 @@
 
 #include "platform/base/interface_info.h"
 
+#include <algorithm>
+
 namespace openscreen {
 
 InterfaceInfo::InterfaceInfo() = default;
@@ -65,21 +67,28 @@ std::ostream& operator<<(std::ostream& out, const IPSubnet& subnet) {
   return out << '/' << std::dec << static_cast<int>(subnet.prefix_length);
 }
 
-std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info) {
-  std::string media_type;
-  switch (info.type) {
+std::ostream& operator<<(std::ostream& out, InterfaceInfo::Type type) {
+  switch (type) {
     case InterfaceInfo::Type::kEthernet:
-      media_type = "Ethernet";
+      out << "Ethernet";
       break;
     case InterfaceInfo::Type::kWifi:
-      media_type = "Wifi";
+      out << "Wifi";
+      break;
+    case InterfaceInfo::Type::kLoopback:
+      out << "Loopback";
       break;
     case InterfaceInfo::Type::kOther:
-      media_type = "Other";
+      out << "Other";
       break;
   }
+
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const InterfaceInfo& info) {
   out << '{' << info.index << " (a.k.a. " << info.name
-      << "); media_type=" << media_type << "; MAC=" << std::hex
+      << "); media_type=" << info.type << "; MAC=" << std::hex
       << static_cast<int>(info.hardware_address[0]);
   for (size_t i = 1; i < sizeof(info.hardware_address); ++i) {
     out << ':' << static_cast<int>(info.hardware_address[i]);

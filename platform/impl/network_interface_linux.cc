@@ -25,6 +25,7 @@
 #include "absl/types/optional.h"
 #include "platform/api/network_interface.h"
 #include "platform/base/ip_address.h"
+#include "platform/impl/network_interface.h"
 #include "platform/impl/scoped_pipe.h"
 #include "util/logging.h"
 
@@ -73,8 +74,9 @@ InterfaceInfo::Type GetInterfaceType(const std::string& ifname) {
   wr.ifr_name[IFNAMSIZ - 1] = 0;
   strncpy(ifr.ifr_name, ifname.c_str(), IFNAMSIZ - 1);
   ifr.ifr_data = &ecmd;
-  if (ioctl(s.get(), SIOCETHTOOL, &ifr) != -1)
+  if (ioctl(s.get(), SIOCETHTOOL, &ifr) != -1) {
     return InterfaceInfo::Type::kEthernet;
+  }
 
   return InterfaceInfo::Type::kOther;
 }
@@ -85,6 +87,7 @@ InterfaceInfo::Type GetInterfaceType(const std::string& ifname) {
 // pointed to by |rta|.
 void GetInterfaceAttributes(struct rtattr* rta,
                             unsigned int attrlen,
+                            bool is_loopback,
                             InterfaceInfo* info) {
   for (; RTA_OK(rta, attrlen); rta = RTA_NEXT(rta, attrlen)) {
     if (rta->rta_type == IFLA_IFNAME) {
@@ -97,7 +100,11 @@ void GetInterfaceAttributes(struct rtattr* rta,
     }
   }
 
-  info->type = GetInterfaceType(info->name);
+  if (is_loopback) {
+    info->type = InterfaceInfo::Type::kLoopback;
+  } else {
+    info->type = GetInterfaceType(info->name);
+  }
 }
 
 // Reads the IPv4 or IPv6 address that comes from an RTM_NEWADDR message and
@@ -219,16 +226,17 @@ std::vector<InterfaceInfo> GetLinkInfo() {
 
         struct ifinfomsg* interface_info =
             static_cast<struct ifinfomsg*>(NLMSG_DATA(netlink_header));
-        // Only process non-loopback interfaces which are active (up).
-        if ((interface_info->ifi_flags & IFF_LOOPBACK) ||
-            ((interface_info->ifi_flags & IFF_UP) == 0)) {
+        // Only process interfaces which are active (up).
+        if (!(interface_info->ifi_flags & IFF_UP)) {
           continue;
         }
+
         info_list.emplace_back();
         InterfaceInfo& info = info_list.back();
         info.index = interface_info->ifi_index;
         GetInterfaceAttributes(IFLA_RTA(interface_info),
-                               IFLA_PAYLOAD(netlink_header), &info);
+                               IFLA_PAYLOAD(netlink_header),
+                               interface_info->ifi_flags & IFF_LOOPBACK, &info);
       }
     }
   }
@@ -350,7 +358,7 @@ void PopulateSubnetsOrClearList(std::vector<InterfaceInfo>* info_list) {
 
 }  // namespace
 
-std::vector<InterfaceInfo> GetNetworkInterfaces() {
+std::vector<InterfaceInfo> GetAllInterfaces() {
   std::vector<InterfaceInfo> interfaces = GetLinkInfo();
   PopulateSubnetsOrClearList(&interfaces);
   return interfaces;

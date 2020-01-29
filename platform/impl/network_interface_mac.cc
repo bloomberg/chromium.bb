@@ -19,6 +19,7 @@
 
 #include "platform/api/network_interface.h"
 #include "platform/base/ip_address.h"
+#include "platform/impl/network_interface.h"
 #include "platform/impl/scoped_pipe.h"
 #include "util/logging.h"
 
@@ -67,13 +68,12 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
   // Socket used for querying interface media types.
   const ScopedFd ioctl_socket(socket(AF_INET6, SOCK_DGRAM, 0));
 
-  // Walk the |interfaces| linked list, creating the hierarchial structure.
+  // Walk the |interfaces| linked list, creating the hierarchical structure.
   std::vector<InterfaceInfo> results;
   for (ifaddrs* cur = interfaces; cur; cur = cur->ifa_next) {
-    // Skip: 1) loopback interfaces, 2) interfaces that are down, 3) interfaces
-    // with no address configured.
-    if ((IFF_LOOPBACK & cur->ifa_flags) || !(IFF_RUNNING & cur->ifa_flags) ||
-        !cur->ifa_addr) {
+    // Skip: 1) interfaces that are down, 2) interfaces with no address
+    // configured.
+    if (!(IFF_RUNNING & cur->ifa_flags) || !cur->ifa_addr) {
       continue;
     }
 
@@ -105,6 +105,9 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
       }
       if (ifmr.ifm_current & IFM_ETHER) {
         type = InterfaceInfo::Type::kEthernet;
+      }
+      if (cur->ifa_flags & IFF_LOOPBACK) {
+        type = InterfaceInfo::Type::kLoopback;
       }
 
       // Start with an unknown hardware ethernet address, which should be
@@ -162,7 +165,7 @@ std::vector<InterfaceInfo> ProcessInterfacesList(ifaddrs* interfaces) {
 
 }  // namespace
 
-std::vector<InterfaceInfo> GetNetworkInterfaces() {
+std::vector<InterfaceInfo> GetAllInterfaces() {
   std::vector<InterfaceInfo> results;
   ifaddrs* interfaces;
   if (getifaddrs(&interfaces) == 0) {

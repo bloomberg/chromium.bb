@@ -68,6 +68,8 @@ if (!build_with_chromium) {
 
     sources = [
       "impl/logging.h",
+      "impl/network_interface.cc",
+      "impl/network_interface.h",
       "impl/socket_handle.h",
       "impl/socket_handle_waiter.cc",
       "impl/socket_handle_waiter.h",

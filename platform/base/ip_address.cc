@@ -18,6 +18,12 @@
 namespace openscreen {
 
 // static
+const IPAddress IPAddress::kV4LoopbackAddress{127, 0, 0, 1};
+
+// static
+const IPAddress IPAddress::kV6LoopbackAddress{0, 0, 0, 0, 0, 0, 0, 1};
+
+// static
 ErrorOr<IPAddress> IPAddress::Parse(const std::string& s) {
   ErrorOr<IPAddress> v4 = ParseV4(s);
 
