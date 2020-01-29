@@ -39,8 +39,8 @@ const static uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
 
-const static uint32_t texture_source_formats[] = { DRM_FORMAT_GR88,	      DRM_FORMAT_R8,
-						   DRM_FORMAT_NV21,	      DRM_FORMAT_NV12,
+const static uint32_t texture_source_formats[] = { DRM_FORMAT_GR88,	   DRM_FORMAT_R8,
+						   DRM_FORMAT_NV21,	   DRM_FORMAT_NV12,
 						   DRM_FORMAT_YVU420_ANDROID, DRM_FORMAT_YVU420 };
 
 static int amdgpu_init(struct driver *drv)
