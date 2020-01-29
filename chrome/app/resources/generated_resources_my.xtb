@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">ဇူးမ်</translation>
 <translation id="1030706264415084469"><ph name="URL" /> သည် ကြီးမားသည့်ဒေတာများကို သင့်စက်တွင် အမြဲတမ်းသိုလှောင်လိုသည်</translation>
 <translation id="1031362278801463162">အစမ်းကြည့် တင်ပေးနေ</translation>
+<translation id="1032605640136438169">စည်းမျဉ်းအသစ်များကို ဖတ်ရှုပါ</translation>
 <translation id="103279545524624934">Android အက်ပ်များကိုစဖွင့်ရန် နေရာလွတ်ပြုလုပ်ပါ။</translation>
 <translation id="1033780634303702874">သင်၏ ဆင့်ဆက် ကိရိယာများကို ရယူသုံးရန်</translation>
 <translation id="1034942643314881546">အက်ပ်သရုပ်ဖော်မှု ပြုလုပ်ရန် adb ကို ဖွင့်နေသည်</translation>
@@ -2799,6 +2800,7 @@
 <translation id="4997086284911172121">အင်တာနက် ချိတ်ဆက်မှု မရှိပါ။</translation>
 <translation id="4998873842614926205">အပြောင်းအလဲများကို အတည်ပြုရန်</translation>
 <translation id="5000922062037820727">ပိတ်ဆို့ထား၏ (အကြံပြုထား)</translation>
+<translation id="5007392906805964215">ပြန်ကြည့်ရန်</translation>
 <translation id="5008936837313706385">လုပ်ဆောင်ချက်အမည်</translation>
 <translation id="5010043101506446253">အသိမှတ်ပြုလက်မှတ် အာဏာ</translation>
 <translation id="5015344424288992913">ပရောက်စီ ဆုံးဖြတ်နေ...</translation>
@@ -3000,6 +3002,7 @@
 <translation id="5310281978693206542">သင့်စက်ပစ္စည်းများသို့ လင့်ခ်ပို့ပါ</translation>
 <translation id="5311304534597152726">ဤအကောင့်ဖြင့် လက်မှတ်ထိုးဝင်ထားသည်</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> ထပ်စမ်းကြည့်ပါ။</translation>
+<translation id="5314381603623123224">မတ်လ ၃၁ ရက်နေ့တွင် Chrome ၏ 'ဝန်ဆောင်မှုစည်းမျဉ်းများ' ပြောင်းပါတော့မည်</translation>
 <translation id="5315738755890845852">တွန့်ကွင်းအပို- <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">အထောက်အထား</translation>
 <translation id="5317780077021120954">သိမ်းရန်</translation>

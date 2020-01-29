@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Зумирај</translation>
 <translation id="1030706264415084469"><ph name="URL" /> жели трајно да складишти велике количине података на уређају</translation>
 <translation id="1031362278801463162">Учитавање прегледа</translation>
+<translation id="1032605640136438169">Прегледајте нове услове</translation>
 <translation id="103279545524624934">Ослободите простор на диску да бисте покренули Android апликације.</translation>
 <translation id="1033780634303702874">Приступ серијским уређајима</translation>
 <translation id="1034942643314881546">Омогућавање ADB-а за прављење илустрација апликација</translation>
@@ -2796,6 +2797,7 @@
 <translation id="4997086284911172121">Нема интернет везе.</translation>
 <translation id="4998873842614926205">Потврда промена</translation>
 <translation id="5000922062037820727">Блокирано (препоручено)</translation>
+<translation id="5007392906805964215">Прегледај</translation>
 <translation id="5008936837313706385">Назив активности</translation>
 <translation id="5010043101506446253">Ауторитет за издавање сертификата</translation>
 <translation id="5015344424288992913">Одређује се прокси...</translation>
@@ -2997,6 +2999,7 @@
 <translation id="5310281978693206542">Пошаљите линк на своје уређаје</translation>
 <translation id="5311304534597152726">Пријављујете се као</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Пробајте поново.</translation>
+<translation id="5314381603623123224">Chrome услови коришћења услуге се мењају 31. марта.</translation>
 <translation id="5315738755890845852">Сувишна витичаста заграда: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Идентитет</translation>
 <translation id="5317780077021120954">Сачувај</translation>

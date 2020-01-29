@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Lupa</translation>
 <translation id="1030706264415084469">Stránka <ph name="URL" /> chce v zařízení trvale ukládat velké množství dat</translation>
 <translation id="1031362278801463162">Načítání náhledu</translation>
+<translation id="1032605640136438169">Prostudujte si nové smluvní podmínky</translation>
 <translation id="103279545524624934">Chcete-li spouštět aplikace pro Android, uvolněte místo na disku.</translation>
 <translation id="1033780634303702874">Přistupovat k zařízením připojeným pomocí sériového portu</translation>
 <translation id="1034942643314881546">Aktivace ADB k vytvoření ilustrace aplikací</translation>
@@ -2797,6 +2798,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4997086284911172121">Nejste připojeni k internetu.</translation>
 <translation id="4998873842614926205">Potvrdit změny</translation>
 <translation id="5000922062037820727">Blokováno (doporučeno)</translation>
+<translation id="5007392906805964215">Zkontrolovat</translation>
 <translation id="5008936837313706385">Název aktivity</translation>
 <translation id="5010043101506446253">Certifikační autorita</translation>
 <translation id="5015344424288992913">Rozpoznávání proxy serveru...</translation>
@@ -2998,6 +3000,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5310281978693206542">Odeslat odkaz do vašich zařízení</translation>
 <translation id="5311304534597152726">Přihlašujete se jako</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Zkuste to znovu.</translation>
+<translation id="5314381603623123224">Smluvní podmínky prohlížeče Chrome se 31. března změní</translation>
 <translation id="5315738755890845852">Nadbytečná složená závorka: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identita</translation>
 <translation id="5317780077021120954">Uložit</translation>

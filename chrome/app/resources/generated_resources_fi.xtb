@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Lähennä</translation>
 <translation id="1030706264415084469"><ph name="URL" /> haluaa tallentaa suuria tietomääriä pysyvästi laitteellesi.</translation>
 <translation id="1031362278801463162">Ladataan esikatselua</translation>
+<translation id="1032605640136438169">Lue uudet ehdot</translation>
 <translation id="103279545524624934">Vapauta levytilaa, jotta voit käynnistää Android-sovelluksia.</translation>
 <translation id="1033780634303702874">Käyttää sarjaporttilaitteitasi</translation>
 <translation id="1034942643314881546">Otetaan ADB käyttöön sovelluskuvituksen luomista varten</translation>
@@ -2796,6 +2797,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4997086284911172121">Ei internetyhteyttä.</translation>
 <translation id="4998873842614926205">Vahvista muutokset</translation>
 <translation id="5000922062037820727">Estetty (suositus)</translation>
+<translation id="5007392906805964215">Tarkista</translation>
 <translation id="5008936837313706385">Toiminnon nimi</translation>
 <translation id="5010043101506446253">Varmenteen myöntäjä</translation>
 <translation id="5015344424288992913">Jäsennetään välityspalvelinta...</translation>
@@ -2997,6 +2999,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5310281978693206542">Lähetä linkki laitteillesi</translation>
 <translation id="5311304534597152726">Kirjaudutaan sisään käyttäjänä</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Yritä uudelleen.</translation>
+<translation id="5314381603623123224">Chromen käyttöehdot muuttuvat 31.3.</translation>
 <translation id="5315738755890845852">Ylimääräinen kaarisulje: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identiteetti</translation>
 <translation id="5317780077021120954">Tallenna</translation>

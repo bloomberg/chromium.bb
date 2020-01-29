@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zmadho</translation>
 <translation id="1030706264415084469"><ph name="URL" /> do të ruajë në mënyrë të përhershme të dhëna të mëdha në pajisjen tënde</translation>
 <translation id="1031362278801463162">Po ngarkohet pamja paraprake...</translation>
+<translation id="1032605640136438169">Shqyrto kushtet e reja</translation>
 <translation id="103279545524624934">Liro hapësirë në disk për të nisur aplikacionet Android.</translation>
 <translation id="1033780634303702874">Qasu në pajisjet e tua seriale</translation>
 <translation id="1034942643314881546">ADB-ja po aktivizohet për të krijuar ilustrimin e aplikacioneve</translation>
@@ -2796,6 +2797,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="4997086284911172121">Nuk ka lidhje me internetin.</translation>
 <translation id="4998873842614926205">Konfirmo ndryshimet</translation>
 <translation id="5000922062037820727">Bllokuar (rekomandohet)</translation>
+<translation id="5007392906805964215">Rishiko</translation>
 <translation id="5008936837313706385">Emri i aktivitetit</translation>
 <translation id="5010043101506446253">Autoriteti i certifikatës</translation>
 <translation id="5015344424288992913">Po zgjidh përfaqësuesin...</translation>
@@ -2997,6 +2999,7 @@ Cilësimet e kësaj llogarie mund t'i menaxhosh duke instaluar aplikacionin Fami
 <translation id="5310281978693206542">Dërgo lidhjen te pajisjet e tua</translation>
 <translation id="5311304534597152726">Identifikuar si</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Provo përsëri.</translation>
+<translation id="5314381603623123224">Kushtet e shërbimit të Chrome ndryshojnë më 31 mars</translation>
 <translation id="5315738755890845852">Kllapë gjarpërushe shtesë: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identiteti</translation>
 <translation id="5317780077021120954">Ruaj</translation>

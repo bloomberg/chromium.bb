@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Масштаб</translation>
 <translation id="1030706264415084469">Сайт <ph name="URL" /> запрашивает разрешение на постоянное хранение большого объема данных на вашем устройстве.</translation>
 <translation id="1031362278801463162">Загрузка данных для предварительного просмотра</translation>
+<translation id="1032605640136438169">Просим вас ознакомиться с изменениями.</translation>
 <translation id="103279545524624934">Чтобы запускать Android-приложения, освободите пространство на диске.</translation>
 <translation id="1033780634303702874">Доступ к последовательным устройствам</translation>
 <translation id="1034942643314881546">Включение ADB для создания иллюстраций</translation>
@@ -2797,6 +2798,7 @@
 <translation id="4997086284911172121">Нет подключения к Интернету.</translation>
 <translation id="4998873842614926205">Подтверждение изменений</translation>
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
+<translation id="5007392906805964215">Посмотреть</translation>
 <translation id="5008936837313706385">Действие</translation>
 <translation id="5010043101506446253">Центр сертификации</translation>
 <translation id="5015344424288992913">Определение прокси-сервера...</translation>
@@ -2998,6 +3000,7 @@
 <translation id="5310281978693206542">Отправить ссылку на мои устройства</translation>
 <translation id="5311304534597152726">Вход в аккаунт</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Попробуйте ещё раз.</translation>
+<translation id="5314381603623123224">Условия использования Chrome будут обновлены 31 марта</translation>
 <translation id="5315738755890845852">Лишняя фигурная скобка: <ph name="ERROR_LINE" />.</translation>
 <translation id="5315873049536339193">Идентификационные данные</translation>
 <translation id="5317780077021120954">Сохранить</translation>

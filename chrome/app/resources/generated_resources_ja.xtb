@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">ズーム</translation>
 <translation id="1030706264415084469"><ph name="URL" /> から、デバイスに大きなデータを永続的に保存する許可を求められています</translation>
 <translation id="1031362278801463162">プレビューを読み込んでいます</translation>
+<translation id="1032605640136438169">新しい利用規約をご確認ください</translation>
 <translation id="103279545524624934">Android アプリを起動できるようにディスク領域を解放します。</translation>
 <translation id="1033780634303702874">シリアル デバイスへのアクセス</translation>
 <translation id="1034942643314881546">ADB によるアプリのイラストレーション作成を有効にする</translation>
@@ -2799,6 +2800,7 @@
 <translation id="4997086284911172121">インターネットに接続されていません。</translation>
 <translation id="4998873842614926205">変更内容を確認</translation>
 <translation id="5000922062037820727">ブロック（推奨）</translation>
+<translation id="5007392906805964215">内容を確認</translation>
 <translation id="5008936837313706385">アクティビティ名</translation>
 <translation id="5010043101506446253">認証局</translation>
 <translation id="5015344424288992913">プロキシを解決しています...</translation>
@@ -3000,6 +3002,7 @@
 <translation id="5310281978693206542">リンクをデバイスに送信</translation>
 <translation id="5311304534597152726">次のユーザーとしてログイン:</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" />もう一度お試しください。</translation>
+<translation id="5314381603623123224">Chrome の利用規約が 3 月 31 日に更新されます。</translation>
 <translation id="5315738755890845852">余分な中かっこがあります: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">ID</translation>
 <translation id="5317780077021120954">保存</translation>

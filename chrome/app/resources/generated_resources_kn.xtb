@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">ಝೂಮ್</translation>
 <translation id="1030706264415084469">ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ದೊಡ್ಡ ಪ್ರಮಾಣದ ಡೇಟಾವನ್ನು ಶಾಶ್ವತವಾಗಿ ಸಂಗ್ರಹಣೆ ಮಾಡಲು <ph name="URL" /> ಬಯಸುತ್ತದೆ</translation>
 <translation id="1031362278801463162">ಪೂರ್ವವೀಕ್ಷಣೆ ಲೋಡ್ ಆಗುತ್ತಿದೆ</translation>
+<translation id="1032605640136438169">ಹೊಸ ನಿಯಮಗಳನ್ನು ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="103279545524624934">Android ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಪ್ರಾರಂಭಿಸಲು ಡಿಸ್ಕ್ ಸ್ಥಳಾವಕಾಶ ಮುಕ್ತಗೊಳಿಸಿ.</translation>
 <translation id="1033780634303702874">ನಿಮ್ಮ ಸರಣಿ ಸಾಧನಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="1034942643314881546">ಆ್ಯಪ್‌ಗಳ ನಿದರ್ಶನವನ್ನು ರಚಿಸಲು adb ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -2800,6 +2801,7 @@
 <translation id="4997086284911172121">ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕವಿಲ್ಲ.</translation>
 <translation id="4998873842614926205">ಬದಲಾವಣೆಗಳನ್ನು ದೃಢೀಕರಿಸಿ</translation>
 <translation id="5000922062037820727">ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
+<translation id="5007392906805964215">ಪರಿಶೀಲಿಸಿ</translation>
 <translation id="5008936837313706385">ಚಟುವಟಿಕೆ ಹೆಸರು</translation>
 <translation id="5010043101506446253">ಪ್ರಮಾಣಪತ್ರ ಪ್ರಾಧಿಕಾರ</translation>
 <translation id="5015344424288992913">ಪ್ರಾಕ್ಸಿಯನ್ನು ಪರಿಹರಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -3001,6 +3003,7 @@
 <translation id="5310281978693206542">ನಿಮ್ಮ ಸಾಧನಗಳಿಗೆ ಲಿಂಕ್ ಕಳುಹಿಸಿ</translation>
 <translation id="5311304534597152726">ಇದರಂತೆ ಸೈನ್ ಇನ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
+<translation id="5314381603623123224">ಮಾರ್ಚ್ 31 ರಿಂದ Chrome ನ ಸೇವಾ ನಿಯಮಗಳು ಬದಲಾಗುತ್ತಿವೆ</translation>
 <translation id="5315738755890845852">ಹೆಚ್ಚುವರಿ ಕರ್ಲಿ ಬ್ರಾಕೆಟ್: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">ಗುರುತು</translation>
 <translation id="5317780077021120954">ಉಳಿಸು</translation>

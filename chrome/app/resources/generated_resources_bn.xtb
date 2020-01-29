@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">জুম</translation>
 <translation id="1030706264415084469"><ph name="URL" /> আপনার ডিভাইসে স্থায়ীভাবে বেশি ডেটা স্টোর করে রাখতে চায়</translation>
 <translation id="1031362278801463162">প্রিভিউ লোড হচ্ছে</translation>
+<translation id="1032605640136438169">নতুন শর্তাবলী ভাল করে পড়ে নিন</translation>
 <translation id="103279545524624934">Android অ্যাপ্লিকেশন লঞ্চ করার জন্য ডিস্কে জায়গা খালি করুন।</translation>
 <translation id="1033780634303702874">আপনার সিরিয়াল ডিভাইসগুলি অ্যাক্সেস করুন</translation>
 <translation id="1034942643314881546">অ্যাপ ইলাস্ট্রেশন করতে adb চালু করা হচ্ছে</translation>
@@ -2797,6 +2798,7 @@
 <translation id="4997086284911172121">কোনও ইন্টারনেট সংযোগ নেই।</translation>
 <translation id="4998873842614926205">পরিবর্তনগুলি নিশ্চিত করুন</translation>
 <translation id="5000922062037820727">অবরুদ্ধ (প্রস্তাবিত)</translation>
+<translation id="5007392906805964215">পর্যালোচনা করুন</translation>
 <translation id="5008936837313706385">অ্যাক্টিভিটির নাম</translation>
 <translation id="5010043101506446253">সার্টিফিকেট কর্তৃপক্ষ</translation>
 <translation id="5015344424288992913">প্রক্সি স্থির করা হচ্ছে...</translation>
@@ -2998,6 +3000,7 @@
 <translation id="5310281978693206542">আপনার ডিভাইসে লিঙ্ক পাঠান</translation>
 <translation id="5311304534597152726">এই নামে সাইন-ইন করা হচ্ছে</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> আবার চেষ্টা করুন।</translation>
+<translation id="5314381603623123224">৩১ মার্চ থেকে Chrome-এর 'পরিষেবার শর্তাবলী'-তে পরিবর্তন করা হবে</translation>
 <translation id="5315738755890845852">অতিরিক্ত সেকেন্ড ব্র্যাকেট: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">পরিচয়</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>

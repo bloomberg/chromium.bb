@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Keisti mastelį</translation>
 <translation id="1030706264415084469"><ph name="URL" /> prašo leidimo nuolat saugoti daug duomenų įrenginyje</translation>
 <translation id="1031362278801463162">Įkeliama peržiūra</translation>
+<translation id="1032605640136438169">Peržiūrėkite naujas sąlygas</translation>
 <translation id="103279545524624934">Atlaisvinkite vietos diske, kad galėtumėte paleisti „Android“ programas.</translation>
 <translation id="1033780634303702874">Pasiekti nuosekliuosius įtaisus</translation>
 <translation id="1034942643314881546">ADB įgalinimas kurti programos iliustraciją</translation>
@@ -2799,6 +2800,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4997086284911172121">Nėra interneto ryšio.</translation>
 <translation id="4998873842614926205">Patvirtinti pakeitimus</translation>
 <translation id="5000922062037820727">Užblokuota (rekomenduojama)</translation>
+<translation id="5007392906805964215">Peržiūrėti</translation>
 <translation id="5008936837313706385">Veiklos pavadinimas</translation>
 <translation id="5010043101506446253">Sertifikatą išdavusi institucija</translation>
 <translation id="5015344424288992913">Ieškoma proxy...</translation>
@@ -3000,6 +3002,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5310281978693206542">Siųsti nuorodą į savo įrenginius</translation>
 <translation id="5311304534597152726">Prisijungiama kaip</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Bandykite dar kartą.</translation>
+<translation id="5314381603623123224">Kovo 31 dieną bus pakeistos „Chrome“ paslaugų teikimo sąlygos</translation>
 <translation id="5315738755890845852">Papildomas riestinis skliaustas: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Tapatybė</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>

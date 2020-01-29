@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">സൂം ചെയ്യുക</translation>
 <translation id="1030706264415084469">നിങ്ങളുടെ ഉപകരണത്തിൽ ശാശ്വതമായി വലിയ അളവിൽ ഡാറ്റ സംഭരിക്കാന്‍ <ph name="URL" />ആഗ്രഹിക്കുന്നു</translation>
 <translation id="1031362278801463162">പ്രിവ്യൂ ലോഡ് ചെയ്യുന്നു</translation>
+<translation id="1032605640136438169">പുതിയ നിബന്ധനകൾ അവലോകനം ചെയ്യുക</translation>
 <translation id="103279545524624934">Android ആപ്പ് ആരംഭിക്കുന്നതിന്, ഡിസ്‌ക്കിൽ ഇടം സൃഷ്‌ടിക്കുക.</translation>
 <translation id="1033780634303702874">നിങ്ങളുടെ സീരിയൽ ഉപകരണങ്ങൾ ആക്‌സസ് ചെയ്യുക</translation>
 <translation id="1034942643314881546">ആപ്പുകളുടെ ചിത്രീകരണം സൃഷ്ടിക്കാൻ adb പ്രവർത്തനക്ഷമമാക്കുന്നു</translation>
@@ -2795,6 +2796,7 @@
 <translation id="4997086284911172121">ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ല.</translation>
 <translation id="4998873842614926205">മാറ്റങ്ങൾ സ്ഥിരീകരിക്കുക</translation>
 <translation id="5000922062037820727">തടഞ്ഞിരിക്കുന്നു (ശുപാർശചെയ്‌തത്)</translation>
+<translation id="5007392906805964215">അവലോകനം ചെയ്യുക</translation>
 <translation id="5008936837313706385">ആക്റ്റിവിറ്റിയുടെ പേര്</translation>
 <translation id="5010043101506446253">സർട്ടിഫിക്കറ്റ് അധികാരി</translation>
 <translation id="5015344424288992913">റിസോള്‍വിംഗ് പ്രോക്സി...</translation>
@@ -2996,6 +2998,7 @@
 <translation id="5310281978693206542">നിങ്ങളുടെ ഉപകരണങ്ങളിലേക്ക് ലിങ്ക് അയയ്ക്കുക</translation>
 <translation id="5311304534597152726">ഈ പേരിൽ സൈൻ ഇൻ ചെയ്യുന്നു</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> വീണ്ടും ശ്രമിക്കുക.</translation>
+<translation id="5314381603623123224">Chrome-ന്റെ സേവന നിബന്ധനകളിൽ മാർച്ച് 31-ന് മാറ്റം വരുന്നു</translation>
 <translation id="5315738755890845852">അധിക ചുരുൾ ബ്രാക്കറ്റ്: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">വ്യക്തിത്വം</translation>
 <translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>

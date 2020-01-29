@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zooma</translation>
 <translation id="1030706264415084469"><ph name="URL" /> webguneak datu asko gorde nahi ditu gailuan modu iraunkorrean</translation>
 <translation id="1031362278801463162">Aurrebista kargatzen</translation>
+<translation id="1032605640136438169">Irakurri baldintza berriak</translation>
 <translation id="103279545524624934">Egin tokia diskoan Android-erako aplikazioak abiarazteko.</translation>
 <translation id="1033780634303702874">Atzitu serieko gailuak</translation>
 <translation id="1034942643314881546">ADB gaitzen aplikazioen ilustrazioak egiteko</translation>
@@ -2799,6 +2800,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4997086284911172121">Ez zaude konektatuta Internetera.</translation>
 <translation id="4998873842614926205">Berretsi aldaketak</translation>
 <translation id="5000922062037820727">Blokeatuta (gomendatua)</translation>
+<translation id="5007392906805964215">Berrikusi</translation>
 <translation id="5008936837313706385">Jardueraren izena</translation>
 <translation id="5010043101506446253">Autoritate ziurtagiri-emailea</translation>
 <translation id="5015344424288992913">Proxya ebazten…</translation>
@@ -3000,6 +3002,7 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="5310281978693206542">Bidali esteka gailuetara</translation>
 <translation id="5311304534597152726">Kontu honetan hasiko duzu saioa:</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Saiatu berriro.</translation>
+<translation id="5314381603623123224">Chrome-ren Zerbitzu-baldintzak martxoaren 31n aldatuko dira</translation>
 <translation id="5315738755890845852">Giltza gehigarria: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identitatea</translation>
 <translation id="5317780077021120954">Gorde</translation>

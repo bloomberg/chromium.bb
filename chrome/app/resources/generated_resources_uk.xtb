@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Збільшити</translation>
 <translation id="1030706264415084469">Сайт <ph name="URL" /> хоче постійно зберігати великий обсяг даних на вашому пристрої</translation>
 <translation id="1031362278801463162">Завантаження попереднього перегляду</translation>
+<translation id="1032605640136438169">Перегляньте нові правила</translation>
 <translation id="103279545524624934">Щоб запускати додатки Android, звільніть місце на диску.</translation>
 <translation id="1033780634303702874">Отримувати доступ до серійних пристроїв</translation>
 <translation id="1034942643314881546">Увімкнення ADB, щоб створювати ілюстрації додатків</translation>
@@ -2799,6 +2800,7 @@
 <translation id="4997086284911172121">Немає з’єднання з Інтернетом.</translation>
 <translation id="4998873842614926205">Підтвердьте зміни</translation>
 <translation id="5000922062037820727">Заблоковано (рекомендується)</translation>
+<translation id="5007392906805964215">Переглянути</translation>
 <translation id="5008936837313706385">Назва дії</translation>
 <translation id="5010043101506446253">Центр сертифікації</translation>
 <translation id="5015344424288992913">-...</translation>
@@ -3000,6 +3002,7 @@
 <translation id="5310281978693206542">Надіслати посилання на пристрої</translation>
 <translation id="5311304534597152726">Вхід в обліковий запис</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Повторіть спробу.</translation>
+<translation id="5314381603623123224">31 березня змінюються Умови використання Chrome</translation>
 <translation id="5315738755890845852">Зайва фігурна дужка: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Ідентифікаційна інформація</translation>
 <translation id="5317780077021120954">Зберегти</translation>

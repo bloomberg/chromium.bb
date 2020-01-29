@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> möchte dauerhaft umfangreiche Daten auf Ihrem Gerät speichern</translation>
 <translation id="1031362278801463162">Vorschau wird geladen...</translation>
+<translation id="1032605640136438169">Bitte lesen Sie sich die neue Fassung durch</translation>
 <translation id="103279545524624934">Geben Sie Speicherplatz frei, um Android-Apps starten zu können.</translation>
 <translation id="1033780634303702874">Auf Ihre seriellen Geräte zugreifen</translation>
 <translation id="1034942643314881546">Zulassen, dass ADB App-Illustrationen erstellt</translation>
@@ -2795,6 +2796,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4997086284911172121">Keine Internetverbindung.</translation>
 <translation id="4998873842614926205">Änderungen bestätigen</translation>
 <translation id="5000922062037820727">Blockiert (empfohlen)</translation>
+<translation id="5007392906805964215">Ansehen</translation>
 <translation id="5008936837313706385">Aktivitätsname</translation>
 <translation id="5010043101506446253">Zertifizierungsstelle</translation>
 <translation id="5015344424288992913">Proxy auflösen...</translation>
@@ -2996,6 +2998,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5310281978693206542">Link an meine Geräte senden</translation>
 <translation id="5311304534597152726">Anmeldung als</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Bitte versuchen Sie es noch einmal.</translation>
+<translation id="5314381603623123224">Die Nutzungsbedingungen von Chrome ändern sich am 31. März</translation>
 <translation id="5315738755890845852">Zusätzliche geschweifte Klammer: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identität</translation>
 <translation id="5317780077021120954">Speichern</translation>

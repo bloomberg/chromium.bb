@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> wants to permanently store large data on your device</translation>
 <translation id="1031362278801463162">Loading preview</translation>
+<translation id="1032605640136438169">Please review the new terms</translation>
 <translation id="103279545524624934">Free up disk space to launch Android apps.</translation>
 <translation id="1033780634303702874">Access your serial devices</translation>
 <translation id="1034942643314881546">Enabling ADB to create apps illustration</translation>
@@ -2799,6 +2800,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4997086284911172121">No Internet connection.</translation>
 <translation id="4998873842614926205">Confirm Changes</translation>
 <translation id="5000922062037820727">Blocked (recommended)</translation>
+<translation id="5007392906805964215">Review</translation>
 <translation id="5008936837313706385">Activity Name</translation>
 <translation id="5010043101506446253">Certificate authority</translation>
 <translation id="5015344424288992913">Resolving proxy...</translation>
@@ -3000,6 +3002,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5310281978693206542">Send Link to Your Devices</translation>
 <translation id="5311304534597152726">Signing in as</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Please try again.</translation>
+<translation id="5314381603623123224">Chrome’s Terms of Service are changing on 31 March</translation>
 <translation id="5315738755890845852">Extra curly bracket: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identity</translation>
 <translation id="5317780077021120954">Save</translation>

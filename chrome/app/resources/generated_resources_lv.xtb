@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Tālummaiņa</translation>
 <translation id="1030706264415084469">Vietnē <ph name="URL" /> tika pieprasīta atļauja pastāvīgi glabāt jūsu ierīcē lielu datu apjomu.</translation>
 <translation id="1031362278801463162">Notiek priekšskatījuma ielāde</translation>
+<translation id="1032605640136438169">Lūdzu, pārskatiet jaunos noteikumus.</translation>
 <translation id="103279545524624934">Atbrīvojiet vietu diskā, lai varētu palaist Android lietotnes.</translation>
 <translation id="1033780634303702874">Piekļūt jūsu seriālajām ierīcēm</translation>
 <translation id="1034942643314881546">ADB iespējošana lietotņu ilustrācijas izveidei</translation>
@@ -2799,6 +2800,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4997086284911172121">Nav interneta savienojuma.</translation>
 <translation id="4998873842614926205">Apstiprināt izmaiņas</translation>
 <translation id="5000922062037820727">Bloķēta (ieteicams)</translation>
+<translation id="5007392906805964215">Pārskatīt</translation>
 <translation id="5008936837313706385">Darbības nosaukums</translation>
 <translation id="5010043101506446253">Sertificēšanas institūcija</translation>
 <translation id="5015344424288992913">Risina starpniekserveri...</translation>
@@ -3000,6 +3002,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5310281978693206542">Sūtīt saiti uz jūsu ierīcēm</translation>
 <translation id="5311304534597152726">Notiek pierakstīšanās kontā</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Mēģiniet vēlreiz.</translation>
+<translation id="5314381603623123224">31. martā tiks mainīti Chrome pakalpojumu sniegšanas noteikumi</translation>
 <translation id="5315738755890845852">Figūriekava: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identitāte</translation>
 <translation id="5317780077021120954">Saglabāt</translation>

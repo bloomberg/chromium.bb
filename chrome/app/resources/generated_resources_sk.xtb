@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Lupa</translation>
 <translation id="1030706264415084469"><ph name="URL" /> chce natrvalo ukladať veľké množstvo dát vo vašom zariadení</translation>
 <translation id="1031362278801463162">Načítava sa ukážka</translation>
+<translation id="1032605640136438169">Prečítajte si nové zmluvné podmienky</translation>
 <translation id="103279545524624934">Ak chcete spúšťať aplikácie pre Android, uvoľnite miesto na disku.</translation>
 <translation id="1033780634303702874">Mať prístup k zariadeniam pripojeným cez sériový port</translation>
 <translation id="1034942643314881546">Aktivovanie nástroja ADB na vytváranie obrázkov aplikácií</translation>
@@ -2798,6 +2799,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="4997086284911172121">Žiadne internetové pripojenie.</translation>
 <translation id="4998873842614926205">Potvrdiť zmeny</translation>
 <translation id="5000922062037820727">Blokované (odporúčané)</translation>
+<translation id="5007392906805964215">Prezrieť</translation>
 <translation id="5008936837313706385">Názov aktivity</translation>
 <translation id="5010043101506446253">Certifikačná autorita</translation>
 <translation id="5015344424288992913">Určenie proxy...</translation>
@@ -2999,6 +3001,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5310281978693206542">Odoslať odkaz do vašich zariadení</translation>
 <translation id="5311304534597152726">Prebieha prihlasovanie ako</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Skúste to znova.</translation>
+<translation id="5314381603623123224">Zmluvné podmienky prehliadača Chrome sa 31. marca zmenia</translation>
 <translation id="5315738755890845852">Nadbytočná zložená zátvorka: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identita</translation>
 <translation id="5317780077021120954">Uložiť</translation>

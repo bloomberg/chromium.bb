@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Masshtab</translation>
 <translation id="1030706264415084469"><ph name="URL" /> saytidan katta hajmdagi ma’lumotlarni mobil qurilmangizda saqlashga ruxsat so‘rovi keldi</translation>
 <translation id="1031362278801463162">Ma’lumotlar oldindan ko‘rish uchun yuklanmoqda</translation>
+<translation id="1032605640136438169">Yangi shartlar bilan tanishib chiqing</translation>
 <translation id="103279545524624934">Android ilovalarni ishga tushirish uchun diskda joy bo‘shating.</translation>
 <translation id="1033780634303702874">Keyingi seriyali qurilmalaringizga ruxsat</translation>
 <translation id="1034942643314881546">Ilovalar illustratsiyalarini yaratish uchun ADB ishga tushirilmoqda</translation>
@@ -2797,6 +2798,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="4997086284911172121">Internet aloqasi yo‘q.</translation>
 <translation id="4998873842614926205">O‘zgarishlarni tasdiqlash</translation>
 <translation id="5000922062037820727">Bloklangan (tavsiya etiladi)</translation>
+<translation id="5007392906805964215">Tekshirish</translation>
 <translation id="5008936837313706385">Harakat nomi</translation>
 <translation id="5010043101506446253">Sertifikat markazi</translation>
 <translation id="5015344424288992913">Proksi-server aniqlanmoqda...</translation>
@@ -2998,6 +3000,7 @@ Oʻz qurilmangizda Family Link ilovasini oʻrnatib, bu hisob sozlamalarini boshq
 <translation id="5310281978693206542">Havolani qurilmalarimga yuborish</translation>
 <translation id="5311304534597152726">Kirish:</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Qaytadan urining.</translation>
+<translation id="5314381603623123224">Chrome xizmat shartlari 31-mart kuni yangilanadi.</translation>
 <translation id="5315738755890845852">Oʻng figurali qavs ortiqcha: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Alohida belgilari</translation>
 <translation id="5317780077021120954">Saqlash</translation>

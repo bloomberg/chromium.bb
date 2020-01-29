@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">تكبير/تصغير</translation>
 <translation id="1030706264415084469">يريد <ph name="URL" /> تخزين حجم كبير من البيانات بشكل دائم على جهازك.</translation>
 <translation id="1031362278801463162">تحميل المعاينة</translation>
+<translation id="1032605640136438169">يُرجى مراجعة البنود الجديدة.</translation>
 <translation id="103279545524624934">‏احرص على تفريغ مساحة على القرص لتشغيل تطبيقات Android.</translation>
 <translation id="1033780634303702874">الوصول إلى الأجهزة التسلسلية</translation>
 <translation id="1034942643314881546">‏تفعيل ADB لإنشاء رسم توضيحي للتطبيقات</translation>
@@ -2796,6 +2797,7 @@
 <translation id="4997086284911172121">لا يتوفر اتصال بالإنترنت.</translation>
 <translation id="4998873842614926205">تأكيد التغييرات</translation>
 <translation id="5000922062037820727">محظور  (موصى به)</translation>
+<translation id="5007392906805964215">مراجعة</translation>
 <translation id="5008936837313706385">اسم النشاط</translation>
 <translation id="5010043101506446253">صلاحية الشهادة</translation>
 <translation id="5015344424288992913">إثبات هوية الخادم الوسيط...</translation>
@@ -2997,6 +2999,7 @@
 <translation id="5310281978693206542">إرسال الرابط إلى الأجهزة</translation>
 <translation id="5311304534597152726">تسجيل الدخول باسم</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> يُرجى إعادة المحاولة.</translation>
+<translation id="5314381603623123224">‏سيتم تغيير بنود خدمة Chrome في 31 آذار (مارس)</translation>
 <translation id="5315738755890845852">قوس متعرج إضافي: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">الهوية</translation>
 <translation id="5317780077021120954">حفظ</translation>

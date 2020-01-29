@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zumiranje</translation>
 <translation id="1030706264415084469"><ph name="URL" /> želi trajno pohraniti veliku količinu podataka na vaš uređaj</translation>
 <translation id="1031362278801463162">Učitavanje pregleda</translation>
+<translation id="1032605640136438169">Pročitajte nove Uslove</translation>
 <translation id="103279545524624934">Oslobodite prostor na disku da pokrenete Android aplikacije.</translation>
 <translation id="1033780634303702874">Pristup serijskim uređajima</translation>
 <translation id="1034942643314881546">Omogućavanje ADB-a za kreiranje ilustracije aplikacija</translation>
@@ -2799,6 +2800,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4997086284911172121">Nema internetske veze.</translation>
 <translation id="4998873842614926205">Potvrda promjena</translation>
 <translation id="5000922062037820727">Blokirano (preporučeno)</translation>
+<translation id="5007392906805964215">Pregled</translation>
 <translation id="5008936837313706385">Naziv aktivnosti</translation>
 <translation id="5010043101506446253">Tijelo za izdavanje potvrde</translation>
 <translation id="5015344424288992913">Rješavanje problema s proksi serverom...</translation>
@@ -3000,6 +3002,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5310281978693206542">Pošaljite link na svoje uređaje</translation>
 <translation id="5311304534597152726">Prijavljivanje kao</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Pokušajte ponovo.</translation>
+<translation id="5314381603623123224">Chromeovi Uslovi korištenja usluge će se promijeniti 31. marta</translation>
 <translation id="5315738755890845852">Dodatna vitičasta zagrada: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identitet</translation>
 <translation id="5317780077021120954">Sačuvaj</translation>

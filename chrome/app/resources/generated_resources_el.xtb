@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Μεγέθυνση</translation>
 <translation id="1030706264415084469">Ο ιστότοπος <ph name="URL" /> θέλει να αποθηκεύσει δεδομένα μεγάλου όγκου μόνιμα στη συσκευή σας</translation>
 <translation id="1031362278801463162">Φόρτωση προεπισκόπησης</translation>
+<translation id="1032605640136438169">Ελέγξτε τους νέους όρους.</translation>
 <translation id="103279545524624934">Ελευθερώστε χώρο στον δίσκο, για την εκκίνηση εφαρμογών Android.</translation>
 <translation id="1033780634303702874">Πρόσβαση στις σειριακές συσκευές</translation>
 <translation id="1034942643314881546">Ενεργοποίηση του adb για δημιουργία εικόνων εφαρμογών</translation>
@@ -2799,6 +2800,7 @@
 <translation id="4997086284911172121">Δεν υπάρχει σύνδεση στο διαδίκτυο.</translation>
 <translation id="4998873842614926205">Επιβεβαίωση αλλαγών</translation>
 <translation id="5000922062037820727">Αποκλείεται (συνιστάται)</translation>
+<translation id="5007392906805964215">Έλεγχος</translation>
 <translation id="5008936837313706385">Όνομα δραστηριότητας</translation>
 <translation id="5010043101506446253">Αρχή έκδοσης πιστοποιητικών</translation>
 <translation id="5015344424288992913">Ανάλυση της διεύθυνσης του διακομιστή μεσολάβησης...</translation>
@@ -3000,6 +3002,7 @@
 <translation id="5310281978693206542">Αποστολή συνδέσμου στις συσκευές σας</translation>
 <translation id="5311304534597152726">Σύνδεση ως</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Προσπαθήστε ξανά.</translation>
+<translation id="5314381603623123224">Οι Όροι Παροχής Υπηρεσιών του Chrome αλλάζουν στις 31 Μαρτίου</translation>
 <translation id="5315738755890845852">Επιπλέον άγκιστρο: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Ταυτότητα</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>

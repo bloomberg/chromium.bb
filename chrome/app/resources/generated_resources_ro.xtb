@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> dorește să stocheze permanent cantități mari de date pe dispozitiv</translation>
 <translation id="1031362278801463162">Se încarcă previzualizarea</translation>
+<translation id="1032605640136438169">Consultă noile condiții</translation>
 <translation id="103279545524624934">Eliberează spațiu pe disc pentru a lansa aplicații Android.</translation>
 <translation id="1033780634303702874">Accesează dispozitivele seriale</translation>
 <translation id="1034942643314881546">Se activează ADB pentru crearea ilustrației aplicației</translation>
@@ -2799,6 +2800,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4997086284911172121">Nu există conexiune la internet.</translation>
 <translation id="4998873842614926205">Confirmați modificările</translation>
 <translation id="5000922062037820727">Blocată (recomandat)</translation>
+<translation id="5007392906805964215">Examinează</translation>
 <translation id="5008936837313706385">Numele activității</translation>
 <translation id="5010043101506446253">Autoritate de certificare</translation>
 <translation id="5015344424288992913">Se rezolvă proxy-ul...</translation>
@@ -3000,6 +3002,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5310281978693206542">Trimite linkul pe dispozitivele tale</translation>
 <translation id="5311304534597152726">Te conectezi ca</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Încearcă din nou.</translation>
+<translation id="5314381603623123224">Termenii și condițiile Chrome se modifică la 31 martie</translation>
 <translation id="5315738755890845852">Acoladă suplimentară: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identitate</translation>
 <translation id="5317780077021120954">Salvează</translation>

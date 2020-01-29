@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">התקרב</translation>
 <translation id="1030706264415084469"><ph name="URL" /> רוצה לאחסן באופן קבוע כמות גדולה של נתונים במכשיר שלך</translation>
 <translation id="1031362278801463162">טוען תצוגה מקדימה</translation>
+<translation id="1032605640136438169">יש לקרוא את התנאים החדשים</translation>
 <translation id="103279545524624934">‏עליך לפנות שטח אחסון כדי להפעיל אפליקציות Android.</translation>
 <translation id="1033780634303702874">גישה להתקנים הסיריאליים שלך</translation>
 <translation id="1034942643314881546">‏המערכת מפעילה את ADB ליצירת איור של אפליקציות</translation>
@@ -2796,6 +2797,7 @@
 <translation id="4997086284911172121">אין חיבור לאינטרנט.</translation>
 <translation id="4998873842614926205">אשר שינויים</translation>
 <translation id="5000922062037820727">חסומה (מומלץ)</translation>
+<translation id="5007392906805964215">עיון</translation>
 <translation id="5008936837313706385">שם הפעילות</translation>
 <translation id="5010043101506446253">רשות אישורים</translation>
 <translation id="5015344424288992913">פותר פרוקסי...</translation>
@@ -2997,6 +2999,7 @@
 <translation id="5310281978693206542">שליחת הקישור אל המכשירים שלך</translation>
 <translation id="5311304534597152726">כניסה כ-</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> יש לנסות שוב.</translation>
+<translation id="5314381603623123224">‏התנאים וההגבלות של Chrome ישתנו ב-31 במרץ</translation>
 <translation id="5315738755890845852">סוגריים מסולסלים מיותרים: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">זהות</translation>
 <translation id="5317780077021120954">שמור</translation>

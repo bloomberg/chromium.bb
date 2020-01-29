@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">जुम आउट गर्नुहोस्</translation>
 <translation id="1030706264415084469"><ph name="URL" /> तपाईंको यन्त्रमा स्थायी रूपमा ठूलो परिमाणको डेटा भण्डारण गर्न चाहन्छ</translation>
 <translation id="1031362278801463162">पूर्वावलोकन लोड गर्दै</translation>
+<translation id="1032605640136438169">कृपया नयाँ सर्तहरूको समीक्षा गर्नुहोस्</translation>
 <translation id="103279545524624934">Android अनुप्रयोग सुरु गर्न डिस्कमा ठाउँ खाली गर्नुहोस्।</translation>
 <translation id="1033780634303702874">आफ्नो धारावाहिक यन्त्रहरू पहुँच गर्नुहोस्</translation>
 <translation id="1034942643314881546">अनुप्रयोगको चित्रण सक्षम पार्न ADB सक्षम पारिँदै</translation>
@@ -2795,6 +2796,7 @@
 <translation id="4997086284911172121">कुनै पनि इन्टरनेट जडान छैन।</translation>
 <translation id="4998873842614926205">परिवर्तनहरू निश्चित गर्न</translation>
 <translation id="5000922062037820727">(सिफारिस गरिएको) रोकिएको</translation>
+<translation id="5007392906805964215">समीक्षा गर्नुहोस्</translation>
 <translation id="5008936837313706385">क्रियाकलापको नाम</translation>
 <translation id="5010043101506446253">प्रमाणपत्र अधिकार</translation>
 <translation id="5015344424288992913">प्रोक्सी समाधान गर्दै...</translation>
@@ -2996,6 +2998,7 @@
 <translation id="5310281978693206542">आफ्ना यन्त्रहरूमा लिंक पठाउनुहोस्</translation>
 <translation id="5311304534597152726">यस रूपमा साइन इन गर्दै</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> कृपया फेरि प्रयास गर्नुहोस्।</translation>
+<translation id="5314381603623123224">३१ मार्चदेखि Chrome को सेवाका सर्तहरू परिवर्तन हुँदै छन्</translation>
 <translation id="5315738755890845852">अतिरिक्त मझौला कोष्ठक: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">पहिचान</translation>
 <translation id="5317780077021120954">बचत गर्नुहोस्</translation>

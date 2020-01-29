@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> կայքն ուզում է ձեր սարքում մեծ ծավալով տվյալներ մշտապես պահել</translation>
 <translation id="1031362278801463162">Նախադիտման բեռնում</translation>
+<translation id="1032605640136438169">Ծանոթացեք նոր պայմաններին</translation>
 <translation id="103279545524624934">Android հավելվածները գործարկելու համար ազատեք սկավառակի տարածքը:</translation>
 <translation id="1033780634303702874">Մուտք գործել ձեր հաջորդական սարքեր</translation>
 <translation id="1034942643314881546">Միացրեք ADB-ն՝ հավելվածների պատկեր ստեղծելու համար</translation>
@@ -2801,6 +2802,7 @@
 <translation id="4997086284911172121">Կապ չկա</translation>
 <translation id="4998873842614926205">Հաստատեք փոփոխությունները</translation>
 <translation id="5000922062037820727">Արգելափակված է (հանձնարարելի)</translation>
+<translation id="5007392906805964215">Դիտել</translation>
 <translation id="5008936837313706385">Գործողության անունը</translation>
 <translation id="5010043101506446253">Հավաստագրման կենտրոն</translation>
 <translation id="5015344424288992913">Պրոքսի-սերվերի լուծում…</translation>
@@ -3004,6 +3006,7 @@
 <translation id="5310281978693206542">Ուղարկել հղումը իմ սարքերին</translation>
 <translation id="5311304534597152726">Մուտք հաշիվ</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Նորից փորձեք։</translation>
+<translation id="5314381603623123224">Chrome-ի օգտագործման պայմանները կթարմացվեն մարտի 31-ին</translation>
 <translation id="5315738755890845852">Ավելորդ ձևավոր փակագիծ՝ <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Ինքնություն</translation>
 <translation id="5317780077021120954">Պահել</translation>

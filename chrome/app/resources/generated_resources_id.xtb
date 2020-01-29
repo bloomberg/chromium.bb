@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ingin menyimpan data berukuran besar di perangkat Anda secara permanen</translation>
 <translation id="1031362278801463162">Memuat pratinjau</translation>
+<translation id="1032605640136438169">Harap tinjau persyaratan baru</translation>
 <translation id="103279545524624934">Kosongkan ruang disk untuk meluncurkan aplikasi Android.</translation>
 <translation id="1033780634303702874">Mengakses perangkat seri Anda</translation>
 <translation id="1034942643314881546">Mengaktifkan adb untuk membuat ilustrasi aplikasi</translation>
@@ -2797,6 +2798,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="4997086284911172121">Tidak ada sambungan internet.</translation>
 <translation id="4998873842614926205">Konfirmasikan Perubahan</translation>
 <translation id="5000922062037820727">Diblokir (disarankan)</translation>
+<translation id="5007392906805964215">Tinjau</translation>
 <translation id="5008936837313706385">Nama Aktivitas</translation>
 <translation id="5010043101506446253">Otoritas sertifikat</translation>
 <translation id="5015344424288992913">Mengontak proxy...</translation>
@@ -2998,6 +3000,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5310281978693206542">Kirim Link ke Perangkat Anda</translation>
 <translation id="5311304534597152726">Login sebagai</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Coba lagi.</translation>
+<translation id="5314381603623123224">Persyaratan Layanan Chrome akan berubah pada 31 Maret</translation>
 <translation id="5315738755890845852">Kurung kurawal tambahan: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">identitas</translation>
 <translation id="5317780077021120954">Simpan</translation>

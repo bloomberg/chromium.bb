@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> böyük həcmli datanı həmişəlik cihazınızda yadda saxlamaq istəyir</translation>
 <translation id="1031362278801463162">Önizləmə yüklənir</translation>
+<translation id="1032605640136438169">Yeni şərtləri nəzərdən keçirin</translation>
 <translation id="103279545524624934">Android tətbiqlərini başlatmaq üçün diskdə yer boşaldın.</translation>
 <translation id="1033780634303702874">Serial cihazlarınıza daxil olun</translation>
 <translation id="1034942643314881546">Tətbiq illüstrasiyası yaratmaq üçün adb aktiv edilir</translation>
@@ -2792,6 +2793,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="4997086284911172121">İnternet bağlantısı yoxdur.</translation>
 <translation id="4998873842614926205">Dəyişiklikləri təsdiq edin</translation>
 <translation id="5000922062037820727">Bloklanıb (tövsiyə olunur)</translation>
+<translation id="5007392906805964215">Nəzərdən keçirin</translation>
 <translation id="5008936837313706385">Fəaliyyətin Adı</translation>
 <translation id="5010043101506446253">Sertifikat icazəsi</translation>
 <translation id="5015344424288992913">Proksi həll olunur...</translation>
@@ -2993,6 +2995,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5310281978693206542">Linki Cihazlara Göndərin</translation>
 <translation id="5311304534597152726">Daxil olunur</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Yenidən cəhd edin.</translation>
+<translation id="5314381603623123224">Chrome’un Xidmət Şərtləri 31 martda dəyişəcək</translation>
 <translation id="5315738755890845852">Əlavə fiqurlu mötərizə: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">İdentiklik</translation>
 <translation id="5317780077021120954">Yadda saxlayın</translation>

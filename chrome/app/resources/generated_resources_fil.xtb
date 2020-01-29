@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">I-zoom</translation>
 <translation id="1030706264415084469">Gusto ng <ph name="URL" /> na permanenteng mag-store ng malaking data sa iyong device</translation>
 <translation id="1031362278801463162">Preview ng paglo-load</translation>
+<translation id="1032605640136438169">Pakisuri ang mga bagong tuntunin</translation>
 <translation id="103279545524624934">Magbakante ng disk space upang mailunsad ang Android apps.</translation>
 <translation id="1033780634303702874">I-access ang iyong mga serial device</translation>
 <translation id="1034942643314881546">Ine-enable ang adb para makagawa ng illustration ng mga app</translation>
@@ -2799,6 +2800,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4997086284911172121">Walang koneksyon sa Internet.</translation>
 <translation id="4998873842614926205">Kumpirmahin ang mga Pagbabago</translation>
 <translation id="5000922062037820727">Naka-block (inirerekomenda)</translation>
+<translation id="5007392906805964215">Suriin</translation>
 <translation id="5008936837313706385">Pangalan ng Aktibidad</translation>
 <translation id="5010043101506446253">Awtoridad ng certificate</translation>
 <translation id="5015344424288992913">Nilulutas ang proxy...</translation>
@@ -3000,6 +3002,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5310281978693206542">Ipadala ang Link sa Iyong Mga Device</translation>
 <translation id="5311304534597152726">Nagsa-sign in bilang</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Pakisubukan ulit.</translation>
+<translation id="5314381603623123224">Magbabago na ang Mga Tuntunin ng Serbisyo ng Chrome sa Marso 31</translation>
 <translation id="5315738755890845852">Karagdagang curly brace: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Pagkatao</translation>
 <translation id="5317780077021120954">I-save</translation>

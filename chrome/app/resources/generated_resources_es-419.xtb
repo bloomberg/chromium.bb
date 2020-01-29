@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> quiere almacenar datos de gran tamaño de forma permanente en tu dispositivo</translation>
 <translation id="1031362278801463162">Cargando vista previa</translation>
+<translation id="1032605640136438169">Revisa las Condiciones nuevas</translation>
 <translation id="103279545524624934">Libera espacio en el disco para ejecutar apps de Android.</translation>
 <translation id="1033780634303702874">Acceder a tus dispositivos en serie</translation>
 <translation id="1034942643314881546">Habilitando ADB para crear la ilustración de apps</translation>
@@ -2796,6 +2797,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4997086284911172121">No hay conexión a Internet.</translation>
 <translation id="4998873842614926205">Confirmar cambios</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
+<translation id="5007392906805964215">Revisar</translation>
 <translation id="5008936837313706385">Nombre de la actividad</translation>
 <translation id="5010043101506446253">Autoridad de certificación</translation>
 <translation id="5015344424288992913">Resolviendo proxy...</translation>
@@ -2997,6 +2999,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5310281978693206542">Enviar vínculo a tus dispositivos</translation>
 <translation id="5311304534597152726">Accediendo como</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Vuelve a intentarlo.</translation>
+<translation id="5314381603623123224">El 31 de marzo, cambiarán las Condiciones del Servicio de Chrome</translation>
 <translation id="5315738755890845852">Llave adicional: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identidad</translation>
 <translation id="5317780077021120954">Guardar</translation>

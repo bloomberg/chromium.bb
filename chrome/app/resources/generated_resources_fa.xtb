@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">بزرگ‌نمایی</translation>
 <translation id="1030706264415084469"><ph name="URL" /> می‌خواهد داده‌های بزرگ را برای همیشه در دستگاهتان ذخیره کند</translation>
 <translation id="1031362278801463162">بارگیری پیش‌نمایش</translation>
+<translation id="1032605640136438169">لطفاً «شرایط» جدید را مرور کنید</translation>
 <translation id="103279545524624934">‏برای راه‌اندازی برنامه‌های Android فضای دیسک را خالی کنید.</translation>
 <translation id="1033780634303702874">دسترسی به دستگاه‌های سریال خودتان</translation>
 <translation id="1034942643314881546">‏فعال کردن adb برای ایجاد مصورسازی برنامه‌ها</translation>
@@ -2796,6 +2797,7 @@
 <translation id="4997086284911172121">اتصال اینترنت ندارید.</translation>
 <translation id="4998873842614926205">تأیید تغییرها</translation>
 <translation id="5000922062037820727">مسدود (توصیه می‌شود)</translation>
+<translation id="5007392906805964215">مرور</translation>
 <translation id="5008936837313706385">نام فعالیت</translation>
 <translation id="5010043101506446253">مدیر گواهی‌نامه</translation>
 <translation id="5015344424288992913">در حال تحلیل پراکسی...</translation>
@@ -2997,6 +2999,7 @@
 <translation id="5310281978693206542">ارسال پیوند به دستگاه‌هایتان</translation>
 <translation id="5311304534597152726">ورود به سیستم به‌عنوان</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> لطفاً دوباره امتحان کنید.</translation>
+<translation id="5314381603623123224">‏«شرایط خدمات» Chrome، ‏۳۱ مارس تغییر می‌کند</translation>
 <translation id="5315738755890845852">آکولاد اضافی: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">هویت</translation>
 <translation id="5317780077021120954">ذخیره</translation>

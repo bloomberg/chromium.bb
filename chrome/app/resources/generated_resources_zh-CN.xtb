@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">缩放</translation>
 <translation id="1030706264415084469"><ph name="URL" /> 想在您的设备上永久存储大量数据</translation>
 <translation id="1031362278801463162">正在加载预览</translation>
+<translation id="1032605640136438169">请查阅新版条款</translation>
 <translation id="103279545524624934">请释放磁盘空间以启动 Android 应用。</translation>
 <translation id="1033780634303702874">访问您的串行设备</translation>
 <translation id="1034942643314881546">允许 ADB 创建应用图示</translation>
@@ -2794,6 +2795,7 @@
 <translation id="4997086284911172121">未连接到互联网。</translation>
 <translation id="4998873842614926205">确认更改</translation>
 <translation id="5000922062037820727">已阻止（推荐）</translation>
+<translation id="5007392906805964215">查看</translation>
 <translation id="5008936837313706385">活动名称</translation>
 <translation id="5010043101506446253">证书授权中心</translation>
 <translation id="5015344424288992913">正在解析代理...</translation>
@@ -2995,6 +2997,7 @@
 <translation id="5310281978693206542">将链接发送到您的设备</translation>
 <translation id="5311304534597152726">正在使用以下身份登录：</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" />请重试。</translation>
+<translation id="5314381603623123224">Chrome 的《服务条款》将于 3 月 31 日变更</translation>
 <translation id="5315738755890845852">有多余的右大括号：<ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">身份</translation>
 <translation id="5317780077021120954">保存</translation>

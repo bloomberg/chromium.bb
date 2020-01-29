@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">ຊູມ</translation>
 <translation id="1030706264415084469"><ph name="URL" /> ຕ້ອງການເກັບຂໍ້ມູນຂະໜາດໃຫຍ່ໄວ້ໃນອຸປະກອນຂອງທ່ານຢ່າງຖາວອນ</translation>
 <translation id="1031362278801463162">ກໍາລັງໂຫຼດການເບິ່ງຕົວຢ່າງກ່ອນ</translation>
+<translation id="1032605640136438169">ກະລຸນາກວດເບິ່ງຂໍ້ກຳນົດໃໝ່</translation>
 <translation id="103279545524624934">ຂະຫຍາຍພື້ນທີ່ດິສກ໌ເພື່ອເປີດໃຊ້ແອັບ Android.</translation>
 <translation id="1033780634303702874">ເຂົ້າ​ຫາອຸ​ປະ​ກອນ Serial ຂອງ​ທ່ານ</translation>
 <translation id="1034942643314881546">ເປີດນຳໃຊ້ ADB ເພື່ອສ້າງຮູບປະກອບແອັບ</translation>
@@ -2797,6 +2798,7 @@
 <translation id="4997086284911172121">ບໍ່ມີການເຊື່ອມຕໍ່ອິນເຕີເນັດ.</translation>
 <translation id="4998873842614926205">ຢືນ​ຢັນ​ການ​ປ່ຽນ​ແປງ</translation>
 <translation id="5000922062037820727">ບ​ລັອກແລ້ວ (ແນະ​ນຳ​ໃຫ້)</translation>
+<translation id="5007392906805964215">ກວດສອບ</translation>
 <translation id="5008936837313706385">ຊື່ການເຄື່ອນໄຫວ</translation>
 <translation id="5010043101506446253">ໜ່ວຍງານໃບຢັ້ງຢືນ</translation>
 <translation id="5015344424288992913">ກໍາລັງແກ້ໄຂບັນຫາພຣັອກຊີ...</translation>
@@ -2998,6 +3000,7 @@
 <translation id="5310281978693206542">ສົ່ງລິ້ງຫາອຸປະກອນຂອງທ່ານ</translation>
 <translation id="5311304534597152726">ກຳລັງເຂົ້າສູ່ລະບົບເປັນ</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> ກະລຸນາລອງໃໝ່.</translation>
+<translation id="5314381603623123224">ຂໍ້ກຳນົດການບໍລິການຂອງ Chrome ຈະປ່ຽນແປງໃນວັນທີ 31 ເດືອນມີນາ</translation>
 <translation id="5315738755890845852">ເຄື່ອງໝາຍວົງປີກກາທີ່ເກີນມາ: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">ລະບຸຕົວຕົນ</translation>
 <translation id="5317780077021120954">ບັນທຶກ</translation>

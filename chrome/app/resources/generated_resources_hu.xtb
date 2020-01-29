@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Nagyítás</translation>
 <translation id="1030706264415084469">A(z) <ph name="URL" /> webhely állandó jelleggel nagy méretű adatokat szeretne tárolni az eszközön</translation>
 <translation id="1031362278801463162">Előnézet betöltése</translation>
+<translation id="1032605640136438169">Kérjük, tekintse meg az új Feltételeket</translation>
 <translation id="103279545524624934">Szabadítson fel tárhelyet az Android-alkalmazások elindításához.</translation>
 <translation id="1033780634303702874">Hozzáférés a soros eszközökhöz</translation>
 <translation id="1034942643314881546">Illusztráció: Alkalmazások létrehozásának engedélyezése az ADB számára</translation>
@@ -2798,6 +2799,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4997086284911172121">Nincs internetkapcsolat.</translation>
 <translation id="4998873842614926205">Módosítások jóváhagyása</translation>
 <translation id="5000922062037820727">Letiltva (ajánlott)</translation>
+<translation id="5007392906805964215">Áttekintés</translation>
 <translation id="5008936837313706385">Tevékenység neve</translation>
 <translation id="5010043101506446253">Tanúsítványkibocsátó</translation>
 <translation id="5015344424288992913">Proxy azonosítása folyamatban...</translation>
@@ -3000,6 +3002,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5310281978693206542">Link küldése az eszközeire</translation>
 <translation id="5311304534597152726">Bejelentkezés mint</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Próbálja újra.</translation>
+<translation id="5314381603623123224">A Chrome Általános Szerződési Feltételei március 31-én módosulnak</translation>
 <translation id="5315738755890845852">Felesleges kapcsos zárójel: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Azonosítás</translation>
 <translation id="5317780077021120954">Mentés</translation>

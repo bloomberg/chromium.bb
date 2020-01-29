@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Sondeza isithombe</translation>
 <translation id="1030706264415084469">I-<ph name="URL" /> ifuna ukugcina ingunaphakade idatha enkulu kudivayisi yakho</translation>
 <translation id="1031362278801463162">Ilayisha ukubuka kuqala</translation>
+<translation id="1032605640136438169">Sicela ubuyekeze imigomo emisha</translation>
 <translation id="103279545524624934">Khulula isikhala sediksi ukuze uqalise izinhlelo zokusebenza ze-Android.</translation>
 <translation id="1033780634303702874">Finyelela amadivayisi wakho womkhiqizo</translation>
 <translation id="1034942643314881546">Ukunika amandla i-adb ukuze udale ukubonisa izinhlelo zokusebenza</translation>
@@ -2796,6 +2797,7 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="4997086284911172121">Akukho ukuxhumeka kwe-inthanethi.</translation>
 <translation id="4998873842614926205">Qinisekisa izinguquko</translation>
 <translation id="5000922062037820727">Kuvinjiwe (kunconyiwe)</translation>
+<translation id="5007392906805964215">Buyekeza</translation>
 <translation id="5008936837313706385">Igama lomsebenzisi</translation>
 <translation id="5010043101506446253">Amandla wesitifiketi</translation>
 <translation id="5015344424288992913">Ixazulula ummeleli...</translation>
@@ -2999,6 +3001,7 @@ Isibonelo, amanye amawebhusayithi angahle aphendule kulesi sicelo ngokukubonisa 
 <translation id="5310281978693206542">Thumela isixhumanisi kumadivayisi akho</translation>
 <translation id="5311304534597152726">Ingena ngemvume njengo-</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Sicela uzame futhi.</translation>
+<translation id="5314381603623123224">Imigomo yesevisi ye-Chrome iyashintsha ngomhla kaMashi 31</translation>
 <translation id="5315738755890845852">I-brace egoqeke ngokungeziwe: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Ukuhlonza</translation>
 <translation id="5317780077021120954">Londoloza</translation>

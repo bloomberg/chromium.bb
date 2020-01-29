@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Suumi</translation>
 <translation id="1030706264415084469"><ph name="URL" /> soovib suure koguse andmeid alaliselt teie seadmesse salvestada</translation>
 <translation id="1031362278801463162">Eelvaate laadimine</translation>
+<translation id="1032605640136438169">Vaadake uued tingimused üle</translation>
 <translation id="103279545524624934">Vabastage Androidi rakenduste käivitamiseks kettaruumi.</translation>
 <translation id="1033780634303702874">Juurdepääs jadaseadmetele</translation>
 <translation id="1034942643314881546">Rakenduste illustratsiooni loomiseks lubatakse ADB</translation>
@@ -2799,6 +2800,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4997086284911172121">Interneti-ühendus puudub.</translation>
 <translation id="4998873842614926205">Muudatuste kinnitamine</translation>
 <translation id="5000922062037820727">Blokeeritud (soovitatav)</translation>
+<translation id="5007392906805964215">Vaata üle</translation>
 <translation id="5008936837313706385">Tegevuse nimi</translation>
 <translation id="5010043101506446253">Sertifitseerimiskeskus</translation>
 <translation id="5015344424288992913">Puhverserveri lahendamine...</translation>
@@ -3000,6 +3002,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5310281978693206542">Saatke link oma seadmetesse</translation>
 <translation id="5311304534597152726">Sisselogimine kasutajana</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Proovige uuesti.</translation>
+<translation id="5314381603623123224">Chrome'i teenusetingimused muutuvad 31. märtsil</translation>
 <translation id="5315738755890845852">Liigne looksulg: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identiteet</translation>
 <translation id="5317780077021120954">Salvesta</translation>

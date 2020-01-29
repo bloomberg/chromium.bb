@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Зумирај</translation>
 <translation id="1030706264415084469"><ph name="URL" /> сака трајно да складира податоци на вашиот уред</translation>
 <translation id="1031362278801463162">Се вчитува преглед</translation>
+<translation id="1032605640136438169">Прегледајте ги новите услови</translation>
 <translation id="103279545524624934">Ослободете простор на дискот за да ги стартувате апликациите за Android.</translation>
 <translation id="1033780634303702874">Пристапете до сериските уреди</translation>
 <translation id="1034942643314881546">Се овозможува adb за создавање илустрација за апликации</translation>
@@ -2799,6 +2800,7 @@
 <translation id="4997086284911172121">Нема интернет-врска.</translation>
 <translation id="4998873842614926205">Потврди промени</translation>
 <translation id="5000922062037820727">Блокирано (препорачано)</translation>
+<translation id="5007392906805964215">Прегледајте</translation>
 <translation id="5008936837313706385">Име на активноста</translation>
 <translation id="5010043101506446253">Орган за сертификати</translation>
 <translation id="5015344424288992913">Разрешување прокси...</translation>
@@ -3000,6 +3002,7 @@
 <translation id="5310281978693206542">Испратете линк до вашите уреди</translation>
 <translation id="5311304534597152726">Се најавувате како</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Обидете се повторно.</translation>
+<translation id="5314381603623123224">„Условите на користење“ на Chrome се менуваат на 31 март</translation>
 <translation id="5315738755890845852">Вишок голема заграда: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Идентитет</translation>
 <translation id="5317780077021120954">Зачувај</translation>

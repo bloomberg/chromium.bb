@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469"><ph name="URL" /> vol emmagatzemar una gran quantitat de dades al dispositiu de manera permanent</translation>
 <translation id="1031362278801463162">S'està carregant la previsualització</translation>
+<translation id="1032605640136438169">Revisa les condicions noves</translation>
 <translation id="103279545524624934">Allibera espai al disc per poder iniciar aplicacions d'Android.</translation>
 <translation id="1033780634303702874">Accedeix als dispositius en sèrie</translation>
 <translation id="1034942643314881546">S'està activant ADB per crear la il·lustració d'aplicacions</translation>
@@ -2796,6 +2797,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="4997086284911172121">No hi ha connexió a Internet.</translation>
 <translation id="4998873842614926205">Confirma els canvis</translation>
 <translation id="5000922062037820727">Bloquejat (opció recomanada)</translation>
+<translation id="5007392906805964215">Revisa</translation>
 <translation id="5008936837313706385">Nom de l'activitat</translation>
 <translation id="5010043101506446253">Autoritats certificadores</translation>
 <translation id="5015344424288992913">Resolent el servidor intermediari...</translation>
@@ -2998,6 +3000,7 @@ en almenys <ph name="INSTALL_SIZE" /> d'espai lliure. Per alliberar espai, supri
 <translation id="5310281978693206542">Envia l'enllaç als teus dispositius</translation>
 <translation id="5311304534597152726">Inicia la sessió com a</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Torna-ho a provar.</translation>
+<translation id="5314381603623123224">Les condicions del servei de Chrome canviaran el 31 de març</translation>
 <translation id="5315738755890845852">Hi ha una clau addicional: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identitat</translation>
 <translation id="5317780077021120954">Desa</translation>

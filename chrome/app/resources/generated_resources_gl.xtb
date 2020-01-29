@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zoom</translation>
 <translation id="1030706264415084469">O URL <ph name="URL" /> quere almacenar un gran volume de datos de forma permanente no teu dispositivo</translation>
 <translation id="1031362278801463162">Cargando vista previa</translation>
+<translation id="1032605640136438169">Revísaas</translation>
 <translation id="103279545524624934">Libera espazo en disco para iniciar as aplicacións de Android.</translation>
 <translation id="1033780634303702874">Acceder aos teus dispositivos en serie</translation>
 <translation id="1034942643314881546">Activando ADB para crear a ilustración de aplicacións</translation>
@@ -2798,6 +2799,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4997086284911172121">Non hai conexión a Internet.</translation>
 <translation id="4998873842614926205">Confirmar cambios</translation>
 <translation id="5000922062037820727">Bloqueado (recomendado)</translation>
+<translation id="5007392906805964215">Revisar</translation>
 <translation id="5008936837313706385">Nome da actividade</translation>
 <translation id="5010043101506446253">Autoridade de certificación</translation>
 <translation id="5015344424288992913">Resolvendo proxy...</translation>
@@ -2999,6 +3001,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5310281978693206542">Enviar ligazón aos teus dispositivos</translation>
 <translation id="5311304534597152726">Iniciando sesión como</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Téntao de novo.</translation>
+<translation id="5314381603623123224">As Condicións de servizo de Chrome cambiarán o 31 de marzo</translation>
 <translation id="5315738755890845852">Hai unha chave de máis: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identidade</translation>
 <translation id="5317780077021120954">Gardar</translation>

@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Zooma in</translation>
 <translation id="1030706264415084469"><ph name="URL" /> vill lagra stora mängder data permanent på din enhet</translation>
 <translation id="1031362278801463162">Läser in förhandsgranskning</translation>
+<translation id="1032605640136438169">Läs de nya villkoren</translation>
 <translation id="103279545524624934">Frigör diskutrymme om du vill starta Android-appar.</translation>
 <translation id="1033780634303702874">Få åtkomst till dina seriella enheter</translation>
 <translation id="1034942643314881546">Aktiverar adb för att skapa illustration av appar</translation>
@@ -2799,6 +2800,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4997086284911172121">Ingen internetanslutning</translation>
 <translation id="4998873842614926205">Bekräfta ändringar</translation>
 <translation id="5000922062037820727">Blockeras (rekommenderas)</translation>
+<translation id="5007392906805964215">Granska</translation>
 <translation id="5008936837313706385">Aktivitetsnamn</translation>
 <translation id="5010043101506446253">Certifikatutfärdare</translation>
 <translation id="5015344424288992913">Tolkar proxy...</translation>
@@ -3000,6 +3002,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5310281978693206542">Skicka länken till dina enheter</translation>
 <translation id="5311304534597152726">Loggar in som</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Försök igen.</translation>
+<translation id="5314381603623123224">Chromes användarvillkor ändras den 31 mars</translation>
 <translation id="5315738755890845852">Extra klammerparentes: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Identitet</translation>
 <translation id="5317780077021120954">Spara</translation>

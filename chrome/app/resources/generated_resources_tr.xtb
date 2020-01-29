@@ -24,6 +24,7 @@
 <translation id="1029317248976101138">Yakınlaştır</translation>
 <translation id="1030706264415084469"><ph name="URL" /> büyük miktarda veriyi cihazınızda kalıcı olarak depolamak istiyor</translation>
 <translation id="1031362278801463162">Önizleme yükleniyor</translation>
+<translation id="1032605640136438169">Lütfen yeni şartları inceleyin</translation>
 <translation id="103279545524624934">Android uygulamalarını başlatmak için disk alanını boşaltın.</translation>
 <translation id="1033780634303702874">Seri cihazlarınıza erişme</translation>
 <translation id="1034942643314881546">Uygulama resmi oluşturmak için adb etkinleştiriliyor</translation>
@@ -2799,6 +2800,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4997086284911172121">İnternet bağlantısı yok.</translation>
 <translation id="4998873842614926205">Değişiklikleri Onayla</translation>
 <translation id="5000922062037820727">Engellendi (önerilir)</translation>
+<translation id="5007392906805964215">İncele</translation>
 <translation id="5008936837313706385">Aktivite Adı</translation>
 <translation id="5010043101506446253">Sertifika yetkilisi</translation>
 <translation id="5015344424288992913">Proxy çözümleniyor...</translation>
@@ -3000,6 +3002,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="5310281978693206542">Bağlantıyı Cihazlarınıza Gönderin</translation>
 <translation id="5311304534597152726">Farklı adla oturum açın</translation>
 <translation id="53116743016968120"><ph name="ERROR_MESSAGE" /> Lütfen tekrar deneyin.</translation>
+<translation id="5314381603623123224">Chrome'un Hizmet Şartları 31 Mart'ta değişiyor</translation>
 <translation id="5315738755890845852">Ekstra küme parantezi: <ph name="ERROR_LINE" /></translation>
 <translation id="5315873049536339193">Kimlik</translation>
 <translation id="5317780077021120954">Kaydet</translation>
