@@ -104,7 +104,7 @@ class UprevsVersionedPackageTest(cros_test_lib.MockTestCase):
       packages.uprev_versioned_package(cpv, [], [], Chroot())
 
 
-class UprevEbuildFromPinTest(cros_test_lib.TempDirTestCase):
+class UprevEbuildFromPinTest(cros_test_lib.RunCommandTempDirTestCase):
   """Tests uprev_ebuild_from_pin function"""
 
   package = 'category/package'
@@ -113,11 +113,12 @@ class UprevEbuildFromPinTest(cros_test_lib.TempDirTestCase):
   ebuild_template = 'package-%s-r1.ebuild'
   ebuild = ebuild_template % version
   version_pin = 'VERSION-PIN'
+  manifest = 'Manifest'
 
   def test_uprev_ebuild(self):
     """Tests uprev of ebuild with version path"""
     file_layout = (
-        D(self.package, [self.ebuild, self.version_pin]),
+        D(self.package, [self.ebuild, self.version_pin, self.manifest]),
     )
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
 
@@ -125,7 +126,8 @@ class UprevEbuildFromPinTest(cros_test_lib.TempDirTestCase):
     version_pin_path = os.path.join(package_path, self.version_pin)
     self.WriteTempFile(version_pin_path, self.new_version)
 
-    result = packages.uprev_ebuild_from_pin(package_path, version_pin_path)
+    result = packages.uprev_ebuild_from_pin(package_path, version_pin_path,
+                                            chroot=Chroot())
     self.assertEqual(len(result.modified), 1,
                      'unexpected number of results: %s' % len(result.modified))
 
@@ -145,10 +147,13 @@ class UprevEbuildFromPinTest(cros_test_lib.TempDirTestCase):
     self.assertEqual(mod.files[0], new_ebuild_path,
                      'unexpected updated ebuild file: %s' % mod.files[1])
 
+    self.assertCommandContains(
+        ['ebuild', new_ebuild_path, 'manifest'])
+
   def test_no_ebuild(self):
     """Tests assertion is raised if package has no ebuilds"""
     file_layout = (
-        D(self.package, [self.version_pin]),
+        D(self.package, [self.version_pin, self.manifest]),
     )
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
 
@@ -157,13 +162,15 @@ class UprevEbuildFromPinTest(cros_test_lib.TempDirTestCase):
     self.WriteTempFile(version_pin_path, self.new_version)
 
     with self.assertRaises(packages.UprevError):
-      packages.uprev_ebuild_from_pin(package_path, version_pin_path)
+      packages.uprev_ebuild_from_pin(package_path, version_pin_path,
+                                     chroot=Chroot())
 
   def test_multiple_ebuilds(self):
     """Tests assertion is raised if multiple ebuilds are present for package"""
     file_layout = (
         D(self.package, [self.version_pin, self.ebuild,
-                         self.ebuild_template % '1.2.1']),
+                         self.ebuild_template % '1.2.1',
+                         self.manifest]),
     )
     cros_test_lib.CreateOnDiskHierarchy(self.tempdir, file_layout)
 
@@ -172,7 +179,8 @@ class UprevEbuildFromPinTest(cros_test_lib.TempDirTestCase):
     self.WriteTempFile(version_pin_path, self.new_version)
 
     with self.assertRaises(packages.UprevError):
-      packages.uprev_ebuild_from_pin(package_path, version_pin_path)
+      packages.uprev_ebuild_from_pin(package_path, version_pin_path,
+                                     chroot=Chroot())
 
 
 class ReplicatePrivateConfigTest(cros_test_lib.RunCommandTempDirTestCase):

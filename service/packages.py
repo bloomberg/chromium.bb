@@ -362,21 +362,24 @@ def uprev_kernel_afdo(*_args, **_kwargs):
 
 
 @uprevs_versioned_package('chromeos-base/chromeos-dtc-vm')
-def uprev_sludge(*_args, **_kwargs):
+def uprev_sludge(build_targets, refs, chroot):
   """Updates sludge VM - chromeos-base/chromeos-dtc-vm.
 
   See: uprev_versioned_package.
   """
+  # Unused by uprev_sludge
+  del build_targets, refs
+
   package = 'chromeos-dtc-vm'
   path = os.path.join('src', 'private-overlays', 'project-wilco-private',
                       'chromeos-base', package)
   package_path = os.path.join(constants.SOURCE_ROOT, path)
   version_pin_path = os.path.join(constants.SOURCE_ROOT, path, 'VERSION-PIN')
 
-  return uprev_ebuild_from_pin(package_path, version_pin_path)
+  return uprev_ebuild_from_pin(package_path, version_pin_path, chroot)
 
 
-def uprev_ebuild_from_pin(package_path, version_pin_path):
+def uprev_ebuild_from_pin(package_path, version_pin_path, chroot):
   """Changes the package ebuild's version to match the version pin file.
 
   Args:
@@ -385,6 +388,7 @@ def uprev_ebuild_from_pin(package_path, version_pin_path):
     version_pin_path: The path of the version_pin file that contains only only
       a version string. The ebuild's version will be directly set to this
       number.
+    chroot (chroot_lib.Chroot): specify a chroot to enter.
 
   Returns:
     UprevVersionedPackageResult: The result.
@@ -402,6 +406,12 @@ def uprev_ebuild_from_pin(package_path, version_pin_path):
   new_ebuild_path = os.path.join(package_path,
                                  '%s-%s-r1.ebuild' % (package, version))
   os.rename(ebuild_path, new_ebuild_path)
+
+  try:
+    portage_util.UpdateEbuildManifest(new_ebuild_path, chroot=chroot)
+  except cros_build_lib.RunCommandError as e:
+    raise UprevError(
+        'Unable to update manifest for %s: %s' % (package, e.stderr))
 
   result = UprevVersionedPackageResult()
   result.add_result(version, [new_ebuild_path, ebuild_path])

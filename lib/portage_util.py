@@ -2392,3 +2392,25 @@ def GeneratePackageSizes(db, root, installed_packages):
     logging.debug('%s installed_package size is %d', package_cpv,
                   total_package_filesize)
     yield (package_cpv, total_package_filesize)
+
+
+def UpdateEbuildManifest(ebuild_path, chroot=None):
+  """Updates the ebuild manifest for the provided ebuild path.
+
+  Args:
+    ebuild_path: path - The absolute path to the ebuild.
+    chroot (chroot_lib.Chroot): Optionally specify a chroot to enter.
+
+  Returns:
+    CommandResult
+  """
+
+  chroot_args = None
+  if chroot:
+    chroot_args = chroot.get_enter_args()
+
+  command = [
+      'ebuild', ebuild_path, 'manifest', '--force'
+  ]
+  return cros_build_lib.run(command, enter_chroot=True,
+                            chroot_args=chroot_args)
