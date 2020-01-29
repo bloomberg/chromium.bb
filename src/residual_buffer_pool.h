@@ -52,7 +52,7 @@ class TransformParameterQueue {
   }
 
   // Adds the |non_zero_coeff_count| and the |tx_type| to the back of the queue.
-  void Push(int16_t non_zero_coeff_count, TransformType tx_type) {
+  void Push(int non_zero_coeff_count, TransformType tx_type) {
     assert(back_ < max_size_);
     non_zero_coeff_count_[back_] = non_zero_coeff_count;
     tx_type_[back_++] = tx_type;

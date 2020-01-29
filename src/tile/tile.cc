@@ -1202,10 +1202,10 @@ int Tile::ReadCoeffBaseRange(int clamped_tx_size_context, int cdf_context,
   return level;
 }
 
-int16_t Tile::ReadTransformCoefficients(const Block& block, Plane plane,
-                                        int start_x, int start_y,
-                                        TransformSize tx_size,
-                                        TransformType* const tx_type) {
+int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
+                                    int start_x, int start_y,
+                                    TransformSize tx_size,
+                                    TransformType* const tx_type) {
   const int x4 = DivideBy4(start_x);
   const int y4 = DivideBy4(start_y);
   const int w4 = kTransformWidth4x4[tx_size];
@@ -1268,9 +1268,9 @@ int16_t Tile::ReadTransformCoefficients(const Block& block, Plane plane,
       cdf = symbol_decoder_context_.eob_pt_1024_cdf[plane_type];
       break;
   }
-  const int16_t eob_pt =
+  const int eob_pt =
       1 + reader_.ReadSymbol(cdf, kEobPt16SymbolCount + eob_multi_size);
-  int16_t eob = (eob_pt < 2) ? eob_pt : ((1 << (eob_pt - 2)) + 1);
+  int eob = (eob_pt < 2) ? eob_pt : ((1 << (eob_pt - 2)) + 1);
   if (eob_pt >= 3) {
     context = eob_pt - 3;
     const bool eob_extra = reader_.ReadSymbol(
@@ -1472,7 +1472,7 @@ bool Tile::TransformBlock(const Block& block, Plane plane, int base_x,
     switch (mode) {
       case kProcessingModeParseAndDecode: {
         TransformType tx_type;
-        const int16_t non_zero_coeff_count = ReadTransformCoefficients(
+        const int non_zero_coeff_count = ReadTransformCoefficients(
             block, plane, start_x, start_y, tx_size, &tx_type);
         if (non_zero_coeff_count < 0) return false;
         ReconstructBlock(block, plane, start_x, start_y, tx_size, tx_type,
@@ -1481,7 +1481,7 @@ bool Tile::TransformBlock(const Block& block, Plane plane, int base_x,
       }
       case kProcessingModeParseOnly: {
         TransformType tx_type;
-        const int16_t non_zero_coeff_count = ReadTransformCoefficients(
+        const int non_zero_coeff_count = ReadTransformCoefficients(
             block, plane, start_x, start_y, tx_size, &tx_type);
         if (non_zero_coeff_count < 0) return false;
         residual_buffer_threaded_[sb_row_index][sb_column_index]
@@ -1573,8 +1573,7 @@ bool Tile::TransformTree(const Block& block, int start_x, int start_y,
 
 void Tile::ReconstructBlock(const Block& block, Plane plane, int start_x,
                             int start_y, TransformSize tx_size,
-                            TransformType tx_type,
-                            int16_t non_zero_coeff_count) {
+                            TransformType tx_type, int non_zero_coeff_count) {
   // Reconstruction process. Steps 2 and 3 of Section 7.12.3 in the spec.
   assert(non_zero_coeff_count >= 0);
   if (non_zero_coeff_count == 0) return;

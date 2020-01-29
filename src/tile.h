@@ -464,10 +464,9 @@ class Tile : public Allocable {
   // Returns the number of non-zero coefficients that were read. |tx_type| is an
   // output parameter that stores the computed transform type for the plane
   // whose coefficients were read. Returns -1 on failure.
-  int16_t ReadTransformCoefficients(const Block& block, Plane plane,
-                                    int start_x, int start_y,
-                                    TransformSize tx_size,
-                                    TransformType* tx_type);  // 5.11.39.
+  int ReadTransformCoefficients(const Block& block, Plane plane, int start_x,
+                                int start_y, TransformSize tx_size,
+                                TransformType* tx_type);  // 5.11.39.
   bool TransformBlock(const Block& block, Plane plane, int base_x, int base_y,
                       TransformSize tx_size, int x, int y,
                       ProcessingMode mode);  // 5.11.35.
@@ -477,7 +476,7 @@ class Tile : public Allocable {
   void ReconstructBlock(const Block& block, Plane plane, int start_x,
                         int start_y, TransformSize tx_size,
                         TransformType tx_type,
-                        int16_t non_zero_coeff_count);     // Part of 7.12.3.
+                        int non_zero_coeff_count);         // Part of 7.12.3.
   bool Residual(const Block& block, ProcessingMode mode);  // 5.11.34.
   // part of 5.11.5 (reset_block_context() in the spec).
   void ResetEntropyContext(const Block& block);

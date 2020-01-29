@@ -54,7 +54,7 @@ template <typename Residual, typename Pixel>
 void Reconstruct(const dsp::Dsp& dsp, TransformType tx_type,
                  TransformSize tx_size, bool lossless, Residual* const buffer,
                  int start_x, int start_y, Array2DView<Pixel>* frame,
-                 int16_t non_zero_coeff_count) {
+                 int non_zero_coeff_count) {
   static_assert(sizeof(Residual) == 2 || sizeof(Residual) == 4, "");
   const int tx_width_log2 = kTransformWidthLog2[tx_size];
   const int tx_height_log2 = kTransformHeightLog2[tx_size];
@@ -87,13 +87,13 @@ void Reconstruct(const dsp::Dsp& dsp, TransformType tx_type,
 template void Reconstruct(const dsp::Dsp& dsp, TransformType tx_type,
                           TransformSize tx_size, bool lossless, int16_t* buffer,
                           int start_x, int start_y, Array2DView<uint8_t>* frame,
-                          int16_t non_zero_coeff_count);
+                          int non_zero_coeff_count);
 #if LIBGAV1_MAX_BITDEPTH >= 10
 template void Reconstruct(const dsp::Dsp& dsp, TransformType tx_type,
                           TransformSize tx_size, bool lossless, int32_t* buffer,
                           int start_x, int start_y,
                           Array2DView<uint16_t>* frame,
-                          int16_t non_zero_coeff_count);
+                          int non_zero_coeff_count);
 #endif
 
 }  // namespace libgav1
