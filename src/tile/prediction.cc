@@ -128,7 +128,9 @@ int GetIntraEdgeFilterStrength(int width, int height, int filter_type,
 bool DoIntraEdgeUpsampling(int width, int height, int filter_type, int delta) {
   const int sum = width + height;
   delta = std::abs(delta);
-  if (delta == 0 || delta >= 40) return false;
+  // This function should not be called when the prediction angle is 90 or 180.
+  assert(delta != 0);
+  if (delta >= 40) return false;
   return (filter_type == 1) ? sum <= 8 : sum <= 16;
 }
 
@@ -398,34 +400,48 @@ void Tile::DirectionalPrediction(const Block& block, Plane plane, int x, int y,
                                  int width, int height, int max_x, int max_y,
                                  TransformSize tx_size, Pixel* const top_row,
                                  Pixel* const left_column) {
+  Array2DView<Pixel> buffer(buffer_[plane].rows(),
+                            buffer_[plane].columns() / sizeof(Pixel),
+                            reinterpret_cast<Pixel*>(&buffer_[plane][0][0]));
+  Pixel* const dest = &buffer[y][x];
+  const ptrdiff_t stride = buffer_[plane].columns();
+  if (prediction_angle == 90) {
+    dsp_.intra_predictors[tx_size][dsp::kIntraPredictorVertical](
+        dest, stride, top_row, left_column);
+    return;
+  }
+  if (prediction_angle == 180) {
+    dsp_.intra_predictors[tx_size][dsp::kIntraPredictorHorizontal](
+        dest, stride, top_row, left_column);
+    return;
+  }
+
   bool upsampled_top = false;
   bool upsampled_left = false;
   if (sequence_header_.enable_intra_edge_filter) {
     const int filter_type = GetIntraEdgeFilterType(block, plane);
-    if (prediction_angle != 90 && prediction_angle != 180) {
-      if (prediction_angle > 90 && prediction_angle < 180 &&
-          (width + height) >= 24) {
-        // 7.11.2.7.
-        left_column[-1] = top_row[-1] = RightShiftWithRounding(
-            left_column[0] * 5 + top_row[-1] * 6 + top_row[0] * 5, 4);
+    if (prediction_angle > 90 && prediction_angle < 180 &&
+        (width + height) >= 24) {
+      // 7.11.2.7.
+      left_column[-1] = top_row[-1] = RightShiftWithRounding(
+          left_column[0] * 5 + top_row[-1] * 6 + top_row[0] * 5, 4);
+    }
+    if (has_top && needs_top) {
+      const int strength = GetIntraEdgeFilterStrength(
+          width, height, filter_type, prediction_angle - 90);
+      if (strength > 0) {
+        const int num_pixels = std::min(width, max_x - x + 1) +
+                               ((prediction_angle < 90) ? height : 0) + 1;
+        dsp_.intra_edge_filter(top_row - 1, num_pixels, strength);
       }
-      if (has_top && needs_top) {
-        const int strength = GetIntraEdgeFilterStrength(
-            width, height, filter_type, prediction_angle - 90);
-        if (strength > 0) {
-          const int num_pixels = std::min(width, max_x - x + 1) +
-                                 ((prediction_angle < 90) ? height : 0) + 1;
-          dsp_.intra_edge_filter(top_row - 1, num_pixels, strength);
-        }
-      }
-      if (has_left && needs_left) {
-        const int strength = GetIntraEdgeFilterStrength(
-            width, height, filter_type, prediction_angle - 180);
-        if (strength > 0) {
-          const int num_pixels = std::min(height, max_y - y + 1) +
-                                 ((prediction_angle > 180) ? width : 0) + 1;
-          dsp_.intra_edge_filter(left_column - 1, num_pixels, strength);
-        }
+    }
+    if (has_left && needs_left) {
+      const int strength = GetIntraEdgeFilterStrength(
+          width, height, filter_type, prediction_angle - 180);
+      if (strength > 0) {
+        const int num_pixels = std::min(height, max_y - y + 1) +
+                               ((prediction_angle > 180) ? width : 0) + 1;
+        dsp_.intra_edge_filter(left_column - 1, num_pixels, strength);
       }
     }
     upsampled_top = DoIntraEdgeUpsampling(width, height, filter_type,
@@ -441,18 +457,8 @@ void Tile::DirectionalPrediction(const Block& block, Plane plane, int x, int y,
       dsp_.intra_edge_upsampler(left_column, num_pixels);
     }
   }
-  Array2DView<Pixel> buffer(buffer_[plane].rows(),
-                            buffer_[plane].columns() / sizeof(Pixel),
-                            reinterpret_cast<Pixel*>(&buffer_[plane][0][0]));
-  Pixel* const dest = &buffer[y][x];
-  const ptrdiff_t stride = buffer_[plane].columns();
-  if (prediction_angle == 90) {
-    dsp_.intra_predictors[tx_size][dsp::kIntraPredictorVertical](
-        dest, stride, top_row, left_column);
-  } else if (prediction_angle == 180) {
-    dsp_.intra_predictors[tx_size][dsp::kIntraPredictorHorizontal](
-        dest, stride, top_row, left_column);
-  } else if (prediction_angle < 90) {
+
+  if (prediction_angle < 90) {
     const int dx = GetDirectionalIntraPredictorDerivative(prediction_angle);
     dsp_.directional_intra_predictor_zone1(dest, stride, top_row, width, height,
                                            dx, upsampled_top);
