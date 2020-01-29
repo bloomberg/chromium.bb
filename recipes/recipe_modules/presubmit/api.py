@@ -74,11 +74,12 @@ class PresubmitApi(recipe_api.RecipeApi):
 
     return bot_update_step
 
-  def execute(self, bot_update_step):
+  def execute(self, bot_update_step, skip_owners=False):
     """Runs presubmit and sets summary markdown if applicable.
 
     Args:
       bot_update_step: the StepResult from a previously executed bot_update step.
+      skip_owners: a boolean indicating whether Owners checks should be skipped.
     Returns:
       a RawResult object, suitable for being returned from RunSteps.
     """
@@ -108,6 +109,11 @@ class PresubmitApi(recipe_api.RecipeApi):
       '--skip_canned', 'CheckBuildbotPendingBuilds',
       '--upstream', upstream,  # '' if not in bot_update mode.
     ])
+
+    if skip_owners:
+      presubmit_args.extend([
+        '--skip_canned', 'CheckOwners'
+      ])
 
     raw_result = result_pb2.RawResult()
     step_json = self(
