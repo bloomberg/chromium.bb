@@ -892,24 +892,6 @@ class ChromeSDKCommand(command.CliCommand):
     return os.path.join(self.options.chrome_src, 'out_%s' % self.board,
                         'Release')
 
-  def _FixGoldPath(self, var_contents, toolchain_path):
-    """Point to the gold linker in the toolchain tarball.
-
-    Accepts an already set environment variable in the form of '<cmd>
-    -B<gold_path>', and overrides the gold_path to the correct path in the
-    extracted toolchain tarball.
-
-    Args:
-      var_contents: The contents of the environment variable.
-      toolchain_path: Path to the extracted toolchain tarball contents.
-
-    Returns:
-      Environment string that has correct gold path.
-    """
-    cmd, _, gold_path = var_contents.partition(' -B')
-    gold_path = os.path.join(toolchain_path, gold_path.lstrip('/'))
-    return '%s -B%s' % (cmd, gold_path)
-
   def _UpdateGnArgsIfStale(self, out_dir, build_label, gn_args, board):
     """Runs 'gn gen' if gn args are stale or logs a warning."""
     gn_args_file_path = os.path.join(
@@ -966,9 +948,6 @@ class ChromeSDKCommand(command.CliCommand):
     target_tc_path = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
     tc_bin_path = os.path.join(target_tc_path, 'bin')
     env['PATH'] = '%s:%s' % (tc_bin_path, os.environ['PATH'])
-
-    for var in ('CXX', 'CC', 'LD'):
-      env[var] = self._FixGoldPath(env[var], target_tc_path)
 
     chrome_clang_path = os.path.join(options.chrome_src, self._CHROME_CLANG_DIR)
 

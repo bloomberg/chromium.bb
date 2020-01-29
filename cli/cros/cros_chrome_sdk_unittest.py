@@ -202,9 +202,9 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
 
   FAKE_ENV = {
       'GN_ARGS': 'target_sysroot="/path/to/sysroot" is_clang=false',
-      'CXX': 'x86_64-cros-linux-gnu-clang++ -B /path/to/gold',
-      'CC': 'x86_64-cros-linux-gnu-clang -B /path/to/gold',
-      'LD': 'x86_64-cros-linux-gnu-clang++ -B /path/to/gold',
+      'CXX': 'x86_64-cros-linux-gnu-clang++',
+      'CC': 'x86_64-cros-linux-gnu-clang',
+      'LD': 'x86_64-cros-linux-gnu-clang++',
       'NM': 'x86_64-cros-linux-gnu-nm',
       'READELF': 'x86_64-cros-linux-gnu-readelf',
       'CFLAGS': '-O2',
