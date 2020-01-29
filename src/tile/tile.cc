@@ -46,8 +46,6 @@ constexpr int kReferenceScaleShift = 14;
 // process is activated.
 constexpr int kQuantizerCoefficientBaseRange = 12;
 constexpr int kNumQuantizerBaseLevels = 2;
-constexpr int kQuantizerCoefficientBaseRangeContextClamp =
-    kQuantizerCoefficientBaseRange + kNumQuantizerBaseLevels + 1;
 constexpr int kCoeffBaseRangeMaxIterations =
     kQuantizerCoefficientBaseRange / (kCoeffBaseRangeSymbolCount - 1);
 constexpr int kEntropyContextLeft = 0;
@@ -929,19 +927,17 @@ int Tile::GetCoeffBaseContextVertical(const int32_t* const quantized_buffer,
 // Section 8.3.2 in the spec, under coeff_br.
 int Tile::GetCoeffBaseRangeContext2D(const int32_t* const quantized_buffer,
                                      int adjusted_tx_width_log2, int pos) {
-  const uint8_t tx_width = 1 << adjusted_tx_width_log2;
+  const int tx_width = 1 << adjusted_tx_width_log2;
   const int padded_tx_width = tx_width + kQuantizedCoefficientBufferPadding;
   const int32_t* const quantized =
       &quantized_buffer[PaddedIndex(pos, adjusted_tx_width_log2)];
-  const int context = std::min(
-      6, DivideBy2(
-             1 +
-             std::min(quantized[1],
-                      kQuantizerCoefficientBaseRangeContextClamp) +  // {0, 1}
-             std::min(quantized[padded_tx_width],
-                      kQuantizerCoefficientBaseRangeContextClamp) +  // {1, 0}
-             std::min(quantized[padded_tx_width + 1],
-                      kQuantizerCoefficientBaseRangeContextClamp)));  // {1, 1}
+  // No need to clip quantized values to COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1,
+  // because we clip the overall output to 6 and the unclipped quantized values
+  // will always result in an output of greater than 6.
+  const int context =
+      std::min(6, DivideBy2(1 + quantized[1] +                 // {0, 1}
+                            quantized[padded_tx_width] +       // {1, 0}
+                            quantized[padded_tx_width + 1]));  // {1, 1}
   if (pos == 0) return context;
   const int row = pos >> adjusted_tx_width_log2;
   const int column = pos & (tx_width - 1);
@@ -952,19 +948,17 @@ int Tile::GetCoeffBaseRangeContext2D(const int32_t* const quantized_buffer,
 int Tile::GetCoeffBaseRangeContextHorizontal(
     const int32_t* const quantized_buffer, int adjusted_tx_width_log2,
     int pos) {
-  const uint8_t tx_width = 1 << adjusted_tx_width_log2;
+  const int tx_width = 1 << adjusted_tx_width_log2;
   const int padded_tx_width = tx_width + kQuantizedCoefficientBufferPadding;
   const int32_t* const quantized =
       &quantized_buffer[PaddedIndex(pos, adjusted_tx_width_log2)];
-  const int context = std::min(
-      6, DivideBy2(
-             1 +
-             std::min(quantized[1],
-                      kQuantizerCoefficientBaseRangeContextClamp) +  // {0, 1}
-             std::min(quantized[padded_tx_width],
-                      kQuantizerCoefficientBaseRangeContextClamp) +  // {1, 0}
-             std::min(quantized[2],
-                      kQuantizerCoefficientBaseRangeContextClamp)));  // {0, 2}
+  // No need to clip quantized values to COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1,
+  // because we clip the overall output to 6 and the unclipped quantized values
+  // will always result in an output of greater than 6.
+  const int context =
+      std::min(6, DivideBy2(1 + quantized[1] +            // {0, 1}
+                            quantized[padded_tx_width] +  // {1, 0}
+                            quantized[2]));               // {0, 2}
   if (pos == 0) return context;
   const int column = pos & (tx_width - 1);
   return context + ((column == 0) ? 7 : 14);
@@ -974,19 +968,17 @@ int Tile::GetCoeffBaseRangeContextHorizontal(
 int Tile::GetCoeffBaseRangeContextVertical(
     const int32_t* const quantized_buffer, int adjusted_tx_width_log2,
     int pos) {
-  const uint8_t tx_width = 1 << adjusted_tx_width_log2;
+  const int tx_width = 1 << adjusted_tx_width_log2;
   const int padded_tx_width = tx_width + kQuantizedCoefficientBufferPadding;
   const int32_t* const quantized =
       &quantized_buffer[PaddedIndex(pos, adjusted_tx_width_log2)];
+  // No need to clip quantized values to COEFF_BASE_RANGE + NUM_BASE_LEVELS + 1,
+  // because we clip the overall output to 6 and the unclipped quantized values
+  // will always result in an output of greater than 6.
   const int context = std::min(
-      6, DivideBy2(
-             1 +
-             std::min(quantized[1],
-                      kQuantizerCoefficientBaseRangeContextClamp) +  // {0, 1}
-             std::min(quantized[padded_tx_width],
-                      kQuantizerCoefficientBaseRangeContextClamp) +  // {1, 0}
-             std::min(quantized[MultiplyBy2(padded_tx_width)],
-                      kQuantizerCoefficientBaseRangeContextClamp)));  // {2, 0}
+      6, DivideBy2(1 + quantized[1] +                          // {0, 1}
+                   quantized[padded_tx_width] +                // {1, 0}
+                   quantized[MultiplyBy2(padded_tx_width)]));  // {2, 0}
   if (pos == 0) return context;
   const int row = pos >> adjusted_tx_width_log2;
   return context + ((row == 0) ? 7 : 14);
@@ -998,20 +990,26 @@ int Tile::GetCoeffBaseRangeContextVertical(
 int Tile::GetCoeffBaseRangeContextEob(int adjusted_tx_width_log2, int pos,
                                       TransformClass tx_class) {
   if (pos == 0) return 0;
-  const uint8_t tx_width = 1 << adjusted_tx_width_log2;
+  const int tx_width = 1 << adjusted_tx_width_log2;
   const int row = pos >> adjusted_tx_width_log2;
   const int column = pos & (tx_width - 1);
-  return ((tx_class == kTransformClass2D && (row | column) < 2) ||
-          (tx_class == kTransformClassHorizontal && column == 0) ||
-          (tx_class == kTransformClassVertical && row == 0))
-             ? 7
-             : 14;
+  // This return statement is equivalent to:
+  // return ((tx_class == kTransformClass2D && (row | column) < 2) ||
+  //         (tx_class == kTransformClassHorizontal && column == 0) ||
+  //         (tx_class == kTransformClassVertical && row == 0))
+  //            ? 7
+  //            : 14;
+  return 14 >> ((static_cast<int>(tx_class == kTransformClass2D) &
+                 static_cast<int>((row | column) < 2)) |
+                (tx_class & static_cast<int>(column == 0)) |
+                ((tx_class >> 1) & static_cast<int>(row == 0)));
 }
 
 int Tile::GetDcSignContext(int x4, int y4, int w4, int h4, Plane plane) {
   const int max_x4x4 = frame_header_.columns4x4 >> subsampling_x_[plane];
   const int8_t* dc_categories = &dc_categories_[kEntropyContextTop][plane][x4];
-  int dc_sign = std::accumulate(
+  // Set dc_sign to 8-bit long so that std::accumulate() saves sign extension.
+  int8_t dc_sign = std::accumulate(
       dc_categories, dc_categories + GetNumElements(w4, x4, max_x4x4), 0);
   const int max_y4x4 = frame_header_.rows4x4 >> subsampling_y_[plane];
   dc_categories = &dc_categories_[kEntropyContextLeft][plane][y4];
@@ -1021,6 +1019,8 @@ int Tile::GetDcSignContext(int x4, int y4, int w4, int h4, Plane plane) {
   //   if (dc_sign < 0) return 1;
   //   if (dc_sign > 0) return 2;
   //   return 0;
+  // And it is better than:
+  //   return static_cast<int>(dc_sign != 0) + static_cast<int>(dc_sign > 0);
   return static_cast<int>(dc_sign < 0) +
          MultiplyBy2(static_cast<int>(dc_sign > 0));
 }
