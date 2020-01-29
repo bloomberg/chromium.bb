@@ -483,6 +483,9 @@ void ArcAccessibilityHelperBridge::OnNotificationStateChanged(
     arc::mojom::AccessibilityNotificationStateType state) {
   switch (state) {
     case arc::mojom::AccessibilityNotificationStateType::SURFACE_CREATED: {
+      if (GetFromNotificationKey(notification_key))
+        return;
+
       AXTreeSourceArc* tree_source =
           CreateFromNotificationKey(notification_key);
 
