@@ -2628,7 +2628,7 @@ def ApplyCustomOverrides(site_config):
           'hw_tests': [],
           'hw_tests_override': [],
           'hw_tests_disabled_bug': 'https://b/140317527',
-          'paygen': False,
+          'paygen_skip_testing': True,
       },
 
       'gale-release': {
@@ -2636,7 +2636,7 @@ def ApplyCustomOverrides(site_config):
           'hw_tests': [],
           'hw_tests_override': [],
           'hw_tests_disabled_bug': 'https://b/140317527',
-          'paygen': False,
+          'paygen_skip_testing': True,
       },
 
       'mistral-release': {
@@ -2644,7 +2644,7 @@ def ApplyCustomOverrides(site_config):
           'hw_tests': [],
           'hw_tests_override': [],
           'hw_tests_disabled_bug': 'https://b/140317527',
-          'paygen': False,
+          'paygen_skip_testing': True,
       },
 
       'lakitu-release': config_lib.BuildConfig().apply(
