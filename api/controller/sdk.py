@@ -103,3 +103,11 @@ def Unmount(input_proto, _output_proto, _config):
   """Unmount a chroot"""
   chroot = controller_util.ParseChroot(input_proto.chroot)
   sdk.Unmount(chroot)
+
+
+@faux.all_empty
+@validate.validation_complete
+def Clean(input_proto, _output_proto, _config):
+  """Clean unneeded files from a chroot."""
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sdk.Clean(chroot, sysroots=True)

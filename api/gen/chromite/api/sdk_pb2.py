@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='chromite.api',
   syntax='proto3',
   serialized_options=_b('Z6go.chromium.org/chromiumos/infra/proto/go/chromite/api'),
-  serialized_pb=_b('\n\x16\x63hromite/api/sdk.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\" \n\rChrootVersion\x12\x0f\n\x07version\x18\x01 \x01(\r\"\xab\x01\n\rCreateRequest\x12\x30\n\x05\x66lags\x18\x01 \x01(\x0b\x32!.chromite.api.CreateRequest.Flags\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x44\n\x05\x46lags\x12\x12\n\nno_replace\x18\x01 \x01(\x08\x12\x11\n\tbootstrap\x18\x02 \x01(\x08\x12\x14\n\x0cno_use_image\x18\x03 \x01(\x08\">\n\x0e\x43reateResponse\x12,\n\x07version\x18\x01 \x01(\x0b\x32\x1b.chromite.api.ChrootVersion\"3\n\rDeleteRequest\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x10\n\x0e\x44\x65leteResponse\"4\n\x0eUnmountRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x11\n\x0fUnmountResponse\"\xd3\x01\n\rUpdateRequest\x12\x30\n\x05\x66lags\x18\x01 \x01(\x0b\x32!.chromite.api.UpdateRequest.Flags\x12\x32\n\x11toolchain_targets\x18\x02 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x38\n\x05\x46lags\x12\x14\n\x0c\x62uild_source\x18\x01 \x01(\x08\x12\x19\n\x11toolchain_changed\x18\x02 \x01(\x08\">\n\x0eUpdateResponse\x12,\n\x07version\x18\x01 \x01(\x0b\x32\x1b.chromite.api.ChrootVersion2\xb8\x02\n\nSdkService\x12\x43\n\x06\x43reate\x12\x1b.chromite.api.CreateRequest\x1a\x1c.chromite.api.CreateResponse\x12\x43\n\x06\x44\x65lete\x12\x1b.chromite.api.DeleteRequest\x1a\x1c.chromite.api.DeleteResponse\x12\x46\n\x07Unmount\x12\x1c.chromite.api.UnmountRequest\x1a\x1d.chromite.api.UnmountResponse\x12K\n\x06Update\x12\x1b.chromite.api.UpdateRequest\x1a\x1c.chromite.api.UpdateResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0b\xc2\xed\x1a\x07\n\x03sdk\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
+  serialized_pb=_b('\n\x16\x63hromite/api/sdk.proto\x12\x0c\x63hromite.api\x1a\x1c\x63hromite/api/build_api.proto\x1a\x17\x63hromiumos/common.proto\" \n\rChrootVersion\x12\x0f\n\x07version\x18\x01 \x01(\r\"\xab\x01\n\rCreateRequest\x12\x30\n\x05\x66lags\x18\x01 \x01(\x0b\x32!.chromite.api.CreateRequest.Flags\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x44\n\x05\x46lags\x12\x12\n\nno_replace\x18\x01 \x01(\x08\x12\x11\n\tbootstrap\x18\x02 \x01(\x08\x12\x14\n\x0cno_use_image\x18\x03 \x01(\x08\">\n\x0e\x43reateResponse\x12,\n\x07version\x18\x01 \x01(\x0b\x32\x1b.chromite.api.ChrootVersion\"3\n\rDeleteRequest\x12\"\n\x06\x63hroot\x18\x02 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x10\n\x0e\x44\x65leteResponse\"4\n\x0eUnmountRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x11\n\x0fUnmountResponse\"\xd3\x01\n\rUpdateRequest\x12\x30\n\x05\x66lags\x18\x01 \x01(\x0b\x32!.chromite.api.UpdateRequest.Flags\x12\x32\n\x11toolchain_targets\x18\x02 \x03(\x0b\x32\x17.chromiumos.BuildTarget\x12\"\n\x06\x63hroot\x18\x03 \x01(\x0b\x32\x12.chromiumos.Chroot\x1a\x38\n\x05\x46lags\x12\x14\n\x0c\x62uild_source\x18\x01 \x01(\x08\x12\x19\n\x11toolchain_changed\x18\x02 \x01(\x08\">\n\x0eUpdateResponse\x12,\n\x07version\x18\x01 \x01(\x0b\x32\x1b.chromite.api.ChrootVersion\"2\n\x0c\x43leanRequest\x12\"\n\x06\x63hroot\x18\x01 \x01(\x0b\x32\x12.chromiumos.Chroot\"\x0f\n\rCleanResponse2\xfa\x02\n\nSdkService\x12\x43\n\x06\x43reate\x12\x1b.chromite.api.CreateRequest\x1a\x1c.chromite.api.CreateResponse\x12\x43\n\x06\x44\x65lete\x12\x1b.chromite.api.DeleteRequest\x1a\x1c.chromite.api.DeleteResponse\x12@\n\x05\x43lean\x12\x1a.chromite.api.CleanRequest\x1a\x1b.chromite.api.CleanResponse\x12\x46\n\x07Unmount\x12\x1c.chromite.api.UnmountRequest\x1a\x1d.chromite.api.UnmountResponse\x12K\n\x06Update\x12\x1b.chromite.api.UpdateRequest\x1a\x1c.chromite.api.UpdateResponse\"\x06\xc2\xed\x1a\x02\x10\x01\x1a\x0b\xc2\xed\x1a\x07\n\x03sdk\x10\x02\x42\x38Z6go.chromium.org/chromiumos/infra/proto/go/chromite/apib\x06proto3')
   ,
   dependencies=[chromite_dot_api_dot_build__api__pb2.DESCRIPTOR,chromiumos_dot_common__pb2.DESCRIPTOR,])
 
@@ -394,6 +394,61 @@ _UPDATERESPONSE = _descriptor.Descriptor(
   serialized_end=787,
 )
 
+
+_CLEANREQUEST = _descriptor.Descriptor(
+  name='CleanRequest',
+  full_name='chromite.api.CleanRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='chroot', full_name='chromite.api.CleanRequest.chroot', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=789,
+  serialized_end=839,
+)
+
+
+_CLEANRESPONSE = _descriptor.Descriptor(
+  name='CleanResponse',
+  full_name='chromite.api.CleanResponse',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=841,
+  serialized_end=856,
+)
+
 _CREATEREQUEST_FLAGS.containing_type = _CREATEREQUEST
 _CREATEREQUEST.fields_by_name['flags'].message_type = _CREATEREQUEST_FLAGS
 _CREATEREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
@@ -405,6 +460,7 @@ _UPDATEREQUEST.fields_by_name['flags'].message_type = _UPDATEREQUEST_FLAGS
 _UPDATEREQUEST.fields_by_name['toolchain_targets'].message_type = chromiumos_dot_common__pb2._BUILDTARGET
 _UPDATEREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
 _UPDATERESPONSE.fields_by_name['version'].message_type = _CHROOTVERSION
+_CLEANREQUEST.fields_by_name['chroot'].message_type = chromiumos_dot_common__pb2._CHROOT
 DESCRIPTOR.message_types_by_name['ChrootVersion'] = _CHROOTVERSION
 DESCRIPTOR.message_types_by_name['CreateRequest'] = _CREATEREQUEST
 DESCRIPTOR.message_types_by_name['CreateResponse'] = _CREATERESPONSE
@@ -414,6 +470,8 @@ DESCRIPTOR.message_types_by_name['UnmountRequest'] = _UNMOUNTREQUEST
 DESCRIPTOR.message_types_by_name['UnmountResponse'] = _UNMOUNTRESPONSE
 DESCRIPTOR.message_types_by_name['UpdateRequest'] = _UPDATEREQUEST
 DESCRIPTOR.message_types_by_name['UpdateResponse'] = _UPDATERESPONSE
+DESCRIPTOR.message_types_by_name['CleanRequest'] = _CLEANREQUEST
+DESCRIPTOR.message_types_by_name['CleanResponse'] = _CLEANRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ChrootVersion = _reflection.GeneratedProtocolMessageType('ChrootVersion', (_message.Message,), dict(
@@ -495,6 +553,20 @@ UpdateResponse = _reflection.GeneratedProtocolMessageType('UpdateResponse', (_me
   ))
 _sym_db.RegisterMessage(UpdateResponse)
 
+CleanRequest = _reflection.GeneratedProtocolMessageType('CleanRequest', (_message.Message,), dict(
+  DESCRIPTOR = _CLEANREQUEST,
+  __module__ = 'chromite.api.sdk_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.CleanRequest)
+  ))
+_sym_db.RegisterMessage(CleanRequest)
+
+CleanResponse = _reflection.GeneratedProtocolMessageType('CleanResponse', (_message.Message,), dict(
+  DESCRIPTOR = _CLEANRESPONSE,
+  __module__ = 'chromite.api.sdk_pb2'
+  # @@protoc_insertion_point(class_scope:chromite.api.CleanResponse)
+  ))
+_sym_db.RegisterMessage(CleanResponse)
+
 
 DESCRIPTOR._options = None
 
@@ -504,8 +576,8 @@ _SDKSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=_b('\302\355\032\007\n\003sdk\020\002'),
-  serialized_start=790,
-  serialized_end=1102,
+  serialized_start=859,
+  serialized_end=1237,
   methods=[
   _descriptor.MethodDescriptor(
     name='Create',
@@ -526,9 +598,18 @@ _SDKSERVICE = _descriptor.ServiceDescriptor(
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
+    name='Clean',
+    full_name='chromite.api.SdkService.Clean',
+    index=2,
+    containing_service=None,
+    input_type=_CLEANREQUEST,
+    output_type=_CLEANRESPONSE,
+    serialized_options=None,
+  ),
+  _descriptor.MethodDescriptor(
     name='Unmount',
     full_name='chromite.api.SdkService.Unmount',
-    index=2,
+    index=3,
     containing_service=None,
     input_type=_UNMOUNTREQUEST,
     output_type=_UNMOUNTRESPONSE,
@@ -537,7 +618,7 @@ _SDKSERVICE = _descriptor.ServiceDescriptor(
   _descriptor.MethodDescriptor(
     name='Update',
     full_name='chromite.api.SdkService.Update',
-    index=3,
+    index=4,
     containing_service=None,
     input_type=_UPDATEREQUEST,
     output_type=_UPDATERESPONSE,
