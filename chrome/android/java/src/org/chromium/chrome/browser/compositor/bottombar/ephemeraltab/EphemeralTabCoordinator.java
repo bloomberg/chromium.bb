@@ -113,7 +113,10 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     }
 
     private void destroyContent() {
-        mSheetContent = null; // Will be destroyed by BottomSheet controller.
+        if (mSheetContent != null) {
+            mSheetContent.destroy();
+            mSheetContent = null;
+        }
 
         if (mPanelContent != null) {
             mPanelContent.destroy();
