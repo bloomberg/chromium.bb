@@ -32,6 +32,10 @@ message StartArcMiniContainerRequest {
   // generate precise ureadahead packs.
   optional bool disable_ureadahead = 7 [default = false];
 
+  // Option to disable by hiding default apps shipped on the system image.
+  // To be used locally in development that involves overriding these apps.
+  optional bool disable_system_default_app = 8 [default = false];
+
   // Optional mode for play store auto-update.
   optional PlayStoreAutoUpdate play_store_auto_update = 4
       [default = AUTO_UPDATE_DEFAULT];
@@ -42,7 +46,7 @@ message StartArcMiniContainerRequest {
   // Experiment flag for ARC Print Spooler.
   optional bool arc_print_spooler_experiment = 6 [default = false];
 
-  // Next ID to use: 8
+  // Next ID to use: 9
 }
 
 // ARC upgrade options sent from Chrome to session manager. This message is used
