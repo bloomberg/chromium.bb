@@ -21,10 +21,16 @@ message StartArcMiniContainerRequest {
   }
 
   optional bool native_bridge_experiment = 1 [default = false];
+
   // The density value passed to "ro.sf.lcd_density" property.
   optional int32 lcd_density = 2 [default = -1];
+
   // Experiment flag for go/arc-file-picker.
   optional bool arc_file_picker_experiment = 3 [default = false];
+
+  // Option to disable ureadahead, emulated ureadahead, and tracing. Used in specialized tests that
+  // generate precise ureadahead packs.
+  optional bool disable_ureadahead = 7 [default = false];
 
   // Optional mode for play store auto-update.
   optional PlayStoreAutoUpdate play_store_auto_update = 4
@@ -36,7 +42,7 @@ message StartArcMiniContainerRequest {
   // Experiment flag for ARC Print Spooler.
   optional bool arc_print_spooler_experiment = 6 [default = false];
 
-  // Next ID to use: 7
+  // Next ID to use: 8
 }
 
 // ARC upgrade options sent from Chrome to session manager. This message is used
@@ -71,6 +77,9 @@ message UpgradeArcContainerRequest {
   // Whether the account is managed.
   optional bool is_account_managed = 14;
 
+  // See description in StartArcMiniContainerRequest.
+  optional bool disable_ureadahead = 15 [default = false];
+
   // Option to disable ACTION_BOOT_COMPLETED broadcast for 3rd party apps.
   optional bool skip_boot_completed_broadcast = 2 [default = false];
 
@@ -103,5 +112,5 @@ message UpgradeArcContainerRequest {
   // a non-supervised state, and vice-versa.
   optional SupervisionTransition supervision_transition = 11;
 
-  // Next ID to use: 15
+  // Next ID to use: 16
 }
