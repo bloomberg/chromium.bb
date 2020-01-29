@@ -263,23 +263,8 @@ PredictionMode GetSinglePredictionMode(int index, PredictionMode y_mode) {
 // log2(dqDenom) in section 7.12.3 of the spec. We use the log2 value because
 // dqDenom is always a power of two and hence right shift can be used instead of
 // division.
-constexpr BitMaskSet kQuantizationShift2Mask(kTransformSize32x64,
-                                             kTransformSize64x32,
-                                             kTransformSize64x64);
-constexpr BitMaskSet kQuantizationShift1Mask(kTransformSize16x32,
-                                             kTransformSize16x64,
-                                             kTransformSize32x16,
-                                             kTransformSize32x32,
-                                             kTransformSize64x16);
-int GetQuantizationShift(TransformSize tx_size) {
-  if (kQuantizationShift2Mask.Contains(tx_size)) {
-    return 2;
-  }
-  if (kQuantizationShift1Mask.Contains(tx_size)) {
-    return 1;
-  }
-  return 0;
-}
+constexpr uint8_t kQuantizationShift[kNumTransformSizes] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 2, 1, 2, 2};
 
 // Input: 1d array index |index|, which indexes into a 2d array of width
 //     1 << |tx_width_log2|.
@@ -1352,7 +1337,7 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
       frame_header_.segmentation, bp.segment_id, current_quantizer_index_);
   const int dc_q_value = quantizer_.GetDcValue(plane, current_quantizer_index);
   const int ac_q_value = quantizer_.GetAcValue(plane, current_quantizer_index);
-  const int shift = GetQuantizationShift(tx_size);
+  const int shift = kQuantizationShift[tx_size];
   const uint8_t* const quantizer_matrix =
       (frame_header_.quantizer.use_matrix &&
        *tx_type < kTransformTypeIdentityIdentity &&
