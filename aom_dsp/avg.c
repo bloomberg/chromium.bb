@@ -147,6 +147,30 @@ void aom_hadamard_8x8_c(const int16_t *src_diff, ptrdiff_t src_stride,
   for (idx = 0; idx < 64; ++idx) coeff[idx] = (tran_low_t)buffer2[idx];
 }
 
+void aom_hadamard_lp_8x8_c(const int16_t *src_diff, ptrdiff_t src_stride,
+                           int16_t *coeff) {
+  int16_t buffer[64];
+  int16_t buffer2[64];
+  int16_t *tmp_buf = &buffer[0];
+  for (int idx = 0; idx < 8; ++idx) {
+    hadamard_col8(src_diff, src_stride, tmp_buf);  // src_diff: 9 bit
+                                                   // dynamic range [-255, 255]
+    tmp_buf += 8;
+    ++src_diff;
+  }
+
+  tmp_buf = &buffer[0];
+  for (int idx = 0; idx < 8; ++idx) {
+    hadamard_col8(tmp_buf, 8, buffer2 + 8 * idx);  // tmp_buf: 12 bit
+    // dynamic range [-2040, 2040]
+    // buffer2: 15 bit
+    // dynamic range [-16320, 16320]
+    ++tmp_buf;
+  }
+
+  for (int idx = 0; idx < 64; ++idx) coeff[idx] = buffer2[idx];
+}
+
 // In place 16x16 2D Hadamard transform
 void aom_hadamard_16x16_c(const int16_t *src_diff, ptrdiff_t src_stride,
                           tran_low_t *coeff) {
@@ -169,6 +193,35 @@ void aom_hadamard_16x16_c(const int16_t *src_diff, ptrdiff_t src_stride,
     tran_low_t b1 = (a0 - a1) >> 1;  // b0-b3: 15 bit, dynamic range
     tran_low_t b2 = (a2 + a3) >> 1;  // [-16320, 16320]
     tran_low_t b3 = (a2 - a3) >> 1;
+
+    coeff[0] = b0 + b2;  // 16 bit, [-32640, 32640]
+    coeff[64] = b1 + b3;
+    coeff[128] = b0 - b2;
+    coeff[192] = b1 - b3;
+
+    ++coeff;
+  }
+}
+
+void aom_hadamard_lp_16x16_c(const int16_t *src_diff, ptrdiff_t src_stride,
+                             int16_t *coeff) {
+  for (int idx = 0; idx < 4; ++idx) {
+    // src_diff: 9 bit, dynamic range [-255, 255]
+    const int16_t *src_ptr =
+        src_diff + (idx >> 1) * 8 * src_stride + (idx & 0x01) * 8;
+    aom_hadamard_lp_8x8_c(src_ptr, src_stride, coeff + idx * 64);
+  }
+
+  for (int idx = 0; idx < 64; ++idx) {
+    int16_t a0 = coeff[0];
+    int16_t a1 = coeff[64];
+    int16_t a2 = coeff[128];
+    int16_t a3 = coeff[192];
+
+    int16_t b0 = (a0 + a1) >> 1;  // (a0 + a1): 16 bit, [-32640, 32640]
+    int16_t b1 = (a0 - a1) >> 1;  // b0-b3: 15 bit, dynamic range
+    int16_t b2 = (a2 + a3) >> 1;  // [-16320, 16320]
+    int16_t b3 = (a2 - a3) >> 1;
 
     coeff[0] = b0 + b2;  // 16 bit, [-32640, 32640]
     coeff[64] = b1 + b3;

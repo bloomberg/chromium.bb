@@ -192,6 +192,35 @@ void av1_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                        eob_ptr, scan, iscan, NULL, NULL, 0);
 }
 
+void av1_quantize_lp_c(const int16_t *coeff_ptr, intptr_t n_coeffs,
+                       const int16_t *round_ptr, const int16_t *quant_ptr,
+                       int16_t *qcoeff_ptr, int16_t *dqcoeff_ptr,
+                       const int16_t *dequant_ptr, uint16_t *eob_ptr,
+                       const int16_t *scan) {
+  int eob = -1;
+
+  memset(qcoeff_ptr, 0, n_coeffs * sizeof(*qcoeff_ptr));
+  memset(dqcoeff_ptr, 0, n_coeffs * sizeof(*dqcoeff_ptr));
+
+  // Quantization pass: All coefficients with index >= zero_flag are
+  // skippable. Note: zero_flag can be zero.
+  for (int i = 0; i < n_coeffs; i++) {
+    const int rc = scan[i];
+    const int coeff = coeff_ptr[rc];
+    const int coeff_sign = (coeff >> 31);
+    const int abs_coeff = (coeff ^ coeff_sign) - coeff_sign;
+
+    int tmp = clamp(abs_coeff + round_ptr[rc != 0], INT16_MIN, INT16_MAX);
+    tmp = (tmp * quant_ptr[rc != 0]) >> 16;
+
+    qcoeff_ptr[rc] = (tmp ^ coeff_sign) - coeff_sign;
+    dqcoeff_ptr[rc] = qcoeff_ptr[rc] * dequant_ptr[rc != 0];
+
+    if (tmp) eob = i;
+  }
+  *eob_ptr = eob + 1;
+}
+
 void av1_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                              const int16_t *zbin_ptr, const int16_t *round_ptr,
                              const int16_t *quant_ptr,

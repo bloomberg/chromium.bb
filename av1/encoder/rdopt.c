@@ -1012,6 +1012,18 @@ int64_t av1_block_error_c(const tran_low_t *coeff, const tran_low_t *dqcoeff,
   return error;
 }
 
+int64_t av1_block_error_lp_c(const int16_t *coeff, const int16_t *dqcoeff,
+                             intptr_t block_size) {
+  int64_t error = 0;
+
+  for (int i = 0; i < block_size; i++) {
+    const int diff = coeff[i] - dqcoeff[i];
+    error += diff * diff;
+  }
+
+  return error;
+}
+
 #if CONFIG_AV1_HIGHBITDEPTH
 int64_t av1_highbd_block_error_c(const tran_low_t *coeff,
                                  const tran_low_t *dqcoeff, intptr_t block_size,

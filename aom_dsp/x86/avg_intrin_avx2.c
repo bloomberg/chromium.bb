@@ -181,6 +181,38 @@ void aom_hadamard_16x16_avx2(const int16_t *src_diff, ptrdiff_t src_stride,
   hadamard_16x16_avx2(src_diff, src_stride, coeff, 1);
 }
 
+void aom_hadamard_lp_16x16_avx2(const int16_t *src_diff, ptrdiff_t src_stride,
+                                int16_t *coeff) {
+  int16_t *t_coeff = coeff;
+  for (int idx = 0; idx < 2; ++idx) {
+    const int16_t *src_ptr = src_diff + idx * 8 * src_stride;
+    hadamard_8x8x2_avx2(src_ptr, src_stride, t_coeff + (idx * 64 * 2));
+  }
+
+  for (int idx = 0; idx < 64; idx += 16) {
+    const __m256i coeff0 = _mm256_loadu_si256((const __m256i *)t_coeff);
+    const __m256i coeff1 = _mm256_loadu_si256((const __m256i *)(t_coeff + 64));
+    const __m256i coeff2 = _mm256_loadu_si256((const __m256i *)(t_coeff + 128));
+    const __m256i coeff3 = _mm256_loadu_si256((const __m256i *)(t_coeff + 192));
+
+    __m256i b0 = _mm256_add_epi16(coeff0, coeff1);
+    __m256i b1 = _mm256_sub_epi16(coeff0, coeff1);
+    __m256i b2 = _mm256_add_epi16(coeff2, coeff3);
+    __m256i b3 = _mm256_sub_epi16(coeff2, coeff3);
+
+    b0 = _mm256_srai_epi16(b0, 1);
+    b1 = _mm256_srai_epi16(b1, 1);
+    b2 = _mm256_srai_epi16(b2, 1);
+    b3 = _mm256_srai_epi16(b3, 1);
+    _mm256_storeu_si256((__m256i *)coeff, _mm256_add_epi16(b0, b2));
+    _mm256_storeu_si256((__m256i *)(coeff + 64), _mm256_add_epi16(b1, b3));
+    _mm256_storeu_si256((__m256i *)(coeff + 128), _mm256_sub_epi16(b0, b2));
+    _mm256_storeu_si256((__m256i *)(coeff + 192), _mm256_sub_epi16(b1, b3));
+    coeff += 16;
+    t_coeff += 16;
+  }
+}
+
 void aom_hadamard_32x32_avx2(const int16_t *src_diff, ptrdiff_t src_stride,
                              tran_low_t *coeff) {
   // For high bitdepths, it is unnecessary to store_tran_low
