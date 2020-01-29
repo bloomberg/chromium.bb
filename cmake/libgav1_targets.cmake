@@ -36,6 +36,8 @@ endmacro()
 #   - OUTPUT_NAME: Override output file basename. Target basename defaults to
 #     NAME.
 #   - TEST: Flag. Presence means treat executable as a test.
+#   - TEST_DEFINES_MAIN: Flag. Presence means the test defines a main()
+#     function.
 #   - DEFINES: List of preprocessor macro definitions.
 #   - INCLUDES: list of include directories for the target.
 #   - COMPILE_FLAGS: list of compiler flags for the target.
@@ -52,6 +54,7 @@ endmacro()
 # targets are added to $libgav1_exe_targets.
 macro(libgav1_add_executable)
   unset(exe_TEST)
+  unset(exe_TEST_DEFINES_MAIN)
   unset(exe_NAME)
   unset(exe_OUTPUT_NAME)
   unset(exe_SOURCES)
@@ -61,7 +64,7 @@ macro(libgav1_add_executable)
   unset(exe_LINK_FLAGS)
   unset(exe_OBJLIB_DEPS)
   unset(exe_LIB_DEPS)
-  set(optional_args TEST)
+  set(optional_args TEST TEST_DEFINES_MAIN)
   set(single_value_args NAME OUTPUT_NAME)
   set(multi_value_args SOURCES DEFINES INCLUDES COMPILE_FLAGS LINK_FLAGS
                        OBJLIB_DEPS LIB_DEPS)
@@ -72,6 +75,7 @@ macro(libgav1_add_executable)
   if(LIBGAV1_VERBOSE GREATER 1)
     message("--------- libgav1_add_executable ---------\n"
             "exe_TEST=${exe_TEST}\n"
+            "exe_TEST_DEFINES_MAIN=${exe_TEST_DEFINES_MAIN}\n"
             "exe_NAME=${exe_NAME}\n"
             "exe_OUTPUT_NAME=${exe_OUTPUT_NAME}\n"
             "exe_SOURCES=${exe_SOURCES}\n"
@@ -130,7 +134,7 @@ macro(libgav1_add_executable)
     endforeach()
   endif()
 
-  if(exe_TEST)
+  if(exe_TEST AND NOT exe_TEST_DEFINES_MAIN)
     target_sources(${exe_NAME} PRIVATE $<TARGET_OBJECTS:libgav1_gtest>
                    $<TARGET_OBJECTS:libgav1_gtest_main>)
   endif()
