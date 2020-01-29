@@ -149,3 +149,18 @@ class UpdateTest(cros_test_lib.RunCommandTestCase):
 
     self.assertCommandContains(expected_args)
     self.assertEqual(expected_version, version)
+
+
+class SnapshotTest(cros_test_lib.RunCommandTestCase):
+  """Snapshot command tests."""
+
+  def testCreateSnapshot(self):
+    """Test the bare snapshot creation command."""
+    sdk.CreateSnapshot()
+    self.assertCommandContains(['--snapshot-create'])
+
+  def testRestoreMatchesCreate(self):
+    """Test that the token restored snapshot name matches the created name."""
+    token = sdk.CreateSnapshot()
+    sdk.RestoreSnapshot(token)
+    self.assertCommandContains(['--snapshot-restore', token])

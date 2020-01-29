@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import sys
+import uuid
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -254,3 +255,95 @@ def Update(arguments):
   cros_build_lib.run(cmd, extra_env=extra_env)
 
   return GetChrootVersion()
+
+
+def CreateSnapshot(chroot=None, replace_if_needed=False):
+  """Create a logical volume snapshot of a chroot.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to perform the operation on.
+    replace_if_needed (bool): If true, will replace the existing chroot with
+      a new one capable of being mounted as a loopback image if needed.
+
+  Returns:
+    str - The name of the snapshot created.
+  """
+  _EnsureSnapshottableState(chroot, replace=replace_if_needed)
+
+  snapshot_token = str(uuid.uuid4())
+  logging.info('Creating SDK snapshot with token ID: %s', snapshot_token)
+
+  cmd = [
+      os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'),
+      '--snapshot-create',
+      snapshot_token,
+  ]
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
+
+  cros_build_lib.run(cmd)
+
+  return snapshot_token
+
+
+def RestoreSnapshot(snapshot_token, chroot=None):
+  """Restore a logical volume snapshot of a chroot.
+
+  Args:
+    snapshot_token (str): The name of the snapshot to restore. Typically an
+      opaque generated name returned from `CreateSnapshot`.
+    chroot (chroot_lib.Chroot): The chroot to perform the operation on.
+  """
+  # Unmount to clean up stale processes that may still be in the chroot, in
+  # order to prevent 'device busy' errors from umount.
+  Unmount(chroot)
+  logging.info('Restoring SDK snapshot with ID: %s', snapshot_token)
+  cmd = [
+      os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'),
+      '--snapshot-restore',
+      snapshot_token,
+  ]
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
+
+  # '--snapshot-restore' will automatically remount the image after restoring.
+  cros_build_lib.run(cmd)
+
+
+def _EnsureSnapshottableState(chroot=None, replace=False):
+  """Ensures that a chroot is in a capable state to create an LVM snapshot.
+
+  Args:
+    chroot (chroot_lib.Chroot): The chroot to perform the operation on.
+    replace (bool): If true, will replace the existing chroot with a new one
+      capable of being mounted as a loopback image if needed.
+  """
+  cmd = [
+      os.path.join(constants.CHROMITE_BIN_DIR, 'cros_sdk'),
+      '--snapshot-list',
+  ]
+  if chroot:
+    cmd.extend(['--chroot', chroot.path])
+
+  cache_dir = chroot.cache_dir if chroot else None
+  chroot_path = chroot.path if chroot else None
+
+  res = cros_build_lib.run(cmd, check=False, encoding='utf-8')
+
+  if res.returncode == 0:
+    return
+  elif 'Unable to find VG' in res.stderr and replace:
+    logging.warn('SDK was created with nouse-image which does not support '
+                 'snapshots. Recreating SDK to support snapshots.')
+
+    args = CreateArguments(
+        replace=True,
+        bootstrap=False,
+        use_image=True,
+        cache_dir=cache_dir,
+        chroot_path=chroot_path)
+
+    Create(args)
+    return
+  else:
+    res.check_returncode()
