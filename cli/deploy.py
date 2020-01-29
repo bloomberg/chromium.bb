@@ -794,7 +794,7 @@ def _Emerge(device, pkg_path, root, extra_args=None):
   # --ignore-built-slot-operator-deps because we don't rebuild everything.
   # It can cause errors, but that's expected with cros deploy since it's just a
   # best effort to prevent developers avoid rebuilding an image every time.
-  cmd = ['emerge', '--ignore-built-slot-operator-deps', '--usepkg', pkg_path,
+  cmd = ['emerge', '--ignore-built-slot-operator-deps=y', '--usepkg', pkg_path,
          '--root=%s' % root]
   if extra_args:
     cmd.append(extra_args)
