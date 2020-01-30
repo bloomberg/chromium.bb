@@ -2406,6 +2406,13 @@ class Changelist(object):
             else:
               title = ask_for_data(
                   'Title for patchset [%s]: ' % default_title) or default_title
+
+        # User requested to change description
+        if options.edit_description:
+          change_desc = ChangeDescription(message, bug=bug, fixed=fixed)
+          change_desc.prompt()
+          message = change_desc.description
+
         change_id = self._GetChangeDetail()['change_id']
         while True:
           footer_change_ids = git_footers.get_footer_change_id(message)
@@ -4473,6 +4480,10 @@ def CMDupload(parser, args):
                          'fixed (pre-populates "Fixed:" tag). Same format as '
                          '-b option / "Bug:" tag. If fixing several issues, '
                          'separate with commas.')
+  parser.add_option('--edit-description', action='store_true', default=False,
+                    help='Modify description before upload. Cannot be used '
+                         'with --force. It is a noop when --no-squash is set '
+                         'or a new commit is created.')
 
   orig_args = args
   _add_codereview_select_options(parser)
@@ -4484,6 +4495,9 @@ def CMDupload(parser, args):
   options.reviewers = cleanup_list(options.reviewers)
   options.tbrs = cleanup_list(options.tbrs)
   options.cc = cleanup_list(options.cc)
+
+  if options.edit_description and options.force:
+    parser.error('Only one of --force and --edit-description allowed')
 
   if options.message_file:
     if options.message:

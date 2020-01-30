@@ -917,7 +917,7 @@ class TestGitCl(TestCase):
                            short_hostname='chromium',
                            labels=None, change_id=None, original_title=None,
                            final_description=None, gitcookies_exists=True,
-                           force=False):
+                           force=False, edit_description=None):
     if post_amend_description is None:
       post_amend_description = description
     cc = cc or []
@@ -983,6 +983,13 @@ class TestGitCl(TestCase):
             ((['git', 'config', 'core.editor'],), ''),
             ((['RunEditor'],), description),
           ]
+      # user wants to edit description
+      if edit_description:
+        calls += [
+          ((['git', 'config', 'rietveld.bug-prefix'],), ''),
+          ((['git', 'config', 'core.editor'],), ''),
+          ((['RunEditor'],), edit_description),
+        ]
       ref_to_push = 'abcdef0123456789'
       calls += [
         ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
@@ -1240,6 +1247,7 @@ class TestGitCl(TestCase):
       final_description=None,
       gitcookies_exists=True,
       force=False,
+      edit_description=None,
       fetched_description=None):
     """Generic gerrit upload test framework."""
     if squash_mode is None:
@@ -1311,7 +1319,8 @@ class TestGitCl(TestCase):
           original_title=original_title,
           final_description=final_description,
           gitcookies_exists=gitcookies_exists,
-          force=force)
+          force=force,
+          edit_description=edit_description)
     # Uncomment when debugging.
     # print('\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls))))
     git_cl.main(['upload'] + upload_args)
@@ -1530,6 +1539,21 @@ class TestGitCl(TestCase):
         'authenticate to Gerrit as yet-another@example.com.\n'
         'Uploading may fail due to lack of permissions',
         git_cl.sys.stdout.getvalue())
+
+  def test_upload_change_description_editor(self):
+    fetched_description = 'foo\n\nChange-Id: 123456789'
+    description = 'bar\n\nChange-Id: 123456789'
+    self._run_gerrit_upload_test(
+        ['--squash', '--edit-description'],
+        description,
+        [],
+        fetched_description=fetched_description,
+        squash=True,
+        expected_upstream_ref='origin/master',
+        issue=123456,
+        change_id='123456789',
+        original_title='User input',
+        edit_description=description)
 
   def test_upload_branch_deps(self):
     self.mock(git_cl.sys, 'stdout', StringIO())
