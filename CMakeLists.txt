@@ -211,14 +211,25 @@ if(ENABLE_EXAMPLES)
   add_library(aom_encoder_stats OBJECT ${AOM_ENCODER_STATS_SOURCES})
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_encoder_stats)
 endif()
+
+if(BUILD_SHARED_LIBS)
+  add_library(aom_static STATIC ${AOM_SOURCES} $<TARGET_OBJECTS:aom_rtcd>)
+  set_target_properties(aom_static PROPERTIES OUTPUT_NAME aom)
+endif()
 add_library(aom ${AOM_SOURCES} $<TARGET_OBJECTS:aom_rtcd>)
 
 if(NOT MSVC AND NOT APPLE)
   target_link_libraries(aom ${AOM_LIB_LINK_TYPE} m)
+  if(BUILD_SHARED_LIBS)
+    target_link_libraries(aom_static ${AOM_LIB_LINK_TYPE} m)
+  endif()
 endif()
 
 # List of object and static library targets.
 set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_rtcd aom_mem aom_scale aom)
+if(BUILD_SHARED_LIBS)
+  set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_static)
+endif()
 
 # Setup dependencies.
 setup_aom_dsp_targets()
@@ -390,6 +401,10 @@ if(CONFIG_AV1_ENCODER)
     endif()
     message("-- Found VMAF library: " ${VMAF})
     target_link_libraries(aom PRIVATE ${VMAF} -static)
+    if(BUILD_SHARED_LIBS)
+      target_link_libraries(aom_static PRIVATE ${VMAF} -static)
+    endif()
+
   endif()
 endif()
 
@@ -519,6 +534,9 @@ endif()
 if(HAVE_PTHREAD_H AND CONFIG_MULTITHREAD)
   find_package(Threads)
   target_link_libraries(aom ${AOM_LIB_LINK_TYPE} Threads::Threads)
+  if(BUILD_SHARED_LIBS)
+    target_link_libraries(aom_static ${AOM_LIB_LINK_TYPE} Threads::Threads)
+  endif()
 endif()
 
 if(XCODE)

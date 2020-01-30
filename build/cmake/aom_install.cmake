@@ -72,7 +72,11 @@ macro(setup_aom_install_targets)
       endif()
     endif()
 
-    set(AOM_INSTALL_LIBS aom)
+    if(BUILD_SHARED_LIBS)
+      set(AOM_INSTALL_LIBS aom aom_static)
+    else()
+      set(AOM_INSTALL_LIBS aom)
+    endif()
 
     # Setup the install rules.
     install(
