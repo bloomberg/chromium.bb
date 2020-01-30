@@ -893,16 +893,17 @@ static int get_active_cq_level(const RATE_CONTROL *rc,
 }
 
 static int get_q_using_fixed_offsets(const AV1EncoderConfig *const oxcf,
+                                     const RATE_CONTROL *const rc,
                                      const GF_GROUP *const gf_group,
                                      int gf_index, int cq_level,
-                                     int frames_to_key) {
+                                     int bit_depth) {
   assert(oxcf->use_fixed_qp_offsets);
   assert(oxcf->rc_mode == AOM_Q);
   const FRAME_UPDATE_TYPE update_type = gf_group->update_type[gf_index];
 
   int offset_idx = -1;
   if (update_type == KF_UPDATE) {
-    if (frames_to_key == 1) {
+    if (rc->frames_to_key == 1) {
       // Image / intra-only coding: ignore offsets.
       return cq_level;
     }
@@ -920,7 +921,13 @@ static int get_q_using_fixed_offsets(const AV1EncoderConfig *const oxcf,
   assert(offset_idx >= 0 && offset_idx < FIXED_QP_OFFSET_COUNT);
   assert(oxcf->fixed_qp_offsets[offset_idx] >= 0);
 
-  return AOMMAX(cq_level - oxcf->fixed_qp_offsets[offset_idx], 0);
+  // Get qindex offset, by first converting to 'q' and then back.
+  const double q_val_orig = av1_convert_qindex_to_q(cq_level, bit_depth);
+  const double q_val_target =
+      AOMMAX(q_val_orig - oxcf->fixed_qp_offsets[offset_idx], 0.0);
+  const int delta_qindex =
+      av1_compute_qdelta(rc, q_val_orig, q_val_target, bit_depth);
+  return AOMMAX(cq_level + delta_qindex, 0);
 }
 
 static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
@@ -932,17 +939,17 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const AV1_COMP *cpi, int width,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   const int cq_level = get_active_cq_level(rc, oxcf, frame_is_intra_only(cm),
                                            cm->superres_scale_denominator);
+  const int bit_depth = cm->seq_params.bit_depth;
 
   if (oxcf->use_fixed_qp_offsets) {
-    return get_q_using_fixed_offsets(oxcf, &cpi->gf_group, cpi->gf_group.index,
-                                     cq_level, rc->frames_to_key);
+    return get_q_using_fixed_offsets(oxcf, rc, &cpi->gf_group,
+                                     cpi->gf_group.index, cq_level, bit_depth);
   }
 
   int active_best_quality;
   int active_worst_quality = calc_active_worst_quality_one_pass_vbr(cpi);
   int q;
   int *inter_minq;
-  const int bit_depth = cm->seq_params.bit_depth;
   ASSIGN_MINQ_TABLE(bit_depth, inter_minq);
 
   if (frame_is_intra_only(cm)) {
@@ -1383,10 +1390,11 @@ static int rc_pick_q_and_bounds_two_pass(const AV1_COMP *cpi, int width,
   const GF_GROUP *gf_group = &cpi->gf_group;
   const int cq_level = get_active_cq_level(rc, oxcf, frame_is_intra_only(cm),
                                            cm->superres_scale_denominator);
+  const int bit_depth = cm->seq_params.bit_depth;
 
   if (oxcf->use_fixed_qp_offsets) {
-    return get_q_using_fixed_offsets(oxcf, gf_group, gf_group->index, cq_level,
-                                     rc->frames_to_key);
+    return get_q_using_fixed_offsets(oxcf, rc, gf_group, gf_group->index,
+                                     cq_level, bit_depth);
   }
 
   int active_best_quality = 0;

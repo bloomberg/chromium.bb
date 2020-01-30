@@ -428,13 +428,14 @@ typedef struct AV1EncoderConfig {
   // Bit mask to specify which tier each of the 32 possible operating points
   // conforms to.
   unsigned int tier_mask;
-  // Derived from 'fixed_qp_offsets' by setting it to true iff all values in
-  // that array are valid (>=0).
+  // If true, encoder will use fixed QP offsets, that are either:
+  // - Given by the user, and stored in 'fixed_qp_offsets' array, OR
+  // - Picked automatically from cq_level.
   int use_fixed_qp_offsets;
   // List of QP offsets for: keyframe, ALTREF, and 3 levels of internal ARFs.
   // If any of these values are negative, fixed offsets are disabled.
-  // Uses internal qindex range: 0 to 255.
-  int fixed_qp_offsets[FIXED_QP_OFFSET_COUNT];
+  // Uses internal q range.
+  double fixed_qp_offsets[FIXED_QP_OFFSET_COUNT];
   // min_cr / 100 is the target minimum compression ratio for each frame.
   unsigned int min_cr;
   const cfg_options_t *encoder_cfg;

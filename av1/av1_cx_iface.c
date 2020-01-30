@@ -480,10 +480,14 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   }
 
   if (cfg->rc_end_usage == AOM_Q) {
+    RANGE_CHECK_HI(cfg, use_fixed_qp_offsets, 1);
     for (int i = 0; i < FIXED_QP_OFFSET_COUNT; ++i) {
       RANGE_CHECK_HI(cfg, fixed_qp_offsets[i], 63);
     }
   } else {
+    if (cfg->use_fixed_qp_offsets > 0) {
+      ERROR("--use_fixed_qp_offsets can only be used with --end-usage=q");
+    }
     for (int i = 0; i < FIXED_QP_OFFSET_COUNT; ++i) {
       if (cfg->fixed_qp_offsets[i] >= 0) {
         ERROR("--fixed_qp_offsets can only be used with --end-usage=q");
@@ -659,6 +663,23 @@ static void update_default_encoder_config(const cfg_options_t *cfg,
   extra_cfg->enable_onesided_comp = (cfg->disable_one_sided_comp == 0);
   extra_cfg->enable_reduced_reference_set = cfg->reduced_reference_set;
   extra_cfg->reduced_tx_type_set = cfg->reduced_tx_type_set;
+}
+
+static double convert_qp_offset(int cq_level, int q_offset, int bit_depth) {
+  const double base_q_val = av1_convert_qindex_to_q(cq_level, bit_depth);
+  const int new_q_index_offset = av1_quantizer_to_qindex(q_offset);
+  const int new_q_index = AOMMAX(cq_level - new_q_index_offset, 0);
+  const double new_q_val = av1_convert_qindex_to_q(new_q_index, bit_depth);
+  return (base_q_val - new_q_val);
+}
+
+static double get_modeled_qp_offset(int cq_level, int level, int bit_depth) {
+  // 80% for keyframe was derived empirically.
+  // 40% similar to rc_pick_q_and_bounds_one_pass_vbr() for Q mode ARF.
+  // Rest derived similar to rc_pick_q_and_bounds_two_pass()
+  static const int percents[FIXED_QP_OFFSET_COUNT] = { 80, 60, 30, 15, 8 };
+  const double q_val = av1_convert_qindex_to_q(cq_level, bit_depth);
+  return q_val * percents[level] / 100;
 }
 
 static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
@@ -982,14 +1003,19 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
          sizeof(oxcf->target_seq_level_idx));
   oxcf->tier_mask = extra_cfg->tier_mask;
 
-  oxcf->use_fixed_qp_offsets = (oxcf->rc_mode == AOM_Q);
+  oxcf->use_fixed_qp_offsets =
+      cfg->use_fixed_qp_offsets && (oxcf->rc_mode == AOM_Q);
   for (int i = 0; i < FIXED_QP_OFFSET_COUNT; ++i) {
-    if (cfg->fixed_qp_offsets[i] >= 0) {
-      oxcf->fixed_qp_offsets[i] =
-          av1_quantizer_to_qindex(cfg->fixed_qp_offsets[i]);
+    if (oxcf->use_fixed_qp_offsets) {
+      if (cfg->fixed_qp_offsets[i] >= 0) {  // user-provided qp offset
+        oxcf->fixed_qp_offsets[i] = convert_qp_offset(
+            oxcf->cq_level, cfg->fixed_qp_offsets[i], oxcf->bit_depth);
+      } else {  // auto-selected qp offset
+        oxcf->fixed_qp_offsets[i] =
+            get_modeled_qp_offset(oxcf->cq_level, i, oxcf->bit_depth);
+      }
     } else {
-      oxcf->fixed_qp_offsets[i] = -1;
-      oxcf->use_fixed_qp_offsets = 0;
+      oxcf->fixed_qp_offsets[i] = -1.0;
     }
   }
 
@@ -2780,6 +2806,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         0,                       // tile_height_count
         { 0 },                   // tile_widths
         { 0 },                   // tile_heights
+        0,                       // use_fixed_qp_offsets
         { -1, -1, -1, -1, -1 },  // fixed_qp_offsets
         { 0, 128, 128, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
           0, 0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  // cfg
@@ -2850,6 +2877,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         0,                       // tile_height_count
         { 0 },                   // tile_widths
         { 0 },                   // tile_heights
+        0,                       // use_fixed_qp_offsets
         { -1, -1, -1, -1, -1 },  // fixed_qp_offsets
         { 0, 128, 128, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
           0, 0,   0,   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },  // cfg
