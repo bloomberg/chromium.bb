@@ -1754,7 +1754,11 @@ class Changelist(object):
     if not isinstance(cookie_auth, gerrit_util.CookiesAuthenticator):
       return
 
-    if urllib.parse.urlparse(self.GetRemoteUrl()).scheme != 'https':
+    remote_url = self.GetRemoteUrl()
+    if remote_url is None:
+      print('WARNING: invalid remote')
+      return
+    if urllib.parse.urlparse(remote_url).scheme != 'https':
       print('WARNING: Ignoring branch %s with non-https remote %s' %
             (self.branch, self.GetRemoteUrl()))
       return

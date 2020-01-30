@@ -2103,6 +2103,23 @@ class TestGitCl(TestCase):
     cl.lookedup_issue = True
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
+  def test_gerrit_ensure_authenticated_non_url(self):
+    self.calls = [
+        ((['git', 'config', '--bool', 'gerrit.skip-ensure-authenticated'], ),
+         CERR1),
+        ((['git', 'config', 'branch.master.merge'], ), 'refs/heads/master'),
+        ((['git', 'config', 'branch.master.remote'], ), 'origin'),
+        ((['git', 'config', 'remote.origin.url'], ),
+         'git@somehost.example:foo/bar.git'),
+    ]
+    self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
+              CookiesAuthenticatorMockFactory(hosts_with_creds={}))
+    cl = git_cl.Changelist()
+    cl.branch = 'master'
+    cl.branchref = 'refs/heads/master'
+    cl.lookedup_issue = True
+    self.assertIsNone(cl.EnsureAuthenticated(force=False))
+
   def _cmd_set_commit_gerrit_common(self, vote, notify=None):
     self.mock(git_cl.gerrit_util, 'SetReview',
               lambda h, i, labels, notify=None:
