@@ -72,7 +72,8 @@ class MdnsResponder {
 
   void SendResponse(const MdnsQuestion& question,
                     const std::vector<MdnsRecord>& known_answers,
-                    std::function<void(const MdnsMessage&)> send_response);
+                    std::function<void(const MdnsMessage&)> send_response,
+                    bool is_exclusive_owner);
 
   RecordHandler* const record_handler_;
   MdnsProbeManager* const ownership_handler_;

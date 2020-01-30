@@ -26,6 +26,32 @@ bool ContainsRecordType(const std::vector<MdnsRecord>& records, DnsType type) {
                       }) != records.end();
 }
 
+void CheckSingleNsecRecordType(const MdnsMessage& message, DnsType type) {
+  ASSERT_EQ(message.answers().size(), size_t{1});
+  const MdnsRecord record = message.answers()[0];
+
+  ASSERT_EQ(record.dns_type(), DnsType::kNSEC);
+  const NsecRecordRdata& rdata = absl::get<NsecRecordRdata>(record.rdata());
+
+  ASSERT_EQ(rdata.types().size(), size_t{1});
+  EXPECT_EQ(rdata.types()[0], type);
+}
+
+void ExpectContainsNsecRecordType(const std::vector<MdnsRecord>& records,
+                                  DnsType type) {
+  auto it = std::find_if(
+      records.begin(), records.end(), [type](const MdnsRecord& record) {
+        if (record.dns_type() != DnsType::kNSEC) {
+          return false;
+        }
+
+        const NsecRecordRdata& rdata =
+            absl::get<NsecRecordRdata>(record.rdata());
+        return rdata.types().size() == 1 && rdata.types()[0] == type;
+      });
+  EXPECT_TRUE(it != records.end());
+}
+
 }  // namespace
 
 using testing::_;
@@ -123,6 +149,32 @@ class MdnsResponderTest : public testing::Test {
     responder_.OnMessageReceived(message, src);
   }
 
+  void QueryForRecordTypeWhenNonePresent(DnsType type) {
+    MdnsQuestion question(domain_, type, DnsClass::kANY,
+                          ResponseType::kMulticast);
+    MdnsMessage message(0, MessageType::Query);
+    message.AddQuestion(question);
+
+    EXPECT_CALL(sender_, SendMulticast(_))
+        .WillOnce([type](const MdnsMessage& msg) -> Error {
+          CheckSingleNsecRecordType(msg, type);
+          return Error::None();
+        });
+    EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+    EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+        .WillRepeatedly(Return(true));
+    OnMessageReceived(message, endpoint_);
+  }
+
+  MdnsMessage CreateMulticastMdnsQuery(DnsType type) {
+    MdnsQuestion question(domain_, type, DnsClass::kANY,
+                          ResponseType::kMulticast);
+    MdnsMessage message(0, MessageType::Query);
+    message.AddQuestion(std::move(question));
+
+    return message;
+  }
+
   std::unique_ptr<FakeUdpSocket> socket_;
   StrictMock<MockRecordHandler> record_handler_;
   StrictMock<MockMdnsSender> sender_;
@@ -140,10 +192,7 @@ class MdnsResponderTest : public testing::Test {
 // Validate that when records may be sent from multiple receivers, the broadcast
 // is delayed and it is not delayed otherwise.
 TEST_F(MdnsResponderTest, OwnedRecordsSentImmediately) {
-  MdnsQuestion question(domain_, DnsType::kANY, DnsClass::kANY,
-                        ResponseType::kMulticast);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kANY);
 
   EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
@@ -151,16 +200,16 @@ TEST_F(MdnsResponderTest, OwnedRecordsSentImmediately) {
   record_handler_.AddRecord(GetFakeSrvRecord(domain_));
   EXPECT_CALL(sender_, SendMulticast(_)).Times(1);
   OnMessageReceived(message, endpoint_);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+  testing::Mock::VerifyAndClearExpectations(&record_handler_);
+  testing::Mock::VerifyAndClearExpectations(&probe_manager_);
 
   EXPECT_CALL(sender_, SendMulticast(_)).Times(0);
   clock_.Advance(Clock::duration(kMaximumSharedRecordResponseDelayMs));
 }
 
 TEST_F(MdnsResponderTest, NonOwnedRecordsDelayed) {
-  MdnsQuestion question(domain_, DnsType::kANY, DnsClass::kANY,
-                        ResponseType::kMulticast);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kANY);
 
   EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(false));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
@@ -168,19 +217,19 @@ TEST_F(MdnsResponderTest, NonOwnedRecordsDelayed) {
   record_handler_.AddRecord(GetFakeSrvRecord(domain_));
   EXPECT_CALL(sender_, SendMulticast(_)).Times(0);
   OnMessageReceived(message, endpoint_);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+  testing::Mock::VerifyAndClearExpectations(&record_handler_);
+  testing::Mock::VerifyAndClearExpectations(&probe_manager_);
 
   EXPECT_CALL(sender_, SendMulticast(_)).Times(1);
   clock_.Advance(Clock::duration(kMaximumSharedRecordResponseDelayMs));
 }
 
 TEST_F(MdnsResponderTest, MultipleQuestionsProcessed) {
-  MdnsQuestion question(domain_, DnsType::kANY, DnsClass::kANY,
-                        ResponseType::kMulticast);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kANY);
   MdnsQuestion question2(domain_, DnsType::kANY, DnsClass::kANY,
                          ResponseType::kMulticast);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
-  message.AddQuestion(question2);
+  message.AddQuestion(std::move(question2));
 
   EXPECT_CALL(probe_manager_, IsDomainClaimed(_))
       .WillOnce(Return(true))
@@ -190,23 +239,11 @@ TEST_F(MdnsResponderTest, MultipleQuestionsProcessed) {
   record_handler_.AddRecord(GetFakeSrvRecord(domain_));
   EXPECT_CALL(sender_, SendMulticast(_)).Times(1);
   OnMessageReceived(message, endpoint_);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+  testing::Mock::VerifyAndClearExpectations(&record_handler_);
+  testing::Mock::VerifyAndClearExpectations(&probe_manager_);
 
   EXPECT_CALL(sender_, SendMulticast(_)).Times(1);
-  clock_.Advance(Clock::duration(kMaximumSharedRecordResponseDelayMs));
-}
-
-TEST_F(MdnsResponderTest, NoRecordsNoMessageSent) {
-  MdnsQuestion question(domain_, DnsType::kANY, DnsClass::kANY,
-                        ResponseType::kMulticast);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
-
-  EXPECT_CALL(sender_, SendMulticast(_)).Times(0);
-  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
-  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
-      .WillRepeatedly(Return(true));
-  OnMessageReceived(message, endpoint_);
-
   clock_.Advance(Clock::duration(kMaximumSharedRecordResponseDelayMs));
 }
 
@@ -226,10 +263,7 @@ TEST_F(MdnsResponderTest, UnicastMessageSentOverUnicast) {
 }
 
 TEST_F(MdnsResponderTest, MulticastMessageSentOverMulticast) {
-  MdnsQuestion question(domain_, DnsType::kANY, DnsClass::kANY,
-                        ResponseType::kMulticast);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kANY);
 
   EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
@@ -242,10 +276,7 @@ TEST_F(MdnsResponderTest, MulticastMessageSentOverMulticast) {
 // Validate that records are added as expected based on the query type, and that
 // additional records are populated as specified in RFC 6762 and 6763.
 TEST_F(MdnsResponderTest, AnyQueryResultsAllApplied) {
-  MdnsQuestion question(domain_, DnsType::kANY, DnsClass::kANY,
-                        ResponseType::kMulticast);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kANY);
 
   EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
@@ -311,10 +342,7 @@ TEST_F(MdnsResponderTest, PtrQueryResultsApplied) {
 }
 
 TEST_F(MdnsResponderTest, SrvQueryResultsApplied) {
-  MdnsQuestion question(domain_, DnsType::kSRV, DnsClass::kANY,
-                        ResponseType::kMulticast);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kSRV);
 
   EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
@@ -348,10 +376,7 @@ TEST_F(MdnsResponderTest, SrvQueryResultsApplied) {
 }
 
 TEST_F(MdnsResponderTest, AQueryResultsApplied) {
-  MdnsQuestion question(domain_, DnsType::kA, DnsClass::kANY,
-                        ResponseType::kMulticast);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kA);
 
   EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
@@ -385,10 +410,7 @@ TEST_F(MdnsResponderTest, AQueryResultsApplied) {
 }
 
 TEST_F(MdnsResponderTest, AAAAQueryResultsApplied) {
-  MdnsQuestion question(domain_, DnsType::kAAAA, DnsClass::kANY,
-                        ResponseType::kMulticast);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kAAAA);
 
   EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
@@ -422,14 +444,11 @@ TEST_F(MdnsResponderTest, AAAAQueryResultsApplied) {
 }
 
 TEST_F(MdnsResponderTest, MessageOnlySentIfAnswerNotKnown) {
-  MdnsQuestion question(domain_, DnsType::kAAAA, DnsClass::kANY,
-                        ResponseType::kMulticast);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kAAAA);
   MdnsRecord aaaa_record = GetFakeAAAARecord(domain_);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
   message.AddAnswer(aaaa_record);
 
-  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillRepeatedly(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakePtrRecord(domain_));
@@ -442,14 +461,11 @@ TEST_F(MdnsResponderTest, MessageOnlySentIfAnswerNotKnown) {
 }
 
 TEST_F(MdnsResponderTest, RecordOnlySentIfNotKnown) {
-  MdnsQuestion question(domain_, DnsType::kANY, DnsClass::kANY,
-                        ResponseType::kMulticast);
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kANY);
   MdnsRecord aaaa_record = GetFakeAAAARecord(domain_);
-  MdnsMessage message(0, MessageType::Query);
-  message.AddQuestion(question);
   message.AddAnswer(aaaa_record);
 
-  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillRepeatedly(Return(true));
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
   EXPECT_CALL(record_handler_, HasRecords(_, _, _))
       .WillRepeatedly(Return(true));
   record_handler_.AddRecord(GetFakeARecord(domain_));
@@ -465,6 +481,209 @@ TEST_F(MdnsResponderTest, RecordOnlySentIfNotKnown) {
         return Error::None();
       });
 
+  OnMessageReceived(message, endpoint_);
+}
+
+// Validate NSEC records are used correctly.
+TEST_F(MdnsResponderTest, QueryForRecordTypesWhenNonePresent) {
+  QueryForRecordTypeWhenNonePresent(DnsType::kANY);
+  QueryForRecordTypeWhenNonePresent(DnsType::kSRV);
+  QueryForRecordTypeWhenNonePresent(DnsType::kTXT);
+  QueryForRecordTypeWhenNonePresent(DnsType::kA);
+  QueryForRecordTypeWhenNonePresent(DnsType::kAAAA);
+}
+
+TEST_F(MdnsResponderTest, AAAAQueryGiveANsec) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kAAAA);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakePtrRecord(domain_));
+  record_handler_.AddRecord(GetFakeSrvRecord(domain_));
+  record_handler_.AddRecord(GetFakeTxtRecord(domain_));
+  record_handler_.AddRecord(GetFakeAAAARecord(domain_));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kAAAA));
+
+        EXPECT_EQ(message.additional_records().size(), size_t{1});
+        ExpectContainsNsecRecordType(message.additional_records(), DnsType::kA);
+
+        return Error::None();
+      });
+
+  OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, AQueryGiveAAAANsec) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kA);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakePtrRecord(domain_));
+  record_handler_.AddRecord(GetFakeSrvRecord(domain_));
+  record_handler_.AddRecord(GetFakeTxtRecord(domain_));
+  record_handler_.AddRecord(GetFakeARecord(domain_));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kA));
+
+        EXPECT_EQ(message.additional_records().size(), size_t{1});
+        ExpectContainsNsecRecordType(message.additional_records(),
+                                     DnsType::kAAAA);
+
+        return Error::None();
+      });
+
+  OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, SrvQueryGiveCorrectNsecForNoAOrAAAA) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kSRV);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakePtrRecord(domain_));
+  record_handler_.AddRecord(GetFakeSrvRecord(domain_));
+  record_handler_.AddRecord(GetFakeTxtRecord(domain_));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kSRV));
+
+        EXPECT_EQ(message.additional_records().size(), size_t{2});
+        ExpectContainsNsecRecordType(message.additional_records(), DnsType::kA);
+        ExpectContainsNsecRecordType(message.additional_records(),
+                                     DnsType::kAAAA);
+
+        return Error::None();
+      });
+  OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, SrvQueryGiveCorrectNsec) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kSRV);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakePtrRecord(domain_));
+  record_handler_.AddRecord(GetFakeSrvRecord(domain_));
+  record_handler_.AddRecord(GetFakeTxtRecord(domain_));
+  record_handler_.AddRecord(GetFakeARecord(domain_));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kSRV));
+
+        EXPECT_EQ(message.additional_records().size(), size_t{2});
+        EXPECT_TRUE(
+            ContainsRecordType(message.additional_records(), DnsType::kA));
+        ExpectContainsNsecRecordType(message.additional_records(),
+                                     DnsType::kAAAA);
+
+        return Error::None();
+      });
+  OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, PtrQueryGiveCorrectNsecForNoPtrOrSrv) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kPTR);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakePtrRecord(domain_));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kPTR));
+
+        EXPECT_EQ(message.additional_records().size(), size_t{2});
+        ExpectContainsNsecRecordType(message.additional_records(),
+                                     DnsType::kTXT);
+        ExpectContainsNsecRecordType(message.additional_records(),
+                                     DnsType::kSRV);
+
+        return Error::None();
+      });
+  OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, PtrQueryGiveCorrectNsecForOnlyPtr) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kPTR);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakePtrRecord(domain_));
+  record_handler_.AddRecord(GetFakeTxtRecord(domain_));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kPTR));
+
+        EXPECT_EQ(message.additional_records().size(), size_t{2});
+        EXPECT_TRUE(
+            ContainsRecordType(message.additional_records(), DnsType::kTXT));
+        ExpectContainsNsecRecordType(message.additional_records(),
+                                     DnsType::kSRV);
+
+        return Error::None();
+      });
+  OnMessageReceived(message, endpoint_);
+}
+
+TEST_F(MdnsResponderTest, PtrQueryGiveCorrectNsecForOnlySrv) {
+  MdnsMessage message = CreateMulticastMdnsQuery(DnsType::kPTR);
+
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(_)).WillOnce(Return(true));
+  EXPECT_CALL(record_handler_, HasRecords(_, _, _))
+      .WillRepeatedly(Return(true));
+  record_handler_.AddRecord(GetFakePtrRecord(domain_));
+  record_handler_.AddRecord(GetFakeSrvRecord(domain_));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{0});
+        EXPECT_EQ(message.authority_records().size(), size_t{0});
+
+        EXPECT_EQ(message.answers().size(), size_t{1});
+        EXPECT_TRUE(ContainsRecordType(message.answers(), DnsType::kPTR));
+
+        EXPECT_EQ(message.additional_records().size(), size_t{4});
+        EXPECT_TRUE(
+            ContainsRecordType(message.additional_records(), DnsType::kSRV));
+        ExpectContainsNsecRecordType(message.additional_records(),
+                                     DnsType::kTXT);
+        ExpectContainsNsecRecordType(message.additional_records(), DnsType::kA);
+        ExpectContainsNsecRecordType(message.additional_records(),
+                                     DnsType::kAAAA);
+
+        return Error::None();
+      });
   OnMessageReceived(message, endpoint_);
 }
 
