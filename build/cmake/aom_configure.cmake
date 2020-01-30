@@ -112,7 +112,6 @@ endif()
 if(BUILD_SHARED_LIBS)
   set(CONFIG_PIC 1)
   set(CONFIG_SHARED 1)
-  set(CONFIG_STATIC 0)
 endif()
 
 if(NOT MSVC)

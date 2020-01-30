@@ -404,7 +404,6 @@ if(CONFIG_AV1_ENCODER)
     if(BUILD_SHARED_LIBS)
       target_link_libraries(aom_static PRIVATE ${VMAF} -static)
     endif()
-
   endif()
 endif()
 
