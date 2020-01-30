@@ -513,7 +513,10 @@ static TX_SIZE calculate_tx_size(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     tx_size = AOMMIN(max_txsize_lookup[bsize],
                      tx_mode_to_biggest_tx_size[x->tx_mode_search_type]);
   }
-  if (bsize > BLOCK_32X32) tx_size = TX_16X16;
+
+  if (x->tx_mode_search_type != ONLY_4X4 && bsize > BLOCK_32X32)
+    tx_size = TX_16X16;
+
   return AOMMIN(tx_size, TX_16X16);
 }
 
@@ -790,8 +793,6 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
   const int bw = 4 * num_4x4_w;
   const int bh = 4 * num_4x4_h;
 
-  assert(tx_size > 0 && tx_size <= 4);
-
   (void)mi_row;
   (void)mi_col;
   (void)cpi;
@@ -855,8 +856,14 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
                             low_qcoeff, low_dqcoeff, p->dequant_QTX, eob,
                             scan_order->scan);
             break;
+          default:
+            assert(tx_size == TX_4X4);
+            x->fwd_txfm4x4(src_diff, low_coeff, diff_stride);
+            av1_quantize_lp(low_coeff, 4 * 4, p->round_fp_QTX, p->quant_fp_QTX,
+                            low_qcoeff, low_dqcoeff, p->dequant_QTX, eob,
+                            scan_order->scan);
+            break;
 #endif
-          default: assert(0); break;
         }
         *skippable &= (*eob == 0);
         eob_cost += 1;

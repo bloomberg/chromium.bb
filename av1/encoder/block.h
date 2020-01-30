@@ -476,6 +476,16 @@ struct macroblock {
   int64_t inter_cost_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
   int64_t intra_cost_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
   int cost_stride;
+
+#if CONFIG_AV1_HIGHBITDEPTH
+  void (*fwd_txfm4x4)(const int16_t *input, tran_low_t *output, int stride);
+  void (*inv_txfm_add)(const tran_low_t *input, uint8_t *dest, int stride,
+                       int eob);
+#else
+  void (*fwd_txfm4x4)(const int16_t *input, int16_t *output, int stride);
+  void (*inv_txfm_add)(const int16_t *input, uint8_t *dest, int stride,
+                       int eob);
+#endif
 };
 
 // Only consider full SB, MC_FLOW_BSIZE_1D = 16.
