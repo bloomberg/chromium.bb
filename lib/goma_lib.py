@@ -228,7 +228,7 @@ Instead it copies Goma files to a client-specified archive directory.
     archived_path = os.path.join(self._dest_dir, archived_filename)
     cros_build_lib.CompressFile(archive_ninja_log_path, archived_path)
 
-    return archived_path
+    return archived_filename
 
   def _BuildNinjaInfo(self, compiler_proxy_path):
     """Reads metadata for the ninja run.

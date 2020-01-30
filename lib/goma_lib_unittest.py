@@ -65,6 +65,10 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
     archiver = goma_lib.LogsArchiver(self.goma_log_dir, dest_dir=self.dest_dir)
     archiver_tuple = archiver.Archive()
 
+    # Verify that no stats/counterz was returned in the tuple.
+    self.assertFalse(archiver_tuple.counterz_file)
+    self.assertFalse(archiver_tuple.stats_file)
+
     archived_files = os.listdir(self.dest_dir)
 
     # Verify that the list of files returned matched what we find in the
@@ -153,19 +157,29 @@ class TestLogsArchiver(cros_test_lib.MockTempDirTestCase):
         os.path.join(self.goma_log_dir, 'ninja_exit'), '0')
 
     archiver = goma_lib.LogsArchiver(self.goma_log_dir, dest_dir=self.dest_dir)
-    archiver.Archive()
-    archived_files = os.listdir(self.dest_dir)
+    archived_tuple = archiver.Archive()
 
     username = getpass.getuser()
     pid = os.getpid()
     hostname = cros_build_lib.GetHostName()
     ninjalog_filename = 'ninja_log.%s.%s.20170821-120000.%d.gz' % (
         username, hostname, pid)
+    # Verify the archived files in the dest_dir
+    archived_files = os.listdir(self.dest_dir)
     self.assertCountEqual(
         archived_files,
         [ninjalog_filename,
          'compiler_proxy-subproc.host.log.INFO.20170821-120000.000000.gz',
          'compiler_proxy.host.log.INFO.20170821-120000.000000.gz'])
+    # Verify the archived_tuple result.
+    self.assertFalse(archived_tuple.counterz_file)
+    self.assertFalse(archived_tuple.stats_file)
+    self.assertCountEqual(
+        archived_tuple.log_files,
+        ['compiler_proxy.host.log.INFO.20170821-120000.000000.gz',
+         'compiler_proxy-subproc.host.log.INFO.20170821-120000.000000.gz',
+         ninjalog_filename])
+
 
     # Verify content of ninja_log file.
     ninjalog_path = os.path.join(self.dest_dir, ninjalog_filename)
