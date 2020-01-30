@@ -3,7 +3,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Integration VM test for cros commands."""
+"""Integration VM test for cros commands.
+
+To run this command, first build a test image. e.g.
+(host)$ cros_sdk
+(sdk)$ ./build_packages --board=betty
+(sdk)$ ./build_image --board=betty test
+(sdk)$ ./image_to_vm.sh --board=betty --test_image
+(sdk)$ cd ../../chromite/cli/cros/tests/
+(sdk)$ ./cros_vm_test --board=betty --image_path ~/trunk/src/build/images/betty/latest/chromiumos_qemu_image.bin
+"""
 
 from __future__ import print_function
 
@@ -42,7 +51,7 @@ class CrosVMTest(command_vm_test.CommandVMTest):
 
 def _ParseArguments(argv):
   """Parses command-line arguments."""
-  parser = commandline.ArgumentParser(caching=True)
+  parser = commandline.ArgumentParser(description=__doc__, caching=True)
   parser.add_argument(
       '--board', required=True, help='Board for the VM to run tests.')
   parser.add_argument(
