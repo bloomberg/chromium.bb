@@ -190,6 +190,18 @@ add_custom_target(aom_version_check
                           "${AOM_ROOT}/build/cmake/version.cmake"
                   COMMENT "Updating version info if necessary."
                   VERBATIM)
+
+if(BUILD_SHARED_LIBS AND NOT MSVC)
+  # Generate version file immediately for non-MSVC shared builds: The version
+  # string is needed for the aom target.
+  execute_process(COMMAND ${CMAKE_COMMAND}
+                          -DAOM_CONFIG_DIR=${AOM_CONFIG_DIR}
+                          -DAOM_ROOT=${AOM_ROOT}
+                          -DGIT_EXECUTABLE=${GIT_EXECUTABLE}
+                          -DPERL_EXECUTABLE=${PERL_EXECUTABLE} -P
+                          "${AOM_ROOT}/build/cmake/version.cmake")
+endif()
+
 add_dependencies(aom_version aom_version_check)
 
 # TODO(tomfinegan): Move rtcd target setup where it belongs for each rtcd
@@ -212,11 +224,28 @@ if(ENABLE_EXAMPLES)
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_encoder_stats)
 endif()
 
+add_library(aom ${AOM_SOURCES} $<TARGET_OBJECTS:aom_rtcd>)
 if(BUILD_SHARED_LIBS)
   add_library(aom_static STATIC ${AOM_SOURCES} $<TARGET_OBJECTS:aom_rtcd>)
   set_target_properties(aom_static PROPERTIES OUTPUT_NAME aom)
+
+  if(NOT MSVC)
+    # Extract version string and set VERSION/SOVERSION for the aom target.
+    extract_version_string("${AOM_CONFIG_DIR}/config/aom_version.h"
+                           aom_version_triple)
+
+    # Strip any trailing version information, if present.
+    string(FIND "${aom_version_triple}" "-" dash_pos)
+    if(NOT dash_pos EQUAL -1)
+      string(SUBSTRING "${aom_version_triple}" 0 ${dash_pos} aom_version_triple)
+    endif()
+
+    # Note: CMake docs claim it's only necessary to set one of these, but that's
+    # not true for at least some CMake releases (3.13.4, for example).
+    set_target_properties(aom PROPERTIES SOVERSION ${aom_version_triple})
+    set_target_properties(aom PROPERTIES VERSION ${aom_version_triple})
+  endif()
 endif()
-add_library(aom ${AOM_SOURCES} $<TARGET_OBJECTS:aom_rtcd>)
 
 if(NOT MSVC AND NOT APPLE)
   target_link_libraries(aom ${AOM_LIB_LINK_TYPE} m)
@@ -727,4 +756,5 @@ foreach(aom_source_var ${aom_source_vars})
 endforeach()
 
 # Generate aom.pc and setup install rule.
+message("aom_version=${aom_version}")
 setup_aom_install_targets()
