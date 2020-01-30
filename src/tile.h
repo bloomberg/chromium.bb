@@ -367,6 +367,21 @@ class Tile : public Allocable {
                                        int adjusted_tx_width_log2, int pos);
   int GetCoeffBaseRangeContextEob(int adjusted_tx_width_log2, int pos,
                                   TransformClass tx_class);
+  void ReadCoeffBase2D(
+      const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
+      int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+      uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
+      int32_t* quantized_buffer);
+  void ReadCoeffBaseHorizontal(
+      const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
+      int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+      uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
+      int32_t* quantized_buffer);
+  void ReadCoeffBaseVertical(
+      const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
+      int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+      uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
+      int32_t* quantized_buffer);
   int GetDcSignContext(int x4, int y4, int w4, int h4, Plane plane);
   void SetEntropyContexts(int x4, int y4, int w4, int h4, Plane plane,
                           uint8_t coefficient_level, int8_t dc_category);

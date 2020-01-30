@@ -1013,6 +1013,75 @@ int Tile::GetCoeffBaseRangeContextEob(int adjusted_tx_width_log2, int pos,
                 ((tx_class >> 1) & static_cast<int>(row == 0)));
 }
 
+void Tile::ReadCoeffBase2D(
+    const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
+    int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+    uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
+    int32_t* const quantized_buffer) {
+  int i = eob - 2;
+  do {
+    const uint16_t pos = scan[i];
+    const int context = GetCoeffBaseContext2D(quantized_buffer, tx_size,
+                                              adjusted_tx_width_log2, pos);
+    int level =
+        reader_.ReadSymbol<kCoeffBaseSymbolCount>(coeff_base_cdf[context]);
+    if (level > kNumQuantizerBaseLevels) {
+      level +=
+          ReadCoeffBaseRange(clamped_tx_size_context,
+                             GetCoeffBaseRangeContext2D(
+                                 quantized_buffer, adjusted_tx_width_log2, pos),
+                             plane_type);
+    }
+    quantized_buffer[PaddedIndex(pos, adjusted_tx_width_log2)] = level;
+  } while (--i >= 0);
+}
+
+void Tile::ReadCoeffBaseHorizontal(
+    const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
+    int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+    uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
+    int32_t* const quantized_buffer) {
+  int i = eob - 2;
+  do {
+    const uint16_t pos = scan[i];
+    const int context = GetCoeffBaseContextHorizontal(
+        quantized_buffer, tx_size, adjusted_tx_width_log2, pos);
+    int level =
+        reader_.ReadSymbol<kCoeffBaseSymbolCount>(coeff_base_cdf[context]);
+    if (level > kNumQuantizerBaseLevels) {
+      level +=
+          ReadCoeffBaseRange(clamped_tx_size_context,
+                             GetCoeffBaseRangeContextHorizontal(
+                                 quantized_buffer, adjusted_tx_width_log2, pos),
+                             plane_type);
+    }
+    quantized_buffer[PaddedIndex(pos, adjusted_tx_width_log2)] = level;
+  } while (--i >= 0);
+}
+
+void Tile::ReadCoeffBaseVertical(
+    const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
+    int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+    uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
+    int32_t* const quantized_buffer) {
+  int i = eob - 2;
+  do {
+    const uint16_t pos = scan[i];
+    const int context = GetCoeffBaseContextVertical(
+        quantized_buffer, tx_size, adjusted_tx_width_log2, pos);
+    int level =
+        reader_.ReadSymbol<kCoeffBaseSymbolCount>(coeff_base_cdf[context]);
+    if (level > kNumQuantizerBaseLevels) {
+      level +=
+          ReadCoeffBaseRange(clamped_tx_size_context,
+                             GetCoeffBaseRangeContextVertical(
+                                 quantized_buffer, adjusted_tx_width_log2, pos),
+                             plane_type);
+    }
+    quantized_buffer[PaddedIndex(pos, adjusted_tx_width_log2)] = level;
+  } while (--i >= 0);
+}
+
 int Tile::GetDcSignContext(int x4, int y4, int w4, int h4, Plane plane) {
   const int max_x4x4 = frame_header_.columns4x4 >> subsampling_x_[plane];
   const int8_t* dc_categories = &dc_categories_[kEntropyContextTop][plane][x4];
@@ -1324,36 +1393,22 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
     }
     quantized[PaddedIndex(pos, adjusted_tx_width_log2)] = level;
   }
-  // Lookup used to call the right variant of GetCoeffBaseContext*() based on
-  // the transform class.
-  static constexpr int (Tile::*kGetCoeffBaseContextFunc[])(
-      const int32_t*, TransformSize, int, uint16_t) = {
-      &Tile::GetCoeffBaseContext2D, &Tile::GetCoeffBaseContextHorizontal,
-      &Tile::GetCoeffBaseContextVertical};
-  auto get_coeff_base_context_func = kGetCoeffBaseContextFunc[tx_class];
-  // Lookup used to call the right variant of GetCoeffBaseRangeContext*() based
-  // on the transform class.
-  static constexpr int (Tile::*kGetCoeffBaseRangeContextFunc[])(
-      const int32_t*, int, int) = {&Tile::GetCoeffBaseRangeContext2D,
-                                   &Tile::GetCoeffBaseRangeContextHorizontal,
-                                   &Tile::GetCoeffBaseRangeContextVertical};
-  auto get_coeff_base_range_context_func =
-      kGetCoeffBaseRangeContextFunc[tx_class];
-  // Read all the other coefficients.
-  for (int i = eob - 2; i >= 0; --i) {
-    const uint16_t pos = scan[i];
-    context = (this->*get_coeff_base_context_func)(quantized, tx_size,
-                                                   adjusted_tx_width_log2, pos);
-    int level = reader_.ReadSymbol<kCoeffBaseSymbolCount>(
-        symbol_decoder_context_
-            .coeff_base_cdf[tx_size_context][plane_type][context]);
-    if (level > kNumQuantizerBaseLevels) {
-      level += ReadCoeffBaseRange(clamped_tx_size_context,
-                                  (this->*get_coeff_base_range_context_func)(
-                                      quantized, adjusted_tx_width_log2, pos),
-                                  plane_type);
-    }
-    quantized[PaddedIndex(pos, adjusted_tx_width_log2)] = level;
+  if (eob > 1) {
+    // Read all the other coefficients.
+    // Lookup used to call the right variant of ReadCoeffBase*() based on the
+    // transform class.
+    static constexpr void (Tile::*kGetCoeffBaseFunc[])(
+        const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
+        int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
+        uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
+        int32_t* quantized_buffer) = {&Tile::ReadCoeffBase2D,
+                                      &Tile::ReadCoeffBaseHorizontal,
+                                      &Tile::ReadCoeffBaseVertical};
+    (this->*kGetCoeffBaseFunc[tx_class])(
+        scan, plane_type, tx_size, clamped_tx_size_context,
+        adjusted_tx_width_log2, eob,
+        symbol_decoder_context_.coeff_base_cdf[tx_size_context][plane_type],
+        quantized);
   }
   const int max_value = (1 << (7 + sequence_header_.color_config.bitdepth)) - 1;
   const int current_quantizer_index = GetQIndex(
