@@ -32,3 +32,5 @@ To use pywebsocket as standalone server, run this to read the document:
 ```
 $ pydoc mod_pywebsocket.standalone
 ```
+# Disclaimer #
+This is not an officially supported Google product
