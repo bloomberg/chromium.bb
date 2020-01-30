@@ -498,8 +498,10 @@ bool ServiceImageTransferCacheEntry::Deserialize(
 
   SkImageInfo image_info = SkImageInfo::Make(
       width, height, color_type, kPremul_SkAlphaType, pixmap_color_space);
-  if (image_info.computeMinByteSize() > pixel_size)
+  if (row_bytes < image_info.minRowBytes() ||
+      image_info.computeByteSize(row_bytes) > pixel_size) {
     return false;
+  }
 
   // Align data to a 4-byte boundry, to match what we did when writing.
   reader.AlignMemory(4);
