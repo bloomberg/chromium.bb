@@ -1576,7 +1576,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -1600,6 +1599,9 @@
         {
           "board_name": "coral",
           "name": "blacktip",
+          "test_suites": [
+            "au"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 312,
@@ -1630,7 +1632,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -1643,6 +1644,9 @@
         {
           "board_name": "coral",
           "name": "blue",
+          "test_suites": [
+            "au"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 312,
@@ -1655,7 +1659,6 @@
             "bvt-inline",
             "bvt-tast-cq",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -1708,6 +1711,9 @@
         {
           "board_name": "coral",
           "name": "nasher360",
+          "test_suites": [
+            "au"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 312,
@@ -1882,7 +1888,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -1895,6 +1900,9 @@
         {
           "board_name": "fizz",
           "name": "kench",
+          "test_suites": [
+            "au"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 306,
@@ -2152,7 +2160,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2171,7 +2178,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2206,7 +2212,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2244,7 +2249,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2263,7 +2267,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2282,7 +2285,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2410,7 +2412,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2453,7 +2454,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2496,7 +2496,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -2515,7 +2514,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3224,7 +3222,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3271,7 +3268,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3298,7 +3294,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3317,7 +3312,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3336,7 +3330,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3382,7 +3375,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3401,7 +3393,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3446,7 +3437,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3465,7 +3455,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3484,7 +3473,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3519,7 +3507,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3538,7 +3525,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3626,6 +3612,9 @@
         {
           "board_name": "octopus",
           "name": "phaser",
+          "test_suites": [
+            "au"
+          ],
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 354,
@@ -3640,7 +3629,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3659,7 +3647,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3678,7 +3665,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3785,7 +3771,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3804,7 +3789,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -3964,7 +3948,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -4055,7 +4038,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
@@ -4159,7 +4141,6 @@
             "bvt-tast-cq",
             "bvt-installer",
             "bvt-arc",
-            "au",
             "bvt-cq",
             "bvt-perbuild",
             "bvt-tast-informational"
