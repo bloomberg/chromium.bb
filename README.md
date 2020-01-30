@@ -283,4 +283,11 @@ tar.xz to the openscreen-sysroots bucket.
 NOTE: The "arm" image is taken from Chromium's debian arm image, however it has
 been manually patched to include support for libavcodec and libsdl2. To update
 this image, the new image must be manually patched to include the necessary
-header and library dependencies.
+header and library dependencies. Note that if the versions of libavcodec and
+libsdl2 are too out of sync from the copies in the sysroot, compilation will
+succeed, but you may experience issues decoding content.
+
+NOTE: until [Issue 106](http://crbug.com/openscreen/106) is resolved, you may
+experience issues streaming to a Raspberry Pi if multiple network interfaces
+(e.g. WiFi + Ethernet) are enabled. The workaround is to disable either the WiFi
+or ethernet connection.
