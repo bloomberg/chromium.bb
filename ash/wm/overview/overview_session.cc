@@ -395,7 +395,10 @@ void OverviewSession::AddItem(
   // Transfer focus from |window| to |overview_focus_widget_| to match the
   // behavior of entering overview mode in the beginning.
   DCHECK(overview_focus_widget_);
-  wm::ActivateWindow(GetOverviewFocusWindow());
+  // |overview_focus_widget_| might not visible yet as AddItem() might be
+  // called before OnStartingAnimationComplete() is called, so use Show()
+  // instead of ActivateWindow() to show and activate the widget.
+  overview_focus_widget_->Show();
 }
 
 void OverviewSession::AppendItem(aura::Window* window,
@@ -629,7 +632,9 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled,
       // Check if the active window is in overview. There is at least one
       // workflow where it will be: the active window is being dragged, and the
       // previous window carries over from clamshell mode to tablet split view.
-      if (IsWindowInOverview(window_util::GetActiveWindow())) {
+      if (IsWindowInOverview(window_util::GetActiveWindow()) &&
+          SplitViewController::Get(Shell::GetPrimaryRootWindow())
+              ->InSplitViewMode()) {
         // We do not want an active window in overview. It will cause blatantly
         // broken behavior as in the video linked in crbug.com/992223.
         wm::ActivateWindow(
