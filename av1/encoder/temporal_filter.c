@@ -908,7 +908,7 @@ void av1_apply_temporal_filter_planewise_c(
 //   num_planes: Number of planes in the frame.
 //   use_planewise_strategy: Whether to use plane-wise temporal filtering
 //                           strategy. If set as 0, YUV or YONLY filtering will
-//                           be used (depending on number ofplanes).
+//                           be used (depending on number of planes).
 //   strength: Strength for filter weight adjustment. (Used in YUV filtering and
 //             YONLY filtering.)
 //   use_subblock: Whether to use 4 sub-blocks to replace the original block.
@@ -970,7 +970,7 @@ void av1_apply_temporal_filter_others(
 //   mb_col: Column index of the block in the entire frame.
 //   num_planes: Number of planes in the frame.
 //   accum: Pointer to the pre-computed accumulator.
-//   conut: Pointer to the pre-computed count.
+//   count: Pointer to the pre-computed count.
 //   result_buffer: Pointer to result buffer.
 // Returns:
 //   Nothing will be returned. But the content to which `result_buffer` point
@@ -1112,9 +1112,7 @@ static FRAME_DIFF tf_do_filtering(
   // Do filtering.
   FRAME_DIFF diff = { 0, 0 };
   const int use_planewise_strategy =
-      TF_ENABLE_PLANEWISE_STRATEGY &&
-      (cpi->common.allow_screen_content_tools == 0) &&
-      AOMMIN(frame_height, frame_width) >= 480;
+      TF_ENABLE_PLANEWISE_STRATEGY && AOMMIN(frame_height, frame_width) >= 480;
   // Perform temporal filtering block by block.
   for (int mb_row = 0; mb_row < mb_rows; mb_row++) {
     mb->mv_limits.row_min = get_min_mv(mb_row, mb_height);
@@ -1256,7 +1254,7 @@ double av1_estimate_noise_from_single_plane(const YV12_BUFFER_CONFIG *frame,
   return (count < 16) ? -1.0 : (double)accum / (6 * count) * SQRT_PI_BY_2;
 }
 
-// Exsimates the strength for filter weight adjustment, which is used in YUV
+// Estimates the strength for filter weight adjustment, which is used in YUV
 // filtering and YONLY filtering. This estimation is based on the pre-estimated
 // noise level of the to-filter frame.
 // Inputs:
