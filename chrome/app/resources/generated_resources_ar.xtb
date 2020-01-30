@@ -1966,7 +1966,7 @@
 <translation id="37613671848467444">فتح في &amp;نافذة التصفح المتخفي</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{‏الاتصال بجهاز USB}zero{‏الاتصال بـ # من أجهزة USB}two{‏الاتصال بجهازي USB (#)}few{‏الاتصال بـ # أجهزة USB}many{‏ الاتصال بـ # جهاز USB}other{‏ الاتصال بـ # من أجهزة USB}}</translation>
 <translation id="3765246971671567135">تعذَّرت قراءة سياسة الوضع التجريبي بلا إنترنت.</translation>
-<translation id="3768037234834996183">جارٍ مزامنة تفضيلاتك...</translation>
+<translation id="3768037234834996183">جارٍ مزامنة إعداداتك المفضّلة...</translation>
 <translation id="377050016711188788">المثلجات</translation>
 <translation id="3771294271822695279">ملفات فيديو</translation>
 <translation id="3775432569830822555">‏شهادة خادم بروتوكول SSL (طبقة المقابس الآمنة)</translation>
@@ -3342,7 +3342,7 @@
 <translation id="579915268381781820">تمت إزالة مفتاح الأمان.</translation>
 <translation id="5799508265798272974">‏آلة Linux الافتراضية: <ph name="LINUX_VM_NAME" /></translation>
 <translation id="5800020978570554460">تم اقتطاع ملف الوجهة أو إزالته أثناء آخر تنزيل.</translation>
-<translation id="5801568494490449797">التفضيلات</translation>
+<translation id="5801568494490449797">الإعدادات المفضّلة</translation>
 <translation id="5804175651771201311">إيقاف التجوال</translation>
 <translation id="5804241973901381774">الأذونات</translation>
 <translation id="5805697420284793859">مدير النوافذ</translation>
@@ -4456,7 +4456,7 @@
 <translation id="741906494724992817">لا يتطلب هذا التطبيق أذونات خاصة.</translation>
 <translation id="742130257665691897">تمت إزالة الإشارات المرجعية</translation>
 <translation id="7421925624202799674">عرض م&amp;صدر الصفحة</translation>
-<translation id="7422192691352527311">التفضيلات...</translation>
+<translation id="7422192691352527311">الإعدادات المفضّلة...</translation>
 <translation id="7423098979219808738">السؤال أولاً</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7427348830195639090">صفحة الخلفية: <ph name="BACKGROUND_PAGE_URL" /></translation>

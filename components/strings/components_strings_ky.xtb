@@ -592,7 +592,7 @@
 <translation id="3760561303380396507">CVC'нин ордуна Windows Hello колдонулсунбу?</translation>
 <translation id="3761718714832595332">Абалын жашыруу</translation>
 <translation id="3765032636089507299">Коопсуз серептөө барагы оңдолууда.</translation>
-<translation id="3778403066972421603">Бул карточка Google каттоо эсебиңизде жана ушул түзмөктө сакталсынбы?</translation>
+<translation id="3778403066972421603">Бул карточка Google аккаунтуңузда жана ушул түзмөктө сакталсынбы?</translation>
 <translation id="3781428340399460090">Ачык кызгылтым</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569"><ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /> мөөнөтү аяктайт</translation>
@@ -753,7 +753,7 @@
 <translation id="450710068430902550">Администратор менен бөлүшүү</translation>
 <translation id="4508814173490746936">Touch ID функциясын колдонуу мүмкүн эмес</translation>
 <translation id="4510487217173779431">Chou4 (Конверт)</translation>
-<translation id="4515275063822566619">Карточкалар жана даректер Chrome’дон жана Google каттоо эсебиңизден (<ph name="ACCOUNT_EMAIL" />) алынган. Аларды <ph name="BEGIN_LINK" />Жөндөөлөрдөн<ph name="END_LINK" /> башкарсаңыз болот.</translation>
+<translation id="4515275063822566619">Карточкалар жана даректер Chrome’дон жана Google аккаунтуңуздан (<ph name="ACCOUNT_EMAIL" />) алынган. Аларды <ph name="BEGIN_LINK" />Жөндөөлөрдөн<ph name="END_LINK" /> башкарсаңыз болот.</translation>
 <translation id="4517607026994743406">Comm-10 (Конверт)</translation>
 <translation id="4522570452068850558">Чоо-жайлары</translation>
 <translation id="4524138615196389145">Мындан ары WebAuthn функциясын колдонуп карталарды тезирээк ырастаңыз</translation>
