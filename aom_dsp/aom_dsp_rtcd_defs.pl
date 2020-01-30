@@ -923,10 +923,10 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   specialize qw/aom_hadamard_32x32 avx2 sse2/;
 
   add_proto qw/void aom_hadamard_lp_8x8/, "const int16_t *src_diff, ptrdiff_t src_stride, int16_t *coeff";
-  specialize qw/aom_hadamard_lp_8x8 sse2/;
+  specialize qw/aom_hadamard_lp_8x8 sse2 neon/;
 
   add_proto qw/void aom_hadamard_lp_16x16/, "const int16_t *src_diff, ptrdiff_t src_stride, int16_t *coeff";
-  specialize qw/aom_hadamard_lp_16x16 avx2/;
+  specialize qw/aom_hadamard_lp_16x16 avx2 neon/;
 
 
   if (aom_config("CONFIG_AV1_HIGHBITDEPTH") eq "yes") {
@@ -941,6 +941,10 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   }
   add_proto qw/int aom_satd/, "const tran_low_t *coeff, int length";
   specialize qw/aom_satd avx2/;
+
+  add_proto qw/int aom_satd_lp/, "const int16_t *coeff, int length";
+  specialize qw/aom_satd_lp avx2 neon/;
+
 
   #
   # Structured Similarity (SSIM)

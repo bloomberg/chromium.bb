@@ -75,6 +75,76 @@ void aom_hadamard_8x8_neon(const int16_t *src_diff, ptrdiff_t src_stride,
   store_s16q_to_tran_low(coeff + 56, a7);
 }
 
+void aom_hadamard_lp_8x8_neon(const int16_t *src_diff, ptrdiff_t src_stride,
+                              int16_t *coeff) {
+  int16x8_t a0 = vld1q_s16(src_diff);
+  int16x8_t a1 = vld1q_s16(src_diff + src_stride);
+  int16x8_t a2 = vld1q_s16(src_diff + 2 * src_stride);
+  int16x8_t a3 = vld1q_s16(src_diff + 3 * src_stride);
+  int16x8_t a4 = vld1q_s16(src_diff + 4 * src_stride);
+  int16x8_t a5 = vld1q_s16(src_diff + 5 * src_stride);
+  int16x8_t a6 = vld1q_s16(src_diff + 6 * src_stride);
+  int16x8_t a7 = vld1q_s16(src_diff + 7 * src_stride);
+
+  hadamard8x8_one_pass(&a0, &a1, &a2, &a3, &a4, &a5, &a6, &a7);
+
+  transpose_s16_8x8(&a0, &a1, &a2, &a3, &a4, &a5, &a6, &a7);
+
+  hadamard8x8_one_pass(&a0, &a1, &a2, &a3, &a4, &a5, &a6, &a7);
+
+  // Skip the second transpose because it is not required.
+
+  vst1q_s16(coeff + 0, a0);
+  vst1q_s16(coeff + 8, a1);
+  vst1q_s16(coeff + 16, a2);
+  vst1q_s16(coeff + 24, a3);
+  vst1q_s16(coeff + 32, a4);
+  vst1q_s16(coeff + 40, a5);
+  vst1q_s16(coeff + 48, a6);
+  vst1q_s16(coeff + 56, a7);
+}
+
+void aom_hadamard_lp_16x16_neon(const int16_t *src_diff, ptrdiff_t src_stride,
+                                int16_t *coeff) {
+  /* Rearrange 16x16 to 8x32 and remove stride.
+   * Top left first. */
+  aom_hadamard_lp_8x8_neon(src_diff + 0 + 0 * src_stride, src_stride,
+                           coeff + 0);
+  /* Top right. */
+  aom_hadamard_lp_8x8_neon(src_diff + 8 + 0 * src_stride, src_stride,
+                           coeff + 64);
+  /* Bottom left. */
+  aom_hadamard_lp_8x8_neon(src_diff + 0 + 8 * src_stride, src_stride,
+                           coeff + 128);
+  /* Bottom right. */
+  aom_hadamard_lp_8x8_neon(src_diff + 8 + 8 * src_stride, src_stride,
+                           coeff + 192);
+
+  for (int i = 0; i < 64; i += 8) {
+    const int16x8_t a0 = vld1q_s16(coeff + 0);
+    const int16x8_t a1 = vld1q_s16(coeff + 64);
+    const int16x8_t a2 = vld1q_s16(coeff + 128);
+    const int16x8_t a3 = vld1q_s16(coeff + 192);
+
+    const int16x8_t b0 = vhaddq_s16(a0, a1);
+    const int16x8_t b1 = vhsubq_s16(a0, a1);
+    const int16x8_t b2 = vhaddq_s16(a2, a3);
+    const int16x8_t b3 = vhsubq_s16(a2, a3);
+
+    const int16x8_t c0 = vaddq_s16(b0, b2);
+    const int16x8_t c1 = vaddq_s16(b1, b3);
+    const int16x8_t c2 = vsubq_s16(b0, b2);
+    const int16x8_t c3 = vsubq_s16(b1, b3);
+
+    vst1q_s16(coeff + 0, c0);
+    vst1q_s16(coeff + 64, c1);
+    vst1q_s16(coeff + 128, c2);
+    vst1q_s16(coeff + 192, c3);
+
+    coeff += 8;
+  }
+}
+
 void aom_hadamard_16x16_neon(const int16_t *src_diff, ptrdiff_t src_stride,
                              tran_low_t *coeff) {
   /* Rearrange 16x16 to 8x32 and remove stride.

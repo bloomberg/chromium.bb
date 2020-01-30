@@ -771,14 +771,6 @@ static void model_rd_for_sb_y(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   *out_dist_sum = dist;
 }
 
-int av1_satd_lp_c(const int16_t *coeff, int length) {
-  int satd = 0;
-  for (int i = 0; i < length; ++i) satd += abs(coeff[i]);
-
-  // satd: 26 bits, dynamic range [-32640 * 1024, 32640 * 1024]
-  return satd;
-}
-
 static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
                       RD_STATS *this_rdc, int *skippable, int64_t *sse,
                       BLOCK_SIZE bsize, TX_SIZE tx_size) {
@@ -910,7 +902,7 @@ static void block_yrd(AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
         if (*eob == 1)
           this_rdc->rate += (int)abs(low_qcoeff[0]);
         else if (*eob > 1)
-          this_rdc->rate += av1_satd_lp(low_qcoeff, step << 4);
+          this_rdc->rate += aom_satd_lp(low_qcoeff, step << 4);
 
         this_rdc->dist +=
             av1_block_error_lp(low_coeff, low_dqcoeff, step << 4) >> 2;

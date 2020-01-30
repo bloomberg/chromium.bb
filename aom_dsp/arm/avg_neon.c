@@ -47,3 +47,28 @@ unsigned int aom_avg_8x8_neon(const uint8_t *a, int a_stride) {
 
   return vget_lane_u32(vrshr_n_u32(d, 6), 0);
 }
+
+int aom_satd_lp_neon(const int16_t *coeff, int length) {
+  const int16x4_t zero = vdup_n_s16(0);
+  int32x4_t accum = vdupq_n_s32(0);
+
+  do {
+    const int16x8_t src0 = vld1q_s16(coeff);
+    const int16x8_t src8 = vld1q_s16(coeff + 8);
+    accum = vabal_s16(accum, vget_low_s16(src0), zero);
+    accum = vabal_s16(accum, vget_high_s16(src0), zero);
+    accum = vabal_s16(accum, vget_low_s16(src8), zero);
+    accum = vabal_s16(accum, vget_high_s16(src8), zero);
+    length -= 16;
+    coeff += 16;
+  } while (length != 0);
+
+  {
+    // satd: 26 bits, dynamic range [-32640 * 1024, 32640 * 1024]
+    const int64x2_t s0 = vpaddlq_s32(accum);  // cascading summation of 'accum'.
+    const int32x2_t s1 = vadd_s32(vreinterpret_s32_s64(vget_low_s64(s0)),
+                                  vreinterpret_s32_s64(vget_high_s64(s0)));
+    const int satd = vget_lane_s32(s1, 0);
+    return satd;
+  }
+}

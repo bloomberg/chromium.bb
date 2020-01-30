@@ -432,6 +432,14 @@ int aom_satd_c(const tran_low_t *coeff, int length) {
   return satd;
 }
 
+int aom_satd_lp_c(const int16_t *coeff, int length) {
+  int satd = 0;
+  for (int i = 0; i < length; ++i) satd += abs(coeff[i]);
+
+  // satd: 26 bits, dynamic range [-32640 * 1024, 32640 * 1024]
+  return satd;
+}
+
 // Integer projection onto row vectors.
 // height: value range {16, 32, 64, 128}.
 void aom_int_pro_row_c(int16_t hbuf[16], const uint8_t *ref,
