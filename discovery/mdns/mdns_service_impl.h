@@ -22,13 +22,22 @@
 #include "platform/base/interface_info.h"
 
 namespace openscreen {
+
+class TaskRunner;
+
 namespace discovery {
+
+struct Config;
+class ReportingClient;
 
 class MdnsServiceImpl : public MdnsService, public UdpSocket::Client {
  public:
+  // |task_runner|, |reporting_client|, and |config| must exist for the duration
+  // of this instance's life.
   MdnsServiceImpl(TaskRunner* task_runner,
                   ClockNowFunctionPtr now_function,
-                  InterfaceInfo network_interface);
+                  ReportingClient* reporting_client,
+                  const Config& config);
 
   // MdnsService Overrides.
   void StartQuery(const DomainName& name,
@@ -57,6 +66,7 @@ class MdnsServiceImpl : public MdnsService, public UdpSocket::Client {
  private:
   TaskRunner* const task_runner_;
   ClockNowFunctionPtr now_function_;
+  ReportingClient* const reporting_client_;
 
   MdnsRandom random_delay_;
   MdnsReceiver receiver_;

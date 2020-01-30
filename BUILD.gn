@@ -26,6 +26,7 @@ group("gn_all") {
     "cast/sender:channel",
     "cast/streaming:receiver",
     "cast/streaming:sender",
+    "discovery:common",
     "discovery:dnssd",
     "discovery:mdns",
     "discovery:public",

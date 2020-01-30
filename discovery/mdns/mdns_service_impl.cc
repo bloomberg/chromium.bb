@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "discovery/common/config.h"
+#include "discovery/common/reporting_client.h"
 #include "discovery/mdns/mdns_records.h"
 #include "discovery/mdns/public/mdns_constants.h"
 
@@ -15,42 +17,47 @@ namespace discovery {
 // static
 std::unique_ptr<MdnsService> MdnsService::Create(
     TaskRunner* task_runner,
-    InterfaceInfo network_interface) {
+    ReportingClient* reporting_client,
+    const Config& config) {
   return std::make_unique<MdnsServiceImpl>(task_runner, Clock::now,
-                                           std::move(network_interface));
+                                           reporting_client, config);
 }
 
 MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
                                  ClockNowFunctionPtr now_function,
-                                 InterfaceInfo network_interface)
-    : task_runner_(task_runner), now_function_(now_function) {
+                                 ReportingClient* reporting_client,
+                                 const Config& config)
+    : task_runner_(task_runner),
+      now_function_(now_function),
+      reporting_client_(reporting_client) {
   OSP_DCHECK(task_runner_);
+  OSP_DCHECK(reporting_client_);
 
   // Create all UDP sockets needed for this object. They should not yet be bound
   // so that they do not send or receive data until the objects on which their
   // callback depends is initialized.
-  if (network_interface.HasIpV4Address()) {
+  if (config.interface.HasIpV4Address()) {
     ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
         task_runner, this, {kDefaultMulticastGroupIPv4, kDefaultMulticastPort});
     OSP_DCHECK(!socket.is_error());
     socket_v4_ = std::move(socket.value());
-    socket_v4_->SetMulticastOutboundInterface(network_interface.index);
+    socket_v4_->SetMulticastOutboundInterface(config.interface.index);
     socket_v4_->JoinMulticastGroup(kDefaultMulticastGroupIPv4,
-                                   network_interface.index);
+                                   config.interface.index);
     socket_v4_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv4,
-                                   network_interface.index);
+                                   config.interface.index);
   }
 
-  if (network_interface.HasIpV6Address()) {
+  if (config.interface.HasIpV6Address()) {
     ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
         task_runner, this, {kDefaultMulticastGroupIPv6, kDefaultMulticastPort});
     OSP_DCHECK(!socket.is_error());
     socket_v6_ = std::move(socket.value());
-    socket_v6_->SetMulticastOutboundInterface(network_interface.index);
+    socket_v6_->SetMulticastOutboundInterface(config.interface.index);
     socket_v6_->JoinMulticastGroup(kDefaultMulticastGroupIPv6,
-                                   network_interface.index);
+                                   config.interface.index);
     socket_v6_->JoinMulticastGroup(kDefaultSiteLocalGroupIPv6,
-                                   network_interface.index);
+                                   config.interface.index);
   }
 
   // Initialize objects which depend on the above sockets.
@@ -62,7 +69,7 @@ MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
   probe_manager_ = std::make_unique<MdnsProbeManagerImpl>(
       sender_.get(), &receiver_, &random_delay_, task_runner_, now_function_);
   publisher_ = std::make_unique<MdnsPublisher>(
-      sender_.get(), probe_manager_.get(), task_runner_, now_function_);
+      sender_.get(), probe_manager_.get(), task_runner_, now_function_, config);
   responder_ = std::make_unique<MdnsResponder>(
       publisher_.get(), probe_manager_.get(), sender_.get(), &receiver_,
       task_runner_, &random_delay_);
@@ -120,8 +127,7 @@ Error MdnsServiceImpl::UnregisterRecord(const MdnsRecord& record) {
 }
 
 void MdnsServiceImpl::OnError(UdpSocket* socket, Error error) {
-  // TODO(rwkeane): Bubble this error up to the caller.
-  OSP_NOTREACHED();
+  reporting_client_->OnFatalError(error);
 }
 
 void MdnsServiceImpl::OnSendError(UdpSocket* socket, Error error) {

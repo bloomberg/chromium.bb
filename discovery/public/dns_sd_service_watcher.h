@@ -23,6 +23,8 @@ namespace discovery {
 // This class represents a top-level discovery API which sits on top of DNS-SD.
 // T is the service-specific type which stores information regarding a specific
 // service instance.
+// TODO(rwkeane): Include reporting client as ctor parameter once parallel CLs
+// are in.
 template <typename T>
 class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
  public:

@@ -21,6 +21,7 @@ class TaskRunner;
 
 namespace discovery {
 
+struct Config;
 class MdnsProbeManager;
 class MdnsRandom;
 class MdnsSender;
@@ -48,7 +49,8 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   MdnsPublisher(MdnsSender* sender,
                 MdnsProbeManager* ownership_manager,
                 TaskRunner* task_runner,
-                ClockNowFunctionPtr now_function);
+                ClockNowFunctionPtr now_function,
+                const Config& config);
   ~MdnsPublisher() override;
 
   // Registers a new mDNS record for advertisement by this service. For A, AAAA,
@@ -75,9 +77,9 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
  private:
   // Class responsible for sending announcement and goodbye messages for
   // MdnsRecord instances when they are published, updated, or unpublished. The
-  // announcement messages will be sent 8 times, first at an interval of 1
-  // second apart, and then with delay increasing by a factor of 2 with each
-  // successive announcement.
+  // announcement messages will be sent |target_announcement_attempts| times,
+  // first at an interval of 1 second apart, and then with delay increasing by a
+  // factor of 2 with each successive announcement.
   // NOTE: |publisher| must be the MdnsPublisher instance from which this
   // instance was created.
   class RecordAnnouncer {
@@ -85,7 +87,8 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
     RecordAnnouncer(MdnsRecord record,
                     MdnsPublisher* publisher,
                     TaskRunner* task_runner,
-                    ClockNowFunctionPtr now_function);
+                    ClockNowFunctionPtr now_function,
+                    int max_announcement_attempts);
     RecordAnnouncer(const RecordAnnouncer& other) = delete;
     RecordAnnouncer(RecordAnnouncer&& other) noexcept = delete;
     ~RecordAnnouncer();
@@ -122,11 +125,14 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
     // Record to send.
     const MdnsRecord record_;
 
+    // Alarm used to cancel future resend attempts if this object is deleted.
+    Alarm alarm_;
+
     // Number of attempts at sending this record which have occurred so far.
     int attempts_ = 0;
 
-    // Alarm used to cancel future resend attempts if this object is deleted.
-    Alarm alarm_;
+    // Number of times to announce a newly published record.
+    const int target_announcement_attempts_;
   };
 
   friend class MdnsPublisherTesting;
@@ -134,7 +140,8 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   // Creates a new published from the provided record.
   std::unique_ptr<RecordAnnouncer> CreateAnnouncer(MdnsRecord record) {
     return std::make_unique<RecordAnnouncer>(std::move(record), this,
-                                             task_runner_, now_function_);
+                                             task_runner_, now_function_,
+                                             max_announcement_attempts_);
   }
 
   // Registers a new MdnsRecord. Only valid for the annotated types.
@@ -177,6 +184,9 @@ class MdnsPublisher : public MdnsResponder::RecordHandler {
   // Alarm to cancel batching of records when this class is destroyed, and
   // instead send them immediately. Variable is only set when it is in use.
   absl::optional<Alarm> batch_records_alarm_;
+
+  // Number of times to announce a newly published record.
+  const int max_announcement_attempts_;
 
   // The queue for announce and goodbye records to be sent periodically.
   static std::vector<MdnsRecord>* records_to_send_;

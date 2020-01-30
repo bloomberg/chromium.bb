@@ -14,15 +14,15 @@ namespace discovery {
 // static
 std::unique_ptr<DnsSdService> DnsSdService::Create(
     TaskRunner* task_runner,
-    InterfaceInfo network_interface) {
-  return std::make_unique<ServiceImpl>(task_runner,
-                                       std::move(network_interface));
+    ReportingClient* reporting_client,
+    const Config& config) {
+  return std::make_unique<ServiceImpl>(task_runner, reporting_client, config);
 }
 
 ServiceImpl::ServiceImpl(TaskRunner* task_runner,
-                         InterfaceInfo network_interface)
-    : mdns_service_(
-          MdnsService::Create(task_runner, std::move(network_interface))),
+                         ReportingClient* reporting_client,
+                         const Config& config)
+    : mdns_service_(MdnsService::Create(task_runner, reporting_client, config)),
       querier_(mdns_service_.get()),
       publisher_(mdns_service_.get()) {}
 

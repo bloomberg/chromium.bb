@@ -22,7 +22,9 @@ class MdnsService;
 
 class ServiceImpl final : public DnsSdService {
  public:
-  ServiceImpl(TaskRunner* task_runner, InterfaceInfo network_interface);
+  ServiceImpl(TaskRunner* task_runner,
+              ReportingClient* reporting_client,
+              const Config& config);
   ~ServiceImpl() override;
 
   // DnsSdService overrides.

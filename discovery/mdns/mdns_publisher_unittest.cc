@@ -7,6 +7,7 @@
 #include <chrono>
 #include <vector>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_sender.h"
 #include "discovery/mdns/testing/mdns_test_util.h"
@@ -80,7 +81,11 @@ class MdnsPublisherTest : public testing::Test {
         task_runner_(&clock_),
         socket_(FakeUdpSocket::CreateDefault()),
         sender_(socket_.get()),
-        publisher_(&sender_, &probe_manager_, &task_runner_, FakeClock::now) {}
+        publisher_(&sender_,
+                   &probe_manager_,
+                   &task_runner_,
+                   FakeClock::now,
+                   config_) {}
 
   ~MdnsPublisherTest() {
     // Clear out any remaining calls in the task runner queue.
@@ -252,6 +257,7 @@ class MdnsPublisherTest : public testing::Test {
   std::unique_ptr<FakeUdpSocket> socket_;
   StrictMock<MockMdnsSender> sender_;
   StrictMock<MockProbeManager> probe_manager_;
+  Config config_;
   MdnsPublisherTesting publisher_;
 
   DomainName domain_{"instance", "_googlecast", "_tcp", "local"};

@@ -7,6 +7,7 @@
 #include <chrono>
 #include <cmath>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_probe_manager.h"
 #include "discovery/mdns/mdns_records.h"
 #include "discovery/mdns/mdns_sender.h"
@@ -19,9 +20,6 @@ namespace {
 
 // Minimum delay between announcements of a given record in seconds.
 constexpr std::chrono::seconds kMinAnnounceDelay{1};
-
-// Maximum number of resends for an announcement message.
-constexpr int kMaxAnnounceAttempts = 8;
 
 // Intervals between successive announcements must increase by at least a
 // factor of 2.
@@ -82,14 +80,17 @@ Error ProcessQueue(MdnsSender* sender, MdnsMessage* message) {
 MdnsPublisher::MdnsPublisher(MdnsSender* sender,
                              MdnsProbeManager* ownership_manager,
                              TaskRunner* task_runner,
-                             ClockNowFunctionPtr now_function)
+                             ClockNowFunctionPtr now_function,
+                             const Config& config)
     : sender_(sender),
       ownership_manager_(ownership_manager),
       task_runner_(task_runner),
-      now_function_(now_function) {
+      now_function_(now_function),
+      max_announcement_attempts_(config.new_record_announcement_count) {
   OSP_DCHECK(ownership_manager_);
   OSP_DCHECK(sender_);
   OSP_DCHECK(task_runner_);
+  OSP_DCHECK_GE(max_announcement_attempts_, 0);
 }
 
 MdnsPublisher::~MdnsPublisher() {
@@ -298,12 +299,14 @@ MdnsPublisher::RecordAnnouncer::RecordAnnouncer(
     MdnsRecord record,
     MdnsPublisher* publisher,
     TaskRunner* task_runner,
-    ClockNowFunctionPtr now_function)
+    ClockNowFunctionPtr now_function,
+    int target_announcement_attempts)
     : publisher_(publisher),
       task_runner_(task_runner),
       now_function_(now_function),
       record_(std::move(record)),
-      alarm_(now_function_, task_runner_) {
+      alarm_(now_function_, task_runner_),
+      target_announcement_attempts_(target_announcement_attempts) {
   OSP_DCHECK(publisher_);
   OSP_DCHECK(task_runner_);
 
@@ -329,7 +332,7 @@ void MdnsPublisher::RecordAnnouncer::QueueAnnouncement() {
   publisher_->QueueRecord(record_);
 
   const Clock::duration new_delay = GetNextAnnounceDelay();
-  if (++attempts_ < kMaxAnnounceAttempts) {
+  if (++attempts_ < target_announcement_attempts_) {
     alarm_.ScheduleFromNow([this]() { QueueAnnouncement(); }, new_delay);
   }
 }
