@@ -159,6 +159,17 @@ uint8x8_t SimpleHorizontalTaps(const uint8_t* const src,
   return vqrshrun_n_s16(sum, kFilterBits - 1);
 }
 
+// Do the 1D shift (always |kInterRoundBitsHorizontal|, even for 1D Vertical
+// calculations) and add |compound_round_offset|.
+// TODO(b/146439793): Remove |compound_round_offset|.
+uint16x8_t Compound1DShift(const int16x8_t sum) {
+  constexpr int compound_round_offset =
+      (1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3));
+  const int16x8_t v_compound_round_offset = vdupq_n_s16(compound_round_offset);
+  const int16x8_t result = vrshrq_n_s16(sum, kInterRoundBitsHorizontal - 1);
+  return vreinterpretq_u16_s16(vaddq_s16(result, v_compound_round_offset));
+}
+
 template <int filter_index, bool negative_outside_taps, bool is_2d>
 uint16x8_t HorizontalTaps8To16(const uint8_t* const src,
                                const uint8x8_t* const v_tap) {
@@ -170,13 +181,7 @@ uint16x8_t HorizontalTaps8To16(const uint8_t* const src,
         vrshrq_n_s16(sum, kInterRoundBitsHorizontal - 1));
   }
 
-  // 1D Compound.
-  const int16x8_t v_compound_round_offset =
-      vdupq_n_s16((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3)));
-
-  sum = vrshrq_n_s16(sum, kInterRoundBitsHorizontal - 1);
-  sum = vaddq_s16(sum, v_compound_round_offset);
-  return vreinterpretq_u16_s16(sum);
+  return Compound1DShift(sum);
 }
 
 template <int filter_index>
@@ -236,13 +241,7 @@ uint16x8_t HorizontalTaps8To16_2x2(const uint8_t* src,
         vrshrq_n_s16(sum, kInterRoundBitsHorizontal - 1));
   }
 
-  // 1D Compound.
-  const int16x8_t v_compound_round_offset =
-      vdupq_n_s16((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3)));
-
-  sum = vrshrq_n_s16(sum, kInterRoundBitsHorizontal - 1);
-  sum = vaddq_s16(sum, v_compound_round_offset);
-  return vreinterpretq_u16_s16(sum);
+  return Compound1DShift(sum);
 }
 
 template <int num_taps, int step, int filter_index,
@@ -364,6 +363,28 @@ void FilterHorizontal(const uint8_t* src, const ptrdiff_t src_stride,
   }
 }
 
+// Do the 2D vertical shift and add |compound_round_offset|.
+// TODO(b/146439793): Remove |compound_round_offset|.
+int16x4_t CompoundVertical2DShift(const int32x4_t sum) {
+  constexpr int compound_round_offset =
+      (1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3));
+  const int16x4_t v_compound_round_offset = vdup_n_s16(compound_round_offset);
+  const int16x4_t result =
+      vqrshrn_n_s32(sum, kInterRoundBitsCompoundVertical - 1);
+  return vadd_s16(result, v_compound_round_offset);
+}
+
+int16x8_t CompoundVertical2DShift(const int32x4_t sum_lo,
+                                  const int32x4_t sum_hi) {
+  constexpr int compound_round_offset =
+      (1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3));
+  const int16x8_t v_compound_round_offset = vdupq_n_s16(compound_round_offset);
+  const int16x8_t result =
+      vcombine_s16(vqrshrn_n_s32(sum_lo, kInterRoundBitsCompoundVertical - 1),
+                   vqrshrn_n_s32(sum_hi, kInterRoundBitsCompoundVertical - 1));
+  return vaddq_s16(result, v_compound_round_offset);
+}
+
 // Process 16 bit inputs and output 32 bits.
 template <int num_taps, bool is_compound>
 inline int16x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
@@ -398,12 +419,7 @@ inline int16x4_t Sum2DVerticalTaps4(const int16x4_t* const src,
   }
 
   if (is_compound) {
-    const int16x4_t compound_round_offset =
-        vdup_n_s16((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3)));
-    const int16x4_t shifted =
-        vqrshrn_n_s32(sum, kInterRoundBitsCompoundVertical - 1);
-    // TODO(johannkoenig): Remove this offset from downstream blend users.
-    return vadd_s16(shifted, compound_round_offset);
+    return CompoundVertical2DShift(sum);
   }
 
   return vqrshrn_n_s32(sum, kInterRoundBitsVertical - 1);
@@ -466,13 +482,7 @@ int16x8_t SimpleSum2DVerticalTaps(const int16x8_t* const src,
   }
 
   if (is_compound) {
-    const int16x8_t compound_round_offset =
-        vdupq_n_s16((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3)));
-    const int16x8_t shifted = vcombine_s16(
-        vqrshrn_n_s32(sum_lo, kInterRoundBitsCompoundVertical - 1),
-        vqrshrn_n_s32(sum_hi, kInterRoundBitsCompoundVertical - 1));
-    // TODO(johannkoenig): Remove this offset from downstream blend users.
-    return vaddq_s16(shifted, compound_round_offset);
+    return CompoundVertical2DShift(sum_lo, sum_hi);
   }
 
   return vcombine_s16(vqrshrn_n_s32(sum_lo, kInterRoundBitsVertical - 1),
@@ -1851,8 +1861,6 @@ void FilterVertical(const uint8_t* src, const ptrdiff_t src_stride,
                     const uint8x8_t* const taps) {
   const int num_taps = GetNumTapsInFilter(filter_index);
   const int next_row = num_taps - 1;
-  const int16x8_t compound_round_offset =
-      vdupq_n_s16((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3)));
   auto* dst8 = static_cast<uint8_t*>(dst);
   auto* dst16 = static_cast<uint16_t*>(dst);
   assert(width >= 8);
@@ -1890,12 +1898,8 @@ void FilterVertical(const uint8_t* src, const ptrdiff_t src_stride,
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
-        const int16x8_t shifted =
-            vrshrq_n_s16(sums, kInterRoundBitsHorizontal - 1);
-        const uint16x8_t offset =
-            vreinterpretq_u16_s16(vaddq_s16(shifted, compound_round_offset));
-
-        vst1q_u16(dst16 + x + y * dst_stride, offset);
+        const uint16x8_t results = Compound1DShift(sums);
+        vst1q_u16(dst16 + x + y * dst_stride, results);
       } else {
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
         vst1_u8(dst8 + x + y * dst_stride, results);
@@ -1925,8 +1929,6 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
                        void* const dst, const ptrdiff_t dst_stride,
                        const int height, const uint8x8_t* const taps) {
   const int num_taps = GetNumTapsInFilter(filter_index);
-  const int16x8_t compound_round_offset =
-      vdupq_n_s16((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3)));
   auto* dst8 = static_cast<uint8_t*>(dst);
   auto* dst16 = static_cast<uint16_t*>(dst);
 
@@ -1950,14 +1952,11 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
-        const int16x8_t shifted =
-            vrshrq_n_s16(sums, kInterRoundBitsHorizontal - 1);
-        const uint16x8_t offset =
-            vreinterpretq_u16_s16(vaddq_s16(shifted, compound_round_offset));
+        const uint16x8_t results = Compound1DShift(sums);
 
-        vst1_u16(dst16, vget_low_u16(offset));
+        vst1_u16(dst16, vget_low_u16(results));
         dst16 += dst_stride;
-        vst1_u16(dst16, vget_high_u16(offset));
+        vst1_u16(dst16, vget_high_u16(results));
         dst16 += dst_stride;
       } else {
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
@@ -1995,14 +1994,11 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
-        const int16x8_t shifted =
-            vrshrq_n_s16(sums, kInterRoundBitsHorizontal - 1);
-        const uint16x8_t offset =
-            vreinterpretq_u16_s16(vaddq_s16(shifted, compound_round_offset));
+        const uint16x8_t results = Compound1DShift(sums);
 
-        vst1_u16(dst16, vget_low_u16(offset));
+        vst1_u16(dst16, vget_low_u16(results));
         dst16 += dst_stride;
-        vst1_u16(dst16, vget_high_u16(offset));
+        vst1_u16(dst16, vget_high_u16(results));
         dst16 += dst_stride;
       } else {
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
@@ -2048,14 +2044,11 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
-        const int16x8_t shifted =
-            vrshrq_n_s16(sums, kInterRoundBitsHorizontal - 1);
-        const uint16x8_t offset =
-            vreinterpretq_u16_s16(vaddq_s16(shifted, compound_round_offset));
+        const uint16x8_t results = Compound1DShift(sums);
 
-        vst1_u16(dst16, vget_low_u16(offset));
+        vst1_u16(dst16, vget_low_u16(results));
         dst16 += dst_stride;
-        vst1_u16(dst16, vget_high_u16(offset));
+        vst1_u16(dst16, vget_high_u16(results));
         dst16 += dst_stride;
       } else {
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
@@ -2109,14 +2102,11 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
-        const int16x8_t shifted =
-            vrshrq_n_s16(sums, kInterRoundBitsHorizontal - 1);
-        const uint16x8_t offset =
-            vreinterpretq_u16_s16(vaddq_s16(shifted, compound_round_offset));
+        const uint16x8_t results = Compound1DShift(sums);
 
-        vst1_u16(dst16, vget_low_u16(offset));
+        vst1_u16(dst16, vget_low_u16(results));
         dst16 += dst_stride;
-        vst1_u16(dst16, vget_high_u16(offset));
+        vst1_u16(dst16, vget_high_u16(results));
         dst16 += dst_stride;
       } else {
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
@@ -2145,8 +2135,6 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
                        void* const dst, const ptrdiff_t dst_stride,
                        const int height, const uint8x8_t* const taps) {
   const int num_taps = GetNumTapsInFilter(filter_index);
-  const int16x8_t compound_round_offset =
-      vdupq_n_s16((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3)));
   auto* dst8 = static_cast<uint8_t*>(dst);
   auto* dst16 = static_cast<uint16_t*>(dst);
 
@@ -2174,19 +2162,16 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
-        const int16x8_t shifted =
-            vrshrq_n_s16(sums, kInterRoundBitsHorizontal - 1);
-        const uint16x8_t offset =
-            vreinterpretq_u16_s16(vaddq_s16(shifted, compound_round_offset));
+        const uint16x8_t results = Compound1DShift(sums);
 
-        Store2<0>(dst16, offset);
+        Store2<0>(dst16, results);
         dst16 += dst_stride;
-        Store2<1>(dst16, offset);
+        Store2<1>(dst16, results);
         if (height == 2) return;
         dst16 += dst_stride;
-        Store2<2>(dst16, offset);
+        Store2<2>(dst16, results);
         dst16 += dst_stride;
-        Store2<3>(dst16, offset);
+        Store2<3>(dst16, results);
         dst16 += dst_stride;
       } else {
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
@@ -2233,19 +2218,16 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
-        const int16x8_t shifted =
-            vrshrq_n_s16(sums, kInterRoundBitsHorizontal - 1);
-        const uint16x8_t offset =
-            vreinterpretq_u16_s16(vaddq_s16(shifted, compound_round_offset));
+        const uint16x8_t results = Compound1DShift(sums);
 
-        Store2<0>(dst16, offset);
+        Store2<0>(dst16, results);
         dst16 += dst_stride;
-        Store2<1>(dst16, offset);
+        Store2<1>(dst16, results);
         if (height == 2) return;
         dst16 += dst_stride;
-        Store2<2>(dst16, offset);
+        Store2<2>(dst16, results);
         dst16 += dst_stride;
-        Store2<3>(dst16, offset);
+        Store2<3>(dst16, results);
         dst16 += dst_stride;
       } else {
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
@@ -2301,18 +2283,15 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
-        const int16x8_t shifted =
-            vrshrq_n_s16(sums, kInterRoundBitsHorizontal - 1);
-        const uint16x8_t offset =
-            vreinterpretq_u16_s16(vaddq_s16(shifted, compound_round_offset));
+        const uint16x8_t results = Compound1DShift(sums);
 
-        Store2<0>(dst16, offset);
+        Store2<0>(dst16, results);
         dst16 += dst_stride;
-        Store2<1>(dst16, offset);
+        Store2<1>(dst16, results);
         dst16 += dst_stride;
-        Store2<2>(dst16, offset);
+        Store2<2>(dst16, results);
         dst16 += dst_stride;
-        Store2<3>(dst16, offset);
+        Store2<3>(dst16, results);
         dst16 += dst_stride;
       } else {
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
@@ -2375,18 +2354,15 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       const int16x8_t sums =
           SumOnePassTaps<filter_index, negative_outside_taps>(srcs, taps);
       if (is_compound) {
-        const int16x8_t shifted =
-            vrshrq_n_s16(sums, kInterRoundBitsHorizontal - 1);
-        const uint16x8_t offset =
-            vreinterpretq_u16_s16(vaddq_s16(shifted, compound_round_offset));
+        const uint16x8_t results = Compound1DShift(sums);
 
-        Store2<0>(dst16, offset);
+        Store2<0>(dst16, results);
         dst16 += dst_stride;
-        Store2<1>(dst16, offset);
+        Store2<1>(dst16, results);
         dst16 += dst_stride;
-        Store2<2>(dst16, offset);
+        Store2<2>(dst16, results);
         dst16 += dst_stride;
-        Store2<3>(dst16, offset);
+        Store2<3>(dst16, results);
         dst16 += dst_stride;
       } else {
         const uint8x8_t results = vqrshrun_n_s16(sums, kFilterBits - 1);
@@ -2554,8 +2530,7 @@ void ConvolveCompoundCopy_NEON(
   const auto* src = static_cast<const uint8_t*>(reference);
   const ptrdiff_t src_stride = reference_stride;
   auto* dest = static_cast<uint16_t*>(prediction);
-  // TODO(johannkoenig): Remove this offset. Also needs to be removed from Blend
-  // functions.
+  // TODO(b/146439793): Remove |compound_round_offset|.
   constexpr int compound_round_offset =
       (1 << kBitdepth8) + (1 << (kBitdepth8 - 1));
   const uint16x8_t v_compound_round_offset = vdupq_n_u16(compound_round_offset);
