@@ -35,7 +35,7 @@ namespace {
 std::string GetCodecName(ReceiverSession::AudioCodec codec) {
   switch (codec) {
     case ReceiverSession::AudioCodec::kAac:
-      return "aac_ld";
+      return "aac";
     case ReceiverSession::AudioCodec::kOpus:
       return "opus";
   }
