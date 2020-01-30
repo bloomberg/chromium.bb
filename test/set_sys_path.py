@@ -26,21 +26,16 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Configuration for testing.
 
 Test files should import this module before mod_pywebsocket.
 """
 
-
 from __future__ import absolute_import
 import os
 import sys
 
-
 # Add the parent directory to sys.path to enable importing mod_pywebsocket.
 sys.path.insert(0, os.path.join(os.path.split(__file__)[0], '..'))
-
 
 # vi:sts=4 sw=4 et

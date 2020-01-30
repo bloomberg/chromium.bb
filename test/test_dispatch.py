@@ -28,10 +28,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Tests for dispatch module."""
-
 
 from __future__ import absolute_import
 import os
@@ -44,25 +41,27 @@ from mod_pywebsocket import handshake
 from test import mock
 from six.moves import zip
 
-
 _TEST_HANDLERS_DIR = os.path.join(
-        os.path.split(__file__)[0], 'testdata', 'handlers')
+    os.path.split(__file__)[0], 'testdata', 'handlers')
 
 _TEST_HANDLERS_SUB_DIR = os.path.join(_TEST_HANDLERS_DIR, 'sub')
 
 
 class DispatcherTest(unittest.TestCase):
     """A unittest for dispatch module."""
-
     def test_normalize_path(self):
-        self.assertEqual(os.path.abspath('/a/b').replace('\\', '/'),
-                         dispatch._normalize_path('/a/b'))
-        self.assertEqual(os.path.abspath('/a/b').replace('\\', '/'),
-                         dispatch._normalize_path('\\a\\b'))
-        self.assertEqual(os.path.abspath('/a/b').replace('\\', '/'),
-                         dispatch._normalize_path('/a/c/../b'))
-        self.assertEqual(os.path.abspath('abc').replace('\\', '/'),
-                         dispatch._normalize_path('abc'))
+        self.assertEqual(
+            os.path.abspath('/a/b').replace('\\', '/'),
+            dispatch._normalize_path('/a/b'))
+        self.assertEqual(
+            os.path.abspath('/a/b').replace('\\', '/'),
+            dispatch._normalize_path('\\a\\b'))
+        self.assertEqual(
+            os.path.abspath('/a/b').replace('\\', '/'),
+            dispatch._normalize_path('/a/c/../b'))
+        self.assertEqual(
+            os.path.abspath('abc').replace('\\', '/'),
+            dispatch._normalize_path('abc'))
 
     def test_converter(self):
         converter = dispatch._create_path_to_resource_converter('/a/b')
@@ -76,13 +75,13 @@ class DispatcherTest(unittest.TestCase):
         self.assertEqual(None, converter('a/b/h_wsh.py'))
 
         converter = dispatch._create_path_to_resource_converter('a/b')
-        self.assertEqual('/h', converter(dispatch._normalize_path(
-            'a/b/h_wsh.py')))
+        self.assertEqual('/h',
+                         converter(dispatch._normalize_path('a/b/h_wsh.py')))
 
         converter = dispatch._create_path_to_resource_converter('/a/b///')
         self.assertEqual('/h', converter(os_root + 'a/b/h_wsh.py'))
-        self.assertEqual('/h', converter(dispatch._normalize_path(
-            '/a/b/../b/h_wsh.py')))
+        self.assertEqual(
+            '/h', converter(dispatch._normalize_path('/a/b/../b/h_wsh.py')))
 
         converter = dispatch._create_path_to_resource_converter(
             '/a/../a/b/../b/')
@@ -98,29 +97,30 @@ class DispatcherTest(unittest.TestCase):
         paths.sort()
         self.assertEqual(8, len(paths))
         expected_paths = [
-                os.path.join(_TEST_HANDLERS_DIR, 'abort_by_user_wsh.py'),
-                os.path.join(_TEST_HANDLERS_DIR, 'blank_wsh.py'),
-                os.path.join(_TEST_HANDLERS_DIR, 'origin_check_wsh.py'),
-                os.path.join(_TEST_HANDLERS_DIR, 'sub',
-                             'exception_in_transfer_wsh.py'),
-                os.path.join(_TEST_HANDLERS_DIR, 'sub', 'non_callable_wsh.py'),
-                os.path.join(_TEST_HANDLERS_DIR, 'sub', 'plain_wsh.py'),
-                os.path.join(_TEST_HANDLERS_DIR, 'sub',
-                             'wrong_handshake_sig_wsh.py'),
-                os.path.join(_TEST_HANDLERS_DIR, 'sub',
-                             'wrong_transfer_sig_wsh.py'),
-                ]
+            os.path.join(_TEST_HANDLERS_DIR, 'abort_by_user_wsh.py'),
+            os.path.join(_TEST_HANDLERS_DIR, 'blank_wsh.py'),
+            os.path.join(_TEST_HANDLERS_DIR, 'origin_check_wsh.py'),
+            os.path.join(_TEST_HANDLERS_DIR, 'sub',
+                         'exception_in_transfer_wsh.py'),
+            os.path.join(_TEST_HANDLERS_DIR, 'sub', 'non_callable_wsh.py'),
+            os.path.join(_TEST_HANDLERS_DIR, 'sub', 'plain_wsh.py'),
+            os.path.join(_TEST_HANDLERS_DIR, 'sub',
+                         'wrong_handshake_sig_wsh.py'),
+            os.path.join(_TEST_HANDLERS_DIR, 'sub',
+                         'wrong_transfer_sig_wsh.py'),
+        ]
         for expected, actual in zip(expected_paths, paths):
             self.assertEqual(expected, actual)
 
     def test_source_handler_file(self):
-        self.assertRaises(
-            dispatch.DispatchException, dispatch._source_handler_file, '')
-        self.assertRaises(
-            dispatch.DispatchException, dispatch._source_handler_file, 'def')
-        self.assertRaises(
-            dispatch.DispatchException, dispatch._source_handler_file, '1/0')
-        self.assertTrue(dispatch._source_handler_file(
+        self.assertRaises(dispatch.DispatchException,
+                          dispatch._source_handler_file, '')
+        self.assertRaises(dispatch.DispatchException,
+                          dispatch._source_handler_file, 'def')
+        self.assertRaises(dispatch.DispatchException,
+                          dispatch._source_handler_file, '1/0')
+        self.assertTrue(
+            dispatch._source_handler_file(
                 'def web_socket_do_extra_handshake(request):pass\n'
                 'def web_socket_transfer_data(request):pass\n'))
 
@@ -129,19 +129,20 @@ class DispatcherTest(unittest.TestCase):
         warnings = dispatcher.source_warnings()
         warnings.sort()
         expected_warnings = [
-                (os.path.realpath(os.path.join(
-                    _TEST_HANDLERS_DIR, 'blank_wsh.py')) +
-                 ': web_socket_do_extra_handshake is not defined.'),
-                (os.path.realpath(os.path.join(
-                    _TEST_HANDLERS_DIR, 'sub', 'non_callable_wsh.py')) +
-                 ': web_socket_do_extra_handshake is not callable.'),
-                (os.path.realpath(os.path.join(
-                    _TEST_HANDLERS_DIR, 'sub', 'wrong_handshake_sig_wsh.py')) +
-                 ': web_socket_do_extra_handshake is not defined.'),
-                (os.path.realpath(os.path.join(
-                    _TEST_HANDLERS_DIR, 'sub', 'wrong_transfer_sig_wsh.py')) +
-                 ': web_socket_transfer_data is not defined.'),
-                ]
+            (os.path.realpath(os.path.join(_TEST_HANDLERS_DIR, 'blank_wsh.py'))
+             + ': web_socket_do_extra_handshake is not defined.'),
+            (os.path.realpath(
+                os.path.join(_TEST_HANDLERS_DIR, 'sub', 'non_callable_wsh.py'))
+             + ': web_socket_do_extra_handshake is not callable.'),
+            (os.path.realpath(
+                os.path.join(_TEST_HANDLERS_DIR, 'sub',
+                             'wrong_handshake_sig_wsh.py')) +
+             ': web_socket_do_extra_handshake is not defined.'),
+            (os.path.realpath(
+                os.path.join(_TEST_HANDLERS_DIR, 'sub',
+                             'wrong_transfer_sig_wsh.py')) +
+             ': web_socket_transfer_data is not defined.'),
+        ]
         self.assertEqual(4, len(warnings))
         for expected, actual in zip(expected_warnings, warnings):
             self.assertEqual(expected, actual)
@@ -172,42 +173,48 @@ class DispatcherTest(unittest.TestCase):
     def test_transfer_data(self):
         dispatcher = dispatch.Dispatcher(_TEST_HANDLERS_DIR, None)
 
-        request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
+        request = mock.MockRequest(
+            connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/origin_check'
         request.ws_protocol = 'p1'
         dispatcher.transfer_data(request)
-        self.assertEqual(b'origin_check_wsh.py is called for /origin_check, p1'
-                         b'\x88\x02\x03\xe8',
-                         request.connection.written_data())
+        self.assertEqual(
+            b'origin_check_wsh.py is called for /origin_check, p1'
+            b'\x88\x02\x03\xe8', request.connection.written_data())
 
-        request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
+        request = mock.MockRequest(
+            connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
-        self.assertEqual(b'sub/plain_wsh.py is called for /sub/plain, None'
-                         b'\x88\x02\x03\xe8',
-                         request.connection.written_data())
+        self.assertEqual(
+            b'sub/plain_wsh.py is called for /sub/plain, None'
+            b'\x88\x02\x03\xe8', request.connection.written_data())
 
-        request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
+        request = mock.MockRequest(
+            connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain?'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
-        self.assertEqual(b'sub/plain_wsh.py is called for /sub/plain?, None'
-                         b'\x88\x02\x03\xe8',
-                         request.connection.written_data())
+        self.assertEqual(
+            b'sub/plain_wsh.py is called for /sub/plain?, None'
+            b'\x88\x02\x03\xe8', request.connection.written_data())
 
-        request = mock.MockRequest(connection=mock.MockConn(b'\x88\x02\x03\xe8'))
+        request = mock.MockRequest(
+            connection=mock.MockConn(b'\x88\x02\x03\xe8'))
         request.ws_resource = '/sub/plain?q=v'
         request.ws_protocol = None
         dispatcher.transfer_data(request)
-        self.assertEqual(b'sub/plain_wsh.py is called for /sub/plain?q=v, None'
-                         b'\x88\x02\x03\xe8',
-                         request.connection.written_data())
+        self.assertEqual(
+            b'sub/plain_wsh.py is called for /sub/plain?q=v, None'
+            b'\x88\x02\x03\xe8', request.connection.written_data())
 
     def test_transfer_data_no_handler(self):
         dispatcher = dispatch.Dispatcher(_TEST_HANDLERS_DIR, None)
-        for resource in ['/blank', '/sub/non_callable',
-                         '/sub/no_wsh_at_the_end', '/does/not/exist']:
+        for resource in [
+                '/blank', '/sub/non_callable', '/sub/no_wsh_at_the_end',
+                '/does/not/exist'
+        ]:
             request = mock.MockRequest(connection=mock.MockConn(b''))
             request.ws_resource = resource
             request.ws_protocol = 'p2'
@@ -228,8 +235,9 @@ class DispatcherTest(unittest.TestCase):
             dispatcher.transfer_data(request)
             self.fail()
         except Exception as e:
-            self.assertTrue(str(e).find('Intentional') != -1,
-                            'Unexpected exception: %s' % e)
+            self.assertTrue(
+                str(e).find('Intentional') != -1,
+                'Unexpected exception: %s' % e)
 
     def test_abort_transfer_data(self):
         dispatcher = dispatch.Dispatcher(_TEST_HANDLERS_DIR, None)
@@ -259,7 +267,8 @@ class DispatcherTest(unittest.TestCase):
                                    _TEST_HANDLERS_SUB_DIR)
         self.assertEqual(2, len(disp._handler_suite_map))
         self.assertFalse('/origin_check' in disp._handler_suite_map)
-        self.assertFalse('/sub/exception_in_transfer' in disp._handler_suite_map)
+        self.assertFalse(
+            '/sub/exception_in_transfer' in disp._handler_suite_map)
         self.assertFalse('/sub/plain' in disp._handler_suite_map)
         self.assertTrue('/exception_in_transfer' in disp._handler_suite_map)
         self.assertTrue('/plain' in disp._handler_suite_map)
@@ -267,8 +276,8 @@ class DispatcherTest(unittest.TestCase):
     def test_scan_dir_must_under_root(self):
         dispatch.Dispatcher('a/b', 'a/b/c')  # OK
         dispatch.Dispatcher('a/b///', 'a/b')  # OK
-        self.assertRaises(dispatch.DispatchException,
-                          dispatch.Dispatcher, 'a/b/c', 'a/b')
+        self.assertRaises(dispatch.DispatchException, dispatch.Dispatcher,
+                          'a/b/c', 'a/b')
 
     def test_resource_path_alias(self):
         disp = dispatch.Dispatcher(_TEST_HANDLERS_DIR, None)
@@ -285,6 +294,5 @@ class DispatcherTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
 
 # vi:sts=4 sw=4 et

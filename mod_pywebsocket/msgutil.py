@@ -26,8 +26,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Message related utilities.
 
 Note: request.connection.write/read are used in this module, even though
@@ -37,11 +35,9 @@ request.write/read are not suitable because they don't allow direct raw
 bytes writing/reading.
 """
 
-
 from __future__ import absolute_import
 import six.moves.queue
 import threading
-
 
 # Export Exception symbols from msgutil for backward compatibility
 from mod_pywebsocket._stream_exceptions import ConnectionTerminatedException
@@ -110,7 +106,6 @@ class MessageReceiver(threading.Thread):
     because pyOpenSSL used by the server raises a fatal error if the socket
     is accessed from multiple threads.
     """
-
     def __init__(self, request, onmessage=None):
         """Construct an instance.
 
@@ -182,7 +177,6 @@ class MessageSender(threading.Thread):
     because pyOpenSSL used by the server raises a fatal error if the socket
     is accessed from multiple threads.
     """
-
     def __init__(self, request):
         """Construct an instance.
 

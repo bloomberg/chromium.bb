@@ -28,8 +28,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Simple WebSocket client named echo_client just because of historical reason.
 
 mod_pywebsocket directory must be in PYTHONPATH.
@@ -46,7 +44,6 @@ Example Usage:
      -s localhost \
      -o http://localhost -r /echo -m test
 """
-
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -70,7 +67,6 @@ from mod_pywebsocket.extensions import _parse_window_bits
 from mod_pywebsocket.stream import Stream
 from mod_pywebsocket.stream import StreamOptions
 from mod_pywebsocket import util
-
 
 _TIMEOUT_SEC = 10
 _UNDEFINED_PORT = -1
@@ -116,8 +112,8 @@ def _format_host_header(host, port, secure):
     # is true, and /port/ is not 443, then append a U+003A COLON character
     # (:) followed by the value of /port/, expressed as a base-ten integer,
     # to /hostport/
-    if ((not secure and port != common.DEFAULT_WEB_SOCKET_PORT) or
-        (secure and port != common.DEFAULT_WEB_SOCKET_SECURE_PORT)):
+    if ((not secure and port != common.DEFAULT_WEB_SOCKET_PORT)
+            or (secure and port != common.DEFAULT_WEB_SOCKET_SECURE_PORT)):
         hostport += ':' + str(port)
     # 4.1 12. concatenation of the string "Host:", a U+0020 SPACE
     # character, and /hostport/, to /fields/.
@@ -148,16 +144,17 @@ def _get_mandatory_header(fields, name):
 
     values = fields.get(name.lower())
     if values is None or len(values) == 0:
-        raise ClientHandshakeError(
-            '%s header not found: %r' % (name, values))
+        raise ClientHandshakeError('%s header not found: %r' % (name, values))
     if len(values) > 1:
-        raise ClientHandshakeError(
-            'Multiple %s headers found: %r' % (name, values))
+        raise ClientHandshakeError('Multiple %s headers found: %r' %
+                                   (name, values))
     return values[0]
 
 
-def _validate_mandatory_header(fields, name,
-                               expected_value, case_sensitive=False):
+def _validate_mandatory_header(fields,
+                               name,
+                               expected_value,
+                               case_sensitive=False):
     """Gets and validates the value of the header specified by name from
     fields.
 
@@ -179,9 +176,8 @@ def _validate_mandatory_header(fields, name,
 
 class _TLSSocket(object):
     """Wrapper for a TLS connection."""
-
-    def __init__(self,
-                 raw_socket, tls_module, tls_version, disable_tls_compression):
+    def __init__(self, raw_socket, tls_module, tls_version,
+                 disable_tls_compression):
         self._logger = util.get_class_logger(self)
 
         if tls_module == _TLS_BY_STANDARD_MODULE:
@@ -192,8 +188,8 @@ class _TLSSocket(object):
             elif tls_version == _TLS_VERSION_TLS1:
                 version = ssl.PROTOCOL_TLSv1
             else:
-                raise ValueError(
-                    'Invalid --tls-version flag: %r' % tls_version)
+                raise ValueError('Invalid --tls-version flag: %r' %
+                                 tls_version)
 
             if disable_tls_compression:
                 raise ValueError(
@@ -212,8 +208,8 @@ class _TLSSocket(object):
             elif tls_version == _TLS_VERSION_TLS1:
                 version = OpenSSL.SSL.TLSv1_METHOD
             else:
-                raise ValueError(
-                    'Invalid --tls-version flag: %r' % tls_version)
+                raise ValueError('Invalid --tls-version flag: %r' %
+                                 tls_version)
 
             context = OpenSSL.SSL.Context(version)
 
@@ -251,7 +247,6 @@ class ClientHandshakeBase(object):
     """A base class for WebSocket opening handshake processors for each
     protocol version.
     """
-
     def __init__(self):
         self._logger = util.get_class_logger(self)
 
@@ -283,7 +278,8 @@ class ClientHandshakeBase(object):
             # array as a UTF-8 stream and the value given by the string
             # obtained by interpreting the /value/ byte array as a UTF-8 byte
             # stream.
-            fields.setdefault(name.decode('UTF-8'), []).append(value.decode('UTF-8'))
+            fields.setdefault(name.decode('UTF-8'),
+                              []).append(value.decode('UTF-8'))
             # 4.1 39. return to the "Field" step above
         return fields
 
@@ -335,11 +331,9 @@ def _get_permessage_deflate_framer(extension_response):
     client_no_context_takeover = None
 
     client_max_window_bits_name = (
-            PerMessageDeflateExtensionProcessor.
-                    _CLIENT_MAX_WINDOW_BITS_PARAM)
+        PerMessageDeflateExtensionProcessor._CLIENT_MAX_WINDOW_BITS_PARAM)
     client_no_context_takeover_name = (
-            PerMessageDeflateExtensionProcessor.
-                    _CLIENT_NO_CONTEXT_TAKEOVER_PARAM)
+        PerMessageDeflateExtensionProcessor._CLIENT_NO_CONTEXT_TAKEOVER_PARAM)
 
     # We didn't send any server_.* parameter.
     # Handle those parameters as invalid if found in the response.
@@ -347,24 +341,23 @@ def _get_permessage_deflate_framer(extension_response):
     for param_name, param_value in extension_response.get_parameters():
         if param_name == client_max_window_bits_name:
             if client_max_window_bits is not None:
-                raise ClientHandshakeError(
-                        'Multiple %s found' % client_max_window_bits_name)
+                raise ClientHandshakeError('Multiple %s found' %
+                                           client_max_window_bits_name)
 
             parsed_value = _parse_window_bits(param_value)
             if parsed_value is None:
                 raise ClientHandshakeError(
-                        'Bad %s: %r' %
-                        (client_max_window_bits_name, param_value))
+                    'Bad %s: %r' % (client_max_window_bits_name, param_value))
             client_max_window_bits = parsed_value
         elif param_name == client_no_context_takeover_name:
             if client_no_context_takeover is not None:
-                raise ClientHandshakeError(
-                        'Multiple %s found' % client_no_context_takeover_name)
+                raise ClientHandshakeError('Multiple %s found' %
+                                           client_no_context_takeover_name)
 
             if param_value is not None:
                 raise ClientHandshakeError(
-                        'Bad %s: Has value %r' %
-                        (client_no_context_takeover_name, param_value))
+                    'Bad %s: Has value %r' %
+                    (client_no_context_takeover_name, param_value))
             client_no_context_takeover = True
 
     if client_no_context_takeover is None:
@@ -377,7 +370,6 @@ def _get_permessage_deflate_framer(extension_response):
 class ClientHandshakeProcessor(ClientHandshakeBase):
     """WebSocket opening handshake processor
     """
-
     def __init__(self, socket, options):
         super(ClientHandshakeProcessor, self).__init__()
 
@@ -399,47 +391,43 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
         self._socket.sendall(request_line.encode('UTF-8'))
 
         fields = []
-        fields.append(_format_host_header(
-            self._options.server_host,
-            self._options.server_port,
-            self._options.use_tls))
+        fields.append(
+            _format_host_header(self._options.server_host,
+                                self._options.server_port,
+                                self._options.use_tls))
         fields.append(_UPGRADE_HEADER)
         fields.append(_CONNECTION_HEADER)
         if self._options.origin is not None:
-            fields.append(_origin_header(common.ORIGIN_HEADER,
-                                         self._options.origin))
+            fields.append(
+                _origin_header(common.ORIGIN_HEADER, self._options.origin))
 
         original_key = os.urandom(16)
         self._key = base64.b64encode(original_key)
-        self._logger.debug(
-            '%s: %r (%s)',
-            common.SEC_WEBSOCKET_KEY_HEADER,
-            self._key,
-            util.hexify(original_key))
+        self._logger.debug('%s: %r (%s)', common.SEC_WEBSOCKET_KEY_HEADER,
+                           self._key, util.hexify(original_key))
         fields.append(
             '%s: %s\r\n' %
             (common.SEC_WEBSOCKET_KEY_HEADER, self._key.decode('UTF-8')))
 
-        fields.append('%s: %d\r\n' % (common.SEC_WEBSOCKET_VERSION_HEADER,
-                                      common.VERSION_HYBI_LATEST))
+        fields.append(
+            '%s: %d\r\n' %
+            (common.SEC_WEBSOCKET_VERSION_HEADER, common.VERSION_HYBI_LATEST))
 
         extensions_to_request = []
 
         if self._options.use_permessage_deflate:
             extension = common.ExtensionParameter(
-                    common.PERMESSAGE_DEFLATE_EXTENSION)
+                common.PERMESSAGE_DEFLATE_EXTENSION)
             # Accept the client_max_window_bits extension parameter by default.
             extension.add_parameter(
-                    PerMessageDeflateExtensionProcessor.
-                            _CLIENT_MAX_WINDOW_BITS_PARAM,
-                    None)
+                PerMessageDeflateExtensionProcessor.
+                _CLIENT_MAX_WINDOW_BITS_PARAM, None)
             extensions_to_request.append(extension)
 
         if len(extensions_to_request) != 0:
-            fields.append(
-                '%s: %s\r\n' %
-                (common.SEC_WEBSOCKET_EXTENSIONS_HEADER,
-                 common.format_extensions(extensions_to_request)))
+            fields.append('%s: %s\r\n' %
+                          (common.SEC_WEBSOCKET_EXTENSIONS_HEADER,
+                           common.format_extensions(extensions_to_request)))
 
         for field in fields:
             self._socket.sendall(field.encode('UTF-8'))
@@ -459,12 +447,13 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
 
         m = re.match(b'HTTP/\\d+\.\\d+ (\\d\\d\\d) .*\r\n', status_line)
         if m is None:
-            raise ClientHandshakeError(
-                'Wrong status line format: %r' % status_line)
+            raise ClientHandshakeError('Wrong status line format: %r' %
+                                       status_line)
         status_code = m.group(1)
         if status_code != b'101':
-            self._logger.debug('Unexpected status code %s with following '
-                               'headers: %r', status_code, self._read_fields())
+            self._logger.debug(
+                'Unexpected status code %s with following headers: %r',
+                status_code, self._read_fields())
             raise ClientHandshakeError(
                 'Expected HTTP status code 101 but found %r' % status_code)
 
@@ -482,45 +471,37 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
         self._logger.debug('Received an empty line')
         self._logger.debug('Server\'s opening handshake headers: %r', fields)
 
-        _validate_mandatory_header(
-            fields,
-            common.UPGRADE_HEADER,
-            common.WEBSOCKET_UPGRADE_TYPE,
-            False)
+        _validate_mandatory_header(fields, common.UPGRADE_HEADER,
+                                   common.WEBSOCKET_UPGRADE_TYPE, False)
 
-        _validate_mandatory_header(
-            fields,
-            common.CONNECTION_HEADER,
-            common.UPGRADE_CONNECTION_TYPE,
-            False)
+        _validate_mandatory_header(fields, common.CONNECTION_HEADER,
+                                   common.UPGRADE_CONNECTION_TYPE, False)
 
-        accept = _get_mandatory_header(
-            fields, common.SEC_WEBSOCKET_ACCEPT_HEADER)
+        accept = _get_mandatory_header(fields,
+                                       common.SEC_WEBSOCKET_ACCEPT_HEADER)
 
         # Validate
         try:
             binary_accept = base64.b64decode(accept)
         except TypeError:
-            raise HandshakeError(
-                'Illegal value for header %s: %r' %
-                (common.SEC_WEBSOCKET_ACCEPT_HEADER, accept))
+            raise HandshakeError('Illegal value for header %s: %r' %
+                                 (common.SEC_WEBSOCKET_ACCEPT_HEADER, accept))
 
         if len(binary_accept) != 20:
             raise ClientHandshakeError(
                 'Decoded value of %s is not 20-byte long' %
                 common.SEC_WEBSOCKET_ACCEPT_HEADER)
 
-        self._logger.debug(
-            'Response for challenge : %r (%s)',
-            accept, util.hexify(binary_accept))
+        self._logger.debug('Response for challenge : %r (%s)', accept,
+                           util.hexify(binary_accept))
 
-        binary_expected_accept = sha1(
-            self._key + common.WEBSOCKET_ACCEPT_UUID).digest()
+        binary_expected_accept = sha1(self._key +
+                                      common.WEBSOCKET_ACCEPT_UUID).digest()
         expected_accept = base64.b64encode(binary_expected_accept)
 
-        self._logger.debug(
-            'Expected response for challenge: %r (%s)',
-            expected_accept, util.hexify(binary_expected_accept))
+        self._logger.debug('Expected response for challenge: %r (%s)',
+                           expected_accept,
+                           util.hexify(binary_expected_accept))
 
         if accept != expected_accept.decode('UTF-8'):
             raise ClientHandshakeError(
@@ -537,8 +518,8 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
 
         for extension in accepted_extensions:
             extension_name = extension.name()
-            if (extension_name == common.PERMESSAGE_DEFLATE_EXTENSION and
-                    self._options.use_permessage_deflate):
+            if (extension_name == common.PERMESSAGE_DEFLATE_EXTENSION
+                    and self._options.use_permessage_deflate):
                 permessage_deflate_accepted = True
 
                 framer = _get_permessage_deflate_framer(extension)
@@ -546,22 +527,22 @@ class ClientHandshakeProcessor(ClientHandshakeBase):
                 self._options.use_permessage_deflate = framer
                 continue
 
-            raise ClientHandshakeError(
-                'Unexpected extension %r' % extension_name)
+            raise ClientHandshakeError('Unexpected extension %r' %
+                                       extension_name)
 
-        if (self._options.use_permessage_deflate and
-            not permessage_deflate_accepted):
+        if (self._options.use_permessage_deflate
+                and not permessage_deflate_accepted):
             raise ClientHandshakeError(
-                    'Requested %s, but the server rejected it' %
-                    common.PERMESSAGE_DEFLATE_EXTENSION)
+                'Requested %s, but the server rejected it' %
+                common.PERMESSAGE_DEFLATE_EXTENSION)
 
         # TODO(tyoshino): Handle Sec-WebSocket-Protocol
         # TODO(tyoshino): Handle Cookie, etc.
 
+
 class ClientConnection(object):
     """A wrapper for socket object to provide the mp_conn interface.
     """
-
     def __init__(self, socket):
         self._socket = socket
 
@@ -573,6 +554,7 @@ class ClientConnection(object):
 
     def get_remote_addr(self):
         return self._socket.getpeername()
+
     remote_addr = property(get_remote_addr)
 
 
@@ -580,7 +562,6 @@ class ClientRequest(object):
     """A wrapper class just to make it able to pass a socket object to
     functions that expect a mp_request object.
     """
-
     def __init__(self, socket):
         self._logger = util.get_class_logger(self)
 
@@ -609,7 +590,6 @@ def _import_pyopenssl():
 
 class EchoClient(object):
     """WebSocket echo client."""
-
     def __init__(self, options):
         self._options = options
         self._socket = None
@@ -625,17 +605,16 @@ class EchoClient(object):
         self._socket = socket.socket()
         self._socket.settimeout(self._options.socket_timeout)
         try:
-            self._socket.connect((self._options.server_host,
-                                  self._options.server_port))
+            self._socket.connect(
+                (self._options.server_host, self._options.server_port))
             if self._options.use_tls:
                 self._socket = _TLSSocket(
-                    self._socket,
-                    self._options.tls_module,
+                    self._socket, self._options.tls_module,
                     self._options.tls_version,
                     self._options.disable_tls_compression)
 
-            self._handshake = ClientHandshakeProcessor(
-                self._socket, self._options)
+            self._handshake = ClientHandshakeProcessor(self._socket,
+                                                       self._options)
 
             self._handshake.handshake()
 
@@ -682,8 +661,7 @@ class EchoClient(object):
             if message is None:
                 print('Recv close')
                 print('Send ack')
-                self._logger.info(
-                    'Received closing handshake and sent ack')
+                self._logger.info('Received closing handshake and sent ack')
                 return
         print('Send close')
         self._stream.close_connection()
@@ -699,54 +677,96 @@ def main():
     parser = OptionParser()
     # We accept --command_line_flag style flags which is the same as Google
     # gflags in addition to common --command-line-flag style flags.
-    parser.add_option('-s', '--server-host', '--server_host',
-                      dest='server_host', type='string',
-                      default='localhost', help='server host')
-    parser.add_option('-p', '--server-port', '--server_port',
-                      dest='server_port', type='int',
-                      default=_UNDEFINED_PORT, help='server port')
-    parser.add_option('-o', '--origin', dest='origin', type='string',
-                      default=None, help='origin')
-    parser.add_option('-r', '--resource', dest='resource', type='string',
-                      default='/echo', help='resource path')
-    parser.add_option('-m', '--message', dest='message', type='string',
+    parser.add_option('-s',
+                      '--server-host',
+                      '--server_host',
+                      dest='server_host',
+                      type='string',
+                      default='localhost',
+                      help='server host')
+    parser.add_option('-p',
+                      '--server-port',
+                      '--server_port',
+                      dest='server_port',
+                      type='int',
+                      default=_UNDEFINED_PORT,
+                      help='server port')
+    parser.add_option('-o',
+                      '--origin',
+                      dest='origin',
+                      type='string',
+                      default=None,
+                      help='origin')
+    parser.add_option('-r',
+                      '--resource',
+                      dest='resource',
+                      type='string',
+                      default='/echo',
+                      help='resource path')
+    parser.add_option('-m',
+                      '--message',
+                      dest='message',
+                      type='string',
                       help=('comma-separated messages to send. '
-                           '%s will force close the connection from server.' %
+                            '%s will force close the connection from server.' %
                             _GOODBYE_MESSAGE))
-    parser.add_option('-q', '--quiet', dest='verbose', action='store_false',
-                      default=True, help='suppress messages')
-    parser.add_option('-t', '--tls', dest='use_tls', action='store_true',
-                      default=False, help='use TLS (wss://). By default, '
+    parser.add_option('-q',
+                      '--quiet',
+                      dest='verbose',
+                      action='store_false',
+                      default=True,
+                      help='suppress messages')
+    parser.add_option('-t',
+                      '--tls',
+                      dest='use_tls',
+                      action='store_true',
+                      default=False,
+                      help='use TLS (wss://). By default, '
                       'it looks for ssl and pyOpenSSL module and uses found '
                       'one. Use --tls-module option to specify which module '
                       'to use')
-    parser.add_option('--tls-module', '--tls_module', dest='tls_module',
+    parser.add_option('--tls-module',
+                      '--tls_module',
+                      dest='tls_module',
                       type='choice',
                       choices=[_TLS_BY_STANDARD_MODULE, _TLS_BY_PYOPENSSL],
                       help='Use ssl module if "%s" is specified. '
                       'Use pyOpenSSL module if "%s" is specified' %
                       (_TLS_BY_STANDARD_MODULE, _TLS_BY_PYOPENSSL))
-    parser.add_option('--tls-version', '--tls_version',
+    parser.add_option('--tls-version',
+                      '--tls_version',
                       dest='tls_version',
-                      type='string', default=_TLS_VERSION_SSL23,
+                      type='string',
+                      default=_TLS_VERSION_SSL23,
                       help='TLS/SSL version to use. One of \'' +
                       _TLS_VERSION_SSL23 + '\' (SSL version 2 or 3), \'' +
                       _TLS_VERSION_SSL3 + '\' (SSL version 3), \'' +
                       _TLS_VERSION_TLS1 + '\' (TLS version 1)')
-    parser.add_option('--disable-tls-compression', '--disable_tls_compression',
+    parser.add_option('--disable-tls-compression',
+                      '--disable_tls_compression',
                       dest='disable_tls_compression',
-                      action='store_true', default=False,
+                      action='store_true',
+                      default=False,
                       help='Disable TLS compression. Available only when '
                       'pyOpenSSL module is used.')
-    parser.add_option('-k', '--socket-timeout', '--socket_timeout',
-                      dest='socket_timeout', type='int', default=_TIMEOUT_SEC,
+    parser.add_option('-k',
+                      '--socket-timeout',
+                      '--socket_timeout',
+                      dest='socket_timeout',
+                      type='int',
+                      default=_TIMEOUT_SEC,
                       help='Timeout(sec) for sockets')
-    parser.add_option('--use-permessage-deflate', '--use_permessage_deflate',
+    parser.add_option('--use-permessage-deflate',
+                      '--use_permessage_deflate',
                       dest='use_permessage_deflate',
-                      action='store_true', default=False,
+                      action='store_true',
+                      default=False,
                       help='Use the permessage-deflate extension.')
-    parser.add_option('--log-level', '--log_level', type='choice',
-                      dest='log_level', default='warn',
+    parser.add_option('--log-level',
+                      '--log_level',
+                      type='choice',
+                      dest='log_level',
+                      default='warn',
                       choices=['debug', 'info', 'warn', 'error', 'critical'],
                       help='Log level.')
 
@@ -764,7 +784,7 @@ def main():
                 logging.debug('Using pyOpenSSL module')
             else:
                 logging.critical(
-                        'TLS support requires ssl or pyOpenSSL module.')
+                    'TLS support requires ssl or pyOpenSSL module.')
                 sys.exit(1)
         elif options.tls_module == _TLS_BY_STANDARD_MODULE:
             if not _import_ssl():
@@ -779,8 +799,8 @@ def main():
                              options.tls_module)
             sys.exit(1)
 
-        if (options.disable_tls_compression and
-            options.tls_module != _TLS_BY_PYOPENSSL):
+        if (options.disable_tls_compression
+                and options.tls_module != _TLS_BY_PYOPENSSL):
             logging.critical('You can disable TLS compression only when '
                              'pyOpenSSL module is used.')
             sys.exit(1)
@@ -805,13 +825,12 @@ def main():
     # optparse doesn't seem to handle non-ascii default values.
     # Set default message here.
     if not options.message:
-        options.message = u'Hello,\u65e5\u672c'   # "Japan" in Japanese
+        options.message = u'Hello,\u65e5\u672c'  # "Japan" in Japanese
 
     EchoClient(options).run()
 
 
 if __name__ == '__main__':
     main()
-
 
 # vi:sts=4 sw=4 et

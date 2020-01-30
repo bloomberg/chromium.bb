@@ -26,8 +26,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """ A Standalone WebSocket Server for testing purposes
 
 mod_pywebsocket is an API that provides WebSocket functionalities with
@@ -170,6 +168,5 @@ A request object has these extension processing related attributes.
   A list of loaded extension processors. Find the processor for the
   extension you want to configure from it, and call its methods.
 """
-
 
 # vi:sts=4 sw=4 et tw=72

@@ -28,10 +28,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Tests for util module."""
-
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -48,13 +45,11 @@ from six.moves import range
 from six import PY3
 from six import int2byte
 
-
 _TEST_DATA_DIR = os.path.join(os.path.split(__file__)[0], 'testdata')
 
 
 class UtilTest(unittest.TestCase):
     """A unittest for util module."""
-
     def test_prepend_message_to_exception(self):
         exc = Exception('World')
         self.assertEqual('World', str(exc))
@@ -64,14 +59,20 @@ class UtilTest(unittest.TestCase):
     def test_get_script_interp(self):
         cygwin_path = 'c:\\cygwin\\bin'
         cygwin_perl = os.path.join(cygwin_path, 'perl')
-        self.assertEqual(None, util.get_script_interp(
-            os.path.join(_TEST_DATA_DIR, 'README')))
-        self.assertEqual(None, util.get_script_interp(
-            os.path.join(_TEST_DATA_DIR, 'README'), cygwin_path))
-        self.assertEqual('/usr/bin/perl -wT', util.get_script_interp(
-            os.path.join(_TEST_DATA_DIR, 'hello.pl')))
-        self.assertEqual(cygwin_perl + ' -wT', util.get_script_interp(
-            os.path.join(_TEST_DATA_DIR, 'hello.pl'), cygwin_path))
+        self.assertEqual(
+            None, util.get_script_interp(os.path.join(_TEST_DATA_DIR,
+                                                      'README')))
+        self.assertEqual(
+            None,
+            util.get_script_interp(os.path.join(_TEST_DATA_DIR, 'README'),
+                                   cygwin_path))
+        self.assertEqual(
+            '/usr/bin/perl -wT',
+            util.get_script_interp(os.path.join(_TEST_DATA_DIR, 'hello.pl')))
+        self.assertEqual(
+            cygwin_perl + ' -wT',
+            util.get_script_interp(os.path.join(_TEST_DATA_DIR, 'hello.pl'),
+                                   cygwin_path))
 
     def test_hexify(self):
         self.assertEqual('61 7a 41 5a 30 39 20 09 0d 0a 00 ff',
@@ -80,7 +81,6 @@ class UtilTest(unittest.TestCase):
 
 class RepeatedXorMaskerTest(unittest.TestCase):
     """A unittest for RepeatedXorMasker class."""
-
     def test_mask(self):
         # Sample input e6,97,a5 is U+65e5 in UTF-8
         masker = util.RepeatedXorMasker(b'\xff\xff\xff\xff')
@@ -108,24 +108,23 @@ class RepeatedXorMaskerTest(unittest.TestCase):
         masker = util.RepeatedXorMasker(b'mASk')
         original = b''.join([util.pack_byte(i % 256) for i in range(1000)])
         result = masker.mask(original)
-        expected = b''.join(
-                [util.pack_byte((i % 256) ^ ord('mASk'[i % 4])) for i in range(1000)])
+        expected = b''.join([
+            util.pack_byte((i % 256) ^ ord('mASk'[i % 4])) for i in range(1000)
+        ])
         self.assertEqual(expected, result)
 
         masker = util.RepeatedXorMasker(b'MaSk')
         first_part = b'The WebSocket Protocol enables two-way communication.'
         result = masker.mask(first_part)
         self.assertEqual(
-                b'\x19\t6K\x1a\x0418"\x028\x0e9A\x03\x19"\x15<\x08"\rs\x0e#'
-                b'\x001\x07(\x12s\x1f:\x0e~\x1c,\x18s\x08"\x0c>\x1e#\x080\n9'
-                b'\x08<\x05c',
-                result)
+            b'\x19\t6K\x1a\x0418"\x028\x0e9A\x03\x19"\x15<\x08"\rs\x0e#'
+            b'\x001\x07(\x12s\x1f:\x0e~\x1c,\x18s\x08"\x0c>\x1e#\x080\n9'
+            b'\x08<\x05c', result)
         second_part = b'It has two parts: a handshake and the data transfer.'
         result = masker.mask(second_part)
         self.assertEqual(
-                b"('K%\x00 K9\x16<K=\x00!\x1f>[s\nm\t2\x05)\x12;\n&\x04s\n#"
-                b"\x05s\x1f%\x04s\x0f,\x152K9\x132\x05>\x076\x19c",
-                result)
+            b"('K%\x00 K9\x16<K=\x00!\x1f>[s\nm\t2\x05)\x12;\n&\x04s\n#"
+            b"\x05s\x1f%\x04s\x0f,\x152K9\x132\x05>\x076\x19c", result)
 
 
 def get_random_section(source, min_num_chunks):
@@ -134,8 +133,8 @@ def get_random_section(source, min_num_chunks):
 
     while bytes_chunked < len(source):
         chunk_size = random.randint(
-            1,
-            min(len(source) / min_num_chunks, len(source) - bytes_chunked))
+            1, min(len(source) / min_num_chunks,
+                   len(source) - bytes_chunked))
         chunk = source[bytes_chunked:bytes_chunked + chunk_size]
         chunks.append(chunk)
         bytes_chunked += chunk_size
@@ -145,7 +144,6 @@ def get_random_section(source, min_num_chunks):
 
 class InflaterDeflaterTest(unittest.TestCase):
     """A unittest for _Inflater and _Deflater class."""
-
     def test_inflate_deflate_default(self):
         input = b'hello' + b'-' * 30000 + b'hello'
         inflater15 = util._Inflater(15)
@@ -179,7 +177,7 @@ class InflaterDeflaterTest(unittest.TestCase):
 
         chunked_expectation = get_random_section(source, 10)
         print("Expectation chunk sizes: %r" %
-               [len(c) for c in chunked_expectation])
+              [len(c) for c in chunked_expectation])
 
         inflater = util._Inflater(15)
         inflater.append(b''.join(compressed))
@@ -192,6 +190,5 @@ class InflaterDeflaterTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
 
 # vi:sts=4 sw=4 et

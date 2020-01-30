@@ -26,15 +26,11 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """This file must not depend on any module specific to the WebSocket protocol.
 """
 
-
 from __future__ import absolute_import
 from mod_pywebsocket import http_header_util
-
 
 # Additional log level definitions.
 LOGLEVEL_FINE = 9
@@ -129,9 +125,7 @@ def is_control_opcode(opcode):
 
 
 class ExtensionParameter(object):
-
     """This is exchanged on extension negotiation in opening handshake."""
-
     def __init__(self, name):
         self._name = name
         # TODO(tyoshino): Change the data structure to more efficient one such
@@ -171,9 +165,7 @@ class ExtensionParameter(object):
 
 
 class ExtensionParsingException(Exception):
-
     """Exception to handle errors in extension parsing."""
-
     def __init__(self, name):
         super(ExtensionParsingException, self).__init__(name)
 
@@ -221,8 +213,7 @@ def _parse_extension(state):
             _parse_extension_param(state, extension)
         except ExtensionParsingException as e:
             raise ExtensionParsingException(
-                'Failed to parse parameter for %r (%r)' %
-                (extension_token, e))
+                'Failed to parse parameter for %r (%r)' % (extension_token, e))
 
     return extension
 
@@ -249,14 +240,12 @@ def parse_extensions(data):
         if not http_header_util.consume_string(state, ','):
             raise ExtensionParsingException(
                 'Failed to parse Sec-WebSocket-Extensions header: '
-                'Expected a comma but found %r' %
-                http_header_util.peek(state))
+                'Expected a comma but found %r' % http_header_util.peek(state))
 
         http_header_util.consume_lwses(state)
 
     if len(extension_list) == 0:
-        raise ExtensionParsingException(
-            'No valid extension entry found')
+        raise ExtensionParsingException('No valid extension entry found')
 
     return extension_list
 

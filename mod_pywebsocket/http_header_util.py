@@ -26,16 +26,12 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Utilities for parsing and formatting headers that follow the grammar defined
 in HTTP RFC http://www.ietf.org/rfc/rfc2616.txt.
 """
 
-
 from __future__ import absolute_import
 import six.moves.urllib.parse
-
 
 _SEPARATORS = '()<>@,;:\\"/[]?={} \t'
 
@@ -53,7 +49,6 @@ def _is_ctl(c):
 
 
 class ParsingState(object):
-
     def __init__(self, data):
         self.data = data
         self.head = 0

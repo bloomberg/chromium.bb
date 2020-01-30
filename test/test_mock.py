@@ -28,10 +28,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Tests for mock module."""
-
 
 from __future__ import absolute_import
 import six.moves.queue
@@ -45,7 +42,6 @@ from test import mock
 
 class MockConnTest(unittest.TestCase):
     """A unittest for MockConn class."""
-
     def setUp(self):
         self._conn = mock.MockConn(b'ABC\r\nDEFG\r\n\r\nHIJK')
 
@@ -76,18 +72,15 @@ class MockConnTest(unittest.TestCase):
 
 class MockBlockingConnTest(unittest.TestCase):
     """A unittest for MockBlockingConn class."""
-
     def test_read(self):
         """Tests that data put to MockBlockingConn by put_bytes method can be
         read from it.
         """
-
         class LineReader(threading.Thread):
             """A test class that launches a thread, calls readline on the
             specified conn repeatedly and puts the read data to the specified
             queue.
             """
-
             def __init__(self, conn, queue):
                 threading.Thread.__init__(self)
                 self._queue = queue
@@ -111,7 +104,6 @@ class MockBlockingConnTest(unittest.TestCase):
 
 class MockTableTest(unittest.TestCase):
     """A unittest for MockTable class."""
-
     def test_create_from_dict(self):
         table = mock.MockTable({'Key': 'Value'})
         self.assertEqual('Value', table.get('KEY'))
@@ -123,7 +115,7 @@ class MockTableTest(unittest.TestCase):
         self.assertEqual('Value', table['key'])
 
     def test_create_from_tuple(self):
-        table = mock.MockTable((('Key', 'Value'),))
+        table = mock.MockTable((('Key', 'Value'), ))
         self.assertEqual('Value', table.get('KEY'))
         self.assertEqual('Value', table['key'])
 
@@ -141,6 +133,5 @@ class MockTableTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
 
 # vi:sts=4 sw=4 et

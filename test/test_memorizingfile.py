@@ -28,10 +28,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Tests for memorizingfile module."""
-
 
 from __future__ import absolute_import
 import unittest
@@ -44,7 +41,6 @@ from mod_pywebsocket import memorizingfile
 
 class UtilTest(unittest.TestCase):
     """A unittest for memorizingfile module."""
-
     def check(self, memorizing_file, num_read, expected_list):
         for unused in range(num_read):
             memorizing_file.readline()
@@ -77,29 +73,28 @@ class UtilTest(unittest.TestCase):
             self.assertEqual(expected, read)
 
     def test_get_memorized_lines(self):
-        memorizing_file = memorizingfile.MemorizingFile(six.StringIO(
-                'Hello\nWorld\nWelcome'))
+        memorizing_file = memorizingfile.MemorizingFile(
+            six.StringIO('Hello\nWorld\nWelcome'))
         self.check(memorizing_file, 3, ['Hello\n', 'World\n', 'Welcome'])
 
     def test_get_memorized_lines_limit_memorized_lines(self):
-        memorizing_file = memorizingfile.MemorizingFile(six.StringIO(
-                'Hello\nWorld\nWelcome'), 2)
+        memorizing_file = memorizingfile.MemorizingFile(
+            six.StringIO('Hello\nWorld\nWelcome'), 2)
         self.check(memorizing_file, 3, ['Hello\n', 'World\n'])
 
     def test_get_memorized_lines_empty_file(self):
-        memorizing_file = memorizingfile.MemorizingFile(six.StringIO(
-                ''))
+        memorizing_file = memorizingfile.MemorizingFile(six.StringIO(''))
         self.check(memorizing_file, 10, [])
 
     def test_get_memorized_lines_with_size(self):
         for size in range(1, 10):
-            memorizing_file = memorizingfile.MemorizingFile(six.StringIO(
-                'Hello\nWorld\nWelcome'))
+            memorizing_file = memorizingfile.MemorizingFile(
+                six.StringIO('Hello\nWorld\nWelcome'))
             self.check_with_size(memorizing_file, size,
                                  ['Hello\n', 'World\n', 'Welcome'])
 
+
 if __name__ == '__main__':
     unittest.main()
-
 
 # vi:sts=4 sw=4 et

@@ -26,12 +26,9 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Common functions and exceptions used by WebSocket opening handshake
 processors.
 """
-
 
 from __future__ import absolute_import
 from mod_pywebsocket import common
@@ -56,7 +53,6 @@ class HandshakeException(Exception):
     """This exception will be raised when an error occurred while processing
     WebSocket initial handshake.
     """
-
     def __init__(self, name, status=None):
         super(HandshakeException, self).__init__(name)
         self.status = status
@@ -66,7 +62,6 @@ class VersionException(Exception):
     """This exception will be raised when a version of client request does not
     match with version the server supports.
     """
-
     def __init__(self, name, supported_versions=''):
         """Construct an instance.
 
@@ -133,7 +128,8 @@ def validate_mandatory_header(request, key, expected_value, fail_status=None):
     if value.lower() != expected_value.lower():
         raise HandshakeException(
             'Expected %r for header %s but found %r (case-insensitive)' %
-            (expected_value, key, value), status=fail_status)
+            (expected_value, key, value),
+            status=fail_status)
 
 
 def check_request_line(request):
@@ -169,8 +165,8 @@ def parse_token_list(data):
             break
 
         if not http_header_util.consume_string(state, ','):
-            raise HandshakeException(
-                'Expected a comma but found %r' % http_header_util.peek(state))
+            raise HandshakeException('Expected a comma but found %r' %
+                                     http_header_util.peek(state))
 
         http_header_util.consume_lwses(state)
 

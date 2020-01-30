@@ -28,10 +28,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Tests for handshake module."""
-
 
 from __future__ import absolute_import
 import unittest
@@ -50,7 +47,6 @@ class RequestDefinition(object):
     """A class for holding data for constructing opening handshake strings for
     testing the opening handshake processor.
     """
-
     def __init__(self, method, uri, headers):
         self.method = method
         self.uri = uri
@@ -59,22 +55,22 @@ class RequestDefinition(object):
 
 def _create_good_request_def():
     return RequestDefinition(
-        'GET', '/demo',
-        {'Host': 'server.example.com',
-         'Upgrade': 'websocket',
-         'Connection': 'Upgrade',
-         'Sec-WebSocket-Key': 'dGhlIHNhbXBsZSBub25jZQ==',
-         'Sec-WebSocket-Version': '13',
-         'Origin': 'http://example.com'})
+        'GET', '/demo', {
+            'Host': 'server.example.com',
+            'Upgrade': 'websocket',
+            'Connection': 'Upgrade',
+            'Sec-WebSocket-Key': 'dGhlIHNhbXBsZSBub25jZQ==',
+            'Sec-WebSocket-Version': '13',
+            'Origin': 'http://example.com'
+        })
 
 
 def _create_request(request_def):
     conn = mock.MockConn(b'')
-    return mock.MockRequest(
-        method=request_def.method,
-        uri=request_def.uri,
-        headers_in=request_def.headers,
-        connection=conn)
+    return mock.MockRequest(method=request_def.method,
+                            uri=request_def.uri,
+                            headers_in=request_def.headers,
+                            connection=conn)
 
 
 def _create_handshaker(request):
@@ -87,7 +83,6 @@ class SubprotocolChoosingDispatcher(object):
     of requested ones to ws_protocol where i is given on construction as index
     argument. If index is negative, default_value will be set to ws_protocol.
     """
-
     def __init__(self, index, default_value=None):
         self.index = index
         self.default_value = default_value
@@ -111,7 +106,6 @@ class AbortingDispatcher(object):
     """A dispatcher for testing. This dispatcher raises an exception in
     do_extra_handshake to reject the request.
     """
-
     def do_extra_handshake(self, conn_context):
         raise HandshakeAbortedException('An exception to reject the request')
 
@@ -123,7 +117,6 @@ class AbortedByUserDispatcher(object):
     """A dispatcher for testing. This dispatcher raises an
     AbortedByUserException in do_extra_handshake to reject the request.
     """
-
     def do_extra_handshake(self, conn_context):
         raise AbortedByUserException('An AbortedByUserException to reject the '
                                      'request')
@@ -143,7 +136,6 @@ class HandshakerTest(unittest.TestCase):
     """A unittest for draft-ietf-hybi-thewebsocketprotocol-06 and later
     handshake processor.
     """
-
     def test_do_handshake(self):
         request = _create_request(_create_good_request_def())
         dispatcher = mock.MockDispatcher()
@@ -152,8 +144,7 @@ class HandshakerTest(unittest.TestCase):
 
         self.assertTrue(dispatcher.do_extra_handshake_called)
 
-        self.assertEqual(
-            _EXPECTED_RESPONSE, request.connection.written_data())
+        self.assertEqual(_EXPECTED_RESPONSE, request.connection.written_data())
         self.assertEqual('/demo', request.ws_resource)
         self.assertEqual('http://example.com', request.ws_origin)
         self.assertEqual(None, request.ws_protocol)
@@ -169,8 +160,7 @@ class HandshakerTest(unittest.TestCase):
         request = _create_request(request_def)
         handshaker = _create_handshaker(request)
         handshaker.do_handshake()
-        self.assertEqual(
-            _EXPECTED_RESPONSE, request.connection.written_data())
+        self.assertEqual(_EXPECTED_RESPONSE, request.connection.written_data())
 
     def test_do_handshake_with_capitalized_value(self):
         request_def = _create_good_request_def()
@@ -179,8 +169,7 @@ class HandshakerTest(unittest.TestCase):
         request = _create_request(request_def)
         handshaker = _create_handshaker(request)
         handshaker.do_handshake()
-        self.assertEqual(
-            _EXPECTED_RESPONSE, request.connection.written_data())
+        self.assertEqual(_EXPECTED_RESPONSE, request.connection.written_data())
 
         request_def = _create_good_request_def()
         request_def.headers['Connection'] = 'UPGRADE'
@@ -188,8 +177,7 @@ class HandshakerTest(unittest.TestCase):
         request = _create_request(request_def)
         handshaker = _create_handshaker(request)
         handshaker.do_handshake()
-        self.assertEqual(
-            _EXPECTED_RESPONSE, request.connection.written_data())
+        self.assertEqual(_EXPECTED_RESPONSE, request.connection.written_data())
 
     def test_do_handshake_with_multiple_connection_values(self):
         request_def = _create_good_request_def()
@@ -198,13 +186,11 @@ class HandshakerTest(unittest.TestCase):
         request = _create_request(request_def)
         handshaker = _create_handshaker(request)
         handshaker.do_handshake()
-        self.assertEqual(
-            _EXPECTED_RESPONSE, request.connection.written_data())
+        self.assertEqual(_EXPECTED_RESPONSE, request.connection.written_data())
 
     def test_aborting_handshake(self):
-        handshaker = Handshaker(
-            _create_request(_create_good_request_def()),
-            AbortingDispatcher())
+        handshaker = Handshaker(_create_request(_create_good_request_def()),
+                                AbortingDispatcher())
         # do_extra_handshake raises an exception. Check that it's not caught by
         # do_handshake.
         self.assertRaises(HandshakeAbortedException, handshaker.do_handshake)
@@ -230,8 +216,8 @@ class HandshakerTest(unittest.TestCase):
     def test_do_handshake_protocol_not_in_request_but_in_response(self):
         request_def = _create_good_request_def()
         request = _create_request(request_def)
-        handshaker = Handshaker(
-            request, SubprotocolChoosingDispatcher(-1, 'foobar'))
+        handshaker = Handshaker(request,
+                                SubprotocolChoosingDispatcher(-1, 'foobar'))
         # No request has been made but ws_protocol is set. HandshakeException
         # must be raised.
         self.assertRaises(HandshakeException, handshaker.do_handshake)
@@ -256,7 +242,7 @@ class HandshakerTest(unittest.TestCase):
             b'Connection: Upgrade\r\n'
             b'Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n'
             b'Sec-WebSocket-Extensions: '
-                b'permessage-deflate; server_no_context_takeover\r\n'
+            b'permessage-deflate; server_no_context_takeover\r\n'
             b'\r\n')
 
         request = _create_request(request_def)
@@ -265,16 +251,13 @@ class HandshakerTest(unittest.TestCase):
         self.assertEqual(EXPECTED_RESPONSE, request.connection.written_data())
         self.assertEqual(1, len(request.ws_extensions))
         extension = request.ws_extensions[0]
-        self.assertEqual(common.PERMESSAGE_DEFLATE_EXTENSION,
-                         extension.name())
+        self.assertEqual(common.PERMESSAGE_DEFLATE_EXTENSION, extension.name())
         self.assertEqual(['server_no_context_takeover'],
                          extension.get_parameter_names())
-        self.assertEqual(None,
-                         extension.get_parameter_value(
-                             'server_no_context_takeover'))
+        self.assertEqual(
+            None, extension.get_parameter_value('server_no_context_takeover'))
         self.assertEqual(1, len(request.ws_extension_processors))
-        self.assertEqual('deflate',
-                         request.ws_extension_processors[0].name())
+        self.assertEqual('deflate', request.ws_extension_processors[0].name())
 
     def test_do_handshake_with_quoted_extensions(self):
         request_def = _create_good_request_def()
@@ -290,8 +273,8 @@ class HandshakerTest(unittest.TestCase):
         self.assertEqual('permessage-deflate', first_extension.name())
         second_extension = request.ws_requested_extensions[1]
         self.assertEqual('unknown', second_extension.name())
-        self.assertEqual(
-            ['e', 'ma', 'pv'], second_extension.get_parameter_names())
+        self.assertEqual(['e', 'ma', 'pv'],
+                         second_extension.get_parameter_names())
         self.assertEqual('mc^2', second_extension.get_parameter_value('e'))
         self.assertEqual(' \rf ', second_extension.get_parameter_value('ma'))
         self.assertEqual('nrt', second_extension.get_parameter_value('pv'))
@@ -304,15 +287,12 @@ class HandshakerTest(unittest.TestCase):
         request = _create_request(request_def)
         handshaker = _create_handshaker(request)
         handshaker.do_handshake()
-        self.assertEqual(
-            'AValue', request.headers_in['AKey'])
-        self.assertEqual(
-            '', request.headers_in['EmptyValue'])
+        self.assertEqual('AValue', request.headers_in['AKey'])
+        self.assertEqual('', request.headers_in['EmptyValue'])
 
     def test_abort_extra_handshake(self):
-        handshaker = Handshaker(
-            _create_request(_create_good_request_def()),
-            AbortedByUserDispatcher())
+        handshaker = Handshaker(_create_request(_create_good_request_def()),
+                                AbortedByUserDispatcher())
         # do_extra_handshake raises an AbortedByUserException. Check that it's
         # not caught by do_handshake.
         self.assertRaises(AbortedByUserException, handshaker.do_handshake)
@@ -321,20 +301,28 @@ class HandshakerTest(unittest.TestCase):
         bad_cases = [
             ('HTTP request',
              RequestDefinition(
-                 'GET', '/demo',
-                 {'Host': 'www.google.com',
-                  'User-Agent':
-                      'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5;'
-                      ' en-US; rv:1.9.1.3) Gecko/20090824 Firefox/3.5.3'
-                      ' GTB6 GTBA',
-                  'Accept':
-                      'text/html,application/xhtml+xml,application/xml;q=0.9,'
-                      '*/*;q=0.8',
-                  'Accept-Language': 'en-us,en;q=0.5',
-                  'Accept-Encoding': 'gzip,deflate',
-                  'Accept-Charset': 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
-                  'Keep-Alive': '300',
-                  'Connection': 'keep-alive'}), None, True)]
+                 'GET', '/demo', {
+                     'Host':
+                     'www.google.com',
+                     'User-Agent':
+                     'Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5;'
+                     ' en-US; rv:1.9.1.3) Gecko/20090824 Firefox/3.5.3'
+                     ' GTB6 GTBA',
+                     'Accept':
+                     'text/html,application/xhtml+xml,application/xml;q=0.9,'
+                     '*/*;q=0.8',
+                     'Accept-Language':
+                     'en-us,en;q=0.5',
+                     'Accept-Encoding':
+                     'gzip,deflate',
+                     'Accept-Charset':
+                     'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
+                     'Keep-Alive':
+                     '300',
+                     'Connection':
+                     'keep-alive'
+                 }), None, True)
+        ]
 
         request_def = _create_good_request_def()
         request_def.method = 'POST'
@@ -378,8 +366,7 @@ class HandshakerTest(unittest.TestCase):
 
         request_def = _create_good_request_def()
         # The last character right before == must be any of A, Q, w and g.
-        request_def.headers['Sec-WebSocket-Key'] = (
-            'AQIDBAUGBwgJCgsMDQ4PEC==')
+        request_def.headers['Sec-WebSocket-Key'] = 'AQIDBAUGBwgJCgsMDQ4PEC=='
         bad_cases.append(
             ('Wrong Sec-WebSocket-Key (padding bits are not zero)',
              request_def, 400, True))
@@ -387,19 +374,18 @@ class HandshakerTest(unittest.TestCase):
         request_def = _create_good_request_def()
         request_def.headers['Sec-WebSocket-Key'] = (
             'dGhlIHNhbXBsZSBub25jZQ==,dGhlIHNhbXBsZSBub25jZQ==')
-        bad_cases.append(
-            ('Wrong Sec-WebSocket-Key (multiple values)',
-             request_def, 400, True))
+        bad_cases.append(('Wrong Sec-WebSocket-Key (multiple values)',
+                          request_def, 400, True))
 
         request_def = _create_good_request_def()
         del request_def.headers['Sec-WebSocket-Version']
-        bad_cases.append(('Missing Sec-WebSocket-Version', request_def, None,
-                          True))
+        bad_cases.append(
+            ('Missing Sec-WebSocket-Version', request_def, None, True))
 
         request_def = _create_good_request_def()
         request_def.headers['Sec-WebSocket-Version'] = '3'
-        bad_cases.append(('Wrong Sec-WebSocket-Version', request_def, None,
-                          False))
+        bad_cases.append(
+            ('Wrong Sec-WebSocket-Version', request_def, None, False))
 
         request_def = _create_good_request_def()
         request_def.headers['Sec-WebSocket-Version'] = '13, 13'
@@ -408,13 +394,13 @@ class HandshakerTest(unittest.TestCase):
 
         request_def = _create_good_request_def()
         request_def.headers['Sec-WebSocket-Protocol'] = 'illegal\x09protocol'
-        bad_cases.append(('Illegal Sec-WebSocket-Protocol',
-                          request_def, 400, True))
+        bad_cases.append(
+            ('Illegal Sec-WebSocket-Protocol', request_def, 400, True))
 
         request_def = _create_good_request_def()
         request_def.headers['Sec-WebSocket-Protocol'] = ''
-        bad_cases.append(('Empty Sec-WebSocket-Protocol',
-                          request_def, 400, True))
+        bad_cases.append(
+            ('Empty Sec-WebSocket-Protocol', request_def, 400, True))
 
         for (case_name, request_def, expected_status,
              expect_handshake_exception) in bad_cases:
@@ -432,6 +418,5 @@ class HandshakerTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
 
 # vi:sts=4 sw=4 et

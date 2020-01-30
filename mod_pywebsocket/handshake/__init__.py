@@ -26,13 +26,10 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """WebSocket opening handshake processor. This class try to apply available
 opening handshake processors for each protocol version until a connection is
 successfully established.
 """
-
 
 from __future__ import absolute_import
 import logging
@@ -44,7 +41,6 @@ from mod_pywebsocket.handshake import hybi
 from mod_pywebsocket.handshake._base import AbortedByUserException
 from mod_pywebsocket.handshake._base import HandshakeException
 from mod_pywebsocket.handshake._base import VersionException
-
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -73,12 +69,11 @@ def do_handshake(request, dispatcher):
     # dict(mimetools.Message object) returns the map from header names to
     # header values. While MpTable_Type doesn't have such __str__ but just
     # __repr__ which formats itself as well as dictionary object.
-    _LOGGER.debug(
-        'Client\'s opening handshake headers: %r', dict(request.headers_in))
+    _LOGGER.debug('Client\'s opening handshake headers: %r',
+                  dict(request.headers_in))
 
     handshakers = []
-    handshakers.append(
-        ('RFC 6455', hybi.Handshaker(request, dispatcher)))
+    handshakers.append(('RFC 6455', hybi.Handshaker(request, dispatcher)))
 
     for name, handshaker in handshakers:
         _LOGGER.debug('Trying protocol version %s', name)

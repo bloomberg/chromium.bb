@@ -28,27 +28,22 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Memorizing file.
 
 A memorizing file wraps a file and memorizes lines read by readline.
 """
-
 
 from __future__ import absolute_import
 import sys
 
 
 class MemorizingFile(object):
-
     """MemorizingFile wraps a file and memorizes lines read by readline.
 
     Note that data read by other methods are not memorized. This behavior
     is good enough for memorizing lines SimpleHTTPServer reads before
     the control reaches WebSocketRequestHandler.
     """
-
     def __init__(self, file_, max_memorized_lines=sys.maxsize):
         """Construct an instance.
 

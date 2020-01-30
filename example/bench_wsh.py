@@ -26,8 +26,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """A simple load tester for WebSocket clients.
 
 A client program sends a message formatted as "<time> <count> <message>" to
@@ -35,7 +33,6 @@ this handler. This handler starts sending total <count> WebSocket messages
 containing <message> every <time> seconds. <time> can be a floating point
 value. <count> must be an integer value.
 """
-
 
 from __future__ import absolute_import
 import time

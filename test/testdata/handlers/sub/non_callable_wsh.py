@@ -26,14 +26,10 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Non-callable handlers.
 """
 
-
 web_socket_do_extra_handshake = True
 web_socket_transfer_data = 1
-
 
 # vi:sts=4 sw=4 et

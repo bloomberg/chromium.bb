@@ -26,8 +26,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Handler for benchmark.html."""
 from __future__ import absolute_import
 import six
@@ -55,8 +53,7 @@ def web_socket_transfer_data(request):
         if commands[0] == 'receive':
             if len(commands) != 2:
                 raise ValueError(
-                        'Illegal number of arguments for send command' +
-                        command)
+                    'Illegal number of arguments for send command' + command)
             size = int(commands[1])
 
             # Reuse data if possible.
@@ -66,8 +63,8 @@ def web_socket_transfer_data(request):
         elif commands[0] == 'send':
             if len(commands) != 2:
                 raise ValueError(
-                        'Illegal number of arguments for receive command' +
-                        command)
+                    'Illegal number of arguments for receive command' +
+                    command)
             verify_data = commands[1] == '1'
 
             data = request.ws_stream.receive_message()

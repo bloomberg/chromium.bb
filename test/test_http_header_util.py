@@ -28,10 +28,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Tests for http_header_util module."""
-
 
 from __future__ import absolute_import
 import unittest
@@ -42,7 +39,6 @@ from mod_pywebsocket import http_header_util
 
 class UnitTest(unittest.TestCase):
     """A unittest for http_header_util module."""
-
     def test_parse_relative_uri(self):
         host, port, resource = http_header_util.parse_uri('/ws/test')
         self.assertEqual(None, host)
@@ -62,8 +58,7 @@ class UnitTest(unittest.TestCase):
         self.assertEqual(80, port)
         self.assertEqual('/ws/test', resource)
 
-        host, port, resource = http_header_util.parse_uri(
-            'wss://example.com/')
+        host, port, resource = http_header_util.parse_uri('wss://example.com/')
         self.assertEqual('example.com', host)
         self.assertEqual(443, port)
         self.assertEqual('/', resource)
@@ -78,10 +73,12 @@ class UnitTest(unittest.TestCase):
         host, port, resource = http_header_util.parse_uri('ws:///')
         self.assertEqual(None, resource)
 
-        host, port, resource = http_header_util.parse_uri('ws://localhost:INVALID_PORT')
+        host, port, resource = http_header_util.parse_uri(
+            'ws://localhost:INVALID_PORT')
         self.assertEqual(None, resource)
 
-        host, port, resource = http_header_util.parse_uri('ws://localhost:-1/ws')
+        host, port, resource = http_header_util.parse_uri(
+            'ws://localhost:-1/ws')
         if six.PY3:
             self.assertEqual(None, resource)
         else:
@@ -89,8 +86,8 @@ class UnitTest(unittest.TestCase):
             self.assertEqual(80, port)
             self.assertEqual('/ws', resource)
 
+
 if __name__ == '__main__':
     unittest.main()
-
 
 # vi:sts=4 sw=4 et

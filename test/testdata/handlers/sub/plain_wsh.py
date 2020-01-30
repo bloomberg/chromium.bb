@@ -33,8 +33,8 @@ def web_socket_do_extra_handshake(request):
 
 
 def web_socket_transfer_data(request):
-    message = 'sub/plain_wsh.py is called for %s, %s' % (
-        request.ws_resource, request.ws_protocol)
+    message = 'sub/plain_wsh.py is called for %s, %s' % (request.ws_resource,
+                                                         request.ws_protocol)
     request.connection.write(message.encode('UTF-8'))
 
 

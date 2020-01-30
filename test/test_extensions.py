@@ -28,10 +28,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Tests for extensions module."""
-
 
 from __future__ import absolute_import
 import unittest
@@ -45,7 +42,6 @@ from mod_pywebsocket import extensions
 
 class ExtensionsTest(unittest.TestCase):
     """A unittest for non-class methods in extensions.py"""
-
     def test_parse_window_bits(self):
         self.assertRaises(ValueError, extensions._parse_window_bits, None)
         self.assertRaises(ValueError, extensions._parse_window_bits, 'foobar')
@@ -66,18 +62,17 @@ class ExtensionsTest(unittest.TestCase):
         self.assertRaises(ValueError, extensions._parse_window_bits, '7')
 
         self.assertRaises(ValueError, extensions._parse_window_bits, '16')
-        self.assertRaises(
-                ValueError, extensions._parse_window_bits, '10000000')
+        self.assertRaises(ValueError, extensions._parse_window_bits,
+                          '10000000')
 
 
 class PerMessageDeflateExtensionProcessorParsingTest(unittest.TestCase):
     """A unittest for checking that PerMessageDeflateExtensionProcessor parses
     given extension parameter correctly.
     """
-
     def test_registry(self):
         processor = extensions.get_extension_processor(
-                common.ExtensionParameter('permessage-deflate'))
+            common.ExtensionParameter('permessage-deflate'))
         self.assertIsInstance(processor,
                               extensions.PerMessageDeflateExtensionProcessor)
 
@@ -150,7 +145,6 @@ class PerMessageDeflateExtensionProcessorBuildingTest(unittest.TestCase):
     """A unittest for checking that PerMessageDeflateExtensionProcessor builds
     a response based on specified options correctly.
     """
-
     def test_response_with_max_window_bits(self):
         parameter = common.ExtensionParameter('permessage-deflate')
         parameter.add_parameter('client_max_window_bits', None)
@@ -194,6 +188,5 @@ class PerMessageDeflateExtensionProcessorBuildingTest(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
 
 # vi:sts=4 sw=4 et

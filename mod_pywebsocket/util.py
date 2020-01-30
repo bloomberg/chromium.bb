@@ -26,10 +26,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """WebSocket utilities."""
-
 
 from __future__ import absolute_import
 import array
@@ -44,7 +41,6 @@ import socket
 import struct
 import zlib
 
-
 try:
     from mod_pywebsocket import fast_masking
 except ImportError:
@@ -53,7 +49,7 @@ except ImportError:
 
 def prepend_message_to_exception(message, exc):
     """Prepend message to the exception."""
-    exc.args = (message + str(exc),)
+    exc.args = (message + str(exc), )
     return
 
 
@@ -126,8 +122,8 @@ def hexify(s):
 
 def get_class_logger(o):
     """Return the logging class information."""
-    return logging.getLogger(
-        '%s.%s' % (o.__class__.__module__, o.__class__.__name__))
+    return logging.getLogger('%s.%s' %
+                             (o.__class__.__module__, o.__class__.__name__))
 
 
 def pack_byte(b):
@@ -141,7 +137,6 @@ class NoopMasker(object):
     This has the same interface as RepeatedXorMasker but just returns
     the string passed in without making any change.
     """
-
     def __init__(self):
         """NoOp."""
         pass
@@ -152,7 +147,6 @@ class NoopMasker(object):
 
 
 class RepeatedXorMasker(object):
-
     """A masking object that applies XOR on the string.
 
     Applies XOR on the byte string given to mask method with the masking bytes
@@ -160,17 +154,16 @@ class RepeatedXorMasker(object):
     in the masking bytes the last mask method call ended and resumes from
     that point on the next mask method call.
     """
-
     def __init__(self, masking_key):
         self._masking_key = masking_key
         self._masking_key_index = 0
 
     def _mask_using_swig(self, s):
         """Perform the mask via SWIG."""
-        masked_data = fast_masking.mask(
-                s, self._masking_key, self._masking_key_index)
-        self._masking_key_index = (
-                (self._masking_key_index + len(s)) % len(self._masking_key))
+        masked_data = fast_masking.mask(s, self._masking_key,
+                                        self._masking_key_index)
+        self._masking_key_index = ((self._masking_key_index + len(s)) %
+                                   len(self._masking_key))
         return masked_data
 
     def _mask_using_array(self, s):
@@ -216,7 +209,6 @@ class RepeatedXorMasker(object):
 
 
 class _Deflater(object):
-
     def __init__(self, window_bits):
         self._logger = get_class_logger(self)
 
@@ -233,8 +225,8 @@ class _Deflater(object):
         # Similar disscussions can be found in https://crbug.com/691074
         window_bits = max(window_bits, 9)
 
-        self._compress = zlib.compressobj(
-            zlib.Z_DEFAULT_COMPRESSION, zlib.DEFLATED, -window_bits)
+        self._compress = zlib.compressobj(zlib.Z_DEFAULT_COMPRESSION,
+                                          zlib.DEFLATED, -window_bits)
 
     def compress(self, bytes):
         compressed_bytes = self._compress.compress(bytes)
@@ -258,7 +250,6 @@ class _Deflater(object):
 
 
 class _Inflater(object):
-
     def __init__(self, window_bits):
         self._logger = get_class_logger(self)
         self._window_bits = window_bits
@@ -274,8 +265,8 @@ class _Inflater(object):
         data = b''
 
         while True:
-            data += self._decompress.decompress(
-                self._unconsumed, max(0, size - len(data)))
+            data += self._decompress.decompress(self._unconsumed,
+                                                max(0, size - len(data)))
             self._unconsumed = self._decompress.unconsumed_tail
             if self._decompress.unused_data:
                 # Encountered a last block (i.e. a block with BFINAL = 1) and
@@ -321,7 +312,6 @@ class _RFC1979Deflater(object):
     """A compressor class that applies DEFLATE to given byte sequence and
     flushes using the algorithm described in the RFC1979 section 2.1.
     """
-
     def __init__(self, window_bits, no_context_takeover):
         self._deflater = None
         if window_bits is None:
@@ -358,7 +348,6 @@ class _RFC1979Inflater(object):
     A decompressor class for byte sequence compressed and flushed following
     the algorithm described in the RFC1979 section 2.1.
     """
-
     def __init__(self, window_bits=zlib.MAX_WBITS):
         self._inflater = _Inflater(window_bits)
 

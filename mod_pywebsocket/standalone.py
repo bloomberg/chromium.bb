@@ -28,8 +28,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Standalone WebSocket server.
 
 Use this file to launch pywebsocket as a standalone server.
@@ -183,7 +181,6 @@ from mod_pywebsocket import http_header_util
 from mod_pywebsocket import memorizingfile
 from mod_pywebsocket import util
 
-
 _DEFAULT_LOG_MAX_BYTES = 1024 * 256
 _DEFAULT_LOG_BACKUP_COUNT = 5
 
@@ -199,7 +196,6 @@ _TLS_BY_PYOPENSSL = 'pyopenssl'
 
 class _StandaloneConnection(object):
     """Mimic mod_python mp_conn."""
-
     def __init__(self, request_handler):
         """Construct an instance.
 
@@ -214,6 +210,7 @@ class _StandaloneConnection(object):
 
         return (self._request_handler.server.server_name,
                 self._request_handler.server.server_port)
+
     local_addr = property(get_local_addr)
 
     def get_remote_addr(self):
@@ -223,6 +220,7 @@ class _StandaloneConnection(object):
         handler is not initialized yet there."""
 
         return self._request_handler.client_address
+
     remote_addr = property(get_remote_addr)
 
     def write(self, data):
@@ -243,7 +241,6 @@ class _StandaloneConnection(object):
 
 class _StandaloneRequest(object):
     """Mimic mod_python request."""
-
     def __init__(self, request_handler, use_tls):
         """Construct an instance.
 
@@ -268,24 +265,28 @@ class _StandaloneRequest(object):
         """
 
         return self._request_handler.path
+
     uri = property(get_uri)
 
     def get_unparsed_uri(self):
         """Getter to mimic request.unparsed_uri."""
 
         return self._request_handler.path
+
     unparsed_uri = property(get_unparsed_uri)
 
     def get_method(self):
         """Getter to mimic request.method."""
 
         return self._request_handler.command
+
     method = property(get_method)
 
     def get_protocol(self):
         """Getter to mimic request.protocol."""
 
         return self._request_handler.request_version
+
     protocol = property(get_protocol)
 
     def is_https(self):
@@ -376,8 +377,7 @@ def _alias_handlers(dispatcher, websock_handlers_map_file):
                 logging.warning('Wrong format in map file:' + line)
                 continue
             try:
-                dispatcher.add_resource_path_alias(
-                    m.group(1), m.group(2))
+                dispatcher.add_resource_path_alias(m.group(1), m.group(2))
             except dispatch.DispatchException as e:
                 logging.error(str(e))
     finally:
@@ -401,8 +401,7 @@ class WebSocketServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         # Share a Dispatcher among request handlers to save time for
         # instantiation.  Dispatcher can be shared because it is thread-safe.
         options.dispatcher = dispatch.Dispatcher(
-            options.websock_handlers,
-            options.scan_dir,
+            options.websock_handlers, options.scan_dir,
             options.allow_handlers_outside_root_dir)
         if options.websock_handlers_map_file:
             _alias_handlers(options.dispatcher,
@@ -418,8 +417,9 @@ class WebSocketServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         self.__ws_is_shut_down = threading.Event()
         self.__ws_serving = False
 
-        socketserver.BaseServer.__init__(
-            self, (options.server_host, options.port), WebSocketRequestHandler)
+        socketserver.BaseServer.__init__(self,
+                                         (options.server_host, options.port),
+                                         WebSocketRequestHandler)
 
         # Expose the options object to allow handler objects access it. We name
         # it with websocket_ prefix to avoid conflict.
@@ -440,9 +440,9 @@ class WebSocketServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
             #   already in use' error).
             # - If it binds only IPv6 on call with AF_INET6, both call are
             #   expected to succeed to listen both protocol.
-            addrinfo_array = [
-                (socket.AF_INET6, socket.SOCK_STREAM, '', '', ''),
-                (socket.AF_INET, socket.SOCK_STREAM, '', '', '')]
+            addrinfo_array = [(socket.AF_INET6, socket.SOCK_STREAM, '', '',
+                               ''),
+                              (socket.AF_INET, socket.SOCK_STREAM, '', '', '')]
         else:
             addrinfo_array = socket.getaddrinfo(self.server_name,
                                                 self.server_port,
@@ -469,7 +469,8 @@ class WebSocketServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                             client_cert_ = ssl.CERT_REQUIRED
                     else:
                         client_cert_ = ssl.CERT_NONE
-                    socket_ = ssl.wrap_socket(socket_,
+                    socket_ = ssl.wrap_socket(
+                        socket_,
                         keyfile=server_options.private_key,
                         certfile=server_options.certificate,
                         ssl_version=ssl.PROTOCOL_SSLv23,
@@ -501,8 +502,8 @@ class WebSocketServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 # number 0. This case, the second and later sockets should use
                 # the same port number. Also self.server_port is rewritten
                 # because it is exported, and will be used by external code.
-                self.server_address = (
-                    self.server_name, socket_.getsockname()[1])
+                self.server_address = (self.server_name,
+                                       socket_.getsockname()[1])
                 self.server_port = self.server_address[1]
                 self._logger.info('Port %r is assigned', self.server_port)
 
@@ -552,10 +553,8 @@ class WebSocketServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     def handle_error(self, request, client_address):
         """Override SocketServer.handle_error."""
 
-        self._logger.error(
-            'Exception in processing request from: %r\n%s',
-            client_address,
-            traceback.format_exc())
+        self._logger.error('Exception in processing request from: %r\n%s',
+                           client_address, traceback.format_exc())
         # Note: client_address is a tuple.
 
     def get_request(self):
@@ -639,8 +638,8 @@ class WebSocketServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         try:
             while self.__ws_serving:
                 r, w, e = select.select(
-                    [socket_[0] for socket_ in self._sockets],
-                    [], [], poll_interval)
+                    [socket_[0] for socket_ in self._sockets], [], [],
+                    poll_interval)
                 for socket_ in r:
                     self.socket = socket_
                     handle_request()
@@ -678,8 +677,7 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
         CGIHTTPServer.CGIHTTPRequestHandler.setup(self)
 
         self.rfile = memorizingfile.MemorizingFile(
-            self.rfile,
-            max_memorized_lines=_MAX_MEMORIZED_LINES)
+            self.rfile, max_memorized_lines=_MAX_MEMORIZED_LINES)
 
     def __init__(self, request, client_address, server):
         self._logger = util.get_class_logger(self)
@@ -693,8 +691,8 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
             self.is_executable = self._options.is_executable_method
 
         # This actually calls BaseRequestHandler.__init__.
-        CGIHTTPServer.CGIHTTPRequestHandler.__init__(
-            self, request, client_address, server)
+        CGIHTTPServer.CGIHTTPRequestHandler.__init__(self, request,
+                                                     client_address, server)
 
     def parse_request(self):
         """Override BaseHTTPServer.BaseHTTPRequestHandler.parse_request.
@@ -736,16 +734,14 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
         if host is not None:
             validation_host = server_options.validation_host
             if validation_host is not None and host != validation_host:
-                self._logger.info('Invalid host: %r (expected: %r)',
-                                  host,
+                self._logger.info('Invalid host: %r (expected: %r)', host,
                                   validation_host)
                 self._logger.info('Fallback to CGIHTTPRequestHandler')
                 return True
         if port is not None:
             validation_port = server_options.validation_port
             if validation_port is not None and port != validation_port:
-                self._logger.info('Invalid port: %r (expected: %r)',
-                                  port,
+                self._logger.info('Invalid port: %r (expected: %r)', port,
                                   validation_port)
                 self._logger.info('Fallback to CGIHTTPRequestHandler')
                 return True
@@ -757,8 +753,7 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
             # Fallback to default http handler for request paths for which
             # we don't have request handlers.
             if not self._options.dispatcher.get_handler_suite(self.path):
-                self._logger.info('No handler for resource: %r',
-                                  self.path)
+                self._logger.info('No handler for resource: %r', self.path)
                 self._logger.info('Fallback to CGIHTTPRequestHandler')
                 return True
         except dispatch.DispatchException as e:
@@ -772,9 +767,7 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
 
         try:
             try:
-                handshake.do_handshake(
-                    request,
-                    self._options.dispatcher)
+                handshake.do_handshake(request, self._options.dispatcher)
             except handshake.VersionException as e:
                 self._logger.info('Handshake failed for version error: %s', e)
                 self.send_response(common.HTTP_STATUS_BAD_REQUEST)
@@ -797,16 +790,14 @@ class WebSocketRequestHandler(CGIHTTPServer.CGIHTTPRequestHandler):
     def log_request(self, code='-', size='-'):
         """Override BaseHTTPServer.log_request."""
 
-        self._logger.info('"%s" %s %s',
-                          self.requestline, str(code), str(size))
+        self._logger.info('"%s" %s %s', self.requestline, str(code), str(size))
 
     def log_error(self, *args):
         """Override BaseHTTPServer.log_error."""
 
         # Despite the name, this method is for warnings than for errors.
         # For example, HTTP status code is logged by this method.
-        self._logger.warning('%s - %s',
-                             self.address_string(),
+        self._logger.warning('%s - %s', self.address_string(),
                              args[0] % args[1:])
 
     def is_cgi(self):
@@ -843,60 +834,77 @@ def _configure_logging(options):
     logger = logging.getLogger()
     logger.setLevel(logging.getLevelName(options.log_level.upper()))
     if options.log_file:
-        handler = logging.handlers.RotatingFileHandler(
-                options.log_file, 'a', options.log_max, options.log_count)
+        handler = logging.handlers.RotatingFileHandler(options.log_file, 'a',
+                                                       options.log_max,
+                                                       options.log_count)
     else:
         handler = logging.StreamHandler()
     formatter = logging.Formatter(
-            '[%(asctime)s] [%(levelname)s] %(name)s: %(message)s')
+        '[%(asctime)s] [%(levelname)s] %(name)s: %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
     deflate_log_level_name = logging.getLevelName(
         options.deflate_log_level.upper())
-    _get_logger_from_class(util._Deflater).setLevel(
-        deflate_log_level_name)
-    _get_logger_from_class(util._Inflater).setLevel(
-        deflate_log_level_name)
+    _get_logger_from_class(util._Deflater).setLevel(deflate_log_level_name)
+    _get_logger_from_class(util._Inflater).setLevel(deflate_log_level_name)
 
 
 def _build_option_parser():
     parser = optparse.OptionParser()
 
-    parser.add_option('--config', dest='config_file', type='string',
+    parser.add_option('--config',
+                      dest='config_file',
+                      type='string',
                       default=None,
                       help=('Path to configuration file. See the file comment '
                             'at the top of this file for the configuration '
                             'file format'))
-    parser.add_option('-H', '--server-host', '--server_host',
+    parser.add_option('-H',
+                      '--server-host',
+                      '--server_host',
                       dest='server_host',
                       default='',
                       help='server hostname to listen to')
-    parser.add_option('-V', '--validation-host', '--validation_host',
+    parser.add_option('-V',
+                      '--validation-host',
+                      '--validation_host',
                       dest='validation_host',
                       default=None,
                       help='server hostname to validate in absolute path.')
-    parser.add_option('-p', '--port', dest='port', type='int',
+    parser.add_option('-p',
+                      '--port',
+                      dest='port',
+                      type='int',
                       default=common.DEFAULT_WEB_SOCKET_PORT,
                       help='port to listen to')
-    parser.add_option('-P', '--validation-port', '--validation_port',
-                      dest='validation_port', type='int',
+    parser.add_option('-P',
+                      '--validation-port',
+                      '--validation_port',
+                      dest='validation_port',
+                      type='int',
                       default=None,
                       help='server port to validate in absolute path.')
-    parser.add_option('-w', '--websock-handlers', '--websock_handlers',
+    parser.add_option('-w',
+                      '--websock-handlers',
+                      '--websock_handlers',
                       dest='websock_handlers',
                       default='.',
                       help=('The root directory of WebSocket handler files. '
                             'If the path is relative, --document-root is used '
                             'as the base.'))
-    parser.add_option('-m', '--websock-handlers-map-file',
+    parser.add_option('-m',
+                      '--websock-handlers-map-file',
                       '--websock_handlers_map_file',
                       dest='websock_handlers_map_file',
                       default=None,
                       help=('WebSocket handlers map file. '
                             'Each line consists of alias_resource_path and '
                             'existing_resource_path, separated by spaces.'))
-    parser.add_option('-s', '--scan-dir', '--scan_dir', dest='scan_dir',
+    parser.add_option('-s',
+                      '--scan-dir',
+                      '--scan_dir',
+                      dest='scan_dir',
                       default=None,
                       help=('Must be a directory under --websock-handlers. '
                             'Only handlers under this directory are scanned '
@@ -912,79 +920,125 @@ def _build_option_parser():
                       default=False,
                       help=('Scans WebSocket handlers even if their canonical '
                             'path is not under --websock-handlers.'))
-    parser.add_option('-d', '--document-root', '--document_root',
-                      dest='document_root', default='.',
+    parser.add_option('-d',
+                      '--document-root',
+                      '--document_root',
+                      dest='document_root',
+                      default='.',
                       help='Document root directory.')
-    parser.add_option('-x', '--cgi-paths', '--cgi_paths', dest='cgi_paths',
+    parser.add_option('-x',
+                      '--cgi-paths',
+                      '--cgi_paths',
+                      dest='cgi_paths',
                       default=None,
                       help=('CGI paths relative to document_root.'
                             'Comma-separated. (e.g -x /cgi,/htbin) '
                             'Files under document_root/cgi_path are handled '
                             'as CGI programs. Must be executable.'))
-    parser.add_option('-t', '--tls', dest='use_tls', action='store_true',
-                      default=False, help='use TLS (wss://)')
-    parser.add_option('--tls-module', '--tls_module', dest='tls_module',
+    parser.add_option('-t',
+                      '--tls',
+                      dest='use_tls',
+                      action='store_true',
+                      default=False,
+                      help='use TLS (wss://)')
+    parser.add_option('--tls-module',
+                      '--tls_module',
+                      dest='tls_module',
                       type='choice',
-                      choices = [_TLS_BY_STANDARD_MODULE, _TLS_BY_PYOPENSSL],
+                      choices=[_TLS_BY_STANDARD_MODULE, _TLS_BY_PYOPENSSL],
                       help='Use ssl module if "%s" is specified. '
                       'Use pyOpenSSL module if "%s" is specified' %
                       (_TLS_BY_STANDARD_MODULE, _TLS_BY_PYOPENSSL))
-    parser.add_option('-k', '--private-key', '--private_key',
+    parser.add_option('-k',
+                      '--private-key',
+                      '--private_key',
                       dest='private_key',
-                      default='', help='TLS private key file.')
-    parser.add_option('-c', '--certificate', dest='certificate',
-                      default='', help='TLS certificate file.')
-    parser.add_option('--tls-client-auth', dest='tls_client_auth',
-                      action='store_true', default=False,
+                      default='',
+                      help='TLS private key file.')
+    parser.add_option('-c',
+                      '--certificate',
+                      dest='certificate',
+                      default='',
+                      help='TLS certificate file.')
+    parser.add_option('--tls-client-auth',
+                      dest='tls_client_auth',
+                      action='store_true',
+                      default=False,
                       help='Requests TLS client auth on every connection.')
     parser.add_option('--tls-client-cert-optional',
                       dest='tls_client_cert_optional',
-                      action='store_true', default=False,
+                      action='store_true',
+                      default=False,
                       help=('Makes client certificate optional even though '
                             'TLS client auth is enabled.'))
-    parser.add_option('--tls-client-ca', dest='tls_client_ca', default='',
+    parser.add_option('--tls-client-ca',
+                      dest='tls_client_ca',
+                      default='',
                       help=('Specifies a pem file which contains a set of '
                             'concatenated CA certificates which are used to '
                             'validate certificates passed from clients'))
-    parser.add_option('--basic-auth', dest='use_basic_auth',
-                      action='store_true', default=False,
+    parser.add_option('--basic-auth',
+                      dest='use_basic_auth',
+                      action='store_true',
+                      default=False,
                       help='Requires Basic authentication.')
     parser.add_option('--basic-auth-credential',
-                      dest='basic_auth_credential', default='test:test',
+                      dest='basic_auth_credential',
+                      default='test:test',
                       help='Specifies the credential of basic authentication '
                       'by username:password pair (e.g. test:test).')
-    parser.add_option('-l', '--log-file', '--log_file', dest='log_file',
-                      default='', help='Log file.')
+    parser.add_option('-l',
+                      '--log-file',
+                      '--log_file',
+                      dest='log_file',
+                      default='',
+                      help='Log file.')
     # Custom log level:
     # - FINE: Prints status of each frame processing step
-    parser.add_option('--log-level', '--log_level', type='choice',
-                      dest='log_level', default='warn',
-                      choices=['fine',
-                               'debug', 'info', 'warning', 'warn', 'error',
-                               'critical'],
-                      help='Log level.')
-    parser.add_option('--deflate-log-level', '--deflate_log_level',
+    parser.add_option('--log-level',
+                      '--log_level',
                       type='choice',
-                      dest='deflate_log_level', default='warn',
-                      choices=['debug', 'info', 'warning', 'warn', 'error',
-                               'critical'],
-                      help='Log level for _Deflater and _Inflater.')
+                      dest='log_level',
+                      default='warn',
+                      choices=[
+                          'fine', 'debug', 'info', 'warning', 'warn', 'error',
+                          'critical'
+                      ],
+                      help='Log level.')
+    parser.add_option(
+        '--deflate-log-level',
+        '--deflate_log_level',
+        type='choice',
+        dest='deflate_log_level',
+        default='warn',
+        choices=['debug', 'info', 'warning', 'warn', 'error', 'critical'],
+        help='Log level for _Deflater and _Inflater.')
     parser.add_option('--thread-monitor-interval-in-sec',
                       '--thread_monitor_interval_in_sec',
                       dest='thread_monitor_interval_in_sec',
-                      type='int', default=-1,
+                      type='int',
+                      default=-1,
                       help=('If positive integer is specified, run a thread '
                             'monitor to show the status of server threads '
                             'periodically in the specified inteval in '
                             'second. If non-positive integer is specified, '
                             'disable the thread monitor.'))
-    parser.add_option('--log-max', '--log_max', dest='log_max', type='int',
+    parser.add_option('--log-max',
+                      '--log_max',
+                      dest='log_max',
+                      type='int',
                       default=_DEFAULT_LOG_MAX_BYTES,
                       help='Log maximum bytes')
-    parser.add_option('--log-count', '--log_count', dest='log_count',
-                      type='int', default=_DEFAULT_LOG_BACKUP_COUNT,
+    parser.add_option('--log-count',
+                      '--log_count',
+                      dest='log_count',
+                      type='int',
+                      default=_DEFAULT_LOG_BACKUP_COUNT,
                       help='Log backup count')
-    parser.add_option('-q', '--queue', dest='request_queue_size', type='int',
+    parser.add_option('-q',
+                      '--queue',
+                      dest='request_queue_size',
+                      type='int',
                       default=_DEFAULT_REQUEST_QUEUE_SIZE,
                       help='request queue size')
 
@@ -1006,10 +1060,9 @@ class ThreadMonitor(threading.Thread):
             thread_name_list = []
             for thread in threading.enumerate():
                 thread_name_list.append(thread.name)
-            self._logger.info(
-                "%d active threads: %s",
-                threading.active_count(),
-                ', '.join(thread_name_list))
+            self._logger.info("%d active threads: %s",
+                              threading.active_count(),
+                              ', '.join(thread_name_list))
             time.sleep(self._interval_in_sec)
 
 
@@ -1019,18 +1072,16 @@ def _parse_args_and_config(args):
     # First, parse options without configuration file.
     temporary_options, temporary_args = parser.parse_args(args=args)
     if temporary_args:
-        logging.critical(
-            'Unrecognized positional arguments: %r', temporary_args)
+        logging.critical('Unrecognized positional arguments: %r',
+                         temporary_args)
         sys.exit(1)
 
     if temporary_options.config_file:
         try:
             config_fp = open(temporary_options.config_file, 'r')
         except IOError as e:
-            logging.critical(
-                'Failed to open configuration file %r: %r',
-                temporary_options.config_file,
-                e)
+            logging.critical('Failed to open configuration file %r: %r',
+                             temporary_options.config_file, e)
             sys.exit(1)
 
         config_parser = configparser.SafeConfigParser()
@@ -1094,7 +1145,7 @@ def _main(args=None):
                 logging.debug('Using pyOpenSSL module')
             else:
                 logging.critical(
-                        'TLS support requires ssl or pyOpenSSL module.')
+                    'TLS support requires ssl or pyOpenSSL module.')
                 sys.exit(1)
         elif options.tls_module == _TLS_BY_STANDARD_MODULE:
             if not _import_ssl():
@@ -1111,11 +1162,10 @@ def _main(args=None):
 
         if not options.private_key or not options.certificate:
             logging.critical(
-                    'To use TLS, specify private_key and certificate.')
+                'To use TLS, specify private_key and certificate.')
             sys.exit(1)
 
-        if (options.tls_client_cert_optional and
-            not options.tls_client_auth):
+        if (options.tls_client_cert_optional and not options.tls_client_auth):
             logging.critical('Client authentication must be enabled to '
                              'specify tls_client_cert_optional')
             sys.exit(1)
@@ -1156,6 +1206,5 @@ def _main(args=None):
 
 if __name__ == '__main__':
     _main(sys.argv[1:])
-
 
 # vi:sts=4 sw=4 et

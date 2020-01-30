@@ -27,19 +27,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-
 from __future__ import absolute_import
 from mod_pywebsocket import common
 from mod_pywebsocket import util
 from mod_pywebsocket.http_header_util import quote_if_necessary
-
 
 # The list of available server side extension processor classes.
 _available_processors = {}
 
 
 class ExtensionProcessorInterface(object):
-
     def __init__(self, request):
         self._logger = util.get_class_logger(self)
 
@@ -82,26 +79,26 @@ class ExtensionProcessorInterface(object):
             self._setup_stream_options_internal(stream_options)
 
 
-def _log_outgoing_compression_ratio(
-        logger, original_bytes, filtered_bytes, average_ratio):
+def _log_outgoing_compression_ratio(logger, original_bytes, filtered_bytes,
+                                    average_ratio):
     # Print inf when ratio is not available.
     ratio = float('inf')
     if original_bytes != 0:
         ratio = float(filtered_bytes) / original_bytes
 
     logger.debug('Outgoing compression ratio: %f (average: %f)' %
-            (ratio, average_ratio))
+                 (ratio, average_ratio))
 
 
-def _log_incoming_compression_ratio(
-        logger, received_bytes, filtered_bytes, average_ratio):
+def _log_incoming_compression_ratio(logger, received_bytes, filtered_bytes,
+                                    average_ratio):
     # Print inf when ratio is not available.
     ratio = float('inf')
     if filtered_bytes != 0:
         ratio = float(received_bytes) / filtered_bytes
 
     logger.debug('Incoming compression ratio: %f (average: %f)' %
-            (ratio, average_ratio))
+                 (ratio, average_ratio))
 
 
 def _parse_window_bits(bits):
@@ -126,7 +123,6 @@ class _AverageRatioCalculator(object):
     """Stores total bytes of original and result data, and calculates average
     result / original ratio.
     """
-
     def __init__(self):
         self._total_original_bytes = 0
         self._total_result_bytes = 0
@@ -143,6 +139,7 @@ class _AverageRatioCalculator(object):
                     self._total_original_bytes)
         else:
             return float('inf')
+
 
 class PerMessageDeflateExtensionProcessor(ExtensionProcessorInterface):
     """permessage-deflate extension processor.
@@ -172,29 +169,29 @@ class PerMessageDeflateExtensionProcessor(ExtensionProcessorInterface):
 
     def _get_extension_response_internal(self):
         for name in self._request.get_parameter_names():
-            if name not in [self._SERVER_MAX_WINDOW_BITS_PARAM,
-                            self._SERVER_NO_CONTEXT_TAKEOVER_PARAM,
-                            self._CLIENT_MAX_WINDOW_BITS_PARAM]:
+            if name not in [
+                    self._SERVER_MAX_WINDOW_BITS_PARAM,
+                    self._SERVER_NO_CONTEXT_TAKEOVER_PARAM,
+                    self._CLIENT_MAX_WINDOW_BITS_PARAM
+            ]:
                 self._logger.debug('Unknown parameter: %r', name)
                 return None
 
         server_max_window_bits = None
         if self._request.has_parameter(self._SERVER_MAX_WINDOW_BITS_PARAM):
             server_max_window_bits = self._request.get_parameter_value(
-                    self._SERVER_MAX_WINDOW_BITS_PARAM)
+                self._SERVER_MAX_WINDOW_BITS_PARAM)
             try:
                 server_max_window_bits = _parse_window_bits(
                     server_max_window_bits)
             except ValueError as e:
                 self._logger.debug('Bad %s parameter: %r',
-                                   self._SERVER_MAX_WINDOW_BITS_PARAM,
-                                   e)
+                                   self._SERVER_MAX_WINDOW_BITS_PARAM, e)
                 return None
 
         server_no_context_takeover = self._request.has_parameter(
             self._SERVER_NO_CONTEXT_TAKEOVER_PARAM)
-        if (server_no_context_takeover and
-            self._request.get_parameter_value(
+        if (server_no_context_takeover and self._request.get_parameter_value(
                 self._SERVER_NO_CONTEXT_TAKEOVER_PARAM) is not None):
             self._logger.debug('%s parameter must not have a value: %r',
                                self._SERVER_NO_CONTEXT_TAKEOVER_PARAM,
@@ -205,13 +202,14 @@ class PerMessageDeflateExtensionProcessor(ExtensionProcessorInterface):
         # accept client_max_window_bits from a server or not.
         client_client_max_window_bits = self._request.has_parameter(
             self._CLIENT_MAX_WINDOW_BITS_PARAM)
-        if (client_client_max_window_bits and
-            self._request.get_parameter_value(
-                self._CLIENT_MAX_WINDOW_BITS_PARAM) is not None):
-            self._logger.debug('%s parameter must not have a value in a '
-                               'client\'s opening handshake: %r',
-                               self._CLIENT_MAX_WINDOW_BITS_PARAM,
-                               client_client_max_window_bits)
+        if (client_client_max_window_bits
+                and self._request.get_parameter_value(
+                    self._CLIENT_MAX_WINDOW_BITS_PARAM) is not None):
+            self._logger.debug(
+                '%s parameter must not have a value in a '
+                'client\'s opening handshake: %r',
+                self._CLIENT_MAX_WINDOW_BITS_PARAM,
+                client_client_max_window_bits)
             return None
 
         self._rfc1979_deflater = util._RFC1979Deflater(
@@ -222,47 +220,44 @@ class PerMessageDeflateExtensionProcessor(ExtensionProcessorInterface):
         # sent to the client.
         self._rfc1979_inflater = util._RFC1979Inflater()
 
-        self._framer = _PerMessageDeflateFramer(
-            server_max_window_bits, server_no_context_takeover)
+        self._framer = _PerMessageDeflateFramer(server_max_window_bits,
+                                                server_no_context_takeover)
         self._framer.set_bfinal(False)
         self._framer.set_compress_outgoing_enabled(True)
 
         response = common.ExtensionParameter(self._request.name())
 
         if server_max_window_bits is not None:
-            response.add_parameter(
-                self._SERVER_MAX_WINDOW_BITS_PARAM,
-                str(server_max_window_bits))
+            response.add_parameter(self._SERVER_MAX_WINDOW_BITS_PARAM,
+                                   str(server_max_window_bits))
 
         if server_no_context_takeover:
-            response.add_parameter(
-                self._SERVER_NO_CONTEXT_TAKEOVER_PARAM, None)
+            response.add_parameter(self._SERVER_NO_CONTEXT_TAKEOVER_PARAM,
+                                   None)
 
         if self._preferred_client_max_window_bits is not None:
             if not client_client_max_window_bits:
-                self._logger.debug('Processor is configured to use %s but '
-                                   'the client cannot accept it',
-                                   self._CLIENT_MAX_WINDOW_BITS_PARAM)
+                self._logger.debug(
+                    'Processor is configured to use %s but '
+                    'the client cannot accept it',
+                    self._CLIENT_MAX_WINDOW_BITS_PARAM)
                 return None
-            response.add_parameter(
-                self._CLIENT_MAX_WINDOW_BITS_PARAM,
-                str(self._preferred_client_max_window_bits))
+            response.add_parameter(self._CLIENT_MAX_WINDOW_BITS_PARAM,
+                                   str(self._preferred_client_max_window_bits))
 
         if self._client_no_context_takeover:
-            response.add_parameter(
-                self._CLIENT_NO_CONTEXT_TAKEOVER_PARAM, None)
+            response.add_parameter(self._CLIENT_NO_CONTEXT_TAKEOVER_PARAM,
+                                   None)
 
-        self._logger.debug(
-            'Enable %s extension ('
-            'request: server_max_window_bits=%s; '
-            'server_no_context_takeover=%r, '
-            'response: client_max_window_bits=%s; '
-            'client_no_context_takeover=%r)' %
-            (self._request.name(),
-             server_max_window_bits,
-             server_no_context_takeover,
-             self._preferred_client_max_window_bits,
-             self._client_no_context_takeover))
+        self._logger.debug('Enable %s extension ('
+                           'request: server_max_window_bits=%s; '
+                           'server_no_context_takeover=%r, '
+                           'response: client_max_window_bits=%s; '
+                           'client_no_context_takeover=%r)' %
+                           (self._request.name(), server_max_window_bits,
+                            server_no_context_takeover,
+                            self._preferred_client_max_window_bits,
+                            self._client_no_context_takeover))
 
         return response
 
@@ -308,7 +303,6 @@ class PerMessageDeflateExtensionProcessor(ExtensionProcessorInterface):
 
 class _PerMessageDeflateFramer(object):
     """A framer for extensions with per-message DEFLATE feature."""
-
     def __init__(self, deflate_max_window_bits, deflate_no_context_takeover):
         self._logger = util.get_class_logger(self)
 
@@ -346,19 +340,17 @@ class _PerMessageDeflateFramer(object):
 
         received_payload_size = len(message)
         self._incoming_average_ratio_calculator.add_result_bytes(
-                received_payload_size)
+            received_payload_size)
 
         message = self._rfc1979_inflater.filter(message)
 
         filtered_payload_size = len(message)
         self._incoming_average_ratio_calculator.add_original_bytes(
-                filtered_payload_size)
+            filtered_payload_size)
 
         _log_incoming_compression_ratio(
-                self._logger,
-                received_payload_size,
-                filtered_payload_size,
-                self._incoming_average_ratio_calculator.get_average_ratio())
+            self._logger, received_payload_size, filtered_payload_size,
+            self._incoming_average_ratio_calculator.get_average_ratio())
 
         return message
 
@@ -373,18 +365,17 @@ class _PerMessageDeflateFramer(object):
         self._outgoing_average_ratio_calculator.add_original_bytes(
             original_payload_size)
 
-        message = self._rfc1979_deflater.filter(
-            message, end=end, bfinal=self._bfinal)
+        message = self._rfc1979_deflater.filter(message,
+                                                end=end,
+                                                bfinal=self._bfinal)
 
         filtered_payload_size = len(message)
         self._outgoing_average_ratio_calculator.add_result_bytes(
             filtered_payload_size)
 
         _log_outgoing_compression_ratio(
-                self._logger,
-                original_payload_size,
-                filtered_payload_size,
-                self._outgoing_average_ratio_calculator.get_average_ratio())
+            self._logger, original_payload_size, filtered_payload_size,
+            self._outgoing_average_ratio_calculator.get_average_ratio())
 
         if not self._compress_ongoing:
             self._outgoing_frame_filter.set_compression_bit()
@@ -397,17 +388,14 @@ class _PerMessageDeflateFramer(object):
             frame.rsv1 = 0
 
     def _process_outgoing_frame(self, frame, compression_bit):
-        if (not compression_bit or
-            common.is_control_opcode(frame.opcode)):
+        if (not compression_bit or common.is_control_opcode(frame.opcode)):
             return
 
         frame.rsv1 = 1
 
     def setup_stream_options(self, stream_options):
         """Creates filters and sets them to the StreamOptions."""
-
         class _OutgoingMessageFilter(object):
-
             def __init__(self, parent):
                 self._parent = parent
 
@@ -416,7 +404,6 @@ class _PerMessageDeflateFramer(object):
                     message, end, binary)
 
         class _IncomingMessageFilter(object):
-
             def __init__(self, parent):
                 self._parent = parent
                 self._decompress_next_message = False
@@ -438,7 +425,6 @@ class _PerMessageDeflateFramer(object):
             self._incoming_message_filter)
 
         class _OutgoingFrameFilter(object):
-
             def __init__(self, parent):
                 self._parent = parent
                 self._set_compression_bit = False
@@ -447,12 +433,11 @@ class _PerMessageDeflateFramer(object):
                 self._set_compression_bit = True
 
             def filter(self, frame):
-                self._parent._process_outgoing_frame(
-                    frame, self._set_compression_bit)
+                self._parent._process_outgoing_frame(frame,
+                                                     self._set_compression_bit)
                 self._set_compression_bit = False
 
         class _IncomingFrameFilter(object):
-
             def __init__(self, parent):
                 self._parent = parent
 
@@ -470,7 +455,7 @@ class _PerMessageDeflateFramer(object):
 
 
 _available_processors[common.PERMESSAGE_DEFLATE_EXTENSION] = (
-        PerMessageDeflateExtensionProcessor)
+    PerMessageDeflateExtensionProcessor)
 
 
 def get_extension_processor(extension_request):

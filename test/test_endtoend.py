@@ -28,11 +28,8 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """End-to-end tests for pywebsocket. Tests standalone.py.
 """
-
 
 from __future__ import absolute_import
 import logging
@@ -48,11 +45,11 @@ import set_sys_path  # Update sys.path to locate mod_pywebsocket module.
 
 from test import client_for_testing
 
-
 # Special message that tells the echo server to start closing handshake
 _GOODBYE_MESSAGE = 'Goodbye'
 
 _SERVER_WARMUP_IN_SEC = 0.2
+
 
 # Test body functions
 def _echo_check_procedure(client):
@@ -122,13 +119,12 @@ class EndToEndTestBase(unittest.TestCase):
     module, and check if the server behaves correctly by exchanging opening
     handshake and frames over a TCP connection.
     """
-
     def setUp(self):
         self.server_stderr = None
         self.top_dir = os.path.join(os.path.split(__file__)[0], '..')
         os.putenv('PYTHONPATH', os.path.pathsep.join(sys.path))
-        self.standalone_command = os.path.join(
-            self.top_dir, 'mod_pywebsocket', 'standalone.py')
+        self.standalone_command = os.path.join(self.top_dir, 'mod_pywebsocket',
+                                               'standalone.py')
         self.document_root = os.path.join(self.top_dir, 'example')
         s = socket.socket()
         s.bind(('localhost', 0))
@@ -145,16 +141,18 @@ class EndToEndTestBase(unittest.TestCase):
     # TODO(tyoshino): Use tearDown to kill the server.
 
     def _run_python_command(self, commandline, stdout=None, stderr=None):
-        return subprocess.Popen([sys.executable] + commandline, close_fds=True,
-                                stdout=stdout, stderr=stderr)
+        return subprocess.Popen([sys.executable] + commandline,
+                                close_fds=True,
+                                stdout=stdout,
+                                stderr=stderr)
 
     def _run_server(self):
-        args = [self.standalone_command,
-                '-H', 'localhost',
-                '-V', 'localhost',
-                '-p', str(self.test_port),
-                '-P', str(self.test_port),
-                '-d', self.document_root]
+        args = [
+            self.standalone_command, '-H', 'localhost', '-V', 'localhost',
+            '-p',
+            str(self.test_port), '-P',
+            str(self.test_port), '-d', self.document_root
+        ]
 
         # Inherit the level set to the root logger by test runner.
         root_logger = logging.getLogger()
@@ -163,9 +161,7 @@ class EndToEndTestBase(unittest.TestCase):
             args.append('--log-level')
             args.append(logging.getLevelName(log_level).lower())
 
-        return self._run_python_command(args,
-                                        stderr=self.server_stderr)
-
+        return self._run_python_command(args, stderr=self.server_stderr)
 
     def _close_server(self, server):
         """
@@ -209,8 +205,8 @@ class EndToEndHyBiTest(EndToEndTestBase):
     def _run_test(self, test_function):
         self._run_test_with_client_options(test_function, self._options)
 
-    def _run_permessage_deflate_test(
-            self, offer, response_checker, test_function):
+    def _run_permessage_deflate_test(self, offer, response_checker,
+                                     test_function):
         server = self._run_server()
         try:
             time.sleep(_SERVER_WARMUP_IN_SEC)
@@ -232,7 +228,7 @@ class EndToEndHyBiTest(EndToEndTestBase):
             self._close_server(server)
 
     def _run_close_with_code_and_reason_test(self, test_function, code,
-                                                  reason):
+                                             reason):
         server = self._run_server()
         try:
             time.sleep(_SERVER_WARMUP_IN_SEC)
@@ -279,14 +275,13 @@ class EndToEndHyBiTest(EndToEndTestBase):
         def test_function(client):
             # From the examples in the spec.
             compressed_hello = b'\xf2\x48\xcd\xc9\xc9\x07\x00'
-            client._stream.send_data(
-                    compressed_hello,
-                    client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+            client._stream.send_data(compressed_hello,
+                                     client_for_testing.OPCODE_TEXT,
+                                     rsv1=1)
             client._stream.assert_receive_binary(
-                    compressed_hello,
-                    opcode=client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+                compressed_hello,
+                opcode=client_for_testing.OPCODE_TEXT,
+                rsv1=1)
 
             client.send_close()
             client.assert_receive_close()
@@ -295,26 +290,22 @@ class EndToEndHyBiTest(EndToEndTestBase):
             self.assertEqual('permessage-deflate', parameter.name())
             self.assertEqual([], parameter.get_parameters())
 
-        self._run_permessage_deflate_test(
-                ['permessage-deflate'],
-                response_checker,
-                test_function)
+        self._run_permessage_deflate_test(['permessage-deflate'],
+                                          response_checker, test_function)
 
     def test_echo_permessage_deflate_two_frames(self):
         def test_function(client):
             # From the examples in the spec.
-            client._stream.send_data(
-                    b'\xf2\x48\xcd',
-                    client_for_testing.OPCODE_TEXT,
-                    end=False,
-                    rsv1=1)
-            client._stream.send_data(
-                    b'\xc9\xc9\x07\x00',
-                    client_for_testing.OPCODE_TEXT)
+            client._stream.send_data(b'\xf2\x48\xcd',
+                                     client_for_testing.OPCODE_TEXT,
+                                     end=False,
+                                     rsv1=1)
+            client._stream.send_data(b'\xc9\xc9\x07\x00',
+                                     client_for_testing.OPCODE_TEXT)
             client._stream.assert_receive_binary(
-                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
-                    opcode=client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+                b'\xf2\x48\xcd\xc9\xc9\x07\x00',
+                opcode=client_for_testing.OPCODE_TEXT,
+                rsv1=1)
 
             client.send_close()
             client.assert_receive_close()
@@ -323,30 +314,26 @@ class EndToEndHyBiTest(EndToEndTestBase):
             self.assertEqual('permessage-deflate', parameter.name())
             self.assertEqual([], parameter.get_parameters())
 
-        self._run_permessage_deflate_test(
-                ['permessage-deflate'],
-                response_checker,
-                test_function)
+        self._run_permessage_deflate_test(['permessage-deflate'],
+                                          response_checker, test_function)
 
     def test_echo_permessage_deflate_two_messages(self):
         def test_function(client):
             # From the examples in the spec.
-            client._stream.send_data(
-                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
-                    client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
-            client._stream.send_data(
-                    b'\xf2\x00\x11\x00\x00',
-                    client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+            client._stream.send_data(b'\xf2\x48\xcd\xc9\xc9\x07\x00',
+                                     client_for_testing.OPCODE_TEXT,
+                                     rsv1=1)
+            client._stream.send_data(b'\xf2\x00\x11\x00\x00',
+                                     client_for_testing.OPCODE_TEXT,
+                                     rsv1=1)
             client._stream.assert_receive_binary(
-                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
-                    opcode=client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+                b'\xf2\x48\xcd\xc9\xc9\x07\x00',
+                opcode=client_for_testing.OPCODE_TEXT,
+                rsv1=1)
             client._stream.assert_receive_binary(
-                    b'\xf2\x00\x11\x00\x00',
-                    opcode=client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+                b'\xf2\x00\x11\x00\x00',
+                opcode=client_for_testing.OPCODE_TEXT,
+                rsv1=1)
 
             client.send_close()
             client.assert_receive_close()
@@ -355,30 +342,26 @@ class EndToEndHyBiTest(EndToEndTestBase):
             self.assertEqual('permessage-deflate', parameter.name())
             self.assertEqual([], parameter.get_parameters())
 
-        self._run_permessage_deflate_test(
-                ['permessage-deflate'],
-                response_checker,
-                test_function)
+        self._run_permessage_deflate_test(['permessage-deflate'],
+                                          response_checker, test_function)
 
     def test_echo_permessage_deflate_two_msgs_server_no_context_takeover(self):
         def test_function(client):
             # From the examples in the spec.
-            client._stream.send_data(
-                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
-                    client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
-            client._stream.send_data(
-                    b'\xf2\x00\x11\x00\x00',
-                    client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+            client._stream.send_data(b'\xf2\x48\xcd\xc9\xc9\x07\x00',
+                                     client_for_testing.OPCODE_TEXT,
+                                     rsv1=1)
+            client._stream.send_data(b'\xf2\x00\x11\x00\x00',
+                                     client_for_testing.OPCODE_TEXT,
+                                     rsv1=1)
             client._stream.assert_receive_binary(
-                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
-                    opcode=client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+                b'\xf2\x48\xcd\xc9\xc9\x07\x00',
+                opcode=client_for_testing.OPCODE_TEXT,
+                rsv1=1)
             client._stream.assert_receive_binary(
-                    b'\xf2\x48\xcd\xc9\xc9\x07\x00',
-                    opcode=client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+                b'\xf2\x48\xcd\xc9\xc9\x07\x00',
+                opcode=client_for_testing.OPCODE_TEXT,
+                rsv1=1)
 
             client.send_close()
             client.assert_receive_close()
@@ -386,25 +369,23 @@ class EndToEndHyBiTest(EndToEndTestBase):
         def response_checker(parameter):
             self.assertEqual('permessage-deflate', parameter.name())
             self.assertEqual([('server_no_context_takeover', None)],
-                              parameter.get_parameters())
+                             parameter.get_parameters())
 
         self._run_permessage_deflate_test(
-                ['permessage-deflate; server_no_context_takeover'],
-                response_checker,
-                test_function)
+            ['permessage-deflate; server_no_context_takeover'],
+            response_checker, test_function)
 
     def test_echo_permessage_deflate_preference(self):
         def test_function(client):
             # From the examples in the spec.
             compressed_hello = b'\xf2\x48\xcd\xc9\xc9\x07\x00'
-            client._stream.send_data(
-                    compressed_hello,
-                    client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+            client._stream.send_data(compressed_hello,
+                                     client_for_testing.OPCODE_TEXT,
+                                     rsv1=1)
             client._stream.assert_receive_binary(
-                    compressed_hello,
-                    opcode=client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+                compressed_hello,
+                opcode=client_for_testing.OPCODE_TEXT,
+                rsv1=1)
 
             client.send_close()
             client.assert_receive_close()
@@ -414,22 +395,20 @@ class EndToEndHyBiTest(EndToEndTestBase):
             self.assertEqual([], parameter.get_parameters())
 
         self._run_permessage_deflate_test(
-                ['permessage-deflate', 'deflate-frame'],
-                response_checker,
-                test_function)
+            ['permessage-deflate', 'deflate-frame'], response_checker,
+            test_function)
 
     def test_echo_permessage_deflate_with_parameters(self):
         def test_function(client):
             # From the examples in the spec.
             compressed_hello = b'\xf2\x48\xcd\xc9\xc9\x07\x00'
-            client._stream.send_data(
-                    compressed_hello,
-                    client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+            client._stream.send_data(compressed_hello,
+                                     client_for_testing.OPCODE_TEXT,
+                                     rsv1=1)
             client._stream.assert_receive_binary(
-                    compressed_hello,
-                    opcode=client_for_testing.OPCODE_TEXT,
-                    rsv1=1)
+                compressed_hello,
+                opcode=client_for_testing.OPCODE_TEXT,
+                rsv1=1)
 
             client.send_close()
             client.assert_receive_close()
@@ -437,27 +416,13 @@ class EndToEndHyBiTest(EndToEndTestBase):
         def response_checker(parameter):
             self.assertEqual('permessage-deflate', parameter.name())
             self.assertEqual([('server_max_window_bits', '10'),
-                               ('server_no_context_takeover', None)],
-                              parameter.get_parameters())
+                              ('server_no_context_takeover', None)],
+                             parameter.get_parameters())
 
-        self._run_permessage_deflate_test(
-                ['permessage-deflate; server_max_window_bits=10; '
-                 'server_no_context_takeover'],
-                response_checker,
-                test_function)
-
-    def test_echo_permessage_deflate_with_bad_server_max_window_bits(self):
-        def test_function(client):
-            client.send_close()
-            client.assert_receive_close()
-
-        def response_checker(parameter):
-            raise Exception('Unexpected acceptance of permessage-deflate')
-
-        self._run_permessage_deflate_test(
-                ['permessage-deflate; server_max_window_bits=3000000'],
-                response_checker,
-                test_function)
+        self._run_permessage_deflate_test([
+            'permessage-deflate; server_max_window_bits=10; '
+            'server_no_context_takeover'
+        ], response_checker, test_function)
 
     def test_echo_permessage_deflate_with_bad_server_max_window_bits(self):
         def test_function(client):
@@ -468,9 +433,20 @@ class EndToEndHyBiTest(EndToEndTestBase):
             raise Exception('Unexpected acceptance of permessage-deflate')
 
         self._run_permessage_deflate_test(
-                ['permessage-deflate; server_max_window_bits=3000000'],
-                response_checker,
-                test_function)
+            ['permessage-deflate; server_max_window_bits=3000000'],
+            response_checker, test_function)
+
+    def test_echo_permessage_deflate_with_bad_server_max_window_bits(self):
+        def test_function(client):
+            client.send_close()
+            client.assert_receive_close()
+
+        def response_checker(parameter):
+            raise Exception('Unexpected acceptance of permessage-deflate')
+
+        self._run_permessage_deflate_test(
+            ['permessage-deflate; server_max_window_bits=3000000'],
+            response_checker, test_function)
 
     def test_echo_permessage_deflate_with_undefined_parameter(self):
         def test_function(client):
@@ -480,10 +456,8 @@ class EndToEndHyBiTest(EndToEndTestBase):
         def response_checker(parameter):
             raise Exception('Unexpected acceptance of permessage-deflate')
 
-        self._run_permessage_deflate_test(
-                ['permessage-deflate; foo=bar'],
-                response_checker,
-                test_function)
+        self._run_permessage_deflate_test(['permessage-deflate; foo=bar'],
+                                          response_checker, test_function)
 
     def test_echo_close_with_code_and_reason(self):
         self._options.resource = '/close'
@@ -499,7 +473,6 @@ class EndToEndHyBiTest(EndToEndTestBase):
         """Tests that the server sends a close frame with protocol error status
         code when the client sends data with some protocol error.
         """
-
         def test_function(client):
             client.connect()
 
@@ -516,7 +489,6 @@ class EndToEndHyBiTest(EndToEndTestBase):
         status code when the client sends data asking some operation that is
         not supported by the server.
         """
-
         def test_function(client):
             client.connect()
 
@@ -532,7 +504,6 @@ class EndToEndHyBiTest(EndToEndTestBase):
         data status code when the client sends an invalid frame like containing
         invalid UTF-8 character.
         """
-
         def test_function(client):
             client.connect()
 
@@ -585,12 +556,13 @@ class EndToEndHyBiTest(EndToEndTestBase):
         options.version = 99
         self._run_http_fallback_test(options, 400)
 
+
 class EndToEndTestWithEchoClient(EndToEndTestBase):
     def setUp(self):
         EndToEndTestBase.setUp(self)
 
-    def _check_example_echo_client_result(
-        self, expected, stdoutdata, stderrdata):
+    def _check_example_echo_client_result(self, expected, stdoutdata,
+                                          stderrdata):
         actual = stdoutdata.decode("utf-8")
         if actual != expected:
             raise Exception('Unexpected result on example echo client: '
@@ -607,49 +579,52 @@ class EndToEndTestWithEchoClient(EndToEndTestBase):
         try:
             time.sleep(_SERVER_WARMUP_IN_SEC)
 
-            client_command = os.path.join(
-                self.top_dir, 'example', 'echo_client.py')
+            client_command = os.path.join(self.top_dir, 'example',
+                                          'echo_client.py')
 
             # Expected output for the default messages.
-            default_expectation = ('Send: Hello\n' 'Recv: Hello\n'
-                u'Send: \u65e5\u672c\n' u'Recv: \u65e5\u672c\n'
-                'Send close\n' 'Recv ack\n')
+            default_expectation = (u'Send: Hello\n'
+                                   u'Recv: Hello\n'
+                                   u'Send: \u65e5\u672c\n'
+                                   u'Recv: \u65e5\u672c\n'
+                                   u'Send close\n'
+                                   u'Recv ack\n')
 
-            args = [client_command,
-                    '-p', str(self._options.server_port)]
+            args = [client_command, '-p', str(self._options.server_port)]
             client = self._run_python_command(args, stdout=subprocess.PIPE)
             stdoutdata, stderrdata = client.communicate()
-            self._check_example_echo_client_result(
-                    default_expectation, stdoutdata, stderrdata)
+            self._check_example_echo_client_result(default_expectation,
+                                                   stdoutdata, stderrdata)
 
             # Process a big message for which extended payload length is used.
             # To handle extended payload length, ws_version attribute will be
             # accessed. This test checks that ws_version is correctly set.
             big_message = 'a' * 1024
-            args = [client_command,
-                    '-p', str(self._options.server_port),
-                    '-m', big_message]
+            args = [
+                client_command, '-p',
+                str(self._options.server_port), '-m', big_message
+            ]
             client = self._run_python_command(args, stdout=subprocess.PIPE)
             stdoutdata, stderrdata = client.communicate()
             expected = ('Send: %s\nRecv: %s\nSend close\nRecv ack\n' %
                         (big_message, big_message))
-            self._check_example_echo_client_result(
-                expected, stdoutdata, stderrdata)
+            self._check_example_echo_client_result(expected, stdoutdata,
+                                                   stderrdata)
 
             # Test the permessage-deflate extension.
-            args = [client_command,
-                    '-p', str(self._options.server_port),
-                    '--use_permessage_deflate']
+            args = [
+                client_command, '-p',
+                str(self._options.server_port), '--use_permessage_deflate'
+            ]
             client = self._run_python_command(args, stdout=subprocess.PIPE)
             stdoutdata, stderrdata = client.communicate()
-            self._check_example_echo_client_result(
-                    default_expectation, stdoutdata, stderrdata)
+            self._check_example_echo_client_result(default_expectation,
+                                                   stdoutdata, stderrdata)
         finally:
             self._close_server(server)
 
 
 if __name__ == '__main__':
     unittest.main()
-
 
 # vi:sts=4 sw=4 et

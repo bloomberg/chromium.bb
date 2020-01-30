@@ -28,10 +28,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Tests for handshake._base module."""
-
 
 from __future__ import absolute_import
 import unittest
@@ -48,7 +45,6 @@ from mod_pywebsocket.handshake._base import validate_subprotocol
 
 class ValidateSubprotocolTest(unittest.TestCase):
     """A unittest for validate_subprotocol method."""
-
     def test_validate_subprotocol(self):
         # Should succeed.
         validate_subprotocol('sample')
@@ -56,25 +52,20 @@ class ValidateSubprotocolTest(unittest.TestCase):
         validate_subprotocol('sample\x7eprotocol')
 
         # Should fail.
-        self.assertRaises(HandshakeException,
-                          validate_subprotocol,
-                          '')
-        self.assertRaises(HandshakeException,
-                          validate_subprotocol,
+        self.assertRaises(HandshakeException, validate_subprotocol, '')
+        self.assertRaises(HandshakeException, validate_subprotocol,
                           'sample\x09protocol')
-        self.assertRaises(HandshakeException,
-                          validate_subprotocol,
+        self.assertRaises(HandshakeException, validate_subprotocol,
                           'sample\x19protocol')
-        self.assertRaises(HandshakeException,
-                          validate_subprotocol,
+        self.assertRaises(HandshakeException, validate_subprotocol,
                           'sample\x20protocol')
-        self.assertRaises(HandshakeException,
-                          validate_subprotocol,
+        self.assertRaises(HandshakeException, validate_subprotocol,
                           'sample\x7fprotocol')
-        self.assertRaises(HandshakeException,
-                          validate_subprotocol,
-                          # "Japan" in Japanese
-                          u'\u65e5\u672c')
+        self.assertRaises(
+            HandshakeException,
+            validate_subprotocol,
+            # "Japan" in Japanese
+            u'\u65e5\u672c')
 
 
 _TEST_TOKEN_EXTENSION_DATA = [
@@ -82,12 +73,10 @@ _TEST_TOKEN_EXTENSION_DATA = [
     ('foo; bar', [('foo', [('bar', None)])]),
     ('foo; bar=baz', [('foo', [('bar', 'baz')])]),
     ('foo; bar=baz; car=cdr', [('foo', [('bar', 'baz'), ('car', 'cdr')])]),
-    ('foo; bar=baz, car; cdr',
-     [('foo', [('bar', 'baz')]), ('car', [('cdr', None)])]),
-    ('a, b, c, d',
-     [('a', []), ('b', []), ('c', []), ('d', [])]),
-    ]
-
+    ('foo; bar=baz, car; cdr', [('foo', [('bar', 'baz')]),
+                                ('car', [('cdr', None)])]),
+    ('a, b, c, d', [('a', []), ('b', []), ('c', []), ('d', [])]),
+]
 
 _TEST_QUOTED_EXTENSION_DATA = [
     ('foo; bar=""', [('foo', [('bar', '')])]),
@@ -96,8 +85,7 @@ _TEST_QUOTED_EXTENSION_DATA = [
     ('foo; bar="\\\r\\\nbaz"', [('foo', [('bar', '\r\nbaz')])]),
     ('foo; bar="\\"baz"', [('foo', [('bar', '"baz')])]),
     ('foo; bar="\xbbbaz"', [('foo', [('bar', '\xbbbaz')])]),
-    ]
-
+]
 
 _TEST_REDUNDANT_TOKEN_EXTENSION_DATA = [
     ('foo \t ', [('foo', [])]),
@@ -105,16 +93,14 @@ _TEST_REDUNDANT_TOKEN_EXTENSION_DATA = [
     ('foo; bar=\r\n \r\n baz', [('foo', [('bar', 'baz')])]),
     ('foo ;bar = baz ', [('foo', [('bar', 'baz')])]),
     ('foo,bar,,baz', [('foo', []), ('bar', []), ('baz', [])]),
-    ]
-
+]
 
 _TEST_REDUNDANT_QUOTED_EXTENSION_DATA = [
     ('foo; bar="\r\n \r\n baz"', [('foo', [('bar', '  baz')])]),
-    ]
+]
 
 
 class ExtensionsParserTest(unittest.TestCase):
-
     def _verify_extension_list(self, expected_list, actual_list):
         """Verifies that ExtensionParameter objects in actual_list have the
         same members as extension definitions in expected_list. Extension
@@ -130,25 +116,25 @@ class ExtensionsParserTest(unittest.TestCase):
 
     def test_parse(self):
         for formatted_string, definition in _TEST_TOKEN_EXTENSION_DATA:
-            self._verify_extension_list(
-                definition, parse_extensions(formatted_string))
+            self._verify_extension_list(definition,
+                                        parse_extensions(formatted_string))
 
     def test_parse_quoted_data(self):
         for formatted_string, definition in _TEST_QUOTED_EXTENSION_DATA:
-            self._verify_extension_list(
-                definition, parse_extensions(formatted_string))
+            self._verify_extension_list(definition,
+                                        parse_extensions(formatted_string))
 
     def test_parse_redundant_data(self):
         for (formatted_string,
              definition) in _TEST_REDUNDANT_TOKEN_EXTENSION_DATA:
-            self._verify_extension_list(
-                definition, parse_extensions(formatted_string))
+            self._verify_extension_list(definition,
+                                        parse_extensions(formatted_string))
 
     def test_parse_redundant_quoted_data(self):
         for (formatted_string,
              definition) in _TEST_REDUNDANT_QUOTED_EXTENSION_DATA:
-            self._verify_extension_list(
-                definition, parse_extensions(formatted_string))
+            self._verify_extension_list(definition,
+                                        parse_extensions(formatted_string))
 
     def test_parse_bad_data(self):
         _TEST_BAD_EXTENSION_DATA = [
@@ -161,15 +147,14 @@ class ExtensionsParserTest(unittest.TestCase):
             ('foo; bar="a\r"'),
             ('foo; bar="\\\xff"'),
             ('foo; bar=\ra'),
-            ]
+        ]
 
         for formatted_string in _TEST_BAD_EXTENSION_DATA:
-            self.assertRaises(
-                ExtensionParsingException, parse_extensions, formatted_string)
+            self.assertRaises(ExtensionParsingException, parse_extensions,
+                              formatted_string)
 
 
 class FormatExtensionsTest(unittest.TestCase):
-
     def test_format_extensions(self):
         for formatted_string, definitions in _TEST_TOKEN_EXTENSION_DATA:
             extensions = []
@@ -178,12 +163,10 @@ class FormatExtensionsTest(unittest.TestCase):
                 extension = ExtensionParameter(name)
                 extension._parameters = parameters
                 extensions.append(extension)
-            self.assertEqual(
-                formatted_string, format_extensions(extensions))
+            self.assertEqual(formatted_string, format_extensions(extensions))
 
 
 if __name__ == '__main__':
     unittest.main()
-
 
 # vi:sts=4 sw=4 et

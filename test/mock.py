@@ -26,11 +26,8 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Mocks for testing.
 """
-
 
 from __future__ import absolute_import
 import six.moves.queue
@@ -50,7 +47,6 @@ class _MockConnBase(object):
 
     This enables tests to check what is written to a (mock) mp_conn.
     """
-
     def __init__(self):
         self._write_data = []
         self.remote_addr = b'fake_address'
@@ -75,7 +71,6 @@ class MockConn(_MockConnBase):
     This enables tests to specify what should be read from a (mock) mp_conn as
     well as to check what is written to it.
     """
-
     def __init__(self, read_data):
         """Constructs an instance.
 
@@ -119,7 +114,6 @@ class MockBlockingConn(_MockConnBase):
     well as to check what is written to it.
     Callers of read* methods will block if there is no bytes available.
     """
-
     def __init__(self):
         _MockConnBase.__init__(self)
         self._queue = six.moves.queue.Queue()
@@ -159,7 +153,6 @@ class MockTable(dict):
     This mimics mod_python mp_table. Note that only the methods used by
     tests are overridden.
     """
-
     def __init__(self, copy_from={}):
         if isinstance(copy_from, dict):
             copy_from = list(copy_from.items())
@@ -181,9 +174,13 @@ class MockRequest(object):
 
     This mimics mod_python request.
     """
-
-    def __init__(self, uri=None, headers_in={}, connection=None, method='GET',
-                 protocol='HTTP/1.1', is_https=False):
+    def __init__(self,
+                 uri=None,
+                 headers_in={},
+                 connection=None,
+                 method='GET',
+                 protocol='HTTP/1.1',
+                 is_https=False):
         """Construct an instance.
 
         Arguments:
@@ -217,7 +214,6 @@ class MockRequest(object):
 
 class MockDispatcher(object):
     """Mock for dispatch.Dispatcher."""
-
     def __init__(self):
         self.do_extra_handshake_called = False
 

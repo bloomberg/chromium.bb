@@ -28,8 +28,6 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """WebSocket client utility for testing.
 
 This module contains helper methods for performing handshake, frame
@@ -43,7 +41,6 @@ is allowed.
 Note:
 This code is far from robust, e.g., we cut corners in handshake.
 """
-
 
 from __future__ import absolute_import
 import base64
@@ -62,7 +59,6 @@ from six import indexbytes
 from mod_pywebsocket import common
 from mod_pywebsocket import util
 from mod_pywebsocket.handshake import HandshakeException
-
 
 DEFAULT_PORT = 80
 DEFAULT_SECURE_PORT = 443
@@ -98,6 +94,7 @@ STATUS_TLS_HANDSHAKE = 1015
 # Extension tokens
 _PERMESSAGE_DEFLATE_EXTENSION = 'permessage-deflate'
 
+
 def _method_line(resource):
     return 'GET %s HTTP/1.1\r\n' % resource
 
@@ -121,8 +118,8 @@ def _format_host_header(host, port, secure):
     # is true, and /port/ is not 443, then append a U+003A COLON character
     # (:) followed by the value of /port/, expressed as a base-ten integer,
     # to /hostport/
-    if ((not secure and port != DEFAULT_PORT) or
-        (secure and port != DEFAULT_SECURE_PORT)):
+    if ((not secure and port != DEFAULT_PORT)
+            or (secure and port != DEFAULT_SECURE_PORT)):
         hostport += ':' + str(port)
     # 4.1 12. concatenation of the string "Host:", a U+0020 SPACE
     # character, and /hostport/, to /fields/.
@@ -149,6 +146,7 @@ def receive_bytes(socket, length):
 
 # TODO(tyoshino): Now the WebSocketHandshake class diverts these methods. We
 # should move to HTTP parser as specified in RFC 6455.
+
 
 def _read_fields(socket):
     # 4.1 32. let /fields/ be a list of name-value pairs, initially empty.
@@ -177,7 +175,8 @@ def _read_fields(socket):
         # array as a UTF-8 stream and the value given by the string
         # obtained by interpreting the /value/ byte array as a UTF-8 byte
         # stream.
-        fields.setdefault(name.decode('UTF-8'), []).append(value.decode('UTF-8'))
+        fields.setdefault(name.decode('UTF-8'),
+                          []).append(value.decode('UTF-8'))
         # 4.1 39. return to the "Field" step above
     return fields
 
@@ -191,8 +190,7 @@ def _read_name(socket):
         if ch == b'\r':  # 0x0D
             return None
         elif ch == b'\n':  # 0x0A
-            raise Exception(
-                'Unexpected LF when reading header name %r' % name)
+            raise Exception('Unexpected LF when reading header name %r' % name)
         elif ch == b':':  # 0x3A
             return name.lower()
         else:
@@ -216,8 +214,8 @@ def _read_value(socket, ch):
         if ch == b'\r':  # 0x0D
             return value
         elif ch == b'\n':  # 0x0A
-            raise Exception(
-                'Unexpected LF when reading header value %r' % value)
+            raise Exception('Unexpected LF when reading header value %r' %
+                            value)
         else:
             value += ch
         ch = receive_bytes(socket, 1)
@@ -237,26 +235,22 @@ def read_frame_header(socket):
     payload_length = second_byte & 0x7f
 
     if mask != 0:
-        raise Exception(
-            'Mask bit must be 0 for frames coming from server')
+        raise Exception('Mask bit must be 0 for frames coming from server')
 
     if payload_length == 127:
         extended_payload_length = receive_bytes(socket, 8)
-        payload_length = struct.unpack(
-            '!Q', extended_payload_length)[0]
+        payload_length = struct.unpack('!Q', extended_payload_length)[0]
         if payload_length > 0x7FFFFFFFFFFFFFFF:
             raise Exception('Extended payload length >= 2^63')
     elif payload_length == 126:
         extended_payload_length = receive_bytes(socket, 2)
-        payload_length = struct.unpack(
-            '!H', extended_payload_length)[0]
+        payload_length = struct.unpack('!H', extended_payload_length)[0]
 
     return fin, rsv1, rsv2, rsv3, opcode, payload_length
 
 
 class _TLSSocket(object):
     """Wrapper for a TLS connection."""
-
     def __init__(self, raw_socket):
         self._ssl = socket.ssl(raw_socket)
 
@@ -275,7 +269,6 @@ class HttpStatusException(Exception):
     """This exception will be raised when unexpected http status code was
     received as a result of handshake.
     """
-
     def __init__(self, name, status):
         super(HttpStatusException, self).__init__(name)
         self.status = status
@@ -283,7 +276,6 @@ class HttpStatusException(Exception):
 
 class WebSocketHandshake(object):
     """Opening handshake processor for the WebSocket protocol (RFC 6455)."""
-
     def __init__(self, options):
         self._logger = util.get_class_logger(self)
 
@@ -306,10 +298,10 @@ class WebSocketHandshake(object):
         fields.append(_UPGRADE_HEADER)
         fields.append(_CONNECTION_HEADER)
 
-        fields.append(_format_host_header(
-            self._options.server_host,
-            self._options.server_port,
-            self._options.use_tls))
+        fields.append(
+            _format_host_header(self._options.server_host,
+                                self._options.server_port,
+                                self._options.use_tls))
 
         if self._options.version is 8:
             fields.append(_sec_origin_header(self._options.origin))
@@ -318,8 +310,8 @@ class WebSocketHandshake(object):
 
         original_key = os.urandom(16)
         key = base64.b64encode(original_key)
-        self._logger.debug(
-            'Sec-WebSocket-Key: %s (%s)', key, util.hexify(original_key))
+        self._logger.debug('Sec-WebSocket-Key: %s (%s)', key,
+                           util.hexify(original_key))
         fields.append(u'Sec-WebSocket-Key: %s\r\n' % key.decode('UTF-8'))
 
         fields.append(u'Sec-WebSocket-Version: %d\r\n' % self._options.version)
@@ -351,8 +343,8 @@ class WebSocketHandshake(object):
             raise Exception('Wrong status line: %s' % field.decode('Latin-1'))
         m = re.match(b'[^ ]* ([^ ]*) .*', field)
         if m is None:
-            raise Exception(
-                'No HTTP status code found in status line: %s' % field.decode('Latin-1'))
+            raise Exception('No HTTP status code found in status line: %s' %
+                            field.decode('Latin-1'))
         code = m.group(1)
         if not re.match(b'[0-9][0-9][0-9]$', code):
             raise Exception(
@@ -372,23 +364,21 @@ class WebSocketHandshake(object):
 
         # Check /fields/
         if len(fields['upgrade']) != 1:
-            raise Exception(
-                'Multiple Upgrade headers found: %s' % fields['upgrade'])
+            raise Exception('Multiple Upgrade headers found: %s' %
+                            fields['upgrade'])
         if len(fields['connection']) != 1:
-            raise Exception(
-                'Multiple Connection headers found: %s' % fields['connection'])
+            raise Exception('Multiple Connection headers found: %s' %
+                            fields['connection'])
         if fields['upgrade'][0] != 'websocket':
-            raise Exception(
-                'Unexpected Upgrade header value: %s' % fields['upgrade'][0])
+            raise Exception('Unexpected Upgrade header value: %s' %
+                            fields['upgrade'][0])
         if fields['connection'][0].lower() != 'upgrade':
-            raise Exception(
-                'Unexpected Connection header value: %s' %
-                fields['connection'][0])
+            raise Exception('Unexpected Connection header value: %s' %
+                            fields['connection'][0])
 
         if len(fields['sec-websocket-accept']) != 1:
-            raise Exception(
-                'Multiple Sec-WebSocket-Accept headers found: %s' %
-                fields['sec-websocket-accept'])
+            raise Exception('Multiple Sec-WebSocket-Accept headers found: %s' %
+                            fields['sec-websocket-accept'])
 
         accept = fields['sec-websocket-accept'][0]
 
@@ -403,11 +393,10 @@ class WebSocketHandshake(object):
             raise HandshakeException(
                 'Decoded value of Sec-WebSocket-Accept is not 20-byte long')
 
-        self._logger.debug('Actual Sec-WebSocket-Accept: %r (%s)',
-                           accept, util.hexify(decoded_accept))
+        self._logger.debug('Actual Sec-WebSocket-Accept: %r (%s)', accept,
+                           util.hexify(decoded_accept))
 
-        original_expected_accept = sha1(
-            key + WEBSOCKET_ACCEPT_UUID).digest()
+        original_expected_accept = sha1(key + WEBSOCKET_ACCEPT_UUID).digest()
         expected_accept = base64.b64encode(original_expected_accept)
 
         self._logger.debug('Expected Sec-WebSocket-Accept: %r (%s)',
@@ -436,13 +425,12 @@ class WebSocketHandshake(object):
                     checker(extension)
                     continue
 
-            raise Exception(
-                'Received unrecognized extension: %s' % extension.name())
+            raise Exception('Received unrecognized extension: %s' %
+                            extension.name())
 
 
 class WebSocketStream(object):
     """Frame processor for the WebSocket protocol (RFC 6455)."""
-
     def __init__(self, socket, handshake):
         self._handshake = handshake
         self._socket = socket
@@ -461,16 +449,21 @@ class WebSocketStream(object):
         result = [masking_nonce]
         count = 0
         for c in iterbytes(s):
-            result.append(
-                util.pack_byte(c ^ indexbytes(masking_nonce, count)))
+            result.append(util.pack_byte(c ^ indexbytes(masking_nonce, count)))
             count = (count + 1) % len(masking_nonce)
         return b''.join(result)
 
     def send_frame_of_arbitrary_bytes(self, header, body):
         self._socket.sendall(header + self._mask_hybi(body))
 
-    def send_data(self, payload, frame_type, end=True, mask=True,
-                  rsv1=0, rsv2=0, rsv3=0):
+    def send_data(self,
+                  payload,
+                  frame_type,
+                  end=True,
+                  mask=True,
+                  rsv1=0,
+                  rsv2=0,
+                  rsv3=0):
         if self._outgoing_frame_filter is not None:
             payload = self._outgoing_frame_filter.filter(payload)
 
@@ -491,15 +484,17 @@ class WebSocketStream(object):
         else:
             mask_bit = 0
 
-        header = util.pack_byte(
-                        fin << 7 | rsv1 << 6 | rsv2 << 5 | rsv3 << 4 | opcode)
+        header = util.pack_byte(fin << 7 | rsv1 << 6 | rsv2 << 5 | rsv3 << 4
+                                | opcode)
         payload_length = len(payload)
         if payload_length <= 125:
             header += util.pack_byte(mask_bit | payload_length)
         elif payload_length < 1 << 16:
-            header += util.pack_byte(mask_bit | 126) + struct.pack('!H', payload_length)
+            header += util.pack_byte(mask_bit | 126) + struct.pack(
+                '!H', payload_length)
         elif payload_length < 1 << 63:
-            header += util.pack_byte(mask_bit | 127) + struct.pack('!Q', payload_length)
+            header += util.pack_byte(mask_bit | 127) + struct.pack(
+                '!Q', payload_length)
         else:
             raise Exception('Too long payload (%d byte)' % payload_length)
         if mask:
@@ -517,14 +512,12 @@ class WebSocketStream(object):
          payload_length) = read_frame_header(self._socket)
 
         if actual_opcode != opcode:
-            raise Exception(
-                'Unexpected opcode: %d (expected) vs %d (actual)' %
-                (opcode, actual_opcode))
+            raise Exception('Unexpected opcode: %d (expected) vs %d (actual)' %
+                            (opcode, actual_opcode))
 
         if actual_fin != fin:
-            raise Exception(
-                'Unexpected fin: %d (expected) vs %d (actual)' %
-                (fin, actual_fin))
+            raise Exception('Unexpected fin: %d (expected) vs %d (actual)' %
+                            (fin, actual_fin))
 
         if rsv1 is None:
             rsv1 = 0
@@ -536,19 +529,16 @@ class WebSocketStream(object):
             rsv3 = 0
 
         if actual_rsv1 != rsv1:
-            raise Exception(
-                'Unexpected rsv1: %r (expected) vs %r (actual)' %
-                (rsv1, actual_rsv1))
+            raise Exception('Unexpected rsv1: %r (expected) vs %r (actual)' %
+                            (rsv1, actual_rsv1))
 
         if actual_rsv2 != rsv2:
-            raise Exception(
-                'Unexpected rsv2: %r (expected) vs %r (actual)' %
-                (rsv2, actual_rsv2))
+            raise Exception('Unexpected rsv2: %r (expected) vs %r (actual)' %
+                            (rsv2, actual_rsv2))
 
         if actual_rsv3 != rsv3:
-            raise Exception(
-                'Unexpected rsv3: %r (expected) vs %r (actual)' %
-                (rsv3, actual_rsv3))
+            raise Exception('Unexpected rsv3: %r (expected) vs %r (actual)' %
+                            (rsv3, actual_rsv3))
 
         received = receive_bytes(self._socket, payload_length)
 
@@ -565,12 +555,22 @@ class WebSocketStream(object):
                 'Unexpected payload: %r (expected) vs %r (actual)' %
                 (payload, received))
 
-    def assert_receive_binary(self, payload, opcode=OPCODE_BINARY, fin=1,
-                              rsv1=None, rsv2=None, rsv3=None):
+    def assert_receive_binary(self,
+                              payload,
+                              opcode=OPCODE_BINARY,
+                              fin=1,
+                              rsv1=None,
+                              rsv2=None,
+                              rsv3=None):
         self._assert_receive_data(payload, opcode, fin, rsv1, rsv2, rsv3)
 
-    def assert_receive_text(self, payload, opcode=OPCODE_TEXT, fin=1,
-                            rsv1=None, rsv2=None, rsv3=None):
+    def assert_receive_text(self,
+                            payload,
+                            opcode=OPCODE_TEXT,
+                            fin=1,
+                            rsv1=None,
+                            rsv2=None,
+                            rsv3=None):
         self._assert_receive_data(payload.encode('utf-8'), opcode, fin, rsv1,
                                   rsv2, rsv3)
 
@@ -588,8 +588,7 @@ class WebSocketStream(object):
         return frame
 
     def send_close(self, code, reason):
-        self._socket.sendall(
-            self._build_close_frame(code, reason, True))
+        self._socket.sendall(self._build_close_frame(code, reason, True))
 
     def assert_receive_close(self, code, reason):
         expected_frame = self._build_close_frame(code, reason, False)
@@ -602,7 +601,6 @@ class WebSocketStream(object):
 
 class ClientOptions(object):
     """Holds option values to configure the Client object."""
-
     def __init__(self):
         self.version = 13
         self.server_host = ''
@@ -614,8 +612,12 @@ class ClientOptions(object):
         self.extensions = []
 
 
-def connect_socket_with_retry(host, port, timeout, use_tls,
-                              retry=10, sleep_sec=0.1):
+def connect_socket_with_retry(host,
+                              port,
+                              timeout,
+                              use_tls,
+                              retry=10,
+                              sleep_sec=0.1):
     retry_count = 0
     while retry_count < retry:
         try:
@@ -637,7 +639,6 @@ def connect_socket_with_retry(host, port, timeout, use_tls,
 
 class Client(object):
     """WebSocket client."""
-
     def __init__(self, options, handshake, stream_class):
         self._logger = util.get_class_logger(self)
 
@@ -648,11 +649,10 @@ class Client(object):
         self._stream_class = stream_class
 
     def connect(self):
-        self._socket = connect_socket_with_retry(
-                self._options.server_host,
-                self._options.server_port,
-                self._options.socket_timeout,
-                self._options.use_tls)
+        self._socket = connect_socket_with_retry(self._options.server_host,
+                                                 self._options.server_port,
+                                                 self._options.socket_timeout,
+                                                 self._options.use_tls)
 
         self._handshake.handshake(self._socket)
 
@@ -663,7 +663,11 @@ class Client(object):
     def send_frame_of_arbitrary_bytes(self, header, body):
         self._stream.send_frame_of_arbitrary_bytes(header, body)
 
-    def send_message(self, message, end=True, binary=False, raw=False,
+    def send_message(self,
+                     message,
+                     end=True,
+                     binary=False,
+                     raw=False,
                      mask=True):
         if binary:
             self._stream.send_binary(message, end, mask)
@@ -692,13 +696,14 @@ class Client(object):
             read_data = receive_bytes(self._socket, 1)
         except Exception as e:
             if str(e).find(
-                'Connection closed before receiving requested length ') == 0:
+                    'Connection closed before receiving requested length '
+            ) == 0:
                 return
             try:
                 error_number, message = e
                 for error_name in ['ECONNRESET', 'WSAECONNRESET']:
-                    if (error_name in dir(errno) and
-                        error_number == getattr(errno, error_name)):
+                    if (error_name in dir(errno)
+                            and error_number == getattr(errno, error_name)):
                         return
             except:
                 raise e
@@ -708,7 +713,7 @@ class Client(object):
 
 
 def create_client(options):
-    return Client(
-        options, WebSocketHandshake(options), WebSocketStream)
+    return Client(options, WebSocketHandshake(options), WebSocketStream)
+
 
 # vi:sts=4 sw=4 et
