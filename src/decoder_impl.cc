@@ -129,15 +129,16 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
 DecoderImpl::DecoderImpl(const DecoderSettings* settings)
     : v1_callbacks_(settings->get, settings->release,
                     settings->callback_private_data),
-      buffer_pool_(
-          (settings->get != nullptr) ? OnFrameBufferSizeChangedAdaptor
-                                     : settings->on_frame_buffer_size_changed,
-          (settings->get != nullptr) ? GetFrameBufferAdaptor
-                                     : settings->get_frame_buffer,
-          (settings->get != nullptr) ? ReleaseFrameBufferAdaptor
-                                     : settings->release_frame_buffer,
-          (settings->get != nullptr) ? &v1_callbacks_
-                                     : settings->callback_private_data),
+      buffer_pool_((settings->get != nullptr)
+                       ? OnFrameBufferSizeChangedAdaptor
+                       : settings->on_frame_buffer_size_changed,
+                   (settings->get != nullptr) ? GetFrameBufferAdaptor
+                                              : settings->get_frame_buffer,
+                   (settings->get != nullptr) ? ReleaseFrameBufferAdaptor
+                                              : settings->release_frame_buffer,
+                   (settings->get != nullptr) ? &v1_callbacks_
+                                              : settings->callback_private_data,
+                   settings->get != nullptr),
       settings_(*settings) {
   dsp::DspInit();
 }

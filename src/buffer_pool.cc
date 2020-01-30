@@ -116,7 +116,11 @@ void RefCountedBuffer::SetSegmentationParameters(
   CopySegmentationParameters(/*from=*/segmentation, /*to=*/&segmentation_);
 }
 
-void RefCountedBuffer::SetBufferPool(BufferPool* pool) { pool_ = pool; }
+void RefCountedBuffer::SetBufferPool(BufferPool* pool,
+                                     bool using_callback_adaptor) {
+  pool_ = pool;
+  using_callback_adaptor_ = using_callback_adaptor;
+}
 
 void RefCountedBuffer::ReturnToBufferPool(RefCountedBuffer* ptr) {
   ptr->pool_->ReturnUnusedBuffer(ptr);
@@ -129,7 +133,7 @@ BufferPool::BufferPool(
     FrameBufferSizeChangedCallback on_frame_buffer_size_changed,
     GetFrameBufferCallback2 get_frame_buffer,
     ReleaseFrameBufferCallback2 release_frame_buffer,
-    void* callback_private_data) {
+    void* callback_private_data, bool using_callback_adaptor) {
   if (get_frame_buffer != nullptr) {
     assert(on_frame_buffer_size_changed != nullptr);
     assert(release_frame_buffer != nullptr);
@@ -148,7 +152,7 @@ BufferPool::BufferPool(
     callback_private_data_ = internal_frame_buffers_.get();
   }
   for (RefCountedBuffer& buffer : buffers_) {
-    buffer.SetBufferPool(this);
+    buffer.SetBufferPool(this, using_callback_adaptor);
   }
 }
 
