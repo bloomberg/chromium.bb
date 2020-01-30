@@ -350,21 +350,6 @@ class Tile : public Allocable {
   void ReadTransformType(const Block& block, int x4, int y4,
                          TransformSize tx_size);  // 5.11.47.
   int GetCoeffBaseContextEob(TransformSize tx_size, int index);
-  int GetCoeffBaseContext2D(const int32_t* quantized_buffer,
-                            TransformSize tx_size, int adjusted_tx_width_log2,
-                            uint16_t pos);
-  int GetCoeffBaseContextHorizontal(const int32_t* quantized_buffer,
-                                    TransformSize tx_size,
-                                    int adjusted_tx_width_log2, uint16_t pos);
-  int GetCoeffBaseContextVertical(const int32_t* quantized_buffer,
-                                  TransformSize tx_size,
-                                  int adjusted_tx_width_log2, uint16_t pos);
-  int GetCoeffBaseRangeContext2D(const int32_t* quantized_buffer,
-                                 int adjusted_tx_width_log2, int pos);
-  int GetCoeffBaseRangeContextHorizontal(const int32_t* quantized_buffer,
-                                         int adjusted_tx_width_log2, int pos);
-  int GetCoeffBaseRangeContextVertical(const int32_t* quantized_buffer,
-                                       int adjusted_tx_width_log2, int pos);
   int GetCoeffBaseRangeContextEob(int adjusted_tx_width_log2, int pos,
                                   TransformClass tx_class);
   void ReadCoeffBase2D(
