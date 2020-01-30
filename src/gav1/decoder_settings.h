@@ -20,6 +20,7 @@
 #include <cstdint>
 
 #include "gav1/frame_buffer.h"
+#include "gav1/frame_buffer2.h"
 
 // All the declarations in this file are part of the public ABI.
 
@@ -37,10 +38,20 @@ struct DecoderSettings {
   // NOTE: Frame parallel decoding is not implemented, this setting is
   // currently ignored.
   bool frame_parallel = false;
-  // Get frame buffer callback.
+  // Get frame buffer callback, version 1.
+  // NOTE: Deprecated. Use |get_frame_buffer| instead.
   GetFrameBufferCallback get = nullptr;
-  // Release frame buffer callback.
+  // Release frame buffer callback, version 1.
+  // NOTE: Deprecated. Use |release_frame_buffer| instead.
   ReleaseFrameBufferCallback release = nullptr;
+  // Called when the first sequence header or a sequence header with a
+  // different frame size (which includes bitdepth, monochrome, subsampling_x,
+  // subsampling_y, maximum frame width, or maximum frame height) is received.
+  FrameBufferSizeChangedCallback on_frame_buffer_size_changed = nullptr;
+  // Get frame buffer callback, version 2.
+  GetFrameBufferCallback2 get_frame_buffer = nullptr;
+  // Release frame buffer callback, version 2.
+  ReleaseFrameBufferCallback2 release_frame_buffer = nullptr;
   // Passed as the private_data argument to the callbacks.
   void* callback_private_data = nullptr;
   // Mask indicating the post processing filters that need to be applied to the

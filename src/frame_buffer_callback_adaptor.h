@@ -17,8 +17,8 @@
 #ifndef LIBGAV1_SRC_FRAME_BUFFER_CALLBACK_ADAPTOR_H_
 #define LIBGAV1_SRC_FRAME_BUFFER_CALLBACK_ADAPTOR_H_
 
-#include "src/frame_buffer2.h"
 #include "src/gav1/frame_buffer.h"
+#include "src/gav1/frame_buffer2.h"
 
 namespace libgav1 {
 

@@ -23,7 +23,7 @@
 #include <memory>
 #include <type_traits>
 
-#include "src/frame_buffer2.h"
+#include "src/gav1/frame_buffer2.h"
 #include "src/utils/constants.h"
 
 namespace libgav1 {

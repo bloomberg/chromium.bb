@@ -21,8 +21,8 @@
 #include <cstdint>
 #include <memory>
 
-#include "src/frame_buffer2.h"
 #include "src/gav1/frame_buffer.h"
+#include "src/gav1/frame_buffer2.h"
 #include "src/utils/memory.h"
 
 namespace libgav1 {

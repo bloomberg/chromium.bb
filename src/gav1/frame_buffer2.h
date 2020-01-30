@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-#ifndef LIBGAV1_SRC_FRAME_BUFFER2_H_
-#define LIBGAV1_SRC_FRAME_BUFFER2_H_
+#ifndef LIBGAV1_SRC_GAV1_FRAME_BUFFER2_H_
+#define LIBGAV1_SRC_GAV1_FRAME_BUFFER2_H_
 
-// TODO(wtc): This header file is now an internal header while we experiment
-// with the new frame buffer callback API. When the new frame buffer callback
-// API is stable, replace src/gav1/frame_buffer.h with this header.
+// TODO(wtc): This header file declares the new frame buffer callback API.
+// When all clients have switched to the new frame buffer callback API,
+// replace src/gav1/frame_buffer.h with this header.
 
 // All the declarations in this file are part of the public ABI. This file may
 // be included by both C and C++ files.
 
 #include <stdint.h>
 
-#include "src/gav1/decoder_buffer.h"
+#include "gav1/decoder_buffer.h"
 
 // The callback functions use the C linkage conventions.
 #if defined(__cplusplus)
@@ -108,4 +108,4 @@ using ReleaseFrameBufferCallback2 = Libgav1ReleaseFrameBufferCallback2;
 }  // namespace libgav1
 #endif  // defined(__cplusplus)
 
-#endif  // LIBGAV1_SRC_FRAME_BUFFER2_H_
+#endif  // LIBGAV1_SRC_GAV1_FRAME_BUFFER2_H_
