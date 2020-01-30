@@ -103,8 +103,6 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Returns true when PlzDedicatedWorker is enabled.
 BLINK_COMMON_EXPORT bool IsPlzDedicatedWorkerEnabled();
 
-BLINK_COMMON_EXPORT extern const base::Feature kWebRtcUseMinMaxVEADimensions;
-
 // Blink garbage collection.
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapCompaction;
 BLINK_COMMON_EXPORT extern const base::Feature kBlinkHeapConcurrentMarking;
