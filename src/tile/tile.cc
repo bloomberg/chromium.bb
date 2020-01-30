@@ -28,6 +28,7 @@
 #include "src/motion_vector.h"
 #include "src/reconstruction.h"
 #include "src/utils/bit_mask_set.h"
+#include "src/utils/common.h"
 #include "src/utils/constants.h"
 #include "src/utils/logging.h"
 #include "src/utils/segmentation.h"
@@ -280,15 +281,37 @@ int GetNumElements(int length, int start, int max) {
   return std::min(length, max - start);
 }
 
+template <typename T>
+void SetBlockValues(int rows, int columns, T value, T* dst, ptrdiff_t stride) {
+  // Specialize all columns cases (values in kTransformWidth4x4[]) for better
+  // performance.
+  switch (columns) {
+    case 1:
+      MemSetBlock<T>(rows, 1, value, dst, stride);
+      break;
+    case 2:
+      MemSetBlock<T>(rows, 2, value, dst, stride);
+      break;
+    case 4:
+      MemSetBlock<T>(rows, 4, value, dst, stride);
+      break;
+    case 8:
+      MemSetBlock<T>(rows, 8, value, dst, stride);
+      break;
+    default:
+      assert(columns == 16);
+      MemSetBlock<T>(rows, 16, value, dst, stride);
+      break;
+  }
+}
+
 void SetTransformType(const Tile::Block& block, int x4, int y4, int w4, int h4,
                       TransformType tx_type,
                       TransformType transform_types[32][32]) {
   const int y_offset = y4 - block.row4x4;
   const int x_offset = x4 - block.column4x4;
-  static_assert(sizeof(transform_types[0][0]) == 1, "");
-  for (int i = 0; i < h4; ++i) {
-    memset(&transform_types[y_offset + i][x_offset], tx_type, w4);
-  }
+  TransformType* const dst = &transform_types[y_offset][x_offset];
+  SetBlockValues<TransformType>(h4, w4, tx_type, dst, 32);
 }
 
 void StoreMotionFieldMvs(ReferenceFrameType reference_frame_to_store,
@@ -1490,11 +1513,8 @@ bool Tile::TransformBlock(const Block& block, Plane plane, int base_x,
         &block.scratch_buffer
              ->block_decoded[plane][(sub_block_row4x4 >> subsampling_y) + 1]
                             [(sub_block_column4x4 >> subsampling_x) + 1];
-    for (int i = 0; i < step_y; ++i) {
-      static_assert(sizeof(bool) == 1, "");
-      memset(block_decoded, 1, step_x);
-      block_decoded += DecoderScratchBuffer::kBlockDecodedStride;
-    }
+    SetBlockValues<bool>(step_y, step_x, true, block_decoded,
+                         DecoderScratchBuffer::kBlockDecodedStride);
   }
   return true;
 }

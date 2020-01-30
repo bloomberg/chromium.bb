@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 
 #include "src/utils/bit_mask_set.h"
 #include "src/utils/constants.h"
@@ -54,6 +55,33 @@ inline uint8_t* AlignAddr(uint8_t* const addr, const size_t alignment) {
 
 inline int32_t Clip3(int32_t value, int32_t low, int32_t high) {
   return value < low ? low : (value > high ? high : value);
+}
+
+// The following 2 templates set a block of data with uncontiguous memory to
+// |value|. The compilers usually generate several branches to handle different
+// cases of |columns| when inlining memset() and std::fill(), and these branches
+// are unfortunately within the loop of |rows|. So calling these templates
+// directly could be inefficient. It is recommended to specialize common cases
+// of |columns|, such as 1, 2, 4, 8, 16 and 32, etc. in advance before
+// processing the generic case of |columns|. The code size may be larger, but
+// there would be big speed gains.
+// Call template MemSetBlock<> when sizeof(|T|) is 1.
+// Call template SetBlock<> when sizeof(|T|) is larger than 1.
+template <typename T>
+void MemSetBlock(int rows, int columns, T value, T* dst, ptrdiff_t stride) {
+  static_assert(sizeof(T) == 1, "");
+  do {
+    memset(dst, value, columns);
+    dst += stride;
+  } while (--rows != 0);
+}
+
+template <typename T>
+void SetBlock(int rows, int columns, T value, T* dst, ptrdiff_t stride) {
+  do {
+    std::fill(dst, dst + columns, value);
+    dst += stride;
+  } while (--rows != 0);
 }
 
 #if defined(__GNUC__)
