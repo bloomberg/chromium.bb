@@ -791,18 +791,10 @@ def _Emerge(device, pkg_path, root, extra_args=None):
       'PORTDIR': device.work_dir,
       'CONFIG_PROTECT': '-*',
   }
-  # --ignore-built-slot-operator-deps because we don't rebuild everything.
-  # It can cause errors, but that's expected with cros deploy since it's just a
-  # best effort to prevent developers avoid rebuilding an image every time.
-  cmd = ['emerge', '--ignore-built-slot-operator-deps=y', '--usepkg', pkg_path,
-         '--root=%s' % root]
+  cmd = ['emerge', '--usepkg', pkg_path, '--root=%s' % root]
   if extra_args:
     cmd.append(extra_args)
 
-  logging.warning('Ignoring slot dependencies! This may break things! e.g. '
-                  'packages built against the old version may not be able to '
-                  'load the new .so. This is expected, and you will just need '
-                  'to build and flash a new image if you have problems.')
   try:
     result = device.RunCommand(cmd, extra_env=extra_env, remote_sudo=True,
                                capture_output=True, debug_level=logging.INFO)
