@@ -185,7 +185,7 @@ def _flash(dut_ctl, dut_cmd_on, dut_cmd_off, flash_cmd, verbose):
     dut_cmd_off ([[str]]): 2d array of dut-control commands
       in the same form that get executed after flashing.
     flash_cmd ([str]): array containing all arguments for
-      the flash command.
+      the flash command. Run as root user.
     verbose (bool): if True then print out the various
       commands before running them.
 
@@ -201,7 +201,7 @@ def _flash(dut_ctl, dut_cmd_on, dut_cmd_off, flash_cmd, verbose):
     time.sleep(1)
 
     # Run the flash command.
-    cros_build_lib.run(flash_cmd, print_cmd=verbose)
+    cros_build_lib.sudo_run(flash_cmd, print_cmd=verbose)
   except cros_build_lib.CalledProcessError:
     logging.error('Flashing failed, see output above for more info.')
     success = False

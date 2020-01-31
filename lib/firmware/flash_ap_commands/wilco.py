@@ -91,7 +91,7 @@ def get_commands(servo):
   else:
     raise Exception('%s not supported' % servo.version)
 
-  flashrom_cmd = ['sudo', 'flashrom', '-p', programmer, '-w']
-  futility_cmd = ['sudo', 'futility', 'update', '-p', programmer, '-i']
+  flashrom_cmd = ['flashrom', '-p', programmer, '-w']
+  futility_cmd = ['futility', 'update', '-p', programmer, '-i']
 
   return [dut_control_on, dut_control_off, flashrom_cmd, futility_cmd]
