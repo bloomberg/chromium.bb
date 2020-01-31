@@ -848,3 +848,16 @@ Date:   Fri Dec 6 17:25:16 2019 -0800
 Affects:
     libavcodec/h264dec.c
 
+------------------------------------------------------------------
+commit c5b2114c23f1df79c67717ce1feee6c4314074ab
+Author: Ted Meyer <tmathmeyer@chromium.org>
+Date:   Thu Jan 30 17:26:40 2020 -0800
+
+    Fix memory leak in mov_read_pssh
+
+    One of the exit conditions returned immediatly instead of setting the
+    return code and jumping to the cleanup section.
+
+Affects:
+    libavformat/mov.c
+
