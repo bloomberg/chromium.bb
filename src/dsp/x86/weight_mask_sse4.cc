@@ -161,8 +161,8 @@ void WeightMask4x16_SSE4(const uint16_t* prediction_0, ptrdiff_t stride_0,
 template <bool mask_is_inverse>
 inline void WeightMask8_SSE4(const uint16_t* prediction_0,
                              const uint16_t* prediction_1, uint8_t* mask) {
-  const __m128i pred_0 = LoadUnaligned16(prediction_0);
-  const __m128i pred_1 = LoadUnaligned16(prediction_1);
+  const __m128i pred_0 = LoadAligned16(prediction_0);
+  const __m128i pred_1 = LoadAligned16(prediction_1);
   const __m128i difference = RightShiftWithRounding_U16(
       _mm_abs_epi16(_mm_sub_epi16(pred_0, pred_1)), kRoundingBits8bpp);
   const __m128i scaled_difference = _mm_srli_epi16(difference, 4);
