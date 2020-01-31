@@ -116,6 +116,11 @@ inline __m128i LoadUnaligned16(const void* a) {
   return _mm_loadu_si128(static_cast<const __m128i*>(a));
 }
 
+inline __m128i LoadAligned16(const void* a) {
+  assert((reinterpret_cast<uintptr_t>(a) & 0xf) == 0);
+  return _mm_load_si128(static_cast<const __m128i*>(a));
+}
+
 //------------------------------------------------------------------------------
 // Store functions.
 
