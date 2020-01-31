@@ -269,8 +269,8 @@ inline void MaskBlend_SSE4(
       const __m128i mask_lo = _mm_unpacklo_epi16(pred_mask_0, pred_mask_1);
       const __m128i mask_hi = _mm_unpackhi_epi16(pred_mask_0, pred_mask_1);
 
-      const __m128i pred_val_0 = LoadUnaligned16(pred_0 + x);
-      const __m128i pred_val_1 = LoadUnaligned16(pred_1 + x);
+      const __m128i pred_val_0 = LoadAligned16(pred_0 + x);
+      const __m128i pred_val_1 = LoadAligned16(pred_1 + x);
       const __m128i pred_lo = _mm_unpacklo_epi16(pred_val_0, pred_val_1);
       const __m128i pred_hi = _mm_unpackhi_epi16(pred_val_0, pred_val_1);
       // int res = (mask_value * prediction_0[x] +
