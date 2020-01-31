@@ -50,8 +50,8 @@ inline void AverageBlend4Row(const uint16_t* prediction_0,
 
 inline void AverageBlend8Row(const uint16_t* prediction_0,
                              const uint16_t* prediction_1, uint8_t* dest) {
-  const __m128i pred_0 = LoadUnaligned16(prediction_0);
-  const __m128i pred_1 = LoadUnaligned16(prediction_1);
+  const __m128i pred_0 = LoadAligned16(prediction_0);
+  const __m128i pred_1 = LoadAligned16(prediction_1);
   __m128i res = _mm_add_epi16(pred_0, pred_1);
   res = _mm_sub_epi16(res, kCompoundRoundOffset);
   res = RightShiftWithRounding_S16(res, kInterPostRoundBit + 1);
@@ -63,13 +63,13 @@ inline void AverageBlendLargeRow(const uint16_t* prediction_0,
                                  uint8_t* dest) {
   int x = 0;
   do {
-    const __m128i pred_00 = LoadUnaligned16(&prediction_0[x]);
-    const __m128i pred_01 = LoadUnaligned16(&prediction_1[x]);
+    const __m128i pred_00 = LoadAligned16(&prediction_0[x]);
+    const __m128i pred_01 = LoadAligned16(&prediction_1[x]);
     __m128i res0 = _mm_add_epi16(pred_00, pred_01);
     res0 = _mm_sub_epi16(res0, kCompoundRoundOffset);
     res0 = RightShiftWithRounding_S16(res0, kInterPostRoundBit + 1);
-    const __m128i pred_10 = LoadUnaligned16(&prediction_0[x + 8]);
-    const __m128i pred_11 = LoadUnaligned16(&prediction_1[x + 8]);
+    const __m128i pred_10 = LoadAligned16(&prediction_0[x + 8]);
+    const __m128i pred_11 = LoadAligned16(&prediction_1[x + 8]);
     __m128i res1 = _mm_add_epi16(pred_10, pred_11);
     res1 = _mm_sub_epi16(res1, kCompoundRoundOffset);
     res1 = RightShiftWithRounding_S16(res1, kInterPostRoundBit + 1);
