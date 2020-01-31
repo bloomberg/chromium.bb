@@ -27,6 +27,10 @@
 #include "examples/file_writer.h"
 #include "gav1/decoder.h"
 
+#ifdef LIBGAV1_USE_APPLE_CV_PIXEL_BUFFER_POOL
+#include "examples/apple_cv_pixel_buffer_pool.h"
+#endif
+
 namespace {
 
 struct Options {
@@ -161,10 +165,28 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
+#ifdef LIBGAV1_USE_APPLE_CV_PIXEL_BUFFER_POOL
+  // Reference frames + 1 scratch frame (for either the current frame or the
+  // film grain frame).
+  constexpr int kNumBuffers = 8 + 1;
+  std::unique_ptr<AppleCVPixelBufferPool> apple_cv_pixel_buffers =
+      AppleCVPixelBufferPool::Create(kNumBuffers);
+  if (apple_cv_pixel_buffers == nullptr) {
+    fprintf(stderr, "Cannot create AppleCVPixelBufferPool!\n");
+    return EXIT_FAILURE;
+  }
+#endif
+
   libgav1::Decoder decoder;
   libgav1::DecoderSettings settings = {};
   settings.post_filter_mask = options.post_filter_mask;
   settings.threads = options.threads;
+#ifdef LIBGAV1_USE_APPLE_CV_PIXEL_BUFFER_POOL
+  settings.on_frame_buffer_size_changed = OnAppleCVPixelBufferSizeChanged;
+  settings.get_frame_buffer = GetAppleCVPixelBuffer;
+  settings.release_frame_buffer = ReleaseAppleCVPixelBuffer;
+  settings.callback_private_data = apple_cv_pixel_buffers.get();
+#endif
   libgav1::StatusCode status = decoder.Init(&settings);
   if (status != kLibgav1StatusOk) {
     fprintf(stderr, "Error initializing decoder: %s\n",
