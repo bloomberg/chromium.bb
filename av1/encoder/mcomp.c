@@ -187,7 +187,10 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
     int tan_radius = AOMMAX((int)(0.41 * radius), 1);
     int num_search_pts = 12;
     if (radius == 1) num_search_pts = 8;
-
+    if (radius <= 5) {
+      tan_radius = radius;
+      num_search_pts = 8;
+    }
     const MV ss_mvs[13] = {
       { 0, 0 },
       { -radius, 0 },
