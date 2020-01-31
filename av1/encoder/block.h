@@ -214,6 +214,14 @@ typedef struct {
   uint8_t *tmp_best_mask_buf;  // backup of the best segmentation mask
 } CompoundTypeRdBuffers;
 
+enum {
+  MV_COST_ENTROPY,    // Use the entropy rate of the mv as the cost
+  MV_COST_L1_LOWRES,  // Use the l1 norm of the mv as the cost (<480p)
+  MV_COST_L1_MIDRES,  // Use the l1 norm of the mv as the cost (>=480p)
+  MV_COST_L1_HDRES,   // Use the l1 norm of the mv as the cost (>=720p)
+  MV_COST_NONE        // Use 0 as as cost irrespective of the current mv
+} UENUM1BYTE(MV_COST_TYPE);
+
 struct inter_modes_info;
 typedef struct macroblock MACROBLOCK;
 struct macroblock {
@@ -476,6 +484,9 @@ struct macroblock {
   int64_t inter_cost_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
   int64_t intra_cost_b[MAX_MC_FLOW_BLK_IN_SB * MAX_MC_FLOW_BLK_IN_SB];
   int cost_stride;
+
+  // The type of mv cost used during motion search
+  MV_COST_TYPE mv_cost_type;
 
 #if CONFIG_AV1_HIGHBITDEPTH
   void (*fwd_txfm4x4)(const int16_t *input, tran_low_t *output, int stride);

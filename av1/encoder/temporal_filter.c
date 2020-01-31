@@ -12,7 +12,6 @@
 #include <math.h>
 #include <limits.h>
 
-#include "av1/common/blockd.h"
 #include "config/aom_config.h"
 
 #include "av1/common/alloccommon.h"
@@ -68,6 +67,9 @@ static int tf_motion_search(AV1_COMP *cpi,
                             const BLOCK_SIZE block_size, const int mb_row,
                             const int mb_col, MV *ref_mv, MV *subblock_mvs,
                             int *subblock_errors) {
+  // Frame information
+  const int min_frame_size = AOMMIN(cpi->common.width, cpi->common.height);
+
   // Block information (ONLY Y-plane is used for motion search).
   const int mb_height = block_size_high[block_size];
   const int mb_width = block_size_wide[block_size];
@@ -83,6 +85,7 @@ static int tf_motion_search(AV1_COMP *cpi,
   const struct buf_2d ori_src_buf = mb->plane[0].src;
   const struct buf_2d ori_pre_buf = mbd->plane[0].pre[0];
   const MvLimits ori_mv_limits = mb->mv_limits;
+  const MV_COST_TYPE ori_mv_cost_type = mb->mv_cost_type;
 
   // Parameters used for motion search.
   const int sadperbit16 = mb->sadperbit16;
@@ -95,6 +98,10 @@ static int tf_motion_search(AV1_COMP *cpi,
   const int subpel_iters_per_step = cpi->sf.mv_sf.subpel_iters_per_step;
   const int errorperbit = mb->errorperbit;
   const int force_integer_mv = cpi->common.cur_frame_force_integer_mv;
+  const MV_COST_TYPE mv_cost_type =
+      min_frame_size >= 720
+          ? MV_COST_L1_HDRES
+          : (min_frame_size >= 480 ? MV_COST_L1_MIDRES : MV_COST_L1_LOWRES);
 
   // Starting position for motion search.
   MV start_mv = { GET_MV_RAWPEL(ref_mv->row), GET_MV_RAWPEL(ref_mv->col) };
@@ -116,10 +123,14 @@ static int tf_motion_search(AV1_COMP *cpi,
   // NOTE: In `av1_full_pixel_search()` and `find_fractional_mv_step()`, the
   // searched result will be stored in `mb->best_mv`.
   int block_error = INT_MAX;
+  mb->mv_cost_type = mv_cost_type;
   av1_full_pixel_search(cpi, mb, block_size, &start_mv, step_param, 1,
                         full_search_method, 1, sadperbit16,
                         cond_cost_list(cpi, cost_list), &baseline_mv, 0, 0,
                         mb_x, mb_y, 0, &ss_cfg, 0);
+  // Since we are merely refining the result from full pixel search, we don't
+  // need regularization for subpel search
+  mb->mv_cost_type = MV_COST_NONE;
   if (force_integer_mv == 1) {  // Only do full search on the entire block.
     const int mv_row = mb->best_mv.as_mv.row;
     const int mv_col = mb->best_mv.as_mv.col;
@@ -151,10 +162,14 @@ static int tf_motion_search(AV1_COMP *cpi,
         mb->plane[0].src.buf = frame_to_filter->y_buffer + y_offset + offset;
         mbd->plane[0].pre[0].buf = ref_frame->y_buffer + y_offset + offset;
         av1_set_mv_search_range(&mb->mv_limits, &baseline_mv);
+        mb->mv_cost_type = mv_cost_type;
         av1_full_pixel_search(cpi, mb, subblock_size, &start_mv, step_param, 1,
                               full_search_method, 1, sadperbit16,
                               cond_cost_list(cpi, cost_list), &baseline_mv, 0,
                               0, mb_x, mb_y, 0, &ss_cfg, 0);
+        // Since we are merely refining the result from full pixel search, we
+        // don't need regularization for subpel search
+        mb->mv_cost_type = MV_COST_NONE;
         subblock_errors[subblock_idx] = cpi->find_fractional_mv_step(
             mb, &cpi->common, 0, 0, &baseline_mv, allow_high_precision_mv,
             errorperbit, &cpi->fn_ptr[subblock_size], 0, subpel_iters_per_step,
@@ -170,6 +185,7 @@ static int tf_motion_search(AV1_COMP *cpi,
   mb->plane[0].src = ori_src_buf;
   mbd->plane[0].pre[0] = ori_pre_buf;
   mb->mv_limits = ori_mv_limits;
+  mb->mv_cost_type = ori_mv_cost_type;
 
   return block_error;
 }
