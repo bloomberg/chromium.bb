@@ -33,6 +33,7 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
   }
   if (profile.profile >= media::H264PROFILE_MIN &&
       profile.profile <= media::H264PROFILE_MAX) {
+#if !defined(OS_ANDROID)
     // Enable H264 HW encode for WebRTC when SW fallback is available, which is
     // checked by kWebRtcH264WithOpenH264FFmpeg flag. This check should be
     // removed when SW implementation is fully enabled.
@@ -43,6 +44,7 @@ base::Optional<webrtc::SdpVideoFormat> VEAToWebRTCFormat(
 #endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
     if (!webrtc_h264_sw_enabled)
       return base::nullopt;
+#endif
 
     webrtc::H264::Profile h264_profile;
     switch (profile.profile) {

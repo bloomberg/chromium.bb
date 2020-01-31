@@ -127,7 +127,11 @@ class EncoderAdapter : public webrtc::VideoEncoderFactory {
     if (!supported_in_hardware || !hardware_encoder_factory_.get()) {
       return std::make_unique<webrtc::SimulcastEncoderAdapter>(
           &software_encoder_factory_, nullptr, format);
+    } else if (!supported_in_software) {
+      return std::make_unique<webrtc::SimulcastEncoderAdapter>(
+          hardware_encoder_factory_.get(), nullptr, format);
     }
+
     return std::make_unique<webrtc::SimulcastEncoderAdapter>(
         hardware_encoder_factory_.get(), &software_encoder_factory_, format);
   }
