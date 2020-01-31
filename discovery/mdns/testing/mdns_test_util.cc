@@ -23,7 +23,7 @@ MdnsRecord GetFakePtrRecord(const DomainName& target,
   DomainName name(++target.labels().begin(), target.labels().end());
   PtrRecordRdata rdata(target);
   return MdnsRecord(std::move(name), DnsType::kPTR, DnsClass::kIN,
-                    RecordType::kUnique, ttl, rdata);
+                    RecordType::kShared, ttl, rdata);
 }
 
 MdnsRecord GetFakeSrvRecord(const DomainName& name, std::chrono::seconds ttl) {

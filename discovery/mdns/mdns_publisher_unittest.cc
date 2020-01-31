@@ -54,23 +54,20 @@ class MockProbeManager : public MdnsProbeManager {
 
 class MdnsPublisherTesting : public MdnsPublisher {
  public:
+  using MdnsPublisher::GetRecords;
   using MdnsPublisher::MdnsPublisher;
-  ~MdnsPublisherTesting() override = default;
-
-  const MdnsRecord* GetPtrRecord(const DomainName& domain) {
-    std::vector<MdnsRecord::ConstRef> records =
-        GetRecords(domain, DnsType::kPTR, DnsClass::kANY);
-    EXPECT_LE(records.size(), size_t{1});
-    return records.empty() ? nullptr : &records[0].get();
-  }
-
-  std::vector<MdnsRecord::ConstRef> GetNonPtrRecords(const DomainName& domain,
-                                                     DnsType type) {
-    return GetRecords(domain, type, DnsClass::kANY);
-  }
 
   bool IsNonPtrRecordPresent(const DomainName& name) {
-    return records_.find(name) != records_.end();
+    auto it = records_.find(name);
+    if (it == records_.end()) {
+      return false;
+    }
+
+    return std::find_if(it->second.begin(), it->second.end(),
+                        [](const RecordAnnouncerPtr& announcer) {
+                          return announcer->record().dns_type() !=
+                                 DnsType::kPTR;
+                        }) != it->second.end();
   }
 };
 
@@ -129,6 +126,16 @@ class MdnsPublisherTest : public testing::Test {
     return Error::None();
   }
 
+  void CheckPublishedRecords(const DomainName& domain,
+                             DnsType type,
+                             std::vector<MdnsRecord> expected_records) {
+    EXPECT_EQ(publisher_.GetRecordCount(), expected_records.size());
+    auto records = publisher_.GetRecords(domain, type, DnsClass::kIN);
+    for (const auto& record : expected_records) {
+      EXPECT_TRUE(ContainsRecord(records, record));
+    }
+  }
+
   void TestUniqueRecordRegistrationWorkflow(MdnsRecord record,
                                             MdnsRecord record2) {
     EXPECT_CALL(probe_manager_, IsDomainClaimed(domain_))
@@ -137,7 +144,7 @@ class MdnsPublisherTest : public testing::Test {
 
     // Check preconditions.
     ASSERT_EQ(record.dns_type(), record2.dns_type());
-    auto records = publisher_.GetNonPtrRecords(domain_, type);
+    auto records = publisher_.GetRecords(domain_, type, DnsClass::kIN);
     ASSERT_EQ(publisher_.GetRecordCount(), size_t{0});
     ASSERT_EQ(records.size(), size_t{0});
     ASSERT_NE(record, record2);
@@ -151,33 +158,21 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_TRUE(publisher_.RegisterRecord(record).ok());
     clock_.Advance(kAnnounceGoodbyeDelay);
     testing::Mock::VerifyAndClearExpectations(&sender_);
-    EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
-    records = publisher_.GetNonPtrRecords(domain_, type);
-    EXPECT_EQ(records.size(), size_t{1});
-    EXPECT_TRUE(ContainsRecord(records, record));
-    EXPECT_TRUE(!ContainsRecord(records, record2));
+    CheckPublishedRecords(domain_, type, {record});
     EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Re-register the same record.
     EXPECT_FALSE(publisher_.RegisterRecord(record).ok());
     clock_.Advance(kAnnounceGoodbyeDelay);
     testing::Mock::VerifyAndClearExpectations(&sender_);
-    EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
-    records = publisher_.GetNonPtrRecords(domain_, type);
-    EXPECT_EQ(records.size(), size_t{1});
-    EXPECT_TRUE(ContainsRecord(records, record));
-    EXPECT_TRUE(!ContainsRecord(records, record2));
+    CheckPublishedRecords(domain_, type, {record});
     EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Update a record that doesn't exist
     EXPECT_FALSE(publisher_.UpdateRegisteredRecord(record2, record).ok());
     clock_.Advance(kAnnounceGoodbyeDelay);
     testing::Mock::VerifyAndClearExpectations(&sender_);
-    EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
-    records = publisher_.GetNonPtrRecords(domain_, type);
-    EXPECT_EQ(records.size(), size_t{1});
-    EXPECT_TRUE(ContainsRecord(records, record));
-    EXPECT_TRUE(!ContainsRecord(records, record2));
+    CheckPublishedRecords(domain_, type, {record});
     EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Update an existing record.
@@ -188,11 +183,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_TRUE(publisher_.UpdateRegisteredRecord(record, record2).ok());
     clock_.Advance(kAnnounceGoodbyeDelay);
     testing::Mock::VerifyAndClearExpectations(&sender_);
-    EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
-    records = publisher_.GetNonPtrRecords(domain_, type);
-    EXPECT_EQ(records.size(), size_t{1});
-    EXPECT_TRUE(!ContainsRecord(records, record));
-    EXPECT_TRUE(ContainsRecord(records, record2));
+    CheckPublishedRecords(domain_, type, {record2});
     EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Add back the original record
@@ -203,11 +194,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_TRUE(publisher_.RegisterRecord(record).ok());
     clock_.Advance(kAnnounceGoodbyeDelay);
     testing::Mock::VerifyAndClearExpectations(&sender_);
-    EXPECT_EQ(publisher_.GetRecordCount(), size_t{2});
-    records = publisher_.GetNonPtrRecords(domain_, type);
-    EXPECT_EQ(records.size(), size_t{2});
-    EXPECT_TRUE(ContainsRecord(records, record));
-    EXPECT_TRUE(ContainsRecord(records, record2));
+    CheckPublishedRecords(domain_, type, {record, record2});
     EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Delete an existing record.
@@ -218,22 +205,14 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_TRUE(publisher_.UnregisterRecord(record2).ok());
     clock_.Advance(kAnnounceGoodbyeDelay);
     testing::Mock::VerifyAndClearExpectations(&sender_);
-    EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
-    records = publisher_.GetNonPtrRecords(domain_, type);
-    EXPECT_EQ(records.size(), size_t{1});
-    EXPECT_TRUE(ContainsRecord(records, record));
-    EXPECT_TRUE(!ContainsRecord(records, record2));
+    CheckPublishedRecords(domain_, type, {record});
     EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Delete a non-existing record.
     EXPECT_FALSE(publisher_.UnregisterRecord(record2).ok());
     clock_.Advance(kAnnounceGoodbyeDelay);
     testing::Mock::VerifyAndClearExpectations(&sender_);
-    EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
-    records = publisher_.GetNonPtrRecords(domain_, type);
-    EXPECT_EQ(records.size(), size_t{1});
-    EXPECT_TRUE(ContainsRecord(records, record));
-    EXPECT_TRUE(!ContainsRecord(records, record2));
+    CheckPublishedRecords(domain_, type, {record});
     EXPECT_TRUE(publisher_.IsNonPtrRecordPresent(domain_));
 
     // Delete the last record
@@ -244,11 +223,7 @@ class MdnsPublisherTest : public testing::Test {
     EXPECT_TRUE(publisher_.UnregisterRecord(record).ok());
     clock_.Advance(kAnnounceGoodbyeDelay);
     testing::Mock::VerifyAndClearExpectations(&sender_);
-    EXPECT_EQ(publisher_.GetRecordCount(), size_t{0});
-    records = publisher_.GetNonPtrRecords(domain_, type);
-    EXPECT_EQ(records.size(), size_t{0});
-    EXPECT_TRUE(!ContainsRecord(records, record));
-    EXPECT_TRUE(!ContainsRecord(records, record2));
+    CheckPublishedRecords(domain_, type, {});
     EXPECT_FALSE(publisher_.IsNonPtrRecordPresent(domain_));
   }
 
@@ -261,6 +236,7 @@ class MdnsPublisherTest : public testing::Test {
   MdnsPublisherTesting publisher_;
 
   DomainName domain_{"instance", "_googlecast", "_tcp", "local"};
+  DomainName ptr_domain_{"_googlecast", "_tcp", "local"};
 };
 
 TEST_F(MdnsPublisherTest, ARecordRegistrationWorkflow) {
@@ -292,45 +268,75 @@ TEST_F(MdnsPublisherTest, SRVRecordRegistrationWorkflow) {
 }
 
 TEST_F(MdnsPublisherTest, PTRRecordRegistrationWorkflow) {
-  EXPECT_CALL(probe_manager_, IsDomainClaimed(domain_))
-      .WillRepeatedly(Return(true));
-  const MdnsRecord record1 = GetFakePtrRecord(domain_);
+  const MdnsRecord record = GetFakePtrRecord(domain_);
   const MdnsRecord record2 =
       GetFakePtrRecord(domain_, std::chrono::seconds(1000));
 
+  EXPECT_CALL(probe_manager_, IsDomainClaimed(domain_))
+      .WillRepeatedly(Return(true));
+  DnsType type = DnsType::kPTR;
+
+  // Check preconditions.
+  ASSERT_EQ(record.dns_type(), record2.dns_type());
+  ASSERT_EQ(publisher_.GetRecordCount(), size_t{0});
+  auto records = publisher_.GetRecords(domain_, type, DnsClass::kIN);
+  ASSERT_EQ(records.size(), size_t{0});
+  records = publisher_.GetRecords(ptr_domain_, type, DnsClass::kIN);
+  ASSERT_EQ(records.size(), size_t{0});
+  ASSERT_NE(record, record2);
+  ASSERT_TRUE(records.empty());
+
   // Register a new record.
   EXPECT_CALL(sender_, SendMulticast(_))
-      .WillOnce([this, &record1](const MdnsMessage& message) -> Error {
-        return IsAnnounced(record1, message);
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record, message);
       });
-  EXPECT_TRUE(publisher_.RegisterRecord(record1).ok());
+  EXPECT_TRUE(publisher_.RegisterRecord(record).ok());
   clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
-  EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
-  auto* record = publisher_.GetPtrRecord(record1.name());
-  ASSERT_NE(record, nullptr);
-  EXPECT_EQ(*record, record1);
+  CheckPublishedRecords(ptr_domain_, type, {record});
 
-  // Register another record with the same domain name.
-  EXPECT_FALSE(publisher_.RegisterRecord(record2).ok());
+  // Re-register the same record.
+  EXPECT_FALSE(publisher_.RegisterRecord(record).ok());
   clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
-  EXPECT_EQ(publisher_.GetRecordCount(), size_t{1});
-  record = publisher_.GetPtrRecord(record1.name());
-  ASSERT_NE(record, nullptr);
-  EXPECT_EQ(*record, record1);
+  CheckPublishedRecords(ptr_domain_, type, {record});
+
+  // Register a second record.
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record2](const MdnsMessage& message) -> Error {
+        return IsAnnounced(record2, message);
+      });
+  EXPECT_TRUE(publisher_.RegisterRecord(record2).ok());
+  clock_.Advance(kAnnounceGoodbyeDelay);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+  CheckPublishedRecords(ptr_domain_, type, {record, record2});
 
   // Delete an existing record.
   EXPECT_CALL(sender_, SendMulticast(_))
-      .WillOnce([this, &record1](const MdnsMessage& message) -> Error {
-        return IsGoodbyeRecord(record1, message);
+      .WillOnce([this, &record2](const MdnsMessage& message) -> Error {
+        return IsGoodbyeRecord(record2, message);
       });
-  EXPECT_TRUE(publisher_.UnregisterRecord(record1).ok());
+  EXPECT_TRUE(publisher_.UnregisterRecord(record2).ok());
   clock_.Advance(kAnnounceGoodbyeDelay);
   testing::Mock::VerifyAndClearExpectations(&sender_);
-  EXPECT_EQ(publisher_.GetRecordCount(), size_t{0});
-  record = publisher_.GetPtrRecord(record1.name());
-  ASSERT_EQ(record, nullptr);
+  CheckPublishedRecords(ptr_domain_, type, {record});
+
+  // Delete a non-existing record.
+  EXPECT_FALSE(publisher_.UnregisterRecord(record2).ok());
+  clock_.Advance(kAnnounceGoodbyeDelay);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+  CheckPublishedRecords(ptr_domain_, type, {record});
+
+  // Delete the last record
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce([this, &record](const MdnsMessage& message) -> Error {
+        return IsGoodbyeRecord(record, message);
+      });
+  EXPECT_TRUE(publisher_.UnregisterRecord(record).ok());
+  clock_.Advance(kAnnounceGoodbyeDelay);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+  CheckPublishedRecords(ptr_domain_, type, {});
 }
 
 TEST_F(MdnsPublisherTest, RegisteringUnownedRecordsFail) {

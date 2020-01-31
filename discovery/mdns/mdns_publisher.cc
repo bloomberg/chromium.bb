@@ -46,35 +46,6 @@ inline void ValidateRecord(const MdnsRecord& record) {
   OSP_DCHECK(record.dns_class() != DnsClass::kANY);
 }
 
-// Tries to send the provided |message|, and splits it up and retries
-// recursively if it fails. In practice, it should never fail (with <= 5
-// records being sent, the message should be small), but since the message is
-// created from a static vector, that's not guaranteed.
-Error ProcessQueue(MdnsSender* sender, MdnsMessage* message) {
-  Error send_response = sender->SendMulticast(*message);
-  if (send_response.ok()) {
-    return Error::None();
-  } else if (message->answers().size() <= 1) {
-    return send_response;
-  }
-
-  MdnsMessage first(message->id(), message->type());
-  for (size_t i = 0; i < message->answers().size() / 2; i++) {
-    first.AddAnswer(std::move(message->answers()[i]));
-  }
-  Error first_result = ProcessQueue(sender, &first);
-  if (!first_result.ok()) {
-    return first_result;
-  }
-
-  MdnsMessage second(CreateMessageId(), message->type());
-  for (size_t i = message->answers().size() / 2; i < message->answers().size();
-       i++) {
-    second.AddAnswer(std::move(message->answers()[i]));
-  }
-  return ProcessQueue(sender, &second);
-}
-
 }  // namespace
 
 MdnsPublisher::MdnsPublisher(MdnsSender* sender,
@@ -108,8 +79,21 @@ Error MdnsPublisher::RegisterRecord(const MdnsRecord& record) {
   }
   ValidateRecord(record);
 
-  return record.dns_type() == DnsType::kPTR ? RegisterPtrRecord(record)
-                                            : RegisterNonPtrRecord(record);
+  if (!IsRecordNameClaimed(record)) {
+    return Error::Code::kParameterInvalid;
+  }
+
+  const DomainName& name = record.name();
+  auto it = records_.emplace(name, std::vector<RecordAnnouncerPtr>{}).first;
+  for (const RecordAnnouncerPtr& publisher : it->second) {
+    if (publisher->record() == record) {
+      return Error::Code::kItemAlreadyExists;
+    }
+  }
+
+  it->second.push_back(CreateAnnouncer(record));
+
+  return Error::None();
 }
 
 Error MdnsPublisher::UnregisterRecord(const MdnsRecord& record) {
@@ -120,8 +104,7 @@ Error MdnsPublisher::UnregisterRecord(const MdnsRecord& record) {
   }
   ValidateRecord(record);
 
-  return record.dns_type() == DnsType::kPTR ? UnregisterPtrRecord(record)
-                                            : UnregisterNonPtrRecord(record);
+  return RemoveRecord(record, true);
 }
 
 Error MdnsPublisher::UpdateRegisteredRecord(const MdnsRecord& old_record,
@@ -148,19 +131,19 @@ Error MdnsPublisher::UpdateRegisteredRecord(const MdnsRecord& old_record,
   // be sent, as all records which can be removed here are unique records, which
   // will be overwritten during the announcement phase when the updated record
   // is re-registered due to the cache-flush-bit's presence.
-  const Error remove_result = RemoveNonPtrRecord(old_record, false);
+  const Error remove_result = RemoveRecord(old_record, false);
   if (!remove_result.ok()) {
     return remove_result;
   }
 
   // Register the new record.
-  return RegisterNonPtrRecord(new_record);
+  return RegisterRecord(new_record);
 }
 
 size_t MdnsPublisher::GetRecordCount() const {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
-  size_t count = ptr_records_.size();
+  size_t count = 0;
   for (const auto& pair : records_) {
     count += pair.second.size();
   }
@@ -181,105 +164,38 @@ std::vector<MdnsRecord::ConstRef> MdnsPublisher::GetRecords(
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   std::vector<MdnsRecord::ConstRef> records;
-
-  if (type != DnsType::kPTR) {
-    auto it = records_.find(name);
-    if (it != records_.end()) {
-      for (const auto& publisher : it->second) {
-        if ((type == DnsType::kANY || type == publisher->record().dns_type()) &&
-            (clazz == DnsClass::kANY ||
-             clazz == publisher->record().dns_class())) {
-          records.push_back(publisher->record());
-        }
+  auto it = records_.find(name);
+  if (it != records_.end()) {
+    for (const RecordAnnouncerPtr& publisher : it->second) {
+      DnsType record_dns_type = publisher->record().dns_type();
+      DnsClass record_dns_class = publisher->record().dns_class();
+      OSP_DCHECK(publisher.get());
+      if ((type == DnsType::kANY || type == record_dns_type) &&
+          (clazz == DnsClass::kANY || clazz == record_dns_class)) {
+        records.push_back(publisher->record());
       }
-    }
-  }
-
-  if (type == DnsType::kPTR || type == DnsType::kANY) {
-    const auto ptr_it = ptr_records_.find(name);
-    if (ptr_it != ptr_records_.end()) {
-      records.push_back(ptr_it->second->record());
     }
   }
 
   return records;
 }
 
-Error MdnsPublisher::RegisterPtrRecord(const MdnsRecord& record) {
-  OSP_DCHECK(record.dns_type() == DnsType::kPTR);
-
-  const auto& ptr_data = absl::get<PtrRecordRdata>(record.rdata());
-  if (!ownership_manager_->IsDomainClaimed(ptr_data.ptr_domain())) {
-    return Error::Code::kParameterInvalid;
-  }
-
-  auto pair = ptr_records_.emplace(record.name(), nullptr);
-  if (!pair.second) {
-    return Error::Code::kItemAlreadyExists;
-  }
-
-  auto announcer = CreateAnnouncer(std::move(record));
-  pair.first->second.swap(announcer);
-  return Error::None();
-}
-
-Error MdnsPublisher::RegisterNonPtrRecord(const MdnsRecord& record) {
-  OSP_DCHECK(record.dns_type() != DnsType::kPTR);
-
+Error MdnsPublisher::RemoveRecord(const MdnsRecord& record,
+                                  bool should_announce_deletion) {
   const DomainName& name = record.name();
-  if (!ownership_manager_->IsDomainClaimed(name)) {
-    return Error::Code::kParameterInvalid;
-  }
-
-  auto pair =
-      records_.emplace(name, std::vector<std::unique_ptr<RecordAnnouncer>>{});
-  for (const auto& publisher : pair.first->second) {
-    if (publisher->record() == record) {
-      return Error::Code::kItemAlreadyExists;
-    }
-  }
-
-  pair.first->second.push_back(CreateAnnouncer(std::move(record)));
-
-  return Error::None();
-}
-
-Error MdnsPublisher::UnregisterPtrRecord(const MdnsRecord& record) {
-  OSP_DCHECK(record.dns_type() == DnsType::kPTR);
-
-  // Check that |ptr_records_| has this domain and remove it if so.
-  if (!ptr_records_.erase(record.name())) {
-    return Error::Code::kItemNotFound;
-  }
-
-  return Error::None();
-}
-
-Error MdnsPublisher::UnregisterNonPtrRecord(const MdnsRecord& record) {
-  OSP_DCHECK(record.dns_type() != DnsType::kPTR);
-
-  // Remove the Non-PTR record. A goodbye message will be sent for the removed
-  // record, per RFC 6762 section 10.1.
-  return RemoveNonPtrRecord(record, true);
-}
-
-Error MdnsPublisher::RemoveNonPtrRecord(const MdnsRecord& record,
-                                        bool should_announce_deletion) {
-  OSP_DCHECK(record.dns_type() != DnsType::kPTR);
 
   // Check for the domain and fail if it's not found.
-  const DomainName& name = record.name();
   const auto it = records_.find(name);
   if (it == records_.end()) {
     return Error::Code::kItemNotFound;
   }
 
   // Check for the record to be removed.
-  const auto records_it = std::find_if(
-      it->second.begin(), it->second.end(),
-      [&record](const std::unique_ptr<RecordAnnouncer>& publisher) {
-        return publisher->record() == record;
-      });
+  const auto records_it =
+      std::find_if(it->second.begin(), it->second.end(),
+                   [&record](const RecordAnnouncerPtr& publisher) {
+                     return publisher->record() == record;
+                   });
   if (records_it == it->second.end()) {
     return Error::Code::kItemNotFound;
   }
@@ -293,6 +209,14 @@ Error MdnsPublisher::RemoveNonPtrRecord(const MdnsRecord& record,
   }
 
   return Error::None();
+}
+
+bool MdnsPublisher::IsRecordNameClaimed(const MdnsRecord& record) const {
+  const DomainName& name =
+      record.dns_type() == DnsType::kPTR
+          ? absl::get<PtrRecordRdata>(record.rdata()).ptr_domain()
+          : record.name();
+  return ownership_manager_->IsDomainClaimed(name);
 }
 
 MdnsPublisher::RecordAnnouncer::RecordAnnouncer(
@@ -391,10 +315,24 @@ void MdnsPublisher::ProcessRecordQueue() {
   }
 
   MdnsMessage message(CreateMessageId(), MessageType::Response);
-  for (MdnsRecord& record : *records_to_send_) {
-    message.AddAnswer(std::move(record));
+  for (auto it = records_to_send_->begin(); it != records_to_send_->end();) {
+    if (message.CanAddRecord(*it)) {
+      message.AddAnswer(std::move(*it++));
+    } else if (message.answers().empty()) {
+      // This case should never happen, because it means a record is too large
+      // to fit into its own message.
+      OSP_LOG << "Encountered unreasonably large message in cache. Skipping "
+              << "known answer in suppressions...";
+      it++;
+    } else {
+      sender_->SendMulticast(message);
+      message = MdnsMessage(CreateMessageId(), MessageType::Query);
+    }
   }
-  ::openscreen::discovery::ProcessQueue(sender_, &message);
+
+  if (!message.answers().empty()) {
+    sender_->SendMulticast(message);
+  }
 
   batch_records_alarm_ = absl::nullopt;
   delete records_to_send_;
