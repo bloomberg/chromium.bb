@@ -798,7 +798,8 @@ void av1_apply_temporal_filter_yonly(const YV12_BUFFER_CONFIG *frame_to_filter,
 //   mb_row: Row index of the block in the entire frame.
 //   mb_col: Column index of the block in the entire frame.
 //   num_planes: Number of planes in the frame.
-//   noise_level: Noise level of the to-filter frame, estimated with Y-plane.
+//   noise_levels: Pointer to the noise levels of the to-filter frame, estimated
+//                 with each plane (in Y, U, V order).
 //   pred: Pointer to the well-built predictors.
 //   accum: Pointer to the pixel-wise accumulator for filtering.
 //   count: Pointer to the pixel-wise counter fot filtering.
@@ -808,16 +809,9 @@ void av1_apply_temporal_filter_yonly(const YV12_BUFFER_CONFIG *frame_to_filter,
 void av1_apply_temporal_filter_planewise_c(
     const YV12_BUFFER_CONFIG *frame_to_filter, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
-    const int num_planes, const double noise_level, const uint8_t *pred,
+    const int num_planes, const double *noise_levels, const uint8_t *pred,
     uint32_t *accum, uint16_t *count) {
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
-
-  // Hyper-parameter for filter weight adjustment.
-  const int frame_height = frame_to_filter->heights[0]
-                           << mbd->plane[0].subsampling_y;
-  const int decay_control = frame_height >= 480 ? 4 : 3;
-  // Control factor for non-local mean approach.
-  const double r = (double)decay_control * (0.7 + log(noise_level + 1.0));
 
   // Block information.
   const int mb_height = block_size_high[block_size];
@@ -850,6 +844,11 @@ void av1_apply_temporal_filter_planewise_c(
   assert(TF_PLANEWISE_FILTER_WINDOW_LENGTH % 2 == 1);
   const int half_window = TF_PLANEWISE_FILTER_WINDOW_LENGTH >> 1;
 
+  // Hyper-parameter for filter weight adjustment.
+  const int frame_height = frame_to_filter->heights[0]
+                           << mbd->plane[0].subsampling_y;
+  const int decay_control = frame_height >= 480 ? 4 : 3;
+
   // Handle planes in sequence.
   plane_offset = 0;
   for (int plane = 0; plane < num_planes; ++plane) {
@@ -874,6 +873,10 @@ void av1_apply_temporal_filter_planewise_c(
             ++num_ref_pixels;
           }
         }
+
+        // Control factor for non-local mean approach.
+        const double r =
+            (double)decay_control * (0.7 + log(noise_levels[plane] + 1.0));
 
         const int idx = plane_offset + pred_idx;  // Index with plane shift.
         const int pred_value = is_high_bitdepth ? pred16[idx] : pred[idx];
@@ -910,15 +913,16 @@ void av1_apply_temporal_filter_planewise_c(
 //                           strategy. If set as 0, YUV or YONLY filtering will
 //                           be used (depending on number of planes).
 //   strength: Strength for filter weight adjustment. (Used in YUV filtering and
-//             YONLY filtering.)
+//             YONLY filtering)
 //   use_subblock: Whether to use 4 sub-blocks to replace the original block.
-//                 (Used in YUV filtering and YONLY filtering.)
+//                 (Used in YUV filtering and YONLY filtering)
 //   subblock_filter_weights: The filter weights for each sub-block (row-major
 //                            order). If `use_subblock` is set as 0, the first
 //                            weight will be applied to the entire block. (Used
-//                            in YUV filtering and YONLY filtering.)
-//   noise_level: Noise level of the to-filter frame, estimated with Y-plane.
-//                (Used in plane-wise filtering.)
+//                            in YUV filtering and YONLY filtering)
+//   noise_levels: Pointer to the noise levels of the to-filter frame, estimated
+//                 with each plane (in Y, U, V order). (Used in plane-wise
+//                 filtering)
 //   pred: Pointer to the well-built predictors.
 //   accum: Pointer to the pixel-wise accumulator for filtering.
 //   count: Pointer to the pixel-wise counter fot filtering.
@@ -930,7 +934,7 @@ void av1_apply_temporal_filter_others(
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
     const int num_planes, const int use_planewise_strategy, const int strength,
     const int use_subblock, const int *subblock_filter_weights,
-    const double noise_level, const uint8_t *pred, uint32_t *accum,
+    const double *noise_levels, const uint8_t *pred, uint32_t *accum,
     uint16_t *count) {
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
@@ -939,11 +943,11 @@ void av1_apply_temporal_filter_others(
     if (is_frame_high_bitdepth(frame_to_filter)) {
       av1_apply_temporal_filter_planewise_c(frame_to_filter, mbd, block_size,
                                             mb_row, mb_col, num_planes,
-                                            noise_level, pred, accum, count);
+                                            noise_levels, pred, accum, count);
     } else {
       av1_apply_temporal_filter_planewise(frame_to_filter, mbd, block_size,
                                           mb_row, mb_col, num_planes,
-                                          noise_level, pred, accum, count);
+                                          noise_levels, pred, accum, count);
     }
   } else {  // Commonly used for low-resolution video.
     const int adj_strength = strength + 2 * (mbd->bd - 8);
@@ -1062,14 +1066,15 @@ typedef struct {
 //   block_size: Block size used for temporal filtering.
 //   scale: Scaling factor.
 //   strength: Pre-estimated strength for filter weight adjustment.
-//   noise_level: Noise level of the to-filter frame, estimated with Y-plane.
+//   noise_levels: Pointer to the noise levels of the to-filter frame, estimated
+//                 with each plane (in Y, U, V order).
 // Returns:
 //   Difference between filtered frame and the original frame.
 static FRAME_DIFF tf_do_filtering(
     AV1_COMP *cpi, YV12_BUFFER_CONFIG **frames, const int num_frames,
     const int filter_frame_idx, const int is_key_frame, const int is_second_arf,
     const BLOCK_SIZE block_size, const struct scale_factors *scale,
-    const int strength, const double noise_level) {
+    const int strength, const double *noise_levels) {
   // Basic information.
   const YV12_BUFFER_CONFIG *const frame_to_filter = frames[filter_frame_idx];
   const int frame_height = frame_to_filter->y_crop_height;
@@ -1163,7 +1168,7 @@ static FRAME_DIFF tf_do_filtering(
             av1_apply_temporal_filter_others(  // Other reference frames.
                 frame_to_filter, mbd, block_size, mb_row, mb_col, num_planes,
                 use_planewise_strategy, strength, use_subblock,
-                subblock_filter_weights, noise_level, pred, accum, count);
+                subblock_filter_weights, noise_levels, pred, accum, count);
           }
         }
       }
@@ -1390,10 +1395,14 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
 
   // Estimate noise and strength.
   const int bit_depth = cpi->common.seq_params.bit_depth;
-  const double y_noise_level = av1_estimate_noise_from_single_plane(
-      frames[filter_frame_idx], 0, bit_depth);
+  const int num_planes = av1_num_planes(&cpi->common);
+  double noise_levels[MAX_MB_PLANE] = { 0 };
+  for (int plane = 0; plane < num_planes; ++plane) {
+    noise_levels[plane] = av1_estimate_noise_from_single_plane(
+        frames[filter_frame_idx], plane, bit_depth);
+  }
   const int strength =
-      tf_estimate_strength(cpi, y_noise_level, cpi->rc.gfu_boost);
+      tf_estimate_strength(cpi, noise_levels[0], cpi->rc.gfu_boost);
   if (filter_frame_lookahead_idx >= 0) {
     cpi->common.showable_frame =
         (strength == 0 && num_frames_for_filtering == 1) || is_second_arf ||
@@ -1414,7 +1423,7 @@ int av1_temporal_filter(AV1_COMP *cpi, const int filter_frame_lookahead_idx,
         frames[0]->y_crop_width, frames[0]->y_crop_height);
     diff = tf_do_filtering(cpi, frames, num_frames_for_filtering,
                            filter_frame_idx, is_key_frame, is_second_arf,
-                           block_size, &sf, strength, y_noise_level);
+                           block_size, &sf, strength, noise_levels);
   }
 
   if (is_key_frame) {  // Key frame should always be filtered.

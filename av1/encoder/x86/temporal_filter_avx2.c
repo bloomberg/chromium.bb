@@ -218,12 +218,13 @@ static void apply_temporal_filter_planewise(
 void av1_apply_temporal_filter_planewise_avx2(
     const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
-    const int num_planes, const double noise_level, const uint8_t *pred,
+    const int num_planes, const double *noise_levels, const uint8_t *pred,
     uint32_t *accum, uint16_t *count) {
   const int is_high_bitdepth = ref_frame->flags & YV12_FLAG_HIGHBITDEPTH;
   if (is_high_bitdepth) {
     assert(0 && "Only support low bit-depth with avx2!");
   }
+  assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
   const int frame_height = ref_frame->heights[0] << mbd->plane[0].subsampling_y;
   const int decay_control = frame_height >= 480 ? 4 : 3;
@@ -238,9 +239,9 @@ void av1_apply_temporal_filter_planewise_avx2(
     const int frame_offset = mb_row * plane_h * frame_stride + mb_col * plane_w;
 
     const uint8_t *ref = ref_frame->buffers[plane] + frame_offset;
-    apply_temporal_filter_planewise(ref, frame_stride, pred + mb_pels * plane,
-                                    plane_w, plane_w, plane_h, noise_level,
-                                    decay_control, accum + mb_pels * plane,
-                                    count + mb_pels * plane);
+    apply_temporal_filter_planewise(
+        ref, frame_stride, pred + mb_pels * plane, plane_w, plane_w, plane_h,
+        noise_levels[plane], decay_control, accum + mb_pels * plane,
+        count + mb_pels * plane);
   }
 }

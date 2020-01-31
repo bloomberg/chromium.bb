@@ -39,7 +39,7 @@ namespace {
 typedef void (*TemporalFilterPlanewiseFunc)(
     const YV12_BUFFER_CONFIG *ref_frame, const MACROBLOCKD *mbd,
     const BLOCK_SIZE block_size, const int mb_row, const int mb_col,
-    const int num_planes, const double noise_level, const uint8_t *pred,
+    const int num_planes, const double *noise_level, const uint8_t *pred,
     uint32_t *accum, uint16_t *count);
 typedef libaom_test::FuncParam<TemporalFilterPlanewiseFunc>
     TemporalFilterPlanewiseFuncParam;
@@ -111,7 +111,7 @@ void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
         GenExtremeData(width, height, stride, src1_, stride2, src2_, 0);
       }
     }
-    double sigma = 2.1002103677063437;
+    double sigma[1] = { 2.1002103677063437 };
     DECLARE_ALIGNED(16, unsigned int, accumulator_ref[1024 * 3]);
     DECLARE_ALIGNED(16, uint16_t, count_ref[1024 * 3]);
     memset(accumulator_ref, 0, 1024 * 3 * sizeof(accumulator_ref[0]));
