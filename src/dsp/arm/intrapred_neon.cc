@@ -159,11 +159,10 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
   const auto* const ref_0_u8 = static_cast<const uint8_t*>(ref_0);
   const auto* const ref_1_u8 = static_cast<const uint8_t*>(ref_1);
   if (ref_0_size_log2 == 2) {
-    uint8x8_t val = vdup_n_u8(0);
-    val = LoadLo4(ref_0_u8, val);
+    uint8x8_t val = Load4(ref_0_u8);
     if (use_ref_1) {
       if (ref_1_size_log2 == 2) {  // 4x4
-        val = LoadHi4(ref_1_u8, val);
+        val = Load4<1>(ref_1_u8, val);
         return Sum(vpaddl_u8(val));
       } else if (ref_1_size_log2 == 3) {  // 4x8
         const uint8x8_t val_1 = vld1_u8(ref_1_u8);
@@ -171,6 +170,7 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
         const uint16x4_t sum_1 = vpaddl_u8(val_1);
         return Sum(vadd_u16(sum_0, sum_1));
       } else if (ref_1_size_log2 == 4) {  // 4x16
+        // TODO(johannkoenig): vaddl_u16(sum1, val);
         const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
         const uint16x8_t sum_0 = vmovl_u8(val);
         const uint16x8_t sum_1 = vpaddlq_u8(val_1);
@@ -184,8 +184,7 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
     const uint8x8_t val_0 = vld1_u8(ref_0_u8);
     if (use_ref_1) {
       if (ref_1_size_log2 == 2) {  // 8x4
-        uint8x8_t val_1 = vdup_n_u8(0);
-        val_1 = LoadLo4(ref_1_u8, val_1);
+        const uint8x8_t val_1 = Load4(ref_1_u8);
         const uint16x4_t sum_0 = vpaddl_u8(val_0);
         const uint16x4_t sum_1 = vpaddl_u8(val_1);
         return Sum(vadd_u16(sum_0, sum_1));
@@ -210,8 +209,7 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
     const uint8x16_t val_0 = vld1q_u8(ref_0_u8);
     if (use_ref_1) {
       if (ref_1_size_log2 == 2) {  // 16x4
-        uint8x8_t val_1 = vdup_n_u8(0);
-        val_1 = LoadLo4(ref_1_u8, val_1);
+        const uint8x8_t val_1 = Load4(ref_1_u8);
         const uint16x8_t sum_0 = vmovl_u8(val_1);
         const uint16x8_t sum_u16 = vpaddlq_u8(val_0);
         return Sum(vaddq_u16(sum_0, sum_u16));
@@ -341,8 +339,7 @@ inline void Paeth4Or8xN_NEON(void* const dest, ptrdiff_t stride,
   const uint16x8_t top_left_x2 = vdupq_n_u16(top_row_u8[-1] + top_row_u8[-1]);
   uint8x8_t top;
   if (width == 4) {
-    top = vdup_n_u8(0);
-    top = LoadLo4(top_row_u8, top);
+    top = Load4(top_row_u8);
   } else {  // width == 8
     top = vld1_u8(top_row_u8);
   }

@@ -209,12 +209,14 @@ void CflSubsampler444_NEON(
   if (block_width == 4) {
     assert(max_luma_width >= 4);
     uint32x4_t running_sum = vdupq_n_u32(0);
+    uint8x8_t row = vdup_n_u8(0);
 
     for (int y = 0; y < block_height; y += 2) {
-      uint8x8_t row = vdup_n_u8(0);
-      row = LoadLo4(src, row);
-      row = LoadHi4(src + stride, row);
+      row = Load4<0>(src, row);
+      row = Load4<1>(src + stride, row);
       if (y < (max_luma_height - 1)) {
+        // TODO(johannkoenig): Use this as the for() condition and add a second
+        // loop to finalize |running_sum|.
         src += stride << 1;
       }
 

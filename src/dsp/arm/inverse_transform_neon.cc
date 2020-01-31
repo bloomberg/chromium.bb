@@ -1886,8 +1886,13 @@ LIBGAV1_ALWAYS_INLINE void Identity4ColumnStoreToFrame(
       const int16x4_t residual_fraction =
           vqrdmulh_n_s16(residual, kIdentity4MultiplierFraction << 3);
       const int16x4_t v_dst_i = vqadd_s16(residual, residual_fraction);
+      // TODO(johannkoenig): Treating |v_dst_i| as unsigned and using vaddl(a,
+      // frame_data) should have correct overflow without extending |frame_data|
+      // first. The |zero| argument also needs to be removed from the loop to
+      // avoid re-zeroing the register on every pass. All uses of vmovl_u8() in
+      // this file should be reevaluated.
       const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(LoadLo4(dst, zero)));
+          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
       const int16x4_t a = vrshr_n_s16(v_dst_i, 4);
       const int16x4_t b = vqadd_s16(a, vget_low_s16(frame_data));
       const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
@@ -1931,7 +1936,7 @@ LIBGAV1_ALWAYS_INLINE void Identity4RowColumnStoreToFrame(
       const int16x4_t v_src_mult =
           vqrdmulh_n_s16(v_src, kIdentity4MultiplierFraction << 3);
       const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(LoadLo4(dst, zero)));
+          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
       const int16x4_t v_dst_row = vqadd_s16(v_src, v_src_mult);
       const int16x4_t v_src_mult2 =
           vqrdmulh_n_s16(v_dst_row, kIdentity4MultiplierFraction << 3);
@@ -2030,7 +2035,7 @@ LIBGAV1_ALWAYS_INLINE void Identity8ColumnStoreToFrame_NEON(
       const int16x4_t residual = vld1_s16(&source[i * tx_width]);
       const int16x4_t v_dst_i = vqadd_s16(residual, residual);
       const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(LoadLo4(dst, zero)));
+          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
       const int16x4_t a = vrshr_n_s16(v_dst_i, 4);
       const int16x4_t b = vqadd_s16(a, vget_low_s16(frame_data));
       const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));
@@ -2118,7 +2123,7 @@ LIBGAV1_ALWAYS_INLINE void Identity16ColumnStoreToFrame_NEON(
       const int16x4_t v_src_mult =
           vqrdmulh_n_s16(v_src, kIdentity4MultiplierFraction << 4);
       const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(LoadLo4(dst, zero)));
+          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
 
       const int16x4_t v_srcx2 = vqadd_s16(v_src, v_src);
       const int16x4_t v_dst_i = vqadd_s16(v_srcx2, v_src_mult);
@@ -2329,8 +2334,8 @@ LIBGAV1_ALWAYS_INLINE void Wht4_NEON(uint8_t* dst, const int dst_stride,
   // Store to frame.
   uint8x8_t frame_data = vdup_n_u8(0);
   for (int row = 0; row < 4; row += 2) {
-    frame_data = LoadLo4(dst, frame_data);
-    frame_data = LoadHi4(dst + dst_stride, frame_data);
+    frame_data = Load4<0>(dst, frame_data);
+    frame_data = Load4<1>(dst + dst_stride, frame_data);
     const int16x8_t a = vreinterpretq_s16_u16(vmovl_u8(frame_data));
     const int16x8_t residual = vcombine_s16(s[row], s[row + 1]);
     // Saturate to prevent overflowing int16_t
@@ -2446,7 +2451,7 @@ LIBGAV1_ALWAYS_INLINE void StoreToFrameWithRound(
       const int row = flip_rows ? (tx_height - i - 1) * 4 : i * 4;
       const int16x4_t residual = vld1_s16(&source[row]);
       const int16x8_t frame_data =
-          vreinterpretq_s16_u16(vmovl_u8(LoadLo4(dst, zero)));
+          vreinterpretq_s16_u16(vmovl_u8(Load4<0>(dst, zero)));
       const int16x4_t a = vrshr_n_s16(residual, 4);
       const int16x4_t b = vqadd_s16(a, vget_low_s16(frame_data));
       const uint8x8_t d = vqmovun_s16(vcombine_s16(b, b));

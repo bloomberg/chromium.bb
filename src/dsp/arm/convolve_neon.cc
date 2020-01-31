@@ -1942,17 +1942,16 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
   uint8x8_t srcs[9];
 
   if (num_taps == 2) {
-    srcs[0] = vdup_n_u8(0);
     srcs[2] = vdup_n_u8(0);
 
-    srcs[0] = LoadLo4(src, srcs[0]);
+    srcs[0] = Load4(src);
     src += src_stride;
 
     int y = 0;
     do {
-      srcs[0] = LoadHi4(src, srcs[0]);
+      srcs[0] = Load4<1>(src, srcs[0]);
       src += src_stride;
-      srcs[2] = LoadLo4(src, srcs[2]);
+      srcs[2] = Load4<0>(src, srcs[2]);
       src += src_stride;
       srcs[1] = vext_u8(srcs[0], srcs[2], 4);
 
@@ -1978,23 +1977,21 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       y += 2;
     } while (y < height);
   } else if (num_taps == 4) {
-    srcs[0] = vdup_n_u8(0);
-    srcs[2] = vdup_n_u8(0);
     srcs[4] = vdup_n_u8(0);
 
-    srcs[0] = LoadLo4(src, srcs[0]);
+    srcs[0] = Load4(src);
     src += src_stride;
-    srcs[0] = LoadHi4(src, srcs[0]);
+    srcs[0] = Load4<1>(src, srcs[0]);
     src += src_stride;
-    srcs[2] = LoadLo4(src, srcs[2]);
+    srcs[2] = Load4(src);
     src += src_stride;
     srcs[1] = vext_u8(srcs[0], srcs[2], 4);
 
     int y = 0;
     do {
-      srcs[2] = LoadHi4(src, srcs[2]);
+      srcs[2] = Load4<1>(src, srcs[2]);
       src += src_stride;
-      srcs[4] = LoadLo4(src, srcs[2]);
+      srcs[4] = Load4<0>(src, srcs[4]);
       src += src_stride;
       srcs[3] = vext_u8(srcs[2], srcs[4], 4);
 
@@ -2022,29 +2019,26 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       y += 2;
     } while (y < height);
   } else if (num_taps == 6) {
-    srcs[0] = vdup_n_u8(0);
-    srcs[2] = vdup_n_u8(0);
-    srcs[4] = vdup_n_u8(0);
     srcs[6] = vdup_n_u8(0);
 
-    srcs[0] = LoadLo4(src, srcs[0]);
+    srcs[0] = Load4(src);
     src += src_stride;
-    srcs[0] = LoadHi4(src, srcs[0]);
+    srcs[0] = Load4<1>(src, srcs[0]);
     src += src_stride;
-    srcs[2] = LoadLo4(src, srcs[2]);
+    srcs[2] = Load4(src);
     src += src_stride;
     srcs[1] = vext_u8(srcs[0], srcs[2], 4);
-    srcs[2] = LoadHi4(src, srcs[2]);
+    srcs[2] = Load4<1>(src, srcs[2]);
     src += src_stride;
-    srcs[4] = LoadLo4(src, srcs[4]);
+    srcs[4] = Load4(src);
     src += src_stride;
     srcs[3] = vext_u8(srcs[2], srcs[4], 4);
 
     int y = 0;
     do {
-      srcs[4] = LoadHi4(src, srcs[4]);
+      srcs[4] = Load4<1>(src, srcs[4]);
       src += src_stride;
-      srcs[6] = LoadLo4(src, srcs[6]);
+      srcs[6] = Load4<0>(src, srcs[6]);
       src += src_stride;
       srcs[5] = vext_u8(srcs[4], srcs[6], 4);
 
@@ -2074,35 +2068,31 @@ void FilterVertical4xH(const uint8_t* src, const ptrdiff_t src_stride,
       y += 2;
     } while (y < height);
   } else if (num_taps == 8) {
-    srcs[0] = vdup_n_u8(0);
-    srcs[2] = vdup_n_u8(0);
-    srcs[4] = vdup_n_u8(0);
-    srcs[6] = vdup_n_u8(0);
     srcs[8] = vdup_n_u8(0);
 
-    srcs[0] = LoadLo4(src, srcs[0]);
+    srcs[0] = Load4(src);
     src += src_stride;
-    srcs[0] = LoadHi4(src, srcs[0]);
+    srcs[0] = Load4<1>(src, srcs[0]);
     src += src_stride;
-    srcs[2] = LoadLo4(src, srcs[2]);
+    srcs[2] = Load4(src);
     src += src_stride;
     srcs[1] = vext_u8(srcs[0], srcs[2], 4);
-    srcs[2] = LoadHi4(src, srcs[2]);
+    srcs[2] = Load4<1>(src, srcs[2]);
     src += src_stride;
-    srcs[4] = LoadLo4(src, srcs[4]);
+    srcs[4] = Load4(src);
     src += src_stride;
     srcs[3] = vext_u8(srcs[2], srcs[4], 4);
-    srcs[4] = LoadHi4(src, srcs[4]);
+    srcs[4] = Load4<1>(src, srcs[4]);
     src += src_stride;
-    srcs[6] = LoadLo4(src, srcs[6]);
+    srcs[6] = Load4(src);
     src += src_stride;
     srcs[5] = vext_u8(srcs[4], srcs[6], 4);
 
     int y = 0;
     do {
-      srcs[6] = LoadHi4(src, srcs[6]);
+      srcs[6] = Load4<1>(src, srcs[6]);
       src += src_stride;
-      srcs[8] = LoadLo4(src, srcs[8]);
+      srcs[8] = Load4<0>(src, srcs[8]);
       src += src_stride;
       srcs[7] = vext_u8(srcs[6], srcs[8], 4);
 
@@ -2148,9 +2138,9 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
   uint8x8_t srcs[9];
 
   if (num_taps == 2) {
-    srcs[0] = vdup_n_u8(0);
     srcs[2] = vdup_n_u8(0);
-    srcs[0] = Load2<0>(src, srcs[0]);
+
+    srcs[0] = Load2(src);
     src += src_stride;
 
     int y = 0;
@@ -2198,9 +2188,9 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
       y += 4;
     } while (y < height);
   } else if (num_taps == 4) {
-    srcs[0] = vdup_n_u8(0);
     srcs[4] = vdup_n_u8(0);
-    srcs[0] = Load2<0>(src, srcs[0]);
+
+    srcs[0] = Load2(src);
     src += src_stride;
     srcs[0] = Load2<1>(src, srcs[0]);
     src += src_stride;
@@ -2257,10 +2247,9 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
     // During the vertical pass the number of taps is restricted when
     // |height| <= 4.
     assert(height > 4);
-    srcs[0] = vdup_n_u8(0);
-    srcs[4] = vdup_n_u8(0);
     srcs[8] = vdup_n_u8(0);
-    srcs[0] = Load2<0>(src, srcs[0]);
+
+    srcs[0] = Load2(src);
     src += src_stride;
     srcs[0] = Load2<1>(src, srcs[0]);
     src += src_stride;
@@ -2268,7 +2257,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
     src += src_stride;
     srcs[0] = Load2<3>(src, srcs[0]);
     src += src_stride;
-    srcs[4] = Load2<0>(src, srcs[4]);
+    srcs[4] = Load2(src);
     src += src_stride;
     srcs[1] = vext_u8(srcs[0], srcs[4], 2);
 
@@ -2322,10 +2311,9 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
     // During the vertical pass the number of taps is restricted when
     // |height| <= 4.
     assert(height > 4);
-    srcs[0] = vdup_n_u8(0);
-    srcs[4] = vdup_n_u8(0);
     srcs[8] = vdup_n_u8(0);
-    srcs[0] = Load2<0>(src, srcs[0]);
+
+    srcs[0] = Load2(src);
     src += src_stride;
     srcs[0] = Load2<1>(src, srcs[0]);
     src += src_stride;
@@ -2333,7 +2321,7 @@ void FilterVertical2xH(const uint8_t* src, const ptrdiff_t src_stride,
     src += src_stride;
     srcs[0] = Load2<3>(src, srcs[0]);
     src += src_stride;
-    srcs[4] = Load2<0>(src, srcs[4]);
+    srcs[4] = Load2(src);
     src += src_stride;
     srcs[1] = vext_u8(srcs[0], srcs[4], 2);
     srcs[4] = Load2<1>(src, srcs[4]);
@@ -2575,10 +2563,11 @@ void ConvolveCompoundCopy_NEON(
       dest += pred_stride;
     } while (++y < height);
   } else if (width == 4) {
-    const uint8x8_t zero = vdup_n_u8(0);
+    uint8x8_t v_src = vdup_n_u8(0);
+
     int y = 0;
     do {
-      const uint8x8_t v_src = LoadLo4(&src[0], zero);
+      v_src = Load4<0>(&src[0], v_src);
       const uint16x8_t v_offset = vaddw_u8(v_compound_round_offset, v_src);
       vst1_u16(&dest[0], vget_low_u16(vshlq_u16(v_offset, v_final_shift)));
       src += src_stride;
@@ -2898,11 +2887,11 @@ void ConvolveIntraBlockCopyHorizontal_NEON(
     uint8x8_t right = vdup_n_u8(0);
     int y = 0;
     do {
-      left = LoadLo4(src, left);
-      right = LoadLo4(src + 1, right);
+      left = Load4<0>(src, left);
+      right = Load4<0>(src + 1, right);
       src += reference_stride;
-      left = LoadHi4(src, left);
-      right = LoadHi4(src + 1, right);
+      left = Load4<1>(src, left);
+      right = Load4<1>(src + 1, right);
       src += reference_stride;
 
       const uint8x8_t result = vrhadd_u8(left, right);
@@ -3063,14 +3052,14 @@ void ConvolveIntraBlockCopyVertical_NEON(
       row = below;
     } while (++y < height);
   } else if (width == 4) {
-    uint8x8_t row = vdup_n_u8(0);
+    // TODO(johannkoenig): Do 2 at a time.
+    uint8x8_t row = Load4(src);
     uint8x8_t below = vdup_n_u8(0);
-    row = LoadLo4(src, row);
     src += reference_stride;
 
     int y = 0;
     do {
-      below = LoadLo4(src, below);
+      below = Load4<0>(src, below);
       src += reference_stride;
 
       StoreLo4(dest, vrhadd_u8(row, below));
@@ -3080,10 +3069,10 @@ void ConvolveIntraBlockCopyVertical_NEON(
     } while (++y < height);
   } else {
     assert(width == 2);
-    uint8x8_t row = vdup_n_u8(0);
+    uint8x8_t row = Load2(src);
     uint8x8_t below = vdup_n_u8(0);
-    row = Load2<0>(src, row);
     src += reference_stride;
+
     int y = 0;
     do {
       below = Load2<0>(src, below);
@@ -3282,22 +3271,19 @@ void ConvolveIntraBlockCopy2D_NEON(
   } else if (width == 8) {
     IntraBlockCopy2D<8>(src, reference_stride, height, dest, pred_stride);
   } else if (width == 4) {
-    uint8x8_t left = vdup_n_u8(0);
-    uint8x8_t right = vdup_n_u8(0);
-
-    left = LoadLo4(src, left);
-    right = LoadLo4(src + 1, right);
+    uint8x8_t left = Load4(src);
+    uint8x8_t right = Load4(src + 1);
     src += reference_stride;
 
     uint16x4_t row = vget_low_u16(vaddl_u8(left, right));
 
     int y = 0;
     do {
-      left = LoadLo4(src, left);
-      right = LoadLo4(src + 1, right);
+      left = Load4<0>(src, left);
+      right = Load4<0>(src + 1, right);
       src += reference_stride;
-      left = LoadHi4(src, left);
-      right = LoadHi4(src + 1, right);
+      left = Load4<1>(src, left);
+      right = Load4<1>(src + 1, right);
       src += reference_stride;
 
       const uint16x8_t below = vaddl_u8(left, right);
@@ -3313,11 +3299,8 @@ void ConvolveIntraBlockCopy2D_NEON(
       y += 2;
     } while (y < height);
   } else {
-    uint8x8_t left = vdup_n_u8(0);
-    uint8x8_t right = vdup_n_u8(0);
-
-    left = Load2<0>(src, left);
-    right = Load2<0>(src + 1, right);
+    uint8x8_t left = Load2(src);
+    uint8x8_t right = Load2(src + 1);
     src += reference_stride;
 
     uint16x4_t row = vget_low_u16(vaddl_u8(left, right));

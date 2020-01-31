@@ -76,8 +76,7 @@ inline void Smooth4Or8xN_NEON(void* const dest, ptrdiff_t stride,
   uint8x8_t top_v;
   // TODO(johannkoenig): Process 16 values (4x4 / 8x2) at a time.
   if (width == 4) {
-    top_v = vdup_n_u8(0);
-    top_v = LoadLo4(top, top_v);
+    top_v = Load4(top);
   } else {  // width == 8
     top_v = vld1_u8(top);
   }
@@ -238,8 +237,7 @@ inline void SmoothVertical4Or8xN_NEON(void* const dest, ptrdiff_t stride,
 
   uint8x8_t top_v;
   if (width == 4) {
-    top_v = vdup_n_u8(0);
-    top_v = LoadLo4(top, top_v);
+    top_v = Load4(top);
   } else {  // width == 8
     top_v = vld1_u8(top);
   }

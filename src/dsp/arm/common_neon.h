@@ -192,6 +192,16 @@ namespace dsp {
 //------------------------------------------------------------------------------
 // Load functions.
 
+// Load 2 uint8_t values into lanes 0 and 1. Zeros the register before loading
+// the values. Use caution when using this in loops because it will re-zero the
+// register before loading on every iteration.
+inline uint8x8_t Load2(const void* const buf) {
+  const uint16x4_t zero = vdup_n_u16(0);
+  uint16_t temp;
+  memcpy(&temp, buf, 2);
+  return vreinterpret_u8_u16(vld1_lane_u16(&temp, zero, 0));
+}
+
 // Load 2 uint8_t values into |lane| * 2 and |lane| * 2 + 1.
 template <int lane>
 inline uint8x8_t Load2(const void* const buf, uint8x8_t val) {
@@ -201,25 +211,23 @@ inline uint8x8_t Load2(const void* const buf, uint8x8_t val) {
       vld1_lane_u16(&temp, vreinterpret_u16_u8(val), lane));
 }
 
-// Load 4 int8_t values into the low half of an int8x8_t register.
-inline int8x8_t LoadLo4(const void* const buf, int8x8_t val) {
-  int32_t temp;
-  memcpy(&temp, buf, 4);
-  return vreinterpret_s8_s32(vld1_lane_s32(&temp, vreinterpret_s32_s8(val), 0));
-}
-
-// Load 4 uint8_t values into the low half of a uint8x8_t register.
-inline uint8x8_t LoadLo4(const void* const buf, uint8x8_t val) {
+// Load 4 uint8_t values into the low half of a uint8x8_t register. Zeros the
+// register before loading the values. Use caution when using this in loops
+// because it will re-zero the register before loading on every iteration.
+inline uint8x8_t Load4(const void* const buf) {
+  const uint32x2_t zero = vdup_n_u32(0);
   uint32_t temp;
   memcpy(&temp, buf, 4);
-  return vreinterpret_u8_u32(vld1_lane_u32(&temp, vreinterpret_u32_u8(val), 0));
+  return vreinterpret_u8_u32(vld1_lane_u32(&temp, zero, 0));
 }
 
-// Load 4 uint8_t values into the high half of a uint8x8_t register.
-inline uint8x8_t LoadHi4(const void* const buf, uint8x8_t val) {
+// Load 4 uint8_t values into 4 lanes staring with |lane| * 4.
+template <int lane>
+inline uint8x8_t Load4(const void* const buf, uint8x8_t val) {
   uint32_t temp;
   memcpy(&temp, buf, 4);
-  return vreinterpret_u8_u32(vld1_lane_u32(&temp, vreinterpret_u32_u8(val), 1));
+  return vreinterpret_u8_u32(
+      vld1_lane_u32(&temp, vreinterpret_u32_u8(val), lane));
 }
 
 //------------------------------------------------------------------------------

@@ -132,12 +132,10 @@ void Horizontal4_NEON(void* const dest, const ptrdiff_t stride,
                       const int hev_thresh) {
   uint8_t* dst = static_cast<uint8_t*>(dest);
 
-  const uint8x8_t zero = vdup_n_u8(0);
-
-  const uint8x8_t p1_v = LoadLo4(dst - 2 * stride, zero);
-  const uint8x8_t p0_v = LoadLo4(dst - stride, zero);
-  const uint8x8_t p0q0 = LoadHi4(dst, p0_v);
-  const uint8x8_t p1q1 = LoadHi4(dst + stride, p1_v);
+  const uint8x8_t p1_v = Load4(dst - 2 * stride);
+  const uint8x8_t p0_v = Load4(dst - stride);
+  const uint8x8_t p0q0 = Load4<1>(dst, p0_v);
+  const uint8x8_t p1q1 = Load4<1>(dst + stride, p1_v);
 
   uint8x8_t hev_mask;
   uint8x8_t needs_filter4_mask;
@@ -188,11 +186,10 @@ void Vertical4_NEON(void* const dest, const ptrdiff_t stride,
 
   // |p1q0| and |p0q1| are named for the values they will contain after the
   // transpose.
-  const uint8x8_t zero = vdup_n_u8(0);
-  const uint8x8_t row0 = LoadLo4(dst, zero);
-  uint8x8_t p1q0 = LoadHi4(dst + stride, row0);
-  const uint8x8_t row2 = LoadLo4(dst + 2 * stride, zero);
-  uint8x8_t p0q1 = LoadHi4(dst + 3 * stride, row2);
+  const uint8x8_t row0 = Load4(dst);
+  uint8x8_t p1q0 = Load4<1>(dst + stride, row0);
+  const uint8x8_t row2 = Load4(dst + 2 * stride);
+  uint8x8_t p0q1 = Load4<1>(dst + 3 * stride, row2);
 
   Transpose4x4(&p1q0, &p0q1);
   // Rearrange.
@@ -335,13 +332,12 @@ void Horizontal6_NEON(void* const dest, const ptrdiff_t stride,
                       const int hev_thresh) {
   auto* dst = static_cast<uint8_t*>(dest);
 
-  const uint8x8_t zero = vdup_n_u8(0);
-  const uint8x8_t p2_v = LoadLo4(dst - 3 * stride, zero);
-  const uint8x8_t p1_v = LoadLo4(dst - 2 * stride, zero);
-  const uint8x8_t p0_v = LoadLo4(dst - stride, zero);
-  const uint8x8_t p0q0 = LoadHi4(dst, p0_v);
-  const uint8x8_t p1q1 = LoadHi4(dst + stride, p1_v);
-  const uint8x8_t p2q2 = LoadHi4(dst + 2 * stride, p2_v);
+  const uint8x8_t p2_v = Load4(dst - 3 * stride);
+  const uint8x8_t p1_v = Load4(dst - 2 * stride);
+  const uint8x8_t p0_v = Load4(dst - stride);
+  const uint8x8_t p0q0 = Load4<1>(dst, p0_v);
+  const uint8x8_t p1q1 = Load4<1>(dst + stride, p1_v);
+  const uint8x8_t p2q2 = Load4<1>(dst + 2 * stride, p2_v);
 
   uint8x8_t needs_filter6_mask, is_flat3_mask, hev_mask;
   Filter6Masks(p2q2, p1q1, p0q0, hev_thresh, outer_thresh, inner_thresh,
@@ -373,6 +369,7 @@ void Horizontal6_NEON(void* const dest, const ptrdiff_t stride,
 #if defined(__aarch64__)
   if (vaddv_u8(vand_u8(is_flat3_mask, needs_filter6_mask)) == 0) {
     // Filter6() does not apply.
+    const uint8x8_t zero = vdup_n_u8(0);
     f6_p1q1 = zero;
     f6_p0q0 = zero;
   } else {
@@ -585,15 +582,14 @@ void Horizontal8_NEON(void* const dest, const ptrdiff_t stride,
                       const int hev_thresh) {
   auto* dst = static_cast<uint8_t*>(dest);
 
-  const uint8x8_t zero = vdup_n_u8(0);
-  const uint8x8_t p3_v = LoadLo4(dst - 4 * stride, zero);
-  const uint8x8_t p2_v = LoadLo4(dst - 3 * stride, zero);
-  const uint8x8_t p1_v = LoadLo4(dst - 2 * stride, zero);
-  const uint8x8_t p0_v = LoadLo4(dst - stride, zero);
-  const uint8x8_t p0q0 = LoadHi4(dst, p0_v);
-  const uint8x8_t p1q1 = LoadHi4(dst + stride, p1_v);
-  const uint8x8_t p2q2 = LoadHi4(dst + 2 * stride, p2_v);
-  const uint8x8_t p3q3 = LoadHi4(dst + 3 * stride, p3_v);
+  const uint8x8_t p3_v = Load4(dst - 4 * stride);
+  const uint8x8_t p2_v = Load4(dst - 3 * stride);
+  const uint8x8_t p1_v = Load4(dst - 2 * stride);
+  const uint8x8_t p0_v = Load4(dst - stride);
+  const uint8x8_t p0q0 = Load4<1>(dst, p0_v);
+  const uint8x8_t p1q1 = Load4<1>(dst + stride, p1_v);
+  const uint8x8_t p2q2 = Load4<1>(dst + 2 * stride, p2_v);
+  const uint8x8_t p3q3 = Load4<1>(dst + 3 * stride, p3_v);
 
   uint8x8_t needs_filter8_mask, is_flat4_mask, hev_mask;
   Filter8Masks(p3q3, p2q2, p1q1, p0q0, hev_thresh, outer_thresh, inner_thresh,
@@ -626,6 +622,7 @@ void Horizontal8_NEON(void* const dest, const ptrdiff_t stride,
 #if defined(__aarch64__)
   if (vaddv_u8(is_flat4_mask) == 0) {
     // Filter8() does not apply.
+    const uint8x8_t zero = vdup_n_u8(0);
     f8_p2q2 = zero;
     f8_p1q1 = zero;
     f8_p0q0 = zero;
@@ -850,21 +847,20 @@ void Horizontal14_NEON(void* const dest, const ptrdiff_t stride,
                        const int hev_thresh) {
   auto* dst = static_cast<uint8_t*>(dest);
 
-  const uint8x8_t zero = vdup_n_u8(0);
-  const uint8x8_t p6_v = LoadLo4(dst - 7 * stride, zero);
-  const uint8x8_t p5_v = LoadLo4(dst - 6 * stride, zero);
-  const uint8x8_t p4_v = LoadLo4(dst - 5 * stride, zero);
-  const uint8x8_t p3_v = LoadLo4(dst - 4 * stride, zero);
-  const uint8x8_t p2_v = LoadLo4(dst - 3 * stride, zero);
-  const uint8x8_t p1_v = LoadLo4(dst - 2 * stride, zero);
-  const uint8x8_t p0_v = LoadLo4(dst - stride, zero);
-  const uint8x8_t p0q0 = LoadHi4(dst, p0_v);
-  const uint8x8_t p1q1 = LoadHi4(dst + stride, p1_v);
-  const uint8x8_t p2q2 = LoadHi4(dst + 2 * stride, p2_v);
-  const uint8x8_t p3q3 = LoadHi4(dst + 3 * stride, p3_v);
-  const uint8x8_t p4q4 = LoadHi4(dst + 4 * stride, p4_v);
-  const uint8x8_t p5q5 = LoadHi4(dst + 5 * stride, p5_v);
-  const uint8x8_t p6q6 = LoadHi4(dst + 6 * stride, p6_v);
+  const uint8x8_t p6_v = Load4(dst - 7 * stride);
+  const uint8x8_t p5_v = Load4(dst - 6 * stride);
+  const uint8x8_t p4_v = Load4(dst - 5 * stride);
+  const uint8x8_t p3_v = Load4(dst - 4 * stride);
+  const uint8x8_t p2_v = Load4(dst - 3 * stride);
+  const uint8x8_t p1_v = Load4(dst - 2 * stride);
+  const uint8x8_t p0_v = Load4(dst - stride);
+  const uint8x8_t p0q0 = Load4<1>(dst, p0_v);
+  const uint8x8_t p1q1 = Load4<1>(dst + stride, p1_v);
+  const uint8x8_t p2q2 = Load4<1>(dst + 2 * stride, p2_v);
+  const uint8x8_t p3q3 = Load4<1>(dst + 3 * stride, p3_v);
+  const uint8x8_t p4q4 = Load4<1>(dst + 4 * stride, p4_v);
+  const uint8x8_t p5q5 = Load4<1>(dst + 5 * stride, p5_v);
+  const uint8x8_t p6q6 = Load4<1>(dst + 6 * stride, p6_v);
 
   uint8x8_t needs_filter8_mask, is_flat4_mask, hev_mask;
   Filter8Masks(p3q3, p2q2, p1q1, p0q0, hev_thresh, outer_thresh, inner_thresh,
@@ -905,6 +901,7 @@ void Horizontal14_NEON(void* const dest, const ptrdiff_t stride,
 #if defined(__aarch64__)
   if (vaddv_u8(is_flat4_mask) == 0) {
     // Filter8() and Filter14() do not apply.
+    const uint8x8_t zero = vdup_n_u8(0);
     f8_p1q1 = zero;
     f8_p0q0 = zero;
     f14_p1q1 = zero;
@@ -917,6 +914,7 @@ void Horizontal14_NEON(void* const dest, const ptrdiff_t stride,
 #if defined(__aarch64__)
     if (vaddv_u8(is_flat_outer4_mask) == 0) {
       // Filter14() does not apply.
+      const uint8x8_t zero = vdup_n_u8(0);
       f14_p2q2 = zero;
       f14_p1q1 = zero;
       f14_p0q0 = zero;

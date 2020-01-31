@@ -54,9 +54,9 @@ inline uint16x8_t GetMask4x2(const uint8_t* mask, ptrdiff_t mask_stride) {
     return vrshrq_n_u16(final_val, subsampling_y + 1);
   }
   assert(subsampling_y == 0 && subsampling_x == 0);
-  const uint8x8_t mask_val0 = LoadLo4(mask, vdup_n_u8(0));
+  const uint8x8_t mask_val0 = Load4(mask);
   const uint8x8_t mask_val =
-      LoadHi4(mask + (mask_stride << subsampling_y), mask_val0);
+      Load4<1>(mask + (mask_stride << subsampling_y), mask_val0);
   return vmovl_u8(mask_val);
 }
 
@@ -270,12 +270,12 @@ inline void InterIntraWriteMaskBlendLine8bpp4x2(
     const ptrdiff_t dst_stride) {
   // TODO(johannkoenig): Use uint8x8_t for |pred_val| and |pred_mask|. Only
   // expand during the calculation.
-  const uint8x8_t pred_val_0_lo = LoadLo4(pred_0, vdup_n_u8(0));
+  const uint8x8_t pred_val_0_lo = Load4(pred_0);
   const uint16x8_t pred_val_0 =
-      vmovl_u8(LoadHi4(pred_0 + pred_stride_0, pred_val_0_lo));
-  const uint8x8_t pred_val_1_lo = LoadLo4(pred_1, vdup_n_u8(0));
+      vmovl_u8(Load4<1>(pred_0 + pred_stride_0, pred_val_0_lo));
+  const uint8x8_t pred_val_1_lo = Load4(pred_1);
   const uint16x8_t pred_val_1 =
-      vmovl_u8(LoadHi4(pred_1 + pred_stride_1, pred_val_1_lo));
+      vmovl_u8(Load4<1>(pred_1 + pred_stride_1, pred_val_1_lo));
 
   const uint16x8_t weighted_pred_0 = vmulq_u16(pred_mask_0, pred_val_0);
   const uint16x8_t weighted_combo =

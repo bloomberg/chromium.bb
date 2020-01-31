@@ -35,13 +35,6 @@ namespace {
 
 #include "src/dsp/obmc.inc"
 
-inline uint8x8_t Load2(const uint8_t* src) {
-  uint16_t tmp;
-  memcpy(&tmp, src, 2);
-  uint16x4_t result = vcreate_u16(tmp);
-  return vreinterpret_u8_u16(result);
-}
-
 template <int lane>
 inline void StoreLane2(uint8_t* dst, uint8x8_t src) {
   const uint16_t out_val = vget_lane_u16(vreinterpret_u16_u8(src), lane);
@@ -51,8 +44,8 @@ inline void StoreLane2(uint8_t* dst, uint8x8_t src) {
 inline void WriteObmcLine4(uint8_t* const pred, const uint8_t* const obmc_pred,
                            const uint8x8_t pred_mask,
                            const uint8x8_t obmc_pred_mask) {
-  const uint8x8_t pred_val = LoadLo4(pred, vdup_n_u8(0));
-  const uint8x8_t obmc_pred_val = LoadLo4(obmc_pred, vdup_n_u8(0));
+  const uint8x8_t pred_val = Load4(pred);
+  const uint8x8_t obmc_pred_val = Load4(obmc_pred);
   const uint16x8_t weighted_pred = vmull_u8(pred_mask, pred_val);
   const uint8x8_t result =
       vrshrn_n_u16(vmlal_u8(weighted_pred, obmc_pred_mask, obmc_pred_val), 6);
@@ -80,15 +73,17 @@ inline void OverlapBlend2xH_NEON(uint8_t* const prediction,
     // Weights for the last line are all 64, which is a no-op.
     compute_height = height - 1;
   }
+  uint8x8_t pred_val = vdup_n_u8(0);
+  uint8x8_t obmc_pred_val = vdup_n_u8(0);
   int y = 0;
   do {
     if (!from_left) {
       pred_mask = vdup_n_u8(kObmcMask[mask_offset + y]);
       obmc_pred_mask = vsub_u8(mask_inverter, pred_mask);
     }
-    const uint8x8_t pred_val = Load2(pred);
+    pred_val = Load2<0>(pred, pred_val);
     const uint16x8_t weighted_pred = vmull_u8(pred_mask, pred_val);
-    const uint8x8_t obmc_pred_val = Load2(obmc_pred);
+    obmc_pred_val = Load2<0>(obmc_pred, obmc_pred_val);
     const uint8x8_t result =
         vrshrn_n_u16(vmlal_u8(weighted_pred, obmc_pred_mask, obmc_pred_val), 6);
     StoreLane2<0>(pred, result);
@@ -106,7 +101,7 @@ inline void OverlapBlendFromLeft4xH_NEON(
   const uint8_t* obmc_pred = obmc_prediction;
 
   const uint8x8_t mask_inverter = vdup_n_u8(64);
-  const uint8x8_t pred_mask = LoadLo4(kObmcMask + 2, vdup_n_u8(0));
+  const uint8x8_t pred_mask = Load4(kObmcMask + 2);
   // 64 - mask
   const uint8x8_t obmc_pred_mask = vsub_u8(mask_inverter, pred_mask);
   int y = 0;
