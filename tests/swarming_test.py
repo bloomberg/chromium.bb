@@ -14,6 +14,7 @@ import tempfile
 import threading
 import time
 import traceback
+import uuid
 
 import six
 
@@ -44,6 +45,8 @@ OUTPUT = 'Ran stuff\n'
 SHARD_OUTPUT_1 = 'Shard 1 of 3.'
 SHARD_OUTPUT_2 = 'Shard 2 of 3.'
 SHARD_OUTPUT_3 = 'Shard 3 of 3.'
+
+REQUEST_UUID = '7905e667-d415-48f1-9df7-f914541d6331'
 
 
 def gen_yielded_data(index, **kwargs):
@@ -142,6 +145,8 @@ def gen_request_data(properties=None, **kwargs):
           'AUTO',
       'priority':
           101,
+      'request_uuid':
+          REQUEST_UUID,
       'task_slices': [{
           'expiration_secs': 3600,
           'properties': gen_properties(**(properties or {})),
@@ -208,6 +213,7 @@ class Common(object):
     self.mock(sys, 'stderr', StringIO.StringIO())
     self.mock(logging_utils, 'prepare_logging', lambda *args: None)
     self.mock(logging_utils, 'set_console_level', lambda *args: None)
+    self.mock(uuid, 'uuid4', lambda: REQUEST_UUID)
 
   def tearDown(self):
     if self._tempdir:
@@ -1076,6 +1082,8 @@ class TestMain(NetTestCase):
             'AUTO',
         'priority':
             200,
+        'request_uuid':
+            REQUEST_UUID,
         'task_slices': [{
             'expiration_secs':
                 21600,
@@ -1144,6 +1152,8 @@ class TestMain(NetTestCase):
             'AUTO',
         'priority':
             200,
+        'request_uuid':
+            REQUEST_UUID,
         'task_slices': [
             {
                 'expiration_secs':
@@ -1329,6 +1339,8 @@ class TestMain(NetTestCase):
             'AUTO',
         'priority':
             200,
+        'request_uuid':
+            REQUEST_UUID,
         'task_slices': [
             {
                 'expiration_secs':
@@ -1479,6 +1491,8 @@ class TestMain(NetTestCase):
             'AUTO',
         'priority':
             200,
+        'request_uuid':
+            REQUEST_UUID,
         'task_slices': [
             {
                 'expiration_secs':
@@ -1606,6 +1620,8 @@ class TestMain(NetTestCase):
             'AUTO',
         'priority':
             200,
+        'request_uuid':
+            REQUEST_UUID,
         'task_slices': [{
             'expiration_secs':
                 21600,
@@ -1683,6 +1699,8 @@ class TestMain(NetTestCase):
             'AUTO',
         'priority':
             200,
+        'request_uuid':
+            REQUEST_UUID,
         'task_slices': [{
             'expiration_secs':
                 21600,
@@ -1930,6 +1948,8 @@ class TestMain(NetTestCase):
                         'AUTO',
                     'priority':
                         101,
+                    'request_uuid':
+                        REQUEST_UUID,
                     'task_slices': [{
                         'expiration_secs':
                             3600,
@@ -2333,6 +2353,8 @@ class TestMain(NetTestCase):
             200,
         'pool_task_template':
             'AUTO',
+        'request_uuid':
+            REQUEST_UUID,
         'task_slices': [{
             'expiration_secs':
                 21600,

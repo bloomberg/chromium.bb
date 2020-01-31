@@ -20,6 +20,7 @@ import sys
 import textwrap
 import threading
 import time
+import uuid
 
 from utils import tools
 tools.force_local_third_party()
@@ -191,6 +192,7 @@ def task_request_to_raw_request(task_request):
       for k, v in task_slice['properties']['env'].items()
     ]
     task_slice['properties']['env'].sort(key=lambda x: x['key'])
+  out['request_uuid'] = str(uuid.uuid4())
   return out
 
 
