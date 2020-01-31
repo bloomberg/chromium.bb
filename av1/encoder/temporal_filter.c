@@ -799,9 +799,11 @@ void av1_apply_temporal_filter_planewise_c(
   // Hyper-parameter for filter weight adjustment.
   const int frame_height = frame_to_filter->heights[0]
                            << mbd->plane[0].subsampling_y;
-  const int decay_control = frame_height >= 480 ? 4 : 3;
+  const int decay_control =
+      frame_height >= 720 ? 7 : (frame_height >= 480 ? 5 : 3);
   // Control factor for non-local mean approach.
-  const double r = (double)decay_control * (0.7 + log(noise_level + 0.5));
+  const double decay = decay_control * exp(1 - noise_level);
+  const double r = AOMMAX(decay * noise_level, 0.1);
 
   // Block information.
   const int mb_height = block_size_high[block_size];
@@ -1096,7 +1098,7 @@ static FRAME_DIFF tf_do_filtering(
   const int use_planewise_strategy =
       TF_ENABLE_PLANEWISE_STRATEGY &&
       (cpi->common.allow_screen_content_tools == 0) &&
-      AOMMIN(frame_height, frame_width) >= 480;
+      AOMMIN(frame_height, frame_width) >= 480 && !is_key_frame;
   // Perform temporal filtering block by block.
   for (int mb_row = 0; mb_row < mb_rows; mb_row++) {
     mb->mv_limits.row_min = get_min_mv(mb_row, mb_height);
