@@ -1153,38 +1153,45 @@ inline void ConvolveKernelHorizontalSigned4Tap(
   const uint8x16_t filter_taps1 = GetSigned4TapFilter(1);
   const uint8x16_t filter_taps2 = GetSigned4TapFilter(2);
   const uint8x16_t filter_taps3 = GetSigned4TapFilter(3);
-  const uint16x8_t index_steps = vmulq_n_u16(vmovl_u8(vcreate_u8(0x03020100)),
-                                             static_cast<uint16_t>(step_x));
+  const uint16x4_t index_steps = vmul_n_u16(vcreate_u16(0x0003000200010000),
+                                            static_cast<uint16_t>(step_x));
 
   const int p = subpixel_x;
   const uint8_t* src_x =
       &src[(p >> kScaleSubPixelBits) - ref_x + kernel_offset];
   // Only add steps to the 10-bit truncated p to avoid overflow.
-  const uint16x8_t p_fraction = vdupq_n_u16(p & 1023);
-  const uint16x8_t subpel_index_offsets = vaddq_u16(index_steps, p_fraction);
-  const uint8x8_t filter_indices = vand_u8(
-      vshrn_n_u16(subpel_index_offsets, kFilterIndexShift), filter_index_mask);
+  const uint16x4_t p_fraction = vdup_n_u16(p & 1023);
+  const uint16x4_t subpel_index_offsets = vadd_u16(index_steps, p_fraction);
+  const uint8x8_t filter_index_offsets = vshrn_n_u16(
+      vcombine_u16(subpel_index_offsets, vdup_n_u16(0)), kFilterIndexShift);
+  const uint8x8_t filter_indices =
+      vand_u8(filter_index_offsets, filter_index_mask);
   // Note that filter_id depends on x.
   // For each x, tapsK has kSubPixelFilters[filter_index][filter_id][k].
   const uint8x8_t taps[4] = {VQTbl1U8(filter_taps0, filter_indices),
                              VQTbl1U8(filter_taps1, filter_indices),
                              VQTbl1U8(filter_taps2, filter_indices),
                              VQTbl1U8(filter_taps3, filter_indices)};
+
+  const uint8x8_t src_indices_base =
+      vshr_n_u8(filter_index_offsets, kScaleSubPixelBits - kFilterIndexShift);
+
+  const uint8x8_t src_indices[4] = {src_indices_base,
+                                    vadd_u8(src_indices_base, vdup_n_u8(1)),
+                                    vadd_u8(src_indices_base, vdup_n_u8(2)),
+                                    vadd_u8(src_indices_base, vdup_n_u8(3))};
+
   int y = 0;
   do {
     // Load a pool of samples to select from using stepped indices.
     const uint8x16_t src_vals = vld1q_u8(src_x);
-    const uint8x8_t src_indices =
-        vmovn_u16(vshrq_n_u16(subpel_index_offsets, kScaleSubPixelBits));
 
     // For each x, srcK contains src_x[k] where k=1.
     // Whereas taps come from different arrays, src pixels are drawn from the
     // same contiguous line.
     const uint8x8_t src[4] = {
-        VQTbl1U8(src_vals, src_indices),
-        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(1))),
-        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(2))),
-        VQTbl1U8(src_vals, vadd_u8(src_indices, vdup_n_u8(3)))};
+        VQTbl1U8(src_vals, src_indices[0]), VQTbl1U8(src_vals, src_indices[1]),
+        VQTbl1U8(src_vals, src_indices[2]), VQTbl1U8(src_vals, src_indices[3])};
 
     vst1q_s16(intermediate,
               vrshrq_n_s16(SumOnePassTaps</*filter_index=*/4>(src, taps),
