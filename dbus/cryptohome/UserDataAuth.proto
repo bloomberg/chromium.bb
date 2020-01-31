@@ -74,6 +74,11 @@ enum CryptohomeErrorCode {
   CRYPTOHOME_ERROR_PCR_ALREADY_EXTENDED = 39;
   CRYPTOHOME_ERROR_FAILED_TO_EXTEND_PCR = 40;
   CRYPTOHOME_ERROR_TPM_UPDATE_REQUIRED = 41;
+  CRYPTOHOME_ERROR_FINGERPRINT_ERROR_INTERNAL = 42;
+  // Fingerprint match failed but at least one retry count left.
+  CRYPTOHOME_ERROR_FINGERPRINT_RETRY_REQUIRED = 43;
+  // Fingerprint match failed and maximum retry count reached.
+  CRYPTOHOME_ERROR_FINGERPRINT_DENIED = 44;
 }
 
 // This is used by MountRequest to store details about the mount to create
