@@ -140,9 +140,8 @@ def DieWithError(message, change_desc=None):
 def SaveDescriptionBackup(change_desc):
   backup_path = os.path.join(DEPOT_TOOLS, DESCRIPTION_BACKUP_FILE)
   print('\nsaving CL description to %s\n' % backup_path)
-  backup_file = open(backup_path, 'w')
-  backup_file.write(change_desc.description)
-  backup_file.close()
+  with open(backup_path, 'w') as backup_file:
+    backup_file.write(change_desc.description)
 
 
 def GetNoGitPagerEnv():
@@ -862,6 +861,7 @@ class Settings(object):
       cr_settings_file = FindCodereviewSettingsFile()
       if autoupdate != 'false' and cr_settings_file:
         LoadCodereviewSettingsFromFile(cr_settings_file)
+        cr_settings_file.close()
       self.updated = True
 
   @staticmethod
@@ -1344,8 +1344,9 @@ class Changelist(object):
                     'Interpreting it as a local directory.', url)
     if not os.path.isdir(url):
       logging.error(
-          'Remote "%s" for branch "%s" points to "%s", but it doesn\'t exist.',
-          remote, self.GetBranch(), url)
+          'Remote "%(remote)s" for branch "%(branch)s" points to "%(url)s", '
+          'but it doesn\'t exist.',
+          {'remote': remote, 'branch': self.GetBranch(), 'url': url})
       return None
 
     cache_path = url
@@ -1703,7 +1704,7 @@ class Changelist(object):
     """Returns Gerrit project name based on remote git URL."""
     remote_url = self.GetRemoteUrl()
     if remote_url is None:
-      logging.warn('can\'t detect Gerrit project.')
+      logging.warning('can\'t detect Gerrit project.')
       return None
     project = urllib.parse.urlparse(remote_url).path.strip('/')
     if project.endswith('.git'):
@@ -1756,11 +1757,14 @@ class Changelist(object):
 
     remote_url = self.GetRemoteUrl()
     if remote_url is None:
-      print('WARNING: invalid remote')
+      logging.warning('invalid remote')
       return
     if urllib.parse.urlparse(remote_url).scheme != 'https':
-      print('WARNING: Ignoring branch %s with non-https remote %s' %
-            (self.branch, self.GetRemoteUrl()))
+      logging.warning('Ignoring branch %(branch)s with non-https remote '
+                      '%(remote)s', {
+                          'branch': self.branch,
+                          'remote': self.GetRemoteUrl()
+                      })
       return
 
     # Lazy-loader to identify Gerrit and Git hosts.

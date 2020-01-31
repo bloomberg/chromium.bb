@@ -2094,9 +2094,17 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.master.merge'],), 'refs/heads/master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['git', 'config', 'remote.origin.url'],), 'custom-scheme://repo'),
+        (('logging.warning',
+            'Ignoring branch %(branch)s with non-https remote '
+            '%(remote)s', {
+              'branch': 'master',
+              'remote': 'custom-scheme://repo'}
+          ), None),
     ]
     self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
               CookiesAuthenticatorMockFactory(hosts_with_creds={}))
+    self.mock(logging, 'warning',
+              lambda *a: self._mocked_call('logging.warning', *a))
     cl = git_cl.Changelist()
     cl.branch = 'master'
     cl.branchref = 'refs/heads/master'
@@ -2111,9 +2119,18 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.master.remote'], ), 'origin'),
         ((['git', 'config', 'remote.origin.url'], ),
          'git@somehost.example:foo/bar.git'),
+        (('logging.error',
+            'Remote "%(remote)s" for branch "%(branch)s" points to "%(url)s", '
+            'but it doesn\'t exist.', {
+              'remote': 'origin',
+              'branch': 'master',
+              'url': 'git@somehost.example:foo/bar.git'}
+          ), None),
     ]
     self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
               CookiesAuthenticatorMockFactory(hosts_with_creds={}))
+    self.mock(logging, 'error',
+              lambda *a: self._mocked_call('logging.error', *a))
     cl = git_cl.Changelist()
     cl.branch = 'master'
     cl.branchref = 'refs/heads/master'
@@ -3031,7 +3048,7 @@ class TestGitCl(TestCase):
 
     self.mock(os.path, 'isdir', selective_os_path_isdir_mock)
     self.mock(logging, 'error',
-              lambda fmt, *a: self._mocked_call('logging.error', fmt % a))
+              lambda *a: self._mocked_call('logging.error', *a))
 
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
@@ -3042,8 +3059,12 @@ class TestGitCl(TestCase):
       (('os.path.isdir', '/cache/this-dir-doesnt-exist'),
        False),
       (('logging.error',
-        'Remote "origin" for branch "master" points to'
-        ' "/cache/this-dir-doesnt-exist", but it doesn\'t exist.'), None),
+          'Remote "%(remote)s" for branch "%(branch)s" points to "%(url)s", '
+          'but it doesn\'t exist.', {
+            'remote': 'origin',
+            'branch': 'master',
+            'url': '/cache/this-dir-doesnt-exist'}
+        ), None),
     ]
     cl = git_cl.Changelist(issue=1)
     self.assertIsNone(cl.GetRemoteUrl())
@@ -3094,11 +3115,21 @@ class TestGitCl(TestCase):
     self.assertEqual(cl._GerritChangeIdentifier(), 'my%2Frepo~123456')
 
   def test_gerrit_change_identifier_without_project(self):
+    self.mock(logging, 'error',
+              lambda *a: self._mocked_call('logging.error', *a))
+
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.merge'],), 'master'),
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
       ((['git', 'config', 'remote.origin.url'],), CERR1),
+      (('logging.error',
+          'Remote "%(remote)s" for branch "%(branch)s" points to "%(url)s", '
+          'but it doesn\'t exist.', {
+            'remote': 'origin',
+            'branch': 'master',
+            'url': ''}
+        ), None),
     ]
     cl = git_cl.Changelist(issue=123456)
     self.assertEqual(cl._GerritChangeIdentifier(), '123456')
