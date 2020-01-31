@@ -146,7 +146,10 @@ constexpr uint8_t kCoeffBaseContextOffset[kNumTransformSizes][5][5] = {
      {6, 21, 21, 21, 21}, {21, 21, 21, 21, 21}}};
 /* clang-format on */
 
-constexpr uint8_t kCoeffBasePositionContextOffset[3] = {26, 31, 36};
+// Extended the table size from 3 to 16 by repeating the last element to avoid
+// the clips to row or column indices.
+constexpr uint8_t kCoeffBasePositionContextOffset[16] = {
+    26, 31, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36};
 
 constexpr PredictionMode kInterIntraToIntraMode[kNumInterIntraModes] = {
     kPredictionModeDc, kPredictionModeVertical, kPredictionModeHorizontal,
@@ -959,7 +962,7 @@ void Tile::ReadCoeffBaseHorizontal(
                           std::min(quantized[2], 3) +                // {0, 2}
                           std::min(quantized[3], 3) +                // {0, 3}
                           std::min(quantized[4], 3))));              // {0, 4}
-    context += kCoeffBasePositionContextOffset[std::min(column, 2)];
+    context += kCoeffBasePositionContextOffset[column];
     int level =
         reader_.ReadSymbol<kCoeffBaseSymbolCount>(coeff_base_cdf[context]);
     if (level > kNumQuantizerBaseLevels) {
@@ -1001,8 +1004,7 @@ void Tile::ReadCoeffBaseVertical(
                        std::min(quantized[padded_tx_width * 3], 3) +  // {3, 0}
                        std::min(quantized[MultiplyBy4(padded_tx_width)],
                                 3))));  // {4, 0}
-
-    context += kCoeffBasePositionContextOffset[std::min(row, 2)];
+    context += kCoeffBasePositionContextOffset[row];
     int level =
         reader_.ReadSymbol<kCoeffBaseSymbolCount>(coeff_base_cdf[context]);
     if (level > kNumQuantizerBaseLevels) {
