@@ -438,6 +438,10 @@ ANDROID_VMPI_BUILD_TARGETS = {
 }
 ANDROID_VMMST_BUILD_TARGETS = {
     # For XkbToKcmConverter, see the comment in ANDROID_PI_BUILD_TARGETS.
+    'ARM_USERDEBUG': ('linux-bertha_arm-userdebug',
+                      r'(\.zip|/XkbToKcmConverter)$'),
+    'ARM64_USERDEBUG': ('linux-bertha_arm64-userdebug',
+                        r'(\.zip|/XkbToKcmConverter)$'),
     'X86_USERDEBUG': ('linux-bertha_x86-userdebug',
                       r'(\.zip|/XkbToKcmConverter)$'),
     'X86_64_USERDEBUG': ('linux-bertha_x86_64-userdebug', r'\.zip$'),
