@@ -12,6 +12,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 from chromite.api.gen.test_platform import request_pb2 as test__platform_dot_request__pb2
 
 
@@ -20,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='test_platform.skylab_test_runner',
   syntax='proto3',
   serialized_options=_b('ZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runner'),
-  serialized_pb=_b('\n.test_platform/skylab_test_runner/request.proto\x12 test_platform.skylab_test_runner\x1a\x1btest_platform/request.proto\"\xd3\x06\n\x07Request\x12@\n\x06prejob\x18\x01 \x01(\x0b\x32\x30.test_platform.skylab_test_runner.Request.Prejob\x12<\n\x04test\x18\x02 \x01(\x0b\x32..test_platform.skylab_test_runner.Request.Test\x1a\x82\x02\n\x06Prejob\x12S\n\x15software_dependencies\x18\x01 \x03(\x0b\x32\x30.test_platform.Request.Params.SoftwareDependencyB\x02\x18\x01\x12g\n\x14provisionable_labels\x18\x02 \x03(\x0b\x32I.test_platform.skylab_test_runner.Request.Prejob.ProvisionableLabelsEntry\x1a:\n\x18ProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\xc2\x03\n\x04Test\x12K\n\x08\x61utotest\x18\x01 \x01(\x0b\x32\x37.test_platform.skylab_test_runner.Request.Test.AutotestH\x00\x12N\n\x07offload\x18\x02 \x01(\x0b\x32=.test_platform.skylab_test_runner.Request.Test.OffloadOptions\x1a\xe0\x01\n\x08\x41utotest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\ttest_args\x18\x02 \x01(\t\x12U\n\x07keyvals\x18\x03 \x03(\x0b\x32\x44.test_platform.skylab_test_runner.Request.Test.Autotest.KeyvalsEntry\x12\x16\n\x0eis_client_test\x18\x04 \x01(\x08\x12\x14\n\x0c\x64isplay_name\x18\x05 \x01(\t\x1a.\n\x0cKeyvalsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a/\n\x0eOffloadOptions\x12\x1d\n\x15synchronous_gs_enable\x18\x01 \x01(\x08\x42\t\n\x07harnessBLZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runnerb\x06proto3')
+  serialized_pb=_b('\n.test_platform/skylab_test_runner/request.proto\x12 test_platform.skylab_test_runner\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1btest_platform/request.proto\"\x81\x07\n\x07Request\x12@\n\x06prejob\x18\x01 \x01(\x0b\x32\x30.test_platform.skylab_test_runner.Request.Prejob\x12<\n\x04test\x18\x02 \x01(\x0b\x32..test_platform.skylab_test_runner.Request.Test\x12,\n\x08\x64\x65\x61\x64line\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x1a\x82\x02\n\x06Prejob\x12S\n\x15software_dependencies\x18\x01 \x03(\x0b\x32\x30.test_platform.Request.Params.SoftwareDependencyB\x02\x18\x01\x12g\n\x14provisionable_labels\x18\x02 \x03(\x0b\x32I.test_platform.skylab_test_runner.Request.Prejob.ProvisionableLabelsEntry\x1a:\n\x18ProvisionableLabelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\xc2\x03\n\x04Test\x12K\n\x08\x61utotest\x18\x01 \x01(\x0b\x32\x37.test_platform.skylab_test_runner.Request.Test.AutotestH\x00\x12N\n\x07offload\x18\x02 \x01(\x0b\x32=.test_platform.skylab_test_runner.Request.Test.OffloadOptions\x1a\xe0\x01\n\x08\x41utotest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x11\n\ttest_args\x18\x02 \x01(\t\x12U\n\x07keyvals\x18\x03 \x03(\x0b\x32\x44.test_platform.skylab_test_runner.Request.Test.Autotest.KeyvalsEntry\x12\x16\n\x0eis_client_test\x18\x04 \x01(\x08\x12\x14\n\x0c\x64isplay_name\x18\x05 \x01(\t\x1a.\n\x0cKeyvalsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a/\n\x0eOffloadOptions\x12\x1d\n\x15synchronous_gs_enable\x18\x01 \x01(\x08\x42\t\n\x07harnessBLZJgo.chromium.org/chromiumos/infra/proto/go/test_platform/skylab_test_runnerb\x06proto3')
   ,
-  dependencies=[test__platform_dot_request__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,test__platform_dot_request__pb2.DESCRIPTOR,])
 
 
 
@@ -60,8 +61,8 @@ _REQUEST_PREJOB_PROVISIONABLELABELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=454,
-  serialized_end=512,
+  serialized_start=533,
+  serialized_end=591,
 )
 
 _REQUEST_PREJOB = _descriptor.Descriptor(
@@ -97,8 +98,8 @@ _REQUEST_PREJOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=254,
-  serialized_end=512,
+  serialized_start=333,
+  serialized_end=591,
 )
 
 _REQUEST_TEST_AUTOTEST_KEYVALSENTRY = _descriptor.Descriptor(
@@ -134,8 +135,8 @@ _REQUEST_TEST_AUTOTEST_KEYVALSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=859,
-  serialized_end=905,
+  serialized_start=938,
+  serialized_end=984,
 )
 
 _REQUEST_TEST_AUTOTEST = _descriptor.Descriptor(
@@ -192,8 +193,8 @@ _REQUEST_TEST_AUTOTEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=681,
-  serialized_end=905,
+  serialized_start=760,
+  serialized_end=984,
 )
 
 _REQUEST_TEST_OFFLOADOPTIONS = _descriptor.Descriptor(
@@ -222,8 +223,8 @@ _REQUEST_TEST_OFFLOADOPTIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=907,
-  serialized_end=954,
+  serialized_start=986,
+  serialized_end=1033,
 )
 
 _REQUEST_TEST = _descriptor.Descriptor(
@@ -262,8 +263,8 @@ _REQUEST_TEST = _descriptor.Descriptor(
       name='harness', full_name='test_platform.skylab_test_runner.Request.Test.harness',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=515,
-  serialized_end=965,
+  serialized_start=594,
+  serialized_end=1044,
 )
 
 _REQUEST = _descriptor.Descriptor(
@@ -287,6 +288,13 @@ _REQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='deadline', full_name='test_platform.skylab_test_runner.Request.deadline', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -299,8 +307,8 @@ _REQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=114,
-  serialized_end=965,
+  serialized_start=147,
+  serialized_end=1044,
 )
 
 _REQUEST_PREJOB_PROVISIONABLELABELSENTRY.containing_type = _REQUEST_PREJOB
@@ -319,6 +327,7 @@ _REQUEST_TEST.oneofs_by_name['harness'].fields.append(
 _REQUEST_TEST.fields_by_name['autotest'].containing_oneof = _REQUEST_TEST.oneofs_by_name['harness']
 _REQUEST.fields_by_name['prejob'].message_type = _REQUEST_PREJOB
 _REQUEST.fields_by_name['test'].message_type = _REQUEST_TEST
+_REQUEST.fields_by_name['deadline'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 DESCRIPTOR.message_types_by_name['Request'] = _REQUEST
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
