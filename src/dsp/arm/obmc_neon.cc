@@ -35,12 +35,6 @@ namespace {
 
 #include "src/dsp/obmc.inc"
 
-template <int lane>
-inline void StoreLane2(uint8_t* dst, uint8x8_t src) {
-  const uint16_t out_val = vget_lane_u16(vreinterpret_u16_u8(src), lane);
-  memcpy(dst, &out_val, 2);
-}
-
 inline void WriteObmcLine4(uint8_t* const pred, const uint8_t* const obmc_pred,
                            const uint8x8_t pred_mask,
                            const uint8x8_t obmc_pred_mask) {
@@ -86,7 +80,7 @@ inline void OverlapBlend2xH_NEON(uint8_t* const prediction,
     obmc_pred_val = Load2<0>(obmc_pred, obmc_pred_val);
     const uint8x8_t result =
         vrshrn_n_u16(vmlal_u8(weighted_pred, obmc_pred_mask, obmc_pred_val), 6);
-    StoreLane2<0>(pred, result);
+    Store2<0>(pred, result);
 
     pred += prediction_stride;
     obmc_pred += obmc_prediction_stride;
