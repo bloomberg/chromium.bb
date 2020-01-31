@@ -372,11 +372,11 @@ static AOM_INLINE int get_smart_mv_prec(AV1_COMP *cpi, const MV_STATS *mv_stats,
   const int order_hint = cpi->common.current_frame.order_hint;
   const int order_diff = order_hint - mv_stats->order;
   aom_clear_system_state();
-  const float area = cm->width * cm->height;
+  const float area = (float)(cm->width * cm->height);
   float features[MV_PREC_FEATURE_SIZE] = {
-    current_q,
-    mv_stats->q,
-    order_diff,
+    (float)current_q,
+    (float)mv_stats->q,
+    (float)order_diff,
     mv_stats->inter_count / area,
     mv_stats->intra_count / area,
     mv_stats->default_mvs / area,
