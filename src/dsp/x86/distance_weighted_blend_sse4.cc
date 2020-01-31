@@ -113,14 +113,14 @@ inline void DistanceWeightedBlend8xH_SSE4_1(
   const __m128i weights = _mm_set1_epi32(weight_0 | (weight_1 << 16));
 
   for (int y = 0; y < height; y += 2) {
-    const __m128i src_00 = LoadUnaligned16(pred_0);
-    const __m128i src_10 = LoadUnaligned16(pred_1);
+    const __m128i src_00 = LoadAligned16(pred_0);
+    const __m128i src_10 = LoadAligned16(pred_1);
     pred_0 += prediction_stride_0;
     pred_1 += prediction_stride_1;
     const __m128i res0 = ComputeWeightedAverage8(src_00, src_10, weights);
 
-    const __m128i src_01 = LoadUnaligned16(pred_0);
-    const __m128i src_11 = LoadUnaligned16(pred_1);
+    const __m128i src_01 = LoadAligned16(pred_0);
+    const __m128i src_11 = LoadAligned16(pred_1);
     pred_0 += prediction_stride_0;
     pred_1 += prediction_stride_1;
     const __m128i res1 = ComputeWeightedAverage8(src_01, src_11, weights);
@@ -147,13 +147,13 @@ inline void DistanceWeightedBlendLarge_SSE4_1(
   do {
     int x = 0;
     do {
-      const __m128i src_0_lo = LoadUnaligned16(pred_0 + x);
-      const __m128i src_1_lo = LoadUnaligned16(pred_1 + x);
+      const __m128i src_0_lo = LoadAligned16(pred_0 + x);
+      const __m128i src_1_lo = LoadAligned16(pred_1 + x);
       const __m128i res_lo =
           ComputeWeightedAverage8(src_0_lo, src_1_lo, weights);
 
-      const __m128i src_0_hi = LoadUnaligned16(pred_0 + x + 8);
-      const __m128i src_1_hi = LoadUnaligned16(pred_1 + x + 8);
+      const __m128i src_0_hi = LoadAligned16(pred_0 + x + 8);
+      const __m128i src_1_hi = LoadAligned16(pred_1 + x + 8);
       const __m128i res_hi =
           ComputeWeightedAverage8(src_0_hi, src_1_hi, weights);
 
