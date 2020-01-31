@@ -127,6 +127,7 @@ def generate_commit_message(
     log_section = log_url + '\n\n'
   log_section += '$ %s ' % ' '.join(cmd)
   log_section += '--format=\'%ad %ae %s\'\n'
+  log_section = log_section.replace(commit_range, commit_range_for_header)
   # It is important that --no-log continues to work, as it is used by
   # internal -> external rollers. Please do not remove or break it.
   if not no_log and should_show_log(upstream_url):
