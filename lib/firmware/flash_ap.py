@@ -16,7 +16,6 @@ be extended to support more in the future.
 
 from __future__ import print_function
 
-import collections
 import importlib
 import os
 import shutil
@@ -27,35 +26,59 @@ import time
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-
-# Data class for servo serialname and version info. Both fields are strings.
-ServoInfo = collections.namedtuple('ServoInfo', ('serial', 'version'))
+from chromite.lib.firmware import servo_lib
 
 
 class Error(Exception):
   """Base module error class."""
 
 
+class DutConnectionError(Error):
+  """Error when fetching data from a dut."""
+
+
 class MissingBuildTargetCommandsError(Error):
   """Error thrown when board-specific functionality can't be imported."""
 
 
-class ServoInfoError(Error):
-  """Error when fetching servo info."""
+class DutControl(object):
+  """Wrapper for dut_control calls."""
 
+  def __init__(self, port):
+    self._base_cmd = ['dut_control']
+    if port:
+      self._base_cmd.append('--port=%s' % port)
 
-def _dut_control_value(dut_ctrl_out):
-  """Helper function to return meaningful part of dut-control command output
+  def get_value(self, arg):
+    """Get the value of |arg| from dut_control."""
+    try:
+      result = cros_build_lib.run(self._base_cmd + [arg], stdout=True)
+    except cros_build_lib.CalledProcessError:
+      raise DutConnectionError(
+          'Could not establish servo connection. Verify servod is running in '
+          'the background, and the servo is properly connected.')
 
-  Args:
-    dut_ctrl_out (string): output from dut-control command
+    # Return value from the "key:value" output.
+    return result.output.partition(':')[2].strip()
 
-  Returns:
-    string: substring of output from ':' to the end with any whitespace
-      removed
-  """
+  def run(self, cmd_fragment, verbose=False):
+    """Run a dut_control command.
 
-  return dut_ctrl_out[dut_ctrl_out.find(':') + 1:].strip()
+    Args:
+      cmd_fragment (list[str]): The dut_control command to run.
+      verbose (bool): Whether to print the command before it's run.
+    """
+    cros_build_lib.run(self._base_cmd + cmd_fragment, print_cmd=verbose)
+
+  def run_all(self, cmd_fragments, verbose=False):
+    """Run multiple dut_control commands in the order given.
+
+    Args:
+      cmd_fragments (list[list[str]]): The dut_control commands to run.
+      verbose (bool): Whether to print the commands as they are run.
+    """
+    for cmd in cmd_fragments:
+      self.run(cmd, verbose=verbose)
 
 
 def _build_ssh_cmds(futility, ip, path, tmp_file_name, fast, verbose):
@@ -136,24 +159,25 @@ def _ssh_flash(futility, path, verbose, ip, fast):
                                        verbose)
   try:
     cros_build_lib.run(scp_cmd, print_cmd=verbose, check=True)
-  except cros_build_lib.RunCommandError:
+  except cros_build_lib.CalledProcessError:
     logging.error('Could not copy image to dut.')
     return False
 
   logging.info('Flashing now, may take several minutes.')
   try:
     cros_build_lib.run(flash_cmd, print_cmd=verbose, check=True)
-  except cros_build_lib.RunCommandError:
+  except cros_build_lib.CalledProcessError:
     logging.error('Flashing failed.')
     return False
 
   return True
 
 
-def _flash(dut_cmd_on, dut_cmd_off, flash_cmd, verbose):
+def _flash(dut_ctl, dut_cmd_on, dut_cmd_off, flash_cmd, verbose):
   """Runs subprocesses for setting dut controls and flashing the AP fw.
 
   Args:
+    dut_ctl (DutControl): The dut_control command runner instance.
     dut_cmd_on ([[str]]): 2d array of dut-control commands
       in the form [['dut-control', 'cmd1', 'cmd2'...],
       ['dut-control', 'cmd3'...]]
@@ -171,66 +195,25 @@ def _flash(dut_cmd_on, dut_cmd_off, flash_cmd, verbose):
   success = True
   try:
     # Dut on command runs.
-    for cmd in dut_cmd_on:
-      cros_build_lib.run(cmd, print_cmd=verbose, check=True)
+    dut_ctl.run_all(dut_cmd_on, verbose=verbose)
+
     # Need to wait for SPI chip power to stabilize (for some designs)
     time.sleep(1)
+
     # Run the flash command.
-    cros_build_lib.run(flash_cmd, print_cmd=verbose, check=True)
-  except cros_build_lib.RunCommandError as e:
-    logging.error('Flashing failed with output:\n%s', e.output)
+    cros_build_lib.run(flash_cmd, print_cmd=verbose)
+  except cros_build_lib.CalledProcessError:
+    logging.error('Flashing failed, see output above for more info.')
     success = False
   finally:
     # Run the dut off commands to clean up state if possible.
     try:
-      for cmd in dut_cmd_off:
-        cros_build_lib.run(cmd, print_cmd=verbose, check=True)
-    except cros_build_lib.CalledProcessError as e:
-      logging.error('Dut cmd off failed with output:\n%s', e.output)
+      dut_ctl.run_all(dut_cmd_off, verbose=verbose)
+    except cros_build_lib.CalledProcessError:
+      logging.error('Dut cmd off failed, see output above for more info.')
       success = False
 
   return success
-
-
-def _get_servo_info(dut_control):
-  """Get version and serialname of connected servo.
-
-  This function returns the current version of the
-  servo device connected to the host and the serialname
-  of that device, throws error if no device or the
-  device is not supported.
-
-  Args:
-    dut_control ([str]): either just ['dut-control']
-      or ['dut-control', '--port=$PORT'] if the
-      port being used is not 9999.
-
-  Returns:
-    SerialInfo: The servo serialname and version.
-  """
-  try:
-    result = cros_build_lib.run(
-        dut_control + ['servo_type'], capture_output=True, encoding='utf-8')
-  except cros_build_lib.RunCommandError:
-    raise ServoInfoError(
-        'Could not establish servo connection. Verify servod is running in '
-        'the background, and the servo is properly connected.')
-
-  servo_version = _dut_control_value(result.output)
-  # Get the serial number.
-  sn_ctl = 'serialname'
-  if servo_version == 'servo_v4_with_servo_micro':
-    sn_ctl = 'servo_micro_serialname'
-  elif servo_version == 'servo_v4_with_ccd_cr50':
-    sn_ctl = 'ccd_serialname'
-  elif servo_version not in ('servo_v2', 'ccd_cr50', 'servo_micro', 'c2d2'):
-    raise ServoInfoError('Servo version: %s not recognized verify connection '
-                         'and port number' % servo_version)
-
-  serial_result = cros_build_lib.run(
-      dut_control + [sn_ctl], capture_output=True, encoding='utf-8')
-  serial = _dut_control_value(serial_result.output)
-  return ServoInfo(serial=serial, version=servo_version)
 
 
 # TODO: Split out to actual arguments rather than an argparse namespace.
@@ -258,15 +241,13 @@ def deploy(opts):
       logging.info('ssh flash successful. Exiting flash_ap')
       return 0
     logging.info('ssh failed, attempting to flash via servo connection.')
-  # Dut_ctrl string specifies the port if it is not 9999
-  dut_ctrl = ['dut-control']
-  if opts.port != 9999:
-    dut_ctrl.append('--port=%d' % opts.port)
-  servo_info = _get_servo_info(dut_ctrl)
+
+  dut_ctl = DutControl(opts.port)
+  servo = servo_lib.get(dut_ctl)
 
   # TODO(b/143240576): Fast mode is sometimes necessary to flash successfully.
   if module.is_fast_required(not opts.flashrom,
-                             servo_info.version) and not opts.fast:
+                             servo.version) and not opts.fast:
     logging.warning('WARNING: there is a known error with the board and servo '
                     'type being used, enabling --fast to bypass this problem.')
     fast = True
@@ -274,10 +255,10 @@ def deploy(opts):
     # Futility needs VBoot to flash so boards without functioning VBoot
     # can set this attribute to force the use of flashrom.
     flashrom = True
+
   dut_on, dut_off, flashrom_cmd, futility_cmd = module.get_commands(
-      servo_info.version, servo_info.serial)
-  dut_ctrl_on = [dut_ctrl + x for x in dut_on]
-  dut_ctrl_off = [dut_ctrl + x for x in dut_off]
+      servo.version, servo.serial)
+
   flashrom_cmd += [opts.image]
   futility_cmd += [opts.image]
   futility_cmd += ['--force', '--wp=0']
@@ -287,18 +268,13 @@ def deploy(opts):
   if opts.verbose:
     flashrom_cmd += ['-V']
     futility_cmd += ['-v']
-  if not flashrom:
-    if _flash(dut_ctrl_on, dut_ctrl_off, futility_cmd, opts.verbose):
-      logging.info('SUCCESS. Exiting flash_ap.')
-    else:
-      logging.error('Unable to complete flash, verify servo connection is '
-                    'correct and servod is running in the background.')
+
+  flash_cmd = flashrom_cmd if flashrom else futility_cmd
+  if _flash(dut_ctl, dut_on, dut_off, flash_cmd, opts.verbose):
+    logging.info('SUCCESS. Exiting flash_ap.')
   else:
-    if _flash(dut_ctrl_on, dut_ctrl_off, flashrom_cmd, opts.verbose):
-      logging.info('SUCCESS. Exiting flash_ap.')
-    else:
-      logging.error('Unable to complete flash, verify servo connection '
-                    'is correct and servod is running in the background.')
+    logging.error('Unable to complete flash, verify servo connection '
+                  'is correct and servod is running in the background.')
 
 
 def get_parser():
@@ -324,9 +300,10 @@ def get_parser():
   parser.add_argument(
       '--port',
       type=int,
-      default=os.getenv('SERVO_PORT', 9999),
+      default=os.getenv('SERVO_PORT'),
       help='Port number being listened to by servo device. '
-      'Defaults to $SERVO_PORT or 9999 when not provided.')
+           'Defaults to $SERVO_PORT if set when not provided, otherwise allows '
+           'dut_control to use its default (9999).')
   parser.add_argument(
       '--flashrom',
       action='store_true',
