@@ -21,7 +21,7 @@ describe('Tests mr.ExternalMessageListener', () => {
   });
 
   it('rejects sender not in whitelist', () => {
-    const sender = {'id': 'invalid'};
+    const sender = {'origin': 'invalid'};
     const callback = response => {
       fail('should not have called back');
     };
@@ -30,7 +30,9 @@ describe('Tests mr.ExternalMessageListener', () => {
   });
 
   it('invalid type returns empty and closes channel', () => {
-    const sender = {'id': 'njjegkblellcjnakomndbaloifhcoccg'};
+    const sender = {
+      'origin': 'chrome-extension://njjegkblellcjnakomndbaloifhcoccg'
+    };
     const callback = response => {
       fail('should not have called back');
     };
@@ -39,7 +41,9 @@ describe('Tests mr.ExternalMessageListener', () => {
   });
 
   it('valid start message', () => {
-    const sender = {'id': 'njjegkblellcjnakomndbaloifhcoccg'};
+    const sender = {
+      'origin': 'chrome-extension://njjegkblellcjnakomndbaloifhcoccg'
+    };
     const callback = response => {
       fail('should not have called back');
     };
@@ -48,7 +52,9 @@ describe('Tests mr.ExternalMessageListener', () => {
   });
 
   it('valid stop message', () => {
-    const sender = {'id': 'njjegkblellcjnakomndbaloifhcoccg'};
+    const sender = {
+      'origin': 'chrome-extension://njjegkblellcjnakomndbaloifhcoccg'
+    };
     const callback = response => {
       fail('should not have called back');
     };
@@ -57,7 +63,9 @@ describe('Tests mr.ExternalMessageListener', () => {
   });
 
   it('valid log subscription message', () => {
-    const sender = {'id': 'njjegkblellcjnakomndbaloifhcoccg'};
+    const sender = {
+      'origin': 'chrome-extension://njjegkblellcjnakomndbaloifhcoccg'
+    };
     const callback = response => {
       fail('should not have called back');
     };
