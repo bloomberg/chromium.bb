@@ -557,6 +557,7 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;
 
+    sf->lpf_sf.lpf_pick = LPF_PICK_FROM_FULL_IMAGE_NON_DUAL;
     sf->lpf_sf.disable_lr_filter = 1;
 
     sf->mv_sf.reduce_search_range = 1;

@@ -161,6 +161,8 @@ enum {
 enum {
   // Try the full image with different values.
   LPF_PICK_FROM_FULL_IMAGE,
+  // Try the full image filter search with non-dual filter only.
+  LPF_PICK_FROM_FULL_IMAGE_NON_DUAL,
   // Try a small portion of the image with different values.
   LPF_PICK_FROM_SUBIMAGE,
   // Estimate the level based on quantizer and frame type

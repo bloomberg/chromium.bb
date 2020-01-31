@@ -264,12 +264,14 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
     lf->filter_level[0] = lf->filter_level[1] =
         search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
                             last_frame_filter_level, NULL, 0, 2);
-    lf->filter_level[0] =
-        search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
-                            last_frame_filter_level, NULL, 0, 0);
-    lf->filter_level[1] =
-        search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
-                            last_frame_filter_level, NULL, 0, 1);
+    if (method != LPF_PICK_FROM_FULL_IMAGE_NON_DUAL) {
+      lf->filter_level[0] =
+          search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
+                              last_frame_filter_level, NULL, 0, 0);
+      lf->filter_level[1] =
+          search_filter_level(sd, cpi, method == LPF_PICK_FROM_SUBIMAGE,
+                              last_frame_filter_level, NULL, 0, 1);
+    }
 
     if (num_planes > 1) {
       lf->filter_level_u =
