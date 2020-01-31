@@ -46,6 +46,84 @@ inline int16_t Cos128(int angle) {
 
 inline int16_t Sin128(int angle) { return Cos128(angle - 64); }
 
+template <int tx_width>
+LIBGAV1_ALWAYS_INLINE int GetNumRows(TransformType tx_type, int tx_height,
+                                     int non_zero_coeff_count) {
+  const TransformClass tx_class = GetTransformClass(tx_type);
+  // The transform loops process either 4 or a multiple of 8 rows.  Use tx_class
+  // to determine the scan order.  Then return the number of rows based on the
+  // non_zero_coeff_count.
+  if (tx_height > 4) {
+    if (tx_class == kTransformClass2D) {
+      if (tx_width == 4) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 29) return 8;
+        return tx_height;
+      }
+      if (tx_width == 8) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 43) return 8;
+        if ((non_zero_coeff_count <= 107) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 171) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+      if (tx_width == 16) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 36) return 8;
+        if ((non_zero_coeff_count <= 151) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 279) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+      if (tx_width == 32) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 36) return 8;
+        if ((non_zero_coeff_count <= 136) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 300) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+    }
+
+    if (tx_class == kTransformClassHorizontal) {
+      if (non_zero_coeff_count <= 4) return 4;
+      if (non_zero_coeff_count <= 8) return 8;
+      if ((non_zero_coeff_count <= 16) & (tx_height > 16)) return 16;
+      if ((non_zero_coeff_count <= 24) & (tx_height > 16)) return 24;
+      return tx_height;
+    }
+
+    if (tx_class == kTransformClassVertical) {
+      if (tx_width == 4) {
+        if (non_zero_coeff_count <= 16) return 4;
+        if (non_zero_coeff_count <= 32) return 8;
+        return tx_height;
+      }
+      if (tx_width == 8) {
+        if (non_zero_coeff_count <= 32) return 4;
+        if (non_zero_coeff_count <= 64) return 8;
+        if ((non_zero_coeff_count <= 128) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 192) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+
+      if (tx_width == 16) {
+        if (non_zero_coeff_count <= 64) return 4;
+        if (non_zero_coeff_count <= 128) return 8;
+        if ((non_zero_coeff_count <= 256) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 384) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+      if (tx_width == 32) {
+        if (non_zero_coeff_count <= 128) return 4;
+        if (non_zero_coeff_count <= 256) return 8;
+        if ((non_zero_coeff_count <= 512) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 768) & (tx_height > 16)) return 24;
+        return tx_height;
+      }
+    }
+  }
+  return tx_height;
+}
+
 // The value for index i is derived as:
 // round(sqrt(2) * sin(i * pi / 9) * 2 / 3 * (1 << 12)).
 constexpr int16_t kAdst4Multiplier[4] = {1321, 2482, 3344, 3803};

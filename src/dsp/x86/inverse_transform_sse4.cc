@@ -1766,7 +1766,8 @@ void Dct4TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
+    const int num_rows =
+        GetNumRows<4>(tx_type, tx_height, non_zero_coeff_count);
     const bool should_round = (tx_height == 8);
     if (should_round) {
       ApplyRounding<4>(src, num_rows);
@@ -1822,7 +1823,8 @@ void Dct8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
+    const int num_rows =
+        GetNumRows<8>(tx_type, tx_height, non_zero_coeff_count);
     if (kShouldRound[tx_size]) {
       ApplyRounding<8>(src, num_rows);
     }
@@ -1879,7 +1881,7 @@ void Dct16TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
 
   if (is_row) {
     const int num_rows =
-        (non_zero_coeff_count == 1) ? 1 : std::min(tx_height, 32);
+        GetNumRows<16>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (kShouldRound[tx_size]) {
       ApplyRounding<16>(src, num_rows);
     }
@@ -1936,7 +1938,7 @@ void Dct32TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
 
   if (is_row) {
     const int num_rows =
-        (non_zero_coeff_count == 1) ? 1 : std::min(tx_height, 32);
+        GetNumRows<32>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (kShouldRound[tx_size]) {
       ApplyRounding<32>(src, num_rows);
     }
@@ -1974,7 +1976,7 @@ void Dct64TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
 
   if (is_row) {
     const int num_rows =
-        (non_zero_coeff_count == 1) ? 1 : std::min(tx_height, 32);
+        GetNumRows<32>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (kShouldRound[tx_size]) {
       ApplyRounding<64>(src, num_rows);
     }
@@ -2011,7 +2013,8 @@ void Adst4TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
+    const int num_rows =
+        GetNumRows<4>(tx_type, tx_height, non_zero_coeff_count);
     const bool should_round = (tx_height == 8);
     if (should_round) {
       ApplyRounding<4>(src, num_rows);
@@ -2057,7 +2060,8 @@ void Adst8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
+    const int num_rows =
+        GetNumRows<8>(tx_type, tx_height, non_zero_coeff_count);
     if (kShouldRound[tx_size]) {
       ApplyRounding<8>(src, num_rows);
     }
@@ -2116,7 +2120,7 @@ void Adst16TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
 
   if (is_row) {
     const int num_rows =
-        (non_zero_coeff_count == 1) ? 1 : std::min(tx_height, 32);
+        GetNumRows<16>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (kShouldRound[tx_size]) {
       ApplyRounding<16>(src, num_rows);
     }
@@ -2180,7 +2184,8 @@ void Identity4TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
       return;
     }
 
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
+    const int num_rows =
+        GetNumRows<4>(tx_type, tx_height, non_zero_coeff_count);
     const bool should_round = (tx_height == 8);
     if (should_round) {
       ApplyRounding<4>(src, num_rows);
@@ -2232,7 +2237,8 @@ void Identity8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
         tx_size == kTransformSize8x4) {
       return;
     }
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
+    const int num_rows =
+        GetNumRows<8>(tx_type, tx_height, non_zero_coeff_count);
     if (kShouldRound[tx_size]) {
       ApplyRounding<8>(src, num_rows);
     }
@@ -2282,7 +2288,7 @@ void Identity16TransformLoop_SSE4_1(TransformType tx_type,
 
   if (is_row) {
     const int num_rows =
-        (non_zero_coeff_count == 1) ? 1 : std::min(tx_height, 32);
+        GetNumRows<16>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
     if (kShouldRound[tx_size]) {
       ApplyRounding<16>(src, num_rows);
     }
@@ -2303,7 +2309,7 @@ void Identity16TransformLoop_SSE4_1(TransformType tx_type,
                                       /*tx_height=*/16, src);
 }
 
-void Identity32TransformLoop_SSE4_1(TransformType /*tx_type*/,
+void Identity32TransformLoop_SSE4_1(TransformType tx_type,
                                     TransformSize tx_size, void* src_buffer,
                                     int start_x, int start_y, void* dst_frame,
                                     bool is_row, int non_zero_coeff_count) {
@@ -2313,14 +2319,15 @@ void Identity32TransformLoop_SSE4_1(TransformType /*tx_type*/,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
-    const int num_rows = (non_zero_coeff_count == 1) ? 1 : tx_height;
-
     // When combining the identity32 multiplier with the row shift, the
     // calculations for tx_height == 8 and tx_height == 32 can be simplified
     // from ((A * 4) + 2) >> 2) to A.
     if ((tx_height & 0x28) != 0) {
       return;
     }
+
+    const int num_rows =
+        GetNumRows<32>(tx_type, tx_height, non_zero_coeff_count);
 
     // Process kTransformSize32x16
     assert(tx_size == kTransformSize32x16);
