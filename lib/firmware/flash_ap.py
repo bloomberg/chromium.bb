@@ -209,13 +209,14 @@ def _get_servo_info(dut_control):
     SerialInfo: The servo serialname and version.
   """
   try:
-    out = cros_build_lib.run(dut_control + ['servo_type'], encoding='utf-8')
+    result = cros_build_lib.run(
+        dut_control + ['servo_type'], capture_output=True, encoding='utf-8')
   except cros_build_lib.RunCommandError:
     raise ServoInfoError(
         'Could not establish servo connection. Verify servod is running in '
         'the background, and the servo is properly connected.')
 
-  servo_version = _dut_control_value(out)
+  servo_version = _dut_control_value(result.output)
   # Get the serial number.
   sn_ctl = 'serialname'
   if servo_version == 'servo_v4_with_servo_micro':
@@ -226,8 +227,9 @@ def _get_servo_info(dut_control):
     raise ServoInfoError('Servo version: %s not recognized verify connection '
                          'and port number' % servo_version)
 
-  serial_out = cros_build_lib.run(dut_control + [sn_ctl], encoding='utf-8')
-  serial = _dut_control_value(serial_out)
+  serial_result = cros_build_lib.run(
+      dut_control + [sn_ctl], capture_output=True, encoding='utf-8')
+  serial = _dut_control_value(serial_result.output)
   return ServoInfo(serial=serial, version=servo_version)
 
 
