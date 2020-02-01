@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef LIBGAV1_EXAMPLES_APPLE_CV_PIXEL_BUFFER_POOL_H_
-#define LIBGAV1_EXAMPLES_APPLE_CV_PIXEL_BUFFER_POOL_H_
+#ifndef LIBGAV1_EXAMPLES_GAV1_DECODE_CV_PIXEL_BUFFER_POOL_H_
+#define LIBGAV1_EXAMPLES_GAV1_DECODE_CV_PIXEL_BUFFER_POOL_H_
 
 #include <CoreVideo/CoreVideo.h>
 
@@ -24,30 +24,31 @@
 
 #include "gav1/frame_buffer2.h"
 
-extern "C" int OnAppleCVPixelBufferSizeChanged(
+extern "C" int Gav1DecodeOnCVPixelBufferSizeChanged(
     void* callback_private_data, int bitdepth,
     libgav1::ImageFormat image_format, int width, int height, int left_border,
     int right_border, int top_border, int bottom_border, int stride_alignment);
 
-extern "C" int GetAppleCVPixelBuffer(void* callback_private_data, int bitdepth,
-                                     libgav1::ImageFormat image_format,
-                                     int width, int height, int left_border,
-                                     int right_border, int top_border,
-                                     int bottom_border, int stride_alignment,
-                                     libgav1::FrameBuffer2* frame_buffer);
+extern "C" int Gav1DecodeGetCVPixelBuffer(
+    void* callback_private_data, int bitdepth,
+    libgav1::ImageFormat image_format, int width, int height, int left_border,
+    int right_border, int top_border, int bottom_border, int stride_alignment,
+    libgav1::FrameBuffer2* frame_buffer);
 
-extern "C" void ReleaseAppleCVPixelBuffer(void* callback_private_data,
-                                          void* buffer_private_data);
+extern "C" void Gav1DecodeReleaseCVPixelBuffer(void* callback_private_data,
+                                               void* buffer_private_data);
 
-class AppleCVPixelBufferPool {
+class Gav1DecodeCVPixelBufferPool {
  public:
-  static std::unique_ptr<AppleCVPixelBufferPool> Create(size_t num_buffers);
+  static std::unique_ptr<Gav1DecodeCVPixelBufferPool> Create(
+      size_t num_buffers);
 
   // Not copyable or movable.
-  AppleCVPixelBufferPool(const AppleCVPixelBufferPool&) = delete;
-  AppleCVPixelBufferPool& operator=(const AppleCVPixelBufferPool&) = delete;
+  Gav1DecodeCVPixelBufferPool(const Gav1DecodeCVPixelBufferPool&) = delete;
+  Gav1DecodeCVPixelBufferPool& operator=(const Gav1DecodeCVPixelBufferPool&) =
+      delete;
 
-  ~AppleCVPixelBufferPool();
+  ~Gav1DecodeCVPixelBufferPool();
 
   int OnCVPixelBufferSizeChanged(int bitdepth,
                                  libgav1::ImageFormat image_format, int width,
@@ -62,10 +63,10 @@ class AppleCVPixelBufferPool {
   void ReleaseCVPixelBuffer(void* buffer_private_data);
 
  private:
-  AppleCVPixelBufferPool(size_t num_buffers);
+  Gav1DecodeCVPixelBufferPool(size_t num_buffers);
 
   CVPixelBufferPoolRef pool_ = nullptr;
   const int num_buffers_;
 };
 
-#endif  // LIBGAV1_EXAMPLES_APPLE_CV_PIXEL_BUFFER_POOL_H_
+#endif  // LIBGAV1_EXAMPLES_GAV1_DECODE_CV_PIXEL_BUFFER_POOL_H_

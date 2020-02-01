@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "examples/apple_cv_pixel_buffer_pool.h"
+#include "examples/gav1_decode_cv_pixel_buffer_pool.h"
 
 #include <cassert>
 #include <cstdint>
@@ -38,56 +38,55 @@ using UniqueCFDictionaryRef =
 
 extern "C" {
 
-int OnAppleCVPixelBufferSizeChanged(void* callback_private_data, int bitdepth,
-                                    libgav1::ImageFormat image_format,
-                                    int width, int height, int left_border,
-                                    int right_border, int top_border,
-                                    int bottom_border, int stride_alignment) {
+int Gav1DecodeOnCVPixelBufferSizeChanged(
+    void* callback_private_data, int bitdepth,
+    libgav1::ImageFormat image_format, int width, int height, int left_border,
+    int right_border, int top_border, int bottom_border, int stride_alignment) {
   auto* buffer_pool =
-      static_cast<AppleCVPixelBufferPool*>(callback_private_data);
+      static_cast<Gav1DecodeCVPixelBufferPool*>(callback_private_data);
   return buffer_pool->OnCVPixelBufferSizeChanged(
       bitdepth, image_format, width, height, left_border, right_border,
       top_border, bottom_border, stride_alignment);
 }
 
-int GetAppleCVPixelBuffer(void* callback_private_data, int bitdepth,
-                          libgav1::ImageFormat image_format, int width,
-                          int height, int left_border, int right_border,
-                          int top_border, int bottom_border,
-                          int stride_alignment,
-                          libgav1::FrameBuffer2* frame_buffer) {
+int Gav1DecodeGetCVPixelBuffer(void* callback_private_data, int bitdepth,
+                               libgav1::ImageFormat image_format, int width,
+                               int height, int left_border, int right_border,
+                               int top_border, int bottom_border,
+                               int stride_alignment,
+                               libgav1::FrameBuffer2* frame_buffer) {
   auto* buffer_pool =
-      static_cast<AppleCVPixelBufferPool*>(callback_private_data);
+      static_cast<Gav1DecodeCVPixelBufferPool*>(callback_private_data);
   return buffer_pool->GetCVPixelBuffer(
       bitdepth, image_format, width, height, left_border, right_border,
       top_border, bottom_border, stride_alignment, frame_buffer);
 }
 
-void ReleaseAppleCVPixelBuffer(void* callback_private_data,
-                               void* buffer_private_data) {
+void Gav1DecodeReleaseCVPixelBuffer(void* callback_private_data,
+                                    void* buffer_private_data) {
   auto* buffer_pool =
-      static_cast<AppleCVPixelBufferPool*>(callback_private_data);
+      static_cast<Gav1DecodeCVPixelBufferPool*>(callback_private_data);
   buffer_pool->ReleaseCVPixelBuffer(buffer_private_data);
 }
 
 }  // extern "C"
 
 // static
-std::unique_ptr<AppleCVPixelBufferPool> AppleCVPixelBufferPool::Create(
-    size_t num_buffers) {
-  std::unique_ptr<AppleCVPixelBufferPool> buffer_pool(
-      new (std::nothrow) AppleCVPixelBufferPool(num_buffers));
+std::unique_ptr<Gav1DecodeCVPixelBufferPool>
+Gav1DecodeCVPixelBufferPool::Create(size_t num_buffers) {
+  std::unique_ptr<Gav1DecodeCVPixelBufferPool> buffer_pool(
+      new (std::nothrow) Gav1DecodeCVPixelBufferPool(num_buffers));
   return buffer_pool;
 }
 
-AppleCVPixelBufferPool::AppleCVPixelBufferPool(size_t num_buffers)
+Gav1DecodeCVPixelBufferPool::Gav1DecodeCVPixelBufferPool(size_t num_buffers)
     : num_buffers_(static_cast<int>(num_buffers)) {}
 
-AppleCVPixelBufferPool::~AppleCVPixelBufferPool() {
+Gav1DecodeCVPixelBufferPool::~Gav1DecodeCVPixelBufferPool() {
   CVPixelBufferPoolRelease(pool_);
 }
 
-int AppleCVPixelBufferPool::OnCVPixelBufferSizeChanged(
+int Gav1DecodeCVPixelBufferPool::OnCVPixelBufferSizeChanged(
     int bitdepth, libgav1::ImageFormat image_format, int width, int height,
     int left_border, int right_border, int top_border, int bottom_border,
     int stride_alignment) {
@@ -187,7 +186,7 @@ int AppleCVPixelBufferPool::OnCVPixelBufferSizeChanged(
   return 0;
 }
 
-int AppleCVPixelBufferPool::GetCVPixelBuffer(
+int Gav1DecodeCVPixelBufferPool::GetCVPixelBuffer(
     int bitdepth, libgav1::ImageFormat image_format, int /*width*/,
     int /*height*/, int /*left_border*/, int /*right_border*/,
     int /*top_border*/, int /*bottom_border*/, int /*stride_alignment*/,
@@ -266,7 +265,8 @@ int AppleCVPixelBufferPool::GetCVPixelBuffer(
   return 0;
 }
 
-void AppleCVPixelBufferPool::ReleaseCVPixelBuffer(void* buffer_private_data) {
+void Gav1DecodeCVPixelBufferPool::ReleaseCVPixelBuffer(
+    void* buffer_private_data) {
   auto const pixel_buffer = static_cast<CVPixelBufferRef>(buffer_private_data);
   CVReturn ret =
       CVPixelBufferUnlockBaseAddress(pixel_buffer, /*unlockFlags=*/0);
