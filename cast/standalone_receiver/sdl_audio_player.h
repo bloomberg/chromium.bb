@@ -5,6 +5,7 @@
 #ifndef CAST_STANDALONE_RECEIVER_SDL_AUDIO_PLAYER_H_
 #define CAST_STANDALONE_RECEIVER_SDL_AUDIO_PLAYER_H_
 
+#include <string>
 #include <vector>
 
 #include "cast/standalone_receiver/sdl_player_base.h"
@@ -21,6 +22,7 @@ class SDLAudioPlayer final : public SDLPlayerBase {
   SDLAudioPlayer(ClockNowFunctionPtr now_function,
                  TaskRunner* task_runner,
                  Receiver* receiver,
+                 const std::string& codec_name,
                  std::function<void()> error_callback);
 
   ~SDLAudioPlayer() final;

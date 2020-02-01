@@ -36,16 +36,13 @@ absl::Span<uint8_t> Decoder::Buffer::GetSpan() {
 Decoder::Client::Client() = default;
 Decoder::Client::~Client() = default;
 
-Decoder::Decoder() = default;
+Decoder::Decoder(const std::string& codec_name) : codec_name_(codec_name) {}
+
 Decoder::~Decoder() = default;
 
 void Decoder::Decode(FrameId frame_id, const Decoder::Buffer& buffer) {
-  if (!codec_) {
-    InitFromFirstBuffer(buffer);
-    if (!codec_) {
-      OnError("unable to detect codec", AVERROR(EINVAL), frame_id);
-      return;
-    }
+  if (!codec_ && !Initialize()) {
+    return;
   }
 
   // Parse the buffer for the required metadata and the packet to send to the
@@ -95,24 +92,51 @@ void Decoder::Decode(FrameId frame_id, const Decoder::Buffer& buffer) {
   }
 }
 
-void Decoder::InitFromFirstBuffer(const Buffer& buffer) {
-  const AVCodecID codec_id = Detect(buffer);
-  if (codec_id == AV_CODEC_ID_NONE) {
-    return;
+bool Decoder::Initialize() {
+  // NOTE: The codec_name values found in OFFER messages, such as "vp8" or
+  // "h264" or "opus" are valid input strings to FFMPEG's look-up function, so
+  // no translation is required here.
+  codec_ = avcodec_find_decoder_by_name(codec_name_.c_str());
+  if (!codec_) {
+    HandleInitializationError("codec not available", AVERROR(EINVAL));
+    return false;
+  }
+  OSP_LOG_INFO << "Found codec: " << codec_name_ << " (known to FFMPEG as "
+               << avcodec_get_name(codec_->id) << ')';
+
+  parser_ = MakeUniqueAVCodecParserContext(codec_->id);
+  if (!parser_) {
+    HandleInitializationError("failed to allocate parser context",
+                              AVERROR(ENOMEM));
+    return false;
   }
 
-  codec_ = avcodec_find_decoder(codec_id);
-  OSP_CHECK(codec_);
-  parser_ = MakeUniqueAVCodecParserContext(codec_id);
-  OSP_CHECK(parser_);
   context_ = MakeUniqueAVCodecContext(codec_);
-  OSP_CHECK(context_);
+  if (!context_) {
+    HandleInitializationError("failed to allocate codec context",
+                              AVERROR(ENOMEM));
+    return false;
+  }
+
   const int open_result = avcodec_open2(context_.get(), codec_, nullptr);
-  OSP_CHECK_EQ(open_result, 0);
+  if (open_result < 0) {
+    HandleInitializationError("failed to open codec", open_result);
+    return false;
+  }
+
   packet_ = MakeUniqueAVPacket();
-  OSP_CHECK(packet_);
+  if (!packet_) {
+    HandleInitializationError("failed to allocate AVPacket", AVERROR(ENOMEM));
+    return false;
+  }
+
   decoded_frame_ = MakeUniqueAVFrame();
-  OSP_CHECK(decoded_frame_);
+  if (!decoded_frame_) {
+    HandleInitializationError("failed to allocate AVFrame", AVERROR(ENOMEM));
+    return false;
+  }
+
+  return true;
 }
 
 FrameId Decoder::DidReceiveFrameFromDecoder() {
@@ -121,6 +145,26 @@ FrameId Decoder::DidReceiveFrameFromDecoder() {
   const auto frame_id = *it;
   frames_decoding_.erase(it);
   return frame_id;
+}
+
+void Decoder::HandleInitializationError(const char* what, int av_errnum) {
+  // If the codec was found, get FFMPEG's canonical name for it.
+  const char* const canonical_name =
+      codec_ ? avcodec_get_name(codec_->id) : nullptr;
+
+  codec_ = nullptr;  // Set null to mean "not initialized."
+
+  if (!client_) {
+    return;  // Nowhere to emit error to, so don't bother.
+  }
+
+  std::ostringstream error;
+  error << "Could not initialize codec " << codec_name_;
+  if (canonical_name) {
+    error << " (known to FFMPEG as " << canonical_name << ')';
+  }
+  error << " because " << what << " (" << av_err2str(av_errnum) << ").";
+  client_->OnFatalError(error.str());
 }
 
 void Decoder::OnError(const char* what, int av_errnum, FrameId frame_id) {
@@ -147,53 +191,6 @@ void Decoder::OnError(const char* what, int av_errnum, FrameId frame_id) {
       client_->OnDecodeError(frame_id, error.str());
       break;
   }
-}
-
-// static
-AVCodecID Decoder::Detect(const Buffer& buffer) {
-  static constexpr AVCodecID kCodecsToTry[] = {
-      AV_CODEC_ID_VP8,  AV_CODEC_ID_VP9,  AV_CODEC_ID_H264,
-      AV_CODEC_ID_H265, AV_CODEC_ID_OPUS, AV_CODEC_ID_FLAC,
-  };
-
-  const absl::Span<const uint8_t> input = buffer.GetSpan();
-  for (AVCodecID codec_id : kCodecsToTry) {
-    AVCodec* const codec = avcodec_find_decoder(codec_id);
-    if (!codec) {
-      OSP_LOG_WARN << "Video codec not available to try: "
-                   << avcodec_get_name(codec_id);
-      continue;
-    }
-    const auto parser = MakeUniqueAVCodecParserContext(codec_id);
-    if (!parser) {
-      OSP_LOG_ERROR << "Failed to init parser for codec: "
-                    << avcodec_get_name(codec_id);
-      continue;
-    }
-    const auto context = MakeUniqueAVCodecContext(codec);
-    if (!context || avcodec_open2(context.get(), codec, nullptr) != 0) {
-      OSP_LOG_ERROR << "Failed to open codec: " << avcodec_get_name(codec_id);
-      continue;
-    }
-    const auto packet = MakeUniqueAVPacket();
-    OSP_CHECK(packet);
-    if (av_parser_parse2(parser.get(), context.get(), &packet->data,
-                         &packet->size, input.data(), input.size(),
-                         AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0) < 0 ||
-        !packet->data || packet->size == 0) {
-      OSP_VLOG << "Does not parse as codec: " << avcodec_get_name(codec_id);
-      continue;
-    }
-    if (avcodec_send_packet(context.get(), packet.get()) < 0) {
-      OSP_VLOG << "avcodec_send_packet() failed, probably wrong codec version: "
-               << avcodec_get_name(codec_id);
-      continue;
-    }
-    OSP_VLOG << "Detected codec: " << avcodec_get_name(codec_id);
-    return codec_id;
-  }
-
-  return AV_CODEC_ID_NONE;
 }
 
 }  // namespace cast

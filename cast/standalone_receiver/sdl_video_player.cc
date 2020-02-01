@@ -19,11 +19,13 @@ constexpr char kVideoMediaType[] = "video";
 SDLVideoPlayer::SDLVideoPlayer(ClockNowFunctionPtr now_function,
                                TaskRunner* task_runner,
                                Receiver* receiver,
+                               const std::string& codec_name,
                                SDL_Renderer* renderer,
                                std::function<void()> error_callback)
     : SDLPlayerBase(now_function,
                     task_runner,
                     receiver,
+                    codec_name,
                     std::move(error_callback),
                     kVideoMediaType),
       renderer_(renderer) {

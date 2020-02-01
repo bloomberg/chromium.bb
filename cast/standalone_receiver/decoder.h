@@ -17,7 +17,7 @@
 namespace openscreen {
 namespace cast {
 
-// Wraps libavcodec to auto-detect and decode audio or video.
+// Wraps libavcodec to decode audio or video.
 class Decoder {
  public:
   // A buffer backed by storage that is compatible with FFMPEG (i.e., includes
@@ -48,7 +48,8 @@ class Decoder {
     Client();
   };
 
-  Decoder();
+  // |codec_name| should be the codec_name field from an OFFER message.
+  explicit Decoder(const std::string& codec_name);
   ~Decoder();
 
   Client* client() const { return client_; }
@@ -62,21 +63,23 @@ class Decoder {
   void Decode(FrameId frame_id, const Buffer& buffer);
 
  private:
-  // Helper to auto-detect the codec being used and initialize the FFMPEG
-  // decoder; called for the first frame being decoded.
-  void InitFromFirstBuffer(const Buffer& buffer);
+  // Helper to initialize the FFMPEG decoder and supporting objects. Returns
+  // false if this failed (and the Client was notified).
+  bool Initialize();
 
   // Helper to get the FrameId that is associated with the next frame coming out
   // of the FFMPEG decoder.
   FrameId DidReceiveFrameFromDecoder();
 
+  // Helper to handle a codec initialization error and notify the Client of the
+  // fatal error.
+  void HandleInitializationError(const char* what, int av_errnum);
+
   // Called when any transient or fatal error occurs, generating an Error and
   // notifying the Client of it.
   void OnError(const char* what, int av_errnum, FrameId frame_id);
 
-  // Auto-detects the codec needed to decode the data in |buffer|.
-  static AVCodecID Detect(const Buffer& buffer);
-
+  const std::string codec_name_;
   AVCodec* codec_ = nullptr;
   AVCodecParserContextUniquePtr parser_;
   AVCodecContextUniquePtr context_;

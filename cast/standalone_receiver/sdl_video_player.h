@@ -5,6 +5,8 @@
 #ifndef CAST_STANDALONE_RECEIVER_SDL_VIDEO_PLAYER_H_
 #define CAST_STANDALONE_RECEIVER_SDL_VIDEO_PLAYER_H_
 
+#include <string>
+
 #include "cast/standalone_receiver/sdl_player_base.h"
 
 namespace openscreen {
@@ -19,6 +21,7 @@ class SDLVideoPlayer final : public SDLPlayerBase {
   SDLVideoPlayer(ClockNowFunctionPtr now_function,
                  TaskRunner* task_runner,
                  Receiver* receiver,
+                 const std::string& codec_name,
                  SDL_Renderer* renderer,
                  std::function<void()> error_callback);
 

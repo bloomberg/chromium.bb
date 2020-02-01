@@ -18,8 +18,9 @@ namespace cast {
 #if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 StreamingPlaybackController::StreamingPlaybackController(
     TaskRunnerImpl* task_runner)
-    : task_runner_(task_runner),
-      sdl_event_loop_(task_runner_, [&] { task_runner_->RequestStopSoon(); }) {
+    : task_runner_(task_runner), sdl_event_loop_(task_runner_, [this] {
+        task_runner_->RequestStopSoon();
+      }) {
   constexpr int kDefaultWindowWidth = 1280;
   constexpr int kDefaultWindowHeight = 720;
   window_ = MakeUniqueSDLWindow(
@@ -45,28 +46,28 @@ void StreamingPlaybackController::OnNegotiated(
 #if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
   if (receivers.audio) {
     audio_player_ = std::make_unique<SDLAudioPlayer>(
-        &Clock::now, task_runner_, receivers.audio.value().receiver, [&] {
+        &Clock::now, task_runner_, receivers.audio->receiver,
+        receivers.audio->selected_stream.stream.codec_name, [this] {
           OSP_LOG_ERROR << audio_player_->error_status().message();
           task_runner_->RequestStopSoon();
         });
   }
   if (receivers.video) {
     video_player_ = std::make_unique<SDLVideoPlayer>(
-        &Clock::now, task_runner_, receivers.video.value().receiver,
-        renderer_.get(), [&] {
+        &Clock::now, task_runner_, receivers.video->receiver,
+        receivers.video->selected_stream.stream.codec_name, renderer_.get(),
+        [this] {
           OSP_LOG_ERROR << video_player_->error_status().message();
           task_runner_->RequestStopSoon();
         });
   }
 #else
   if (receivers.audio) {
-    audio_player_ =
-        std::make_unique<DummyPlayer>(receivers.audio.value().receiver);
+    audio_player_ = std::make_unique<DummyPlayer>(receivers.audio->receiver);
   }
 
   if (receivers.video) {
-    video_player_ =
-        std::make_unique<DummyPlayer>(receivers.video.value().receiver);
+    video_player_ = std::make_unique<DummyPlayer>(receivers.video->receiver);
   }
 #endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 }

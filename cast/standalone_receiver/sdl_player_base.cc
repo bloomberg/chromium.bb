@@ -22,12 +22,14 @@ namespace cast {
 SDLPlayerBase::SDLPlayerBase(ClockNowFunctionPtr now_function,
                              TaskRunner* task_runner,
                              Receiver* receiver,
+                             const std::string& codec_name,
                              std::function<void()> error_callback,
                              const char* media_type)
     : now_(now_function),
       receiver_(receiver),
       error_callback_(std::move(error_callback)),
       media_type_(media_type),
+      decoder_(codec_name),
       decode_alarm_(now_, task_runner),
       render_alarm_(now_, task_runner),
       presentation_alarm_(now_, task_runner) {
