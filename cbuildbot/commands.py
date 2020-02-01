@@ -3357,14 +3357,15 @@ def BuildStrippedPackagesTarball(buildroot, board, package_globs, archive_dir):
                         cpv.cpf, len(files))
 
       tarball = sorted(files)[-1]
-      tarball_paths.append(os.path.abspath(tarball))
+      tarball_paths.append(os.path.relpath(tarball, board_path))
 
   if not tarball_paths:
     # tar barfs on an empty list of files, so skip tarring completely.
     return None
 
   tarball_output = os.path.join(archive_dir, 'stripped-packages.tar')
-  BuildTarball(buildroot, tarball_paths, tarball_output, compressed=False)
+  BuildTarball(buildroot, tarball_paths, tarball_output, compressed=False,
+               cwd=board_path)
   return os.path.basename(tarball_output)
 
 
