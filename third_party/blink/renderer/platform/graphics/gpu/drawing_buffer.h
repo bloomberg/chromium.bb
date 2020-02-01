@@ -385,8 +385,14 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     DISALLOW_COPY_AND_ASSIGN(ColorBuffer);
   };
 
+  enum ClearOption { ClearOnlyMultisampledFBO, ClearAllFBOs };
+
+  // Clears out newly-allocated framebuffers (really, renderbuffers / textures).
+  void ClearNewlyAllocatedFramebuffers(ClearOption clear_option);
+
   // The same as clearFramebuffers(), but leaves GL state dirty.
-  void ClearFramebuffersInternal(GLbitfield clear_mask);
+  void ClearFramebuffersInternal(GLbitfield clear_mask,
+                                 ClearOption clear_option);
 
   // The same as reset(), but leaves GL state dirty.
   bool ResizeFramebufferInternal(const IntSize&);

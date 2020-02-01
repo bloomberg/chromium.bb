@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta name="viewport" content="initial-scale=1">
-<title>WebGL Low to High Power Transition Test</title>
+<title>WebGL Low to High Power alpha:false Transition Test</title>
 <style type="text/css">
 .nomargin {
   margin: 0px auto;
@@ -13,12 +13,13 @@
 
 <script>
 function main() {
-  if (setup())
+  if (setup({ alpha: false }))
     drawSomeFrames(allocateHighPowerContext);
 }
 
 function allocateHighPowerContext() {
   c2.getContext("webgl", { powerPreference: "high-performance" });
+
   // On macOS there is an approximately two second delay between activating the
   // discrete GPU and applications receiving a notification of its activation.
   // Avoid a race condition, and test flakiness, by waiting for twice as long as
