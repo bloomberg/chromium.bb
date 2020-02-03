@@ -1136,14 +1136,13 @@ bool Tile::ReadSignAndApplyDequantization(
     uint16_t* const dc_sign_cdf, int8_t* const dc_category,
     int* const coefficient_level) {
   int pos = is_dc_coefficient ? 0 : scan[i];
-  const int pos_index = is_dc_coefficient ? 0 : pos;
-  // If quantized_buffer[pos_index] is zero, then the rest of the function has
-  // no effect.
-  if (quantized_buffer[pos_index] == 0) return true;
+  // If quantized_buffer[pos] is zero, then the rest of the function has no
+  // effect.
+  if (quantized_buffer[pos] == 0) return true;
   const int sign = is_dc_coefficient
                        ? static_cast<int>(reader_.ReadSymbol(dc_sign_cdf))
                        : reader_.ReadBit();
-  if (quantized_buffer[pos_index] >
+  if (quantized_buffer[pos] >
       kNumQuantizerBaseLevels + kQuantizerCoefficientBaseRange) {
     int length = 0;
     bool golomb_length_bit = false;
@@ -1159,13 +1158,13 @@ bool Tile::ReadSignAndApplyDequantization(
     for (int i = length - 2; i >= 0; --i) {
       x = (x << 1) | reader_.ReadBit();
     }
-    quantized_buffer[pos_index] += x - 1;
+    quantized_buffer[pos] += x - 1;
   }
   if (is_dc_coefficient && quantized_buffer[0] > 0) {
     *dc_category = (sign != 0) ? -1 : 1;
   }
-  quantized_buffer[pos_index] &= 0xfffff;
-  *coefficient_level += quantized_buffer[pos_index];
+  quantized_buffer[pos] &= 0xfffff;
+  *coefficient_level += quantized_buffer[pos];
   // Apply dequantization. Step 1 of section 7.12.3 in the spec.
   int q = q_value;
   if (quantizer_matrix != nullptr) {
@@ -1174,7 +1173,7 @@ bool Tile::ReadSignAndApplyDequantization(
   // The intermediate multiplication can exceed 32 bits, so it has to be
   // performed by promoting one of the values to int64_t.
   int32_t dequantized_value =
-      (static_cast<int64_t>(q) * quantized_buffer[pos_index]) & 0xffffff;
+      (static_cast<int64_t>(q) * quantized_buffer[pos]) & 0xffffff;
   dequantized_value >>= shift;
   // At this point:
   //   * |dequantized_value| is always non-negative.
