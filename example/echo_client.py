@@ -57,6 +57,7 @@ import random
 import re
 import six
 import socket
+import ssl
 import struct
 import sys
 
@@ -78,15 +79,6 @@ _CONNECTION_HEADER = 'Connection: Upgrade\r\n'
 _GOODBYE_MESSAGE = 'Goodbye'
 
 _PROTOCOL_VERSION_HYBI13 = 'hybi13'
-
-# Constants for the --tls_module flag.
-_TLS_BY_STANDARD_MODULE = 'ssl'
-_TLS_BY_PYOPENSSL = 'pyopenssl'
-
-# Values used by the --tls-version flag.
-_TLS_VERSION_SSL23 = 'ssl23'
-_TLS_VERSION_SSL3 = 'ssl3'
-_TLS_VERSION_TLS1 = 'tls1'
 
 
 class ClientHandshakeError(Exception):
@@ -176,56 +168,13 @@ def _validate_mandatory_header(fields,
 
 class _TLSSocket(object):
     """Wrapper for a TLS connection."""
-    def __init__(self, raw_socket, tls_module, tls_version,
-                 disable_tls_compression):
+    def __init__(self, raw_socket):
         self._logger = util.get_class_logger(self)
 
-        if tls_module == _TLS_BY_STANDARD_MODULE:
-            if tls_version == _TLS_VERSION_SSL23:
-                version = ssl.PROTOCOL_SSLv23
-            elif tls_version == _TLS_VERSION_SSL3:
-                version = ssl.PROTOCOL_SSLv3
-            elif tls_version == _TLS_VERSION_TLS1:
-                version = ssl.PROTOCOL_TLSv1
-            else:
-                raise ValueError('Invalid --tls-version flag: %r' %
-                                 tls_version)
+        self._tls_socket = ssl.wrap_socket(raw_socket)
 
-            if disable_tls_compression:
-                raise ValueError(
-                    '--disable-tls-compression is not available for ssl '
-                    'module')
-
-            self._tls_socket = ssl.wrap_socket(raw_socket, ssl_version=version)
-
-            # Print cipher in use. Handshake is done on wrap_socket call.
-            self._logger.info("Cipher: %s", self._tls_socket.cipher())
-        elif tls_module == _TLS_BY_PYOPENSSL:
-            if tls_version == _TLS_VERSION_SSL23:
-                version = OpenSSL.SSL.SSLv23_METHOD
-            elif tls_version == _TLS_VERSION_SSL3:
-                version = OpenSSL.SSL.SSLv3_METHOD
-            elif tls_version == _TLS_VERSION_TLS1:
-                version = OpenSSL.SSL.TLSv1_METHOD
-            else:
-                raise ValueError('Invalid --tls-version flag: %r' %
-                                 tls_version)
-
-            context = OpenSSL.SSL.Context(version)
-
-            if disable_tls_compression:
-                # OP_NO_COMPRESSION is not defined in OpenSSL module.
-                context.set_options(0x00020000)
-
-            self._tls_socket = OpenSSL.SSL.Connection(context, raw_socket)
-            # Client mode.
-            self._tls_socket.set_connect_state()
-            self._tls_socket.setblocking(True)
-
-            # Do handshake now (not necessary).
-            self._tls_socket.do_handshake()
-        else:
-            raise ValueError('No TLS support module is available')
+        # Print cipher in use. Handshake is done on wrap_socket call.
+        self._logger.info("Cipher: %s", self._tls_socket.cipher())
 
     def send(self, data):
         return self._tls_socket.write(data)
@@ -570,24 +519,6 @@ class ClientRequest(object):
         self.ws_version = common.VERSION_HYBI_LATEST
 
 
-def _import_ssl():
-    global ssl
-    try:
-        import ssl
-        return True
-    except ImportError:
-        return False
-
-
-def _import_pyopenssl():
-    global OpenSSL
-    try:
-        import OpenSSL.SSL
-        return True
-    except ImportError:
-        return False
-
-
 class EchoClient(object):
     """WebSocket echo client."""
     def __init__(self, options):
@@ -608,10 +539,7 @@ class EchoClient(object):
             self._socket.connect(
                 (self._options.server_host, self._options.server_port))
             if self._options.use_tls:
-                self._socket = _TLSSocket(
-                    self._socket, self._options.tls_module,
-                    self._options.tls_version,
-                    self._options.disable_tls_compression)
+                self._socket = _TLSSocket(self._socket)
 
             self._handshake = ClientHandshakeProcessor(self._socket,
                                                        self._options)
@@ -721,34 +649,7 @@ def main():
                       dest='use_tls',
                       action='store_true',
                       default=False,
-                      help='use TLS (wss://). By default, '
-                      'it looks for ssl and pyOpenSSL module and uses found '
-                      'one. Use --tls-module option to specify which module '
-                      'to use')
-    parser.add_option('--tls-module',
-                      '--tls_module',
-                      dest='tls_module',
-                      type='choice',
-                      choices=[_TLS_BY_STANDARD_MODULE, _TLS_BY_PYOPENSSL],
-                      help='Use ssl module if "%s" is specified. '
-                      'Use pyOpenSSL module if "%s" is specified' %
-                      (_TLS_BY_STANDARD_MODULE, _TLS_BY_PYOPENSSL))
-    parser.add_option('--tls-version',
-                      '--tls_version',
-                      dest='tls_version',
-                      type='string',
-                      default=_TLS_VERSION_SSL23,
-                      help='TLS/SSL version to use. One of \'' +
-                      _TLS_VERSION_SSL23 + '\' (SSL version 2 or 3), \'' +
-                      _TLS_VERSION_SSL3 + '\' (SSL version 3), \'' +
-                      _TLS_VERSION_TLS1 + '\' (TLS version 1)')
-    parser.add_option('--disable-tls-compression',
-                      '--disable_tls_compression',
-                      dest='disable_tls_compression',
-                      action='store_true',
-                      default=False,
-                      help='Disable TLS compression. Available only when '
-                      'pyOpenSSL module is used.')
+                      help='use TLS (wss://).')
     parser.add_option('-k',
                       '--socket-timeout',
                       '--socket_timeout',
@@ -773,47 +674,6 @@ def main():
     (options, unused_args) = parser.parse_args()
 
     logging.basicConfig(level=logging.getLevelName(options.log_level.upper()))
-
-    if options.use_tls:
-        if options.tls_module is None:
-            if _import_ssl():
-                options.tls_module = _TLS_BY_STANDARD_MODULE
-                logging.debug('Using ssl module')
-            elif _import_pyopenssl():
-                options.tls_module = _TLS_BY_PYOPENSSL
-                logging.debug('Using pyOpenSSL module')
-            else:
-                logging.critical(
-                    'TLS support requires ssl or pyOpenSSL module.')
-                sys.exit(1)
-        elif options.tls_module == _TLS_BY_STANDARD_MODULE:
-            if not _import_ssl():
-                logging.critical('ssl module is not available')
-                sys.exit(1)
-        elif options.tls_module == _TLS_BY_PYOPENSSL:
-            if not _import_pyopenssl():
-                logging.critical('pyOpenSSL module is not available')
-                sys.exit(1)
-        else:
-            logging.critical('Invalid --tls-module option: %r',
-                             options.tls_module)
-            sys.exit(1)
-
-        if (options.disable_tls_compression
-                and options.tls_module != _TLS_BY_PYOPENSSL):
-            logging.critical('You can disable TLS compression only when '
-                             'pyOpenSSL module is used.')
-            sys.exit(1)
-    else:
-        if options.tls_module is not None:
-            logging.critical('Use --tls-module option only together with '
-                             '--use-tls option.')
-            sys.exit(1)
-
-        if options.disable_tls_compression:
-            logging.critical('Use --disable-tls-compression only together '
-                             'with --use-tls option.')
-            sys.exit(1)
 
     # Default port number depends on whether TLS is used.
     if options.server_port == _UNDEFINED_PORT:

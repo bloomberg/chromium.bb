@@ -156,11 +156,9 @@ used outside a firewall.
 from __future__ import absolute_import
 from six.moves import BaseHTTPServer
 from six.moves import CGIHTTPServer
-from six.moves import SimpleHTTPServer
 from six.moves import socketserver
 from six.moves import configparser
 from six.moves import http_client
-import six.moves.urllib.parse
 import base64
 import logging
 import logging.handlers
@@ -169,6 +167,7 @@ import os
 import re
 import select
 import socket
+import ssl
 import sys
 import threading
 import time
@@ -188,10 +187,6 @@ _DEFAULT_REQUEST_QUEUE_SIZE = 128
 
 # 1024 is practically large enough to contain WebSocket handshake lines.
 _MAX_MEMORIZED_LINES = 1024
-
-# Constants for the --tls_module flag.
-_TLS_BY_STANDARD_MODULE = 'ssl'
-_TLS_BY_PYOPENSSL = 'pyopenssl'
 
 
 class _StandaloneConnection(object):
@@ -295,70 +290,6 @@ class _StandaloneRequest(object):
         return self._use_tls
 
 
-def _import_ssl():
-    global ssl
-    try:
-        import ssl
-        return True
-    except ImportError:
-        return False
-
-
-def _import_pyopenssl():
-    global OpenSSL
-    try:
-        import OpenSSL.SSL
-        return True
-    except ImportError:
-        return False
-
-
-class _StandaloneSSLConnection(object):
-    """A wrapper class for OpenSSL.SSL.Connection to
-    - provide makefile method which is not supported by the class
-    - tweak shutdown method since OpenSSL.SSL.Connection.shutdown doesn't
-      accept the "how" argument.
-    - convert SysCallError exceptions that its recv method may raise into a
-      return value of '', meaning EOF. We cannot overwrite the recv method on
-      self._connection since it's immutable.
-    """
-
-    _OVERRIDDEN_ATTRIBUTES = ['_connection', 'makefile', 'shutdown', 'recv']
-
-    def __init__(self, connection):
-        self._connection = connection
-
-    def __getattribute__(self, name):
-        if name in _StandaloneSSLConnection._OVERRIDDEN_ATTRIBUTES:
-            return object.__getattribute__(self, name)
-        return self._connection.__getattribute__(name)
-
-    def __setattr__(self, name, value):
-        if name in _StandaloneSSLConnection._OVERRIDDEN_ATTRIBUTES:
-            return object.__setattr__(self, name, value)
-        return self._connection.__setattr__(name, value)
-
-    def makefile(self, mode='r', bufsize=-1):
-        return socket._fileobject(self, mode, bufsize)
-
-    def shutdown(self, unused_how):
-        self._connection.shutdown()
-
-    def recv(self, bufsize, flags=0):
-        if flags != 0:
-            raise ValueError('Non-zero flags not allowed')
-
-        try:
-            return self._connection.recv(bufsize)
-        except OpenSSL.SSL.SysCallError as e:
-            (err, message) = e
-            if err == -1:
-                # Suppress "unexpected EOF" exception. See the OpenSSL document
-                # for SSL_get_error.
-                return ''
-            raise
-
-
 def _alias_handlers(dispatcher, websock_handlers_map_file):
     """Set aliases specified in websock_handler_map_file in dispatcher.
 
@@ -459,24 +390,19 @@ class WebSocketServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
                 continue
             server_options = self.websocket_server_options
             if server_options.use_tls:
-                # For the case of _HAS_OPEN_SSL, we do wrapper setup after
-                # accept.
-                if server_options.tls_module == _TLS_BY_STANDARD_MODULE:
-                    if server_options.tls_client_auth:
-                        if server_options.tls_client_cert_optional:
-                            client_cert_ = ssl.CERT_OPTIONAL
-                        else:
-                            client_cert_ = ssl.CERT_REQUIRED
+                if server_options.tls_client_auth:
+                    if server_options.tls_client_cert_optional:
+                        client_cert_ = ssl.CERT_OPTIONAL
                     else:
-                        client_cert_ = ssl.CERT_NONE
-                    socket_ = ssl.wrap_socket(
-                        socket_,
-                        keyfile=server_options.private_key,
-                        certfile=server_options.certificate,
-                        ssl_version=ssl.PROTOCOL_SSLv23,
-                        ca_certs=server_options.tls_client_ca,
-                        cert_reqs=client_cert_,
-                        do_handshake_on_connect=False)
+                        client_cert_ = ssl.CERT_REQUIRED
+                else:
+                    client_cert_ = ssl.CERT_NONE
+                socket_ = ssl.wrap_socket(
+                    socket_,
+                    keyfile=server_options.private_key,
+                    certfile=server_options.certificate,
+                    ca_certs=server_options.tls_client_ca,
+                    cert_reqs=client_cert_)
             self._sockets.append((socket_, addrinfo))
 
     def server_bind(self):
@@ -558,70 +484,16 @@ class WebSocketServer(socketserver.ThreadingMixIn, BaseHTTPServer.HTTPServer):
         # Note: client_address is a tuple.
 
     def get_request(self):
-        """Override TCPServer.get_request to wrap OpenSSL.SSL.Connection
-        object with _StandaloneSSLConnection to provide makefile method. We
-        cannot substitute OpenSSL.SSL.Connection.makefile since it's readonly
-        attribute.
-        """
+        """Override TCPServer.get_request."""
 
         accepted_socket, client_address = self.socket.accept()
 
         server_options = self.websocket_server_options
         if server_options.use_tls:
-            if server_options.tls_module == _TLS_BY_STANDARD_MODULE:
-                try:
-                    accepted_socket.do_handshake()
-                except ssl.SSLError as e:
-                    self._logger.debug('%r', e)
-                    raise
-
-                # Print cipher in use. Handshake is done on accept.
-                self._logger.debug('Cipher: %s', accepted_socket.cipher())
-                self._logger.debug('Client cert: %r',
-                                   accepted_socket.getpeercert())
-            elif server_options.tls_module == _TLS_BY_PYOPENSSL:
-                # We cannot print the cipher in use. pyOpenSSL doesn't provide
-                # any method to fetch that.
-
-                ctx = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
-                ctx.use_privatekey_file(server_options.private_key)
-                ctx.use_certificate_file(server_options.certificate)
-
-                def default_callback(conn, cert, errnum, errdepth, ok):
-                    return ok == 1
-
-                # See the OpenSSL document for SSL_CTX_set_verify.
-                if server_options.tls_client_auth:
-                    verify_mode = OpenSSL.SSL.VERIFY_PEER
-                    if not server_options.tls_client_cert_optional:
-                        verify_mode |= OpenSSL.SSL.VERIFY_FAIL_IF_NO_PEER_CERT
-                    ctx.set_verify(verify_mode, default_callback)
-                    ctx.load_verify_locations(server_options.tls_client_ca,
-                                              None)
-                else:
-                    ctx.set_verify(OpenSSL.SSL.VERIFY_NONE, default_callback)
-
-                accepted_socket = OpenSSL.SSL.Connection(ctx, accepted_socket)
-                accepted_socket.set_accept_state()
-
-                # Convert SSL related error into socket.error so that
-                # SocketServer ignores them and keeps running.
-                #
-                # TODO(tyoshino): Convert all kinds of errors.
-                try:
-                    accepted_socket.do_handshake()
-                except OpenSSL.SSL.Error as e:
-                    # Set errno part to 1 (SSL_ERROR_SSL) like the ssl module
-                    # does.
-                    self._logger.debug('%r', e)
-                    raise socket.error(1, '%r' % e)
-                cert = accepted_socket.get_peer_certificate()
-                if cert is not None:
-                    self._logger.debug('Client cert subject: %r',
-                                       cert.get_subject().get_components())
-                accepted_socket = _StandaloneSSLConnection(accepted_socket)
-            else:
-                raise ValueError('No TLS support module is available')
+            # Print cipher in use. Handshake is done on accept.
+            self._logger.debug('Cipher: %s', accepted_socket.cipher())
+            self._logger.debug('Client cert: %r',
+                               accepted_socket.getpeercert())
 
         return accepted_socket, client_address
 
@@ -941,14 +813,6 @@ def _build_option_parser():
                       action='store_true',
                       default=False,
                       help='use TLS (wss://)')
-    parser.add_option('--tls-module',
-                      '--tls_module',
-                      dest='tls_module',
-                      type='choice',
-                      choices=[_TLS_BY_STANDARD_MODULE, _TLS_BY_PYOPENSSL],
-                      help='Use ssl module if "%s" is specified. '
-                      'Use pyOpenSSL module if "%s" is specified' %
-                      (_TLS_BY_STANDARD_MODULE, _TLS_BY_PYOPENSSL))
     parser.add_option('-k',
                       '--private-key',
                       '--private_key',
@@ -1136,29 +1000,7 @@ def _main(args=None):
             options.is_executable_method = __check_script
 
     if options.use_tls:
-        if options.tls_module is None:
-            if _import_ssl():
-                options.tls_module = _TLS_BY_STANDARD_MODULE
-                logging.debug('Using ssl module')
-            elif _import_pyopenssl():
-                options.tls_module = _TLS_BY_PYOPENSSL
-                logging.debug('Using pyOpenSSL module')
-            else:
-                logging.critical(
-                    'TLS support requires ssl or pyOpenSSL module.')
-                sys.exit(1)
-        elif options.tls_module == _TLS_BY_STANDARD_MODULE:
-            if not _import_ssl():
-                logging.critical('ssl module is not available')
-                sys.exit(1)
-        elif options.tls_module == _TLS_BY_PYOPENSSL:
-            if not _import_pyopenssl():
-                logging.critical('pyOpenSSL module is not available')
-                sys.exit(1)
-        else:
-            logging.critical('Invalid --tls-module option: %r',
-                             options.tls_module)
-            sys.exit(1)
+        logging.debug('Using ssl module')
 
         if not options.private_key or not options.certificate:
             logging.critical(
@@ -1170,11 +1012,6 @@ def _main(args=None):
                              'specify tls_client_cert_optional')
             sys.exit(1)
     else:
-        if options.tls_module is not None:
-            logging.critical('Use --tls-module option only together with '
-                             '--use-tls option.')
-            sys.exit(1)
-
         if options.tls_client_auth:
             logging.critical('TLS must be enabled for client authentication.')
             sys.exit(1)
