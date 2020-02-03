@@ -54,8 +54,6 @@ extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
 #if LIBGAV1_MAX_BITDEPTH < 10
   static_cast<void>(bitdepth);
 #endif
-  auto* v1_callbacks =
-      static_cast<V1FrameBufferCallbacks*>(callback_private_data);
   // stride_alignment must be a power of 2.
   assert((stride_alignment & (stride_alignment - 1)) == 0);
 
@@ -107,6 +105,8 @@ extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
   std::unique_ptr<FrameBuffer> frame_buffer1(new (std::nothrow) FrameBuffer);
   if (frame_buffer1 == nullptr) return -1;
 
+  auto* v1_callbacks =
+      static_cast<V1FrameBufferCallbacks*>(callback_private_data);
   if (v1_callbacks->get(v1_callbacks->callback_private_data,
                         static_cast<size_t>(y_plane_size),
                         static_cast<size_t>(uv_plane_size),
