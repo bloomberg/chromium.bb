@@ -25,6 +25,9 @@ message NotifyVmStartedRequest {
   // The token to identify the VM, only used with plugin VMs that don't have
   // containers.
   string vm_token = 4;
+
+  // The pid of the main VM process.
+  uint32 pid = 5;
 }
 
 // Message sent to cicerone when a VM stopped or failed to complete startup.
