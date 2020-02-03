@@ -353,7 +353,6 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       osutils.SafeMakedirs(gn_args_file_dir)
       osutils.WriteFile(gn_args_file_path, self.cmd_mock.env['GN_ARGS'])
 
-      os.environ.pop(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV, None)
       self.cmd_mock.inst.Run()
 
       self.AssertLogsContain(logs, 'Stale args.gn file', inverted=True)
@@ -374,7 +373,6 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       gn_args_dict = gn_helpers.FromGNArgs(self.cmd_mock.env['GN_ARGS'])
       osutils.WriteFile(gn_args_file_path, gn_helpers.ToGNString(gn_args_dict))
 
-      os.environ.pop(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV, None)
       self.cmd_mock.inst.Run()
 
       self.AssertLogsContain(logs, 'Stale args.gn file', inverted=True)
