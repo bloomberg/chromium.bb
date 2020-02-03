@@ -38,11 +38,11 @@ template <bool is_compound, int bitdepth, typename Pixel>
 void Warp_C(const void* const source, ptrdiff_t source_stride,
             const int source_width, const int source_height,
             const int* const warp_params, const int subsampling_x,
-            const int subsampling_y, const int /*inter_round_bits_vertical*/,
-            const int block_start_x, const int block_start_y,
-            const int block_width, const int block_height, const int16_t alpha,
-            const int16_t beta, const int16_t gamma, const int16_t delta,
-            void* dest, ptrdiff_t dest_stride) {
+            const int subsampling_y, const int block_start_x,
+            const int block_start_y, const int block_width,
+            const int block_height, const int16_t alpha, const int16_t beta,
+            const int16_t gamma, const int16_t delta, void* dest,
+            ptrdiff_t dest_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;

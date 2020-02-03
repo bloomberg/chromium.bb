@@ -34,12 +34,13 @@ constexpr int kHorizontalOffset = 3;
 constexpr int kVerticalOffset = 3;
 
 template <int bitdepth, typename Pixel>
-void ConvolveScale2D_C(
-    const void* const reference, const ptrdiff_t reference_stride,
-    const int horizontal_filter_index, const int vertical_filter_index,
-    const int /*inter_round_bits_vertical*/, const int subpixel_x,
-    const int subpixel_y, const int step_x, const int step_y, const int width,
-    const int height, void* prediction, const ptrdiff_t pred_stride) {
+void ConvolveScale2D_C(const void* const reference,
+                       const ptrdiff_t reference_stride,
+                       const int horizontal_filter_index,
+                       const int vertical_filter_index, const int subpixel_x,
+                       const int subpixel_y, const int step_x, const int step_y,
+                       const int width, const int height, void* prediction,
+                       const ptrdiff_t pred_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
@@ -115,12 +116,14 @@ void ConvolveScale2D_C(
 }
 
 template <int bitdepth, typename Pixel>
-void ConvolveCompoundScale2D_C(
-    const void* const reference, const ptrdiff_t reference_stride,
-    const int horizontal_filter_index, const int vertical_filter_index,
-    const int /*inter_round_bits_vertical*/, const int subpixel_x,
-    const int subpixel_y, const int step_x, const int step_y, const int width,
-    const int height, void* prediction, const ptrdiff_t pred_stride) {
+void ConvolveCompoundScale2D_C(const void* const reference,
+                               const ptrdiff_t reference_stride,
+                               const int horizontal_filter_index,
+                               const int vertical_filter_index,
+                               const int subpixel_x, const int subpixel_y,
+                               const int step_x, const int step_y,
+                               const int width, const int height,
+                               void* prediction, const ptrdiff_t pred_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
@@ -198,10 +201,9 @@ template <int bitdepth, typename Pixel>
 void ConvolveCompound2D_C(const void* const reference,
                           const ptrdiff_t reference_stride,
                           const int horizontal_filter_index,
-                          const int vertical_filter_index,
-                          const int /*inter_round_bits_vertical*/,
-                          const int subpixel_x, const int subpixel_y,
-                          const int width, const int height, void* prediction,
+                          const int vertical_filter_index, const int subpixel_x,
+                          const int subpixel_y, const int width,
+                          const int height, void* prediction,
                           const ptrdiff_t pred_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
@@ -273,8 +275,7 @@ void ConvolveCompound2D_C(const void* const reference,
 template <int bitdepth, typename Pixel>
 void Convolve2D_C(const void* const reference, const ptrdiff_t reference_stride,
                   const int horizontal_filter_index,
-                  const int vertical_filter_index,
-                  const int /*inter_round_bits_vertical*/, const int subpixel_x,
+                  const int vertical_filter_index, const int subpixel_x,
                   const int subpixel_y, const int width, const int height,
                   void* prediction, const ptrdiff_t pred_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
@@ -350,7 +351,6 @@ void ConvolveHorizontal_C(const void* const reference,
                           const ptrdiff_t reference_stride,
                           const int horizontal_filter_index,
                           const int /*vertical_filter_index*/,
-                          const int /*inter_round_bits_vertical*/,
                           const int subpixel_x, const int /*subpixel_y*/,
                           const int width, const int height, void* prediction,
                           const ptrdiff_t pred_stride) {
@@ -392,7 +392,6 @@ void ConvolveVertical_C(const void* const reference,
                         const ptrdiff_t reference_stride,
                         const int /*horizontal_filter_index*/,
                         const int vertical_filter_index,
-                        const int /*inter_round_bits_vertical*/,
                         const int /*subpixel_x*/, const int subpixel_y,
                         const int width, const int height, void* prediction,
                         const ptrdiff_t pred_stride) {
@@ -441,7 +440,6 @@ void ConvolveCopy_C(const void* const reference,
                     const ptrdiff_t reference_stride,
                     const int /*horizontal_filter_index*/,
                     const int /*vertical_filter_index*/,
-                    const int /*inter_round_bits_vertical*/,
                     const int /*subpixel_x*/, const int /*subpixel_y*/,
                     const int width, const int height, void* prediction,
                     const ptrdiff_t pred_stride) {
@@ -460,7 +458,6 @@ void ConvolveCompoundCopy_C(const void* const reference,
                             const ptrdiff_t reference_stride,
                             const int /*horizontal_filter_index*/,
                             const int /*vertical_filter_index*/,
-                            const int /*inter_round_bits_vertical*/,
                             const int /*subpixel_x*/, const int /*subpixel_y*/,
                             const int width, const int height, void* prediction,
                             const ptrdiff_t pred_stride) {
@@ -493,9 +490,8 @@ template <int bitdepth, typename Pixel>
 void ConvolveCompoundHorizontal_C(
     const void* const reference, const ptrdiff_t reference_stride,
     const int horizontal_filter_index, const int /*vertical_filter_index*/,
-    const int /*inter_round_bits_vertical*/, const int subpixel_x,
-    const int /*subpixel_y*/, const int width, const int height,
-    void* prediction, const ptrdiff_t pred_stride) {
+    const int subpixel_x, const int /*subpixel_y*/, const int width,
+    const int height, void* prediction, const ptrdiff_t pred_stride) {
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
@@ -533,7 +529,6 @@ void ConvolveCompoundVertical_C(const void* const reference,
                                 const ptrdiff_t reference_stride,
                                 const int /*horizontal_filter_index*/,
                                 const int vertical_filter_index,
-                                const int /*inter_round_bits_vertical*/,
                                 const int /*subpixel_x*/, const int subpixel_y,
                                 const int width, const int height,
                                 void* prediction, const ptrdiff_t pred_stride) {
@@ -575,9 +570,8 @@ template <int bitdepth, typename Pixel>
 void ConvolveIntraBlockCopy2D_C(
     const void* const reference, const ptrdiff_t reference_stride,
     const int /*horizontal_filter_index*/, const int /*vertical_filter_index*/,
-    const int /*inter_round_bits_vertical*/, const int /*subpixel_x*/,
-    const int /*subpixel_y*/, const int width, const int height,
-    void* prediction, const ptrdiff_t pred_stride) {
+    const int /*subpixel_x*/, const int /*subpixel_y*/, const int width,
+    const int height, void* prediction, const ptrdiff_t pred_stride) {
   const auto* src = reinterpret_cast<const Pixel*>(reference);
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
   auto* dest = reinterpret_cast<Pixel*>(prediction);
@@ -626,9 +620,8 @@ template <int bitdepth, typename Pixel, bool is_horizontal>
 void ConvolveIntraBlockCopy1D_C(
     const void* const reference, const ptrdiff_t reference_stride,
     const int /*horizontal_filter_index*/, const int /*vertical_filter_index*/,
-    const int /*inter_round_bits_vertical*/, const int /*subpixel_x*/,
-    const int /*subpixel_y*/, const int width, const int height,
-    void* prediction, const ptrdiff_t pred_stride) {
+    const int /*subpixel_x*/, const int /*subpixel_y*/, const int width,
+    const int height, void* prediction, const ptrdiff_t pred_stride) {
   const auto* src = reinterpret_cast<const Pixel*>(reference);
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
   auto* dest = reinterpret_cast<Pixel*>(prediction);

@@ -126,11 +126,12 @@ template <bool is_compound>
 void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
                const int source_width, const int source_height,
                const int* const warp_params, const int subsampling_x,
-               const int subsampling_y, const int /*inter_round_bits_vertical*/,
-               const int block_start_x, const int block_start_y,
-               const int block_width, const int block_height,
-               const int16_t alpha, const int16_t beta, const int16_t gamma,
-               const int16_t delta, void* dest, const ptrdiff_t dest_stride) {
+               const int subsampling_y, const int block_start_x,
+               const int block_start_y, const int block_width,
+               const int block_height, const int16_t alpha, const int16_t beta,
+               const int16_t gamma, const int16_t delta, void* dest,
+               const ptrdiff_t dest_stride) {
+  // TODO(johannkoenig): Remove this and put uses in |is_compound| checks.
   constexpr int inter_round_bits_vertical =
       is_compound ? kInterRoundBitsCompoundVertical : kInterRoundBitsVertical;
   constexpr int bitdepth = 8;

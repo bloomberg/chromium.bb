@@ -423,22 +423,22 @@ class Tile : public Allocable {
                             int x, int y, int width, int height,
                             int candidate_row, int candidate_column,
                             uint16_t* prediction, ptrdiff_t prediction_stride,
-                            int round_bits, bool is_compound,
-                            bool is_inter_intra, uint8_t* dest,
+                            bool is_compound, bool is_inter_intra,
+                            uint8_t* dest,
                             ptrdiff_t dest_stride);  // 7.11.3.4.
   void BlockWarpProcess(const Block& block, Plane plane, int index,
                         int block_start_x, int block_start_y, int width,
                         int height, ptrdiff_t prediction_stride,
-                        GlobalMotion* warp_params, int round_bits,
-                        bool is_compound, bool is_inter_intra, uint8_t* dest,
+                        GlobalMotion* warp_params, bool is_compound,
+                        bool is_inter_intra, uint8_t* dest,
                         ptrdiff_t dest_stride);  // 7.11.3.5.
   void ObmcBlockPrediction(const Block& block, const MotionVector& mv,
                            Plane plane, int reference_frame_index, int width,
                            int height, int x, int y, int candidate_row,
                            int candidate_column,
-                           ObmcDirection blending_direction, int round_bits);
-  void ObmcPrediction(const Block& block, Plane plane, int width, int height,
-                      int round_bits);  // 7.11.3.9.
+                           ObmcDirection blending_direction);
+  void ObmcPrediction(const Block& block, Plane plane, int width,
+                      int height);  // 7.11.3.9.
   void DistanceWeightedPrediction(uint16_t* prediction_0,
                                   ptrdiff_t prediction_stride_0,
                                   uint16_t* prediction_1,

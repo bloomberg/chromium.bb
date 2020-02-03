@@ -858,11 +858,9 @@ int GetNumTapsInFilter(const int filter_index) {
 void Convolve2D_NEON(const void* const reference,
                      const ptrdiff_t reference_stride,
                      const int horizontal_filter_index,
-                     const int vertical_filter_index,
-                     const int /*inter_round_bits_vertical*/,
-                     const int subpixel_x, const int subpixel_y,
-                     const int width, const int height, void* prediction,
-                     const ptrdiff_t pred_stride) {
+                     const int vertical_filter_index, const int subpixel_x,
+                     const int subpixel_y, const int width, const int height,
+                     void* prediction, const ptrdiff_t pred_stride) {
   const int horiz_filter_index = GetFilterIndex(horizontal_filter_index, width);
   const int vert_filter_index = GetFilterIndex(vertical_filter_index, height);
   const int vertical_taps = GetNumTapsInFilter(vert_filter_index);
@@ -1622,12 +1620,13 @@ inline void ConvolveVerticalScale(const int16_t* src, const int width,
 }
 
 template <bool is_compound>
-void ConvolveScale2D_NEON(
-    const void* const reference, const ptrdiff_t reference_stride,
-    const int horizontal_filter_index, const int vertical_filter_index,
-    const int /*inter_round_bits_vertical*/, const int subpixel_x,
-    const int subpixel_y, const int step_x, const int step_y, const int width,
-    const int height, void* prediction, const ptrdiff_t pred_stride) {
+void ConvolveScale2D_NEON(const void* const reference,
+                          const ptrdiff_t reference_stride,
+                          const int horizontal_filter_index,
+                          const int vertical_filter_index, const int subpixel_x,
+                          const int subpixel_y, const int step_x,
+                          const int step_y, const int width, const int height,
+                          void* prediction, const ptrdiff_t pred_stride) {
   // TODO(petersonab): Reduce the height here by using the vertical filter
   // size and offset horizontal filter. Reduce intermediate block stride to
   // width to make smaller blocks faster.
@@ -1847,7 +1846,6 @@ void ConvolveHorizontal_NEON(const void* const reference,
                              const ptrdiff_t reference_stride,
                              const int horizontal_filter_index,
                              const int /*vertical_filter_index*/,
-                             const int /*inter_round_bits_vertical*/,
                              const int subpixel_x, const int /*subpixel_y*/,
                              const int width, const int height,
                              void* prediction, const ptrdiff_t pred_stride) {
@@ -2391,7 +2389,6 @@ void ConvolveVertical_NEON(const void* const reference,
                            const ptrdiff_t reference_stride,
                            const int /*horizontal_filter_index*/,
                            const int vertical_filter_index,
-                           const int /*inter_round_bits_vertical*/,
                            const int /*subpixel_x*/, const int subpixel_y,
                            const int width, const int height, void* prediction,
                            const ptrdiff_t pred_stride) {
@@ -2519,9 +2516,8 @@ void ConvolveVertical_NEON(const void* const reference,
 void ConvolveCompoundCopy_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int /*horizontal_filter_index*/, const int /*vertical_filter_index*/,
-    const int /*inter_round_bits_vertical*/, const int /*subpixel_x*/,
-    const int /*subpixel_y*/, const int width, const int height,
-    void* prediction, const ptrdiff_t pred_stride) {
+    const int /*subpixel_x*/, const int /*subpixel_y*/, const int width,
+    const int height, void* prediction, const ptrdiff_t pred_stride) {
   const auto* src = static_cast<const uint8_t*>(reference);
   const ptrdiff_t src_stride = reference_stride;
   auto* dest = static_cast<uint16_t*>(prediction);
@@ -2588,9 +2584,8 @@ void ConvolveCompoundCopy_NEON(
 void ConvolveCompoundVertical_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int /*horizontal_filter_index*/, const int vertical_filter_index,
-    const int /*inter_round_bits_vertical*/, const int /*subpixel_x*/,
-    const int subpixel_y, const int width, const int height, void* prediction,
-    const ptrdiff_t pred_stride) {
+    const int /*subpixel_x*/, const int subpixel_y, const int width,
+    const int height, void* prediction, const ptrdiff_t pred_stride) {
   const int filter_index = GetFilterIndex(vertical_filter_index, height);
   const int vertical_taps = GetNumTapsInFilter(filter_index);
   const ptrdiff_t src_stride = reference_stride;
@@ -2703,9 +2698,8 @@ void ConvolveCompoundVertical_NEON(
 void ConvolveCompoundHorizontal_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int horizontal_filter_index, const int /*vertical_filter_index*/,
-    const int /*inter_round_bits_vertical*/, const int subpixel_x,
-    const int /*subpixel_y*/, const int width, const int height,
-    void* prediction, const ptrdiff_t pred_stride) {
+    const int subpixel_x, const int /*subpixel_y*/, const int width,
+    const int height, void* prediction, const ptrdiff_t pred_stride) {
   const int filter_index = GetFilterIndex(horizontal_filter_index, width);
   const auto* src = static_cast<const uint8_t*>(reference) - kHorizontalOffset;
   auto* dest = static_cast<uint16_t*>(prediction);
@@ -2719,7 +2713,6 @@ void ConvolveCompound2D_NEON(const void* const reference,
                              const ptrdiff_t reference_stride,
                              const int horizontal_filter_index,
                              const int vertical_filter_index,
-                             const int /*inter_round_bits_vertical*/,
                              const int subpixel_x, const int subpixel_y,
                              const int width, const int height,
                              void* prediction, const ptrdiff_t pred_stride) {
@@ -2854,9 +2847,8 @@ inline void IntraBlockCopyHorizontal(const uint8_t* src,
 void ConvolveIntraBlockCopyHorizontal_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int /*horizontal_filter_index*/, const int /*vertical_filter_index*/,
-    const int /*inter_round_bits_vertical*/, const int /*subpixel_x*/,
-    const int /*subpixel_y*/, const int width, const int height,
-    void* const prediction, const ptrdiff_t pred_stride) {
+    const int /*subpixel_x*/, const int /*subpixel_y*/, const int width,
+    const int height, void* const prediction, const ptrdiff_t pred_stride) {
   const auto* src = static_cast<const uint8_t*>(reference);
   auto* dest = static_cast<uint8_t*>(prediction);
 
@@ -3018,9 +3010,8 @@ inline void IntraBlockCopyVertical(const uint8_t* src,
 void ConvolveIntraBlockCopyVertical_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int /*horizontal_filter_index*/, const int /*vertical_filter_index*/,
-    const int /*inter_round_bits_vertical*/, const int /*subpixel_x*/,
-    const int /*subpixel_y*/, const int width, const int height,
-    void* const prediction, const ptrdiff_t pred_stride) {
+    const int /*subpixel_x*/, const int /*subpixel_y*/, const int width,
+    const int height, void* const prediction, const ptrdiff_t pred_stride) {
   const auto* src = static_cast<const uint8_t*>(reference);
   auto* dest = static_cast<uint8_t*>(prediction);
 
@@ -3251,9 +3242,8 @@ inline void IntraBlockCopy2D(const uint8_t* src, const ptrdiff_t src_stride,
 void ConvolveIntraBlockCopy2D_NEON(
     const void* const reference, const ptrdiff_t reference_stride,
     const int /*horizontal_filter_index*/, const int /*vertical_filter_index*/,
-    const int /*inter_round_bits_vertical*/, const int /*subpixel_x*/,
-    const int /*subpixel_y*/, const int width, const int height,
-    void* const prediction, const ptrdiff_t pred_stride) {
+    const int /*subpixel_x*/, const int /*subpixel_y*/, const int width,
+    const int height, void* const prediction, const ptrdiff_t pred_stride) {
   const auto* src = static_cast<const uint8_t*>(reference);
   auto* dest = static_cast<uint8_t*>(prediction);
   // Note: allow vertical access to height + 1. Because this function is only

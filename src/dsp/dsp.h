@@ -379,18 +379,19 @@ using LoopRestorationFuncs = LoopRestorationFunc[2];
 // |vertical_filter_index|/|horizontal_filter_index| is the index to
 // retrieve the type of filter to be applied for vertical/horizontal direction
 // from the filter lookup table 'kSubPixelFilters'.
-// |inter_round_bits_vertical| is the rounding precision used after vertical
-// filtering (7 or 11). kInterRoundBitsHorizontal &
-// kInterRoundBitsHorizontal12bpp can be used after the horizontal pass.
 // |subpixel_x| and |subpixel_y| are starting positions in units of 1/1024.
 // |width| and |height| are width and height of the block to be filtered.
 // |ref_last_x| and |ref_last_y| are the last pixel of the reference frame in
 // x/y direction.
 // |prediction| is the output block (output frame buffer).
+// Rounding precision is derived from the function being called. For horizontal
+// filtering kInterRoundBitsHorizontal & kInterRoundBitsHorizontal12bpp will be
+// used. For compound vertical filtering kInterRoundBitsCompoundVertical will be
+// used. Otherwise kInterRoundBitsVertical & kInterRoundBitsVertical12bpp will
+// be used.
 using ConvolveFunc = void (*)(const void* reference, ptrdiff_t reference_stride,
                               int horizontal_filter_index,
-                              int vertical_filter_index,
-                              int inter_round_bits_vertical, int subpixel_x,
+                              int vertical_filter_index, int subpixel_x,
                               int subpixel_y, int width, int height,
                               void* prediction, ptrdiff_t pred_stride);
 
@@ -412,20 +413,24 @@ using ConvolveFuncs = ConvolveFunc[2][2][2][2];
 // |vertical_filter_index|/|horizontal_filter_index| is the index to
 // retrieve the type of filter to be applied for vertical/horizontal direction
 // from the filter lookup table 'kSubPixelFilters'.
-// |inter_round_bits_vertical| is the rounding precision used after vertical
-// filtering (7 or 11). kInterRoundBitsHorizontal &
-// kInterRoundBitsHorizontal12bpp can be used after the horizontal pass.
 // |subpixel_x| and |subpixel_y| are starting positions in units of 1/1024.
 // |step_x| and |step_y| are step sizes in units of 1/1024 of a pixel.
 // |width| and |height| are width and height of the block to be filtered.
 // |ref_last_x| and |ref_last_y| are the last pixel of the reference frame in
 // x/y direction.
 // |prediction| is the output block (output frame buffer).
-using ConvolveScaleFunc = void (*)(
-    const void* reference, ptrdiff_t reference_stride,
-    int horizontal_filter_index, int vertical_filter_index,
-    int inter_round_bits_vertical, int subpixel_x, int subpixel_y, int step_x,
-    int step_y, int width, int height, void* prediction, ptrdiff_t pred_stride);
+// Rounding precision is derived from the function being called. For horizontal
+// filtering kInterRoundBitsHorizontal & kInterRoundBitsHorizontal12bpp will be
+// used. For compound vertical filtering kInterRoundBitsCompoundVertical will be
+// used. Otherwise kInterRoundBitsVertical & kInterRoundBitsVertical12bpp will
+// be used.
+using ConvolveScaleFunc = void (*)(const void* reference,
+                                   ptrdiff_t reference_stride,
+                                   int horizontal_filter_index,
+                                   int vertical_filter_index, int subpixel_x,
+                                   int subpixel_y, int step_x, int step_y,
+                                   int width, int height, void* prediction,
+                                   ptrdiff_t pred_stride);
 
 // Convolve functions signature for scaling version.
 // 0: single predictor. 1: compound predictor.
@@ -579,10 +584,6 @@ using ObmcBlendFuncs = ObmcBlendFunc[kNumObmcDirections];
 //     z .  y'  =   m4 m5 m1 *  y
 //          1]      m6 m7 1)    1]
 // |subsampling_x/y| is the current frame's plane subsampling factor.
-// |inter_round_bits_vertical| is the rounding precision used after vertical
-// filtering. It is always 11. In the future kInterRoundBitsVertical and
-// kInterRoundBitsVertical12bpp will be used. kInterRoundBitsHorizontal &
-// kInterRoundBitsHorizontal12bpp can be used for the horizontal pass.
 // |block_start_x| and |block_start_y| are the starting position the current
 // coding block.
 // |block_width| and |block_height| are width and height of the current coding
@@ -593,6 +594,10 @@ using ObmcBlendFuncs = ObmcBlendFunc[kNumObmcDirections];
 // |dest| is the output buffer of type Pixel. The output values are clipped to
 // Pixel values.
 // |dest_stride| is the stride, in units of bytes.
+// Rounding precision is derived from the function being called. For horizontal
+// filtering kInterRoundBitsHorizontal & kInterRoundBitsHorizontal12bpp will be
+// used. For vertical filtering kInterRoundBitsVertical &
+// kInterRoundBitsVertical12bpp will be used.
 //
 // NOTE: WarpFunc assumes the source frame has left, right, top, and bottom
 // borders that extend the frame boundary pixels.
@@ -604,16 +609,18 @@ using ObmcBlendFuncs = ObmcBlendFunc[kNumObmcDirections];
 using WarpFunc = void (*)(const void* source, ptrdiff_t source_stride,
                           int source_width, int source_height,
                           const int* warp_params, int subsampling_x,
-                          int subsampling_y, int inter_round_bits_vertical,
-                          int block_start_x, int block_start_y, int block_width,
-                          int block_height, int16_t alpha, int16_t beta,
-                          int16_t gamma, int16_t delta, void* dest,
-                          ptrdiff_t dest_stride);
+                          int subsampling_y, int block_start_x,
+                          int block_start_y, int block_width, int block_height,
+                          int16_t alpha, int16_t beta, int16_t gamma,
+                          int16_t delta, void* dest, ptrdiff_t dest_stride);
 
 // Warp for compound predictions. Section 7.11.3.5.
 // Similar to WarpFunc, but |dest| is a uint16_t predictor buffer,
 // |dest_stride| is given in units of uint16_t and |inter_round_bits_vertical|
 // is always 7 (kCompoundInterRoundBitsVertical).
+// Rounding precision is derived from the function being called. For horizontal
+// filtering kInterRoundBitsHorizontal & kInterRoundBitsHorizontal12bpp will be
+// used. For vertical filtering kInterRoundBitsCompondVertical will be used.
 using WarpCompoundFunc = WarpFunc;
 
 // Film grain synthesis function signature. Section 7.18.3.
