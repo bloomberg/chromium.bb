@@ -25,8 +25,8 @@ tools.force_local_third_party()
 # third_party/
 import httplib2
 from oauth2client import client
-from oauth2client import locked_file
-from oauth2client import multistore_file
+from oauth2client.contrib import locked_file
+from oauth2client.contrib import multistore_file
 from pyasn1.codec.der import decoder
 from pyasn1.type import univ
 import requests

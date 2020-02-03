@@ -19,6 +19,7 @@ Utilities for making it easier to use OAuth 2.0 on Google Compute Engine.
 
 import json
 import logging
+from six.moves import http_client
 from six.moves import urllib
 
 from oauth2client._helpers import _from_bytes
@@ -32,8 +33,8 @@ __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 logger = logging.getLogger(__name__)
 
 # URI Template for the endpoint that returns access_tokens.
-META = ('http://metadata.google.internal/0.1/meta-data/service-accounts/'
-        'default/acquire{?scope}')
+META = ('http://metadata.google.internal/computeMetadata/v1/instance/'
+        'service-accounts/default/token{?scope}')
 
 
 class AppAssertionCredentials(AssertionCredentials):
@@ -84,17 +85,18 @@ class AppAssertionCredentials(AssertionCredentials):
         """
         query = '?scope=%s' % urllib.parse.quote(self.scope, '')
         uri = META.replace('{?scope}', query)
-        response, content = http_request(uri)
+        response, content = http_request(
+            uri, headers={'Metadata-Flavor': 'Google'})
         content = _from_bytes(content)
-        if response.status == 200:
+        if response.status == http_client.OK:
             try:
-                d = json.loads(content)
+                token_content = json.loads(content)
             except Exception as e:
                 raise HttpAccessTokenRefreshError(str(e),
                                                   status=response.status)
-            self.access_token = d['accessToken']
+            self.access_token = token_content['access_token']
         else:
-            if response.status == 404:
+            if response.status == http_client.NOT_FOUND:
                 content += (' This can occur if a VM was created'
                             ' with no service account or scopes.')
             raise HttpAccessTokenRefreshError(content, status=response.status)

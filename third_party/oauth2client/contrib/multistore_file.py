@@ -53,7 +53,7 @@ import threading
 from oauth2client.client import Credentials
 from oauth2client.client import Storage as BaseStorage
 from oauth2client import util
-from oauth2client.locked_file import LockedFile
+from oauth2client.contrib.locked_file import LockedFile
 
 
 __author__ = 'jbeda@google.com (Joe Beda)'
@@ -293,6 +293,8 @@ class _MultiStore(object):
             elif e.errno == errno.EDEADLK:
                 logger.warn('Lock contention on multistore file, opening '
                             'in read-only mode.')
+            elif e.errno == errno.EACCES:
+                logger.warn('Cannot access credentials file.')
             else:
                 raise
         if not self._file.is_locked():

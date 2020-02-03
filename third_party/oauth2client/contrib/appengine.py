@@ -38,13 +38,13 @@ from oauth2client import GOOGLE_REVOKE_URI
 from oauth2client import GOOGLE_TOKEN_URI
 from oauth2client import clientsecrets
 from oauth2client import util
-from oauth2client import xsrfutil
 from oauth2client.client import AccessTokenRefreshError
 from oauth2client.client import AssertionCredentials
 from oauth2client.client import Credentials
 from oauth2client.client import Flow
 from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.client import Storage
+from oauth2client.contrib import xsrfutil
 
 # TODO(dhermes): Resolve import issue.
 # This is a temporary fix for a Google internal issue.
@@ -408,6 +408,8 @@ class StorageByKeyName(Storage):
             user: users.User object, optional. Can be used to grab user ID as a
                   key_name if no key name is specified.
         """
+        super(StorageByKeyName, self).__init__()
+
         if key_name is None:
             if user is None:
                 raise ValueError('StorageByKeyName called with no '
