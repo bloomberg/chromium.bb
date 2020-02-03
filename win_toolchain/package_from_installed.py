@@ -248,16 +248,14 @@ def BuildFileList(override_dir, include_arm):
                      os.path.join(dest_dir, system_crt_file)))
 
   # Generically drop all arm stuff that we don't need, and
-  # drop .msi files because we don't need installers, and drop windows.winmd
-  # because it is unneeded and is different on every machine and drop
+  # drop .msi files because we don't need installers and drop
   # samples since those are not used by any tools.
   def is_skippable(f):
     return ('arm\\' in f.lower() or
             (not include_arm and 'arm64\\' in f.lower()) or
             'samples\\' in f.lower() or
             f.lower().endswith(('.msi',
-                                '.msm',
-                                'windows.winmd')))
+                                '.msm')))
   return [(f, t) for f, t in result if not is_skippable(f)]
 
 def GenerateSetEnvCmd(target_dir):
