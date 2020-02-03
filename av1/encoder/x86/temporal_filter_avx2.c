@@ -132,8 +132,7 @@ static void apply_temporal_filter_planewise(
     const unsigned int stride2, const int block_width, const int block_height,
     const double sigma, const int decay_control, unsigned int *accumulator,
     uint16_t *count) {
-  const double decay = decay_control * exp(1 - sigma);
-  const double h = AOMMAX(decay * sigma, 0.1);
+  const double h = decay_control * (0.7 + log(sigma + 1.0));
   const double beta = 1.0;
 
   uint16_t frame_sse[SSE_STRIDE * BH];
@@ -227,8 +226,7 @@ void av1_apply_temporal_filter_planewise_avx2(
   }
 
   const int frame_height = ref_frame->heights[0] << mbd->plane[0].subsampling_y;
-  const int decay_control =
-      frame_height >= 720 ? 7 : (frame_height >= 480 ? 5 : 3);
+  const int decay_control = frame_height >= 480 ? 4 : 3;
 
   const int mb_height = block_size_high[block_size];
   const int mb_width = block_size_wide[block_size];

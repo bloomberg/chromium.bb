@@ -139,6 +139,7 @@ void TemporalFilterPlanewiseTest::RunTest(int isRandom, int width, int height,
     MACROBLOCKD *mbd = (MACROBLOCKD *)malloc(sizeof(MACROBLOCKD));
     mbd->plane[0].subsampling_y = 0;
     mbd->plane[0].subsampling_x = 0;
+    mbd->bd = 8;
 
     params_.ref_func(ref_frame, mbd, block_size, mb_row, mb_col, num_planes,
                      sigma, src2_, accumulator_ref, count_ref);
