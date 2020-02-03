@@ -341,7 +341,7 @@ class RemoteDeviceUpdater(object):
   UPDATE_ENGINE_BIN = 'update_engine_client'
   # Root working directory on the device. This directory is in the
   # stateful partition and thus has enough space to store the payloads.
-  DEVICE_BASE_DIR = '/mnt/stateful_partition/cros-flash'
+  DEVICE_BASE_DIR = '/usr/local/tmp/cros-flash'
   UPDATE_CHECK_INTERVAL_PROGRESSBAR = 0.5
   UPDATE_CHECK_INTERVAL_NORMAL = 10
 
