@@ -4272,7 +4272,6 @@ void av1_set_frame_size(AV1_COMP *cpi, int width, int height) {
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
   int ref_frame;
 
-  // TODO(yunqing): The following condition seems not work. Need to investigate.
   if (width != cm->width || height != cm->height) {
     // There has been a change in the encoded frame size
     av1_set_size_literal(cpi, width, height);
