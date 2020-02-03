@@ -2345,7 +2345,8 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
     models = []
     for model in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]:
       name = model[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
-      lab_board_name = model[config_lib.CONFIG_TEMPLATE_MODEL_BOARD_NAME]
+      lab_board_name = config_lib.GetNonUniBuildLabBoardName(
+          model[config_lib.CONFIG_TEMPLATE_MODEL_BOARD_NAME])
       enable_skylab = True
       if (lab_board_name in _release_enable_skylab_hwtest and
           lab_board_name in _release_enable_skylab_partial_boards and
