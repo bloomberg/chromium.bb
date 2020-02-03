@@ -3266,7 +3266,8 @@ BEGIN_PARTITION_SEARCH:
   assert(IMPLIES(!cpi->oxcf.enable_rect_partitions, !do_rectangular_split));
 
   const int ext_partition_allowed =
-      do_rectangular_split && bsize > BLOCK_8X8 && has_rows && has_cols;
+      do_rectangular_split &&
+      bsize > cpi->sf.part_sf.ext_partition_eval_thresh && has_rows && has_cols;
 
   // The standard AB partitions are allowed whenever ext-partition-types are
   // allowed
