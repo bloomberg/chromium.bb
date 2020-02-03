@@ -130,6 +130,8 @@ def add_footer(message, key, value, after_keys=None, before_keys=None):
   """
   assert key == normalize_name(key), 'Use normalized key'
   new_footer = '%s: %s' % (key, value)
+  if not FOOTER_PATTERN.match(new_footer):
+    raise ValueError('Invalid footer %r' % new_footer)
 
   top_lines, footer_lines, _ = split_footers(message)
   if not footer_lines:

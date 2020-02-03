@@ -178,6 +178,9 @@ My commit message is my best friend. It is my life. I must master it.
         'Header.\n\nBug: v8\nChange-Id: Ix\nN=t\nT=z')
 
   def testAddFooter(self):
+    with self.assertRaises(ValueError):
+      git_footers.add_footer('', 'Invalid Footer', 'Value')
+
     self.assertEqual(
         git_footers.add_footer('', 'Key', 'Value'),
         '\nKey: Value')

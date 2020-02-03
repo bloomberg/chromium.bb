@@ -1391,6 +1391,41 @@ class ChangeUnittest(PresubmitTestsBase):
     self.assertEqual('WHIZ=bang\nbar\nFOO=baz', change.FullDescriptionText())
     self.assertEqual({'WHIZ': 'bang', 'FOO': 'baz'}, change.tags)
 
+  def testAddDescriptionFooter(self):
+    change = presubmit.Change(
+        '', 'foo\nDRU=ro\n\nChange-Id: asdf', self.fake_root_dir, [], 3, 5, '')
+    change.AddDescriptionFooter('my-footer', 'my-value')
+    self.assertEqual(
+        'foo\nDRU=ro\n\nChange-Id: asdf\nMy-Footer: my-value',
+        change.FullDescriptionText())
+
+  def testAddDescriptionFooter_NoPreviousFooters(self):
+    change = presubmit.Change(
+        '', 'foo\nDRU=ro', self.fake_root_dir, [], 3, 5, '')
+    change.AddDescriptionFooter('my-footer', 'my-value')
+    self.assertEqual(
+        'foo\nDRU=ro\n\nMy-Footer: my-value', change.FullDescriptionText())
+
+  def testAddDescriptionFooter_InvalidFooter(self):
+    change = presubmit.Change(
+        '', 'foo\nDRU=ro', self.fake_root_dir, [], 3, 5, '')
+    with self.assertRaises(ValueError):
+      change.AddDescriptionFooter('invalid.characters in:the', 'footer key')
+
+  def testGitFootersFromDescription(self):
+    change = presubmit.Change(
+        '', 'foo\n\nChange-Id: asdf\nBug: 1\nBug: 2\nNo-Try: True',
+        self.fake_root_dir, [], 0, 0, '')
+    self.assertEqual({
+          'Change-Id': ['asdf'],
+          'Bug': ['2', '1'],
+          'No-Try': ['True'],
+      }, change.GitFootersFromDescription())
+
+  def testGitFootersFromDescription_NoFooters(self):
+    change = presubmit.Change('', 'foo', self.fake_root_dir, [], 0, 0, '')
+    self.assertEqual({}, change.GitFootersFromDescription())
+
   def testBugFromDescription_FixedAndBugGetDeduped(self):
     change = presubmit.Change(
         '', 'foo\n\nChange-Id: asdf\nBug: 1, 2\nFixed:2, 1 ',
