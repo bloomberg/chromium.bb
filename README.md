@@ -287,6 +287,14 @@ header and library dependencies. Note that if the versions of libavcodec and
 libsdl2 are too out of sync from the copies in the sysroot, compilation will
 succeed, but you may experience issues decoding content.
 
+To install the last known good version of the libavcodec and libsdl packages
+on a Raspberry Pi, you can run the following command:
+
+```bash
+sudo apt-get install libavcodec58=7:4.1.4* libavcodec-dev=7:4.1.4*
+                     libsdl2-2.0-0=2.0.9* libsdl2-dev=2.0.9*
+```
+
 NOTE: until [Issue 106](http://crbug.com/openscreen/106) is resolved, you may
 experience issues streaming to a Raspberry Pi if multiple network interfaces
 (e.g. WiFi + Ethernet) are enabled. The workaround is to disable either the WiFi
