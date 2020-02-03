@@ -76,6 +76,7 @@ list(APPEND libgav1_api_includes "${libgav1_source}/gav1/decoder.h"
             "${libgav1_source}/gav1/version.h")
 
 list(APPEND libgav1_api_sources "${libgav1_source}/decoder.cc"
+            "${libgav1_source}/decoder_settings.cc"
             "${libgav1_source}/status_code.cc"
             "${libgav1_source}/version.cc"
             ${libgav1_api_includes})

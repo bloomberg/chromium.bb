@@ -70,6 +70,16 @@ typedef enum {
 } Libgav1StatusCode;
 
 #if defined(__cplusplus)
+extern "C" {
+#endif
+
+// Returns a human readable error string in en-US for the status code |status|.
+// Always returns a valid (non-NULL) string.
+LIBGAV1_PUBLIC const char* Libgav1GetErrorString(Libgav1StatusCode status);
+
+#if defined(__cplusplus)
+}  // extern "C"
+
 namespace libgav1 {
 
 // Declare type aliases for C++.
@@ -77,7 +87,9 @@ using StatusCode = Libgav1StatusCode;
 
 // Returns a human readable error string in en-US for the status code |status|.
 // Always returns a valid (non-NULL) string.
-LIBGAV1_PUBLIC const char* GetErrorString(StatusCode status);
+inline const char* GetErrorString(StatusCode status) {
+  return Libgav1GetErrorString(status);
+}
 
 }  // namespace libgav1
 #endif  // defined(__cplusplus)

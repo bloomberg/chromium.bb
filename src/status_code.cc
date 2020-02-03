@@ -14,9 +14,9 @@
 
 #include "src/gav1/status_code.h"
 
-namespace libgav1 {
+extern "C" {
 
-const char* GetErrorString(StatusCode status) {
+const char* Libgav1GetErrorString(Libgav1StatusCode status) {
   switch (status) {
     case kLibgav1StatusOk:
       return "Success.";
@@ -49,4 +49,4 @@ const char* GetErrorString(StatusCode status) {
   return "Unrecognized status code.";
 }
 
-}  // namespace libgav1
+}  // extern "C"

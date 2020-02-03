@@ -17,9 +17,14 @@
 #ifndef LIBGAV1_SRC_GAV1_DECODER_H_
 #define LIBGAV1_SRC_GAV1_DECODER_H_
 
+#if defined(__cplusplus)
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#else
+#include <stddef.h>
+#include <stdint.h>
+#endif  // defined(__cplusplus)
 
 // IWYU pragma: begin_exports
 #include "gav1/decoder_buffer.h"
@@ -29,6 +34,38 @@
 #include "gav1/symbol_visibility.h"
 #include "gav1/version.h"
 // IWYU pragma: end_exports
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+struct Libgav1Decoder;
+typedef struct Libgav1Decoder Libgav1Decoder;
+
+LIBGAV1_PUBLIC Libgav1Decoder* Libgav1DecoderCreate();
+
+LIBGAV1_PUBLIC void Libgav1DecoderDestroy(Libgav1Decoder* decoder);
+
+LIBGAV1_PUBLIC Libgav1StatusCode Libgav1DecoderInit(
+    Libgav1Decoder* decoder, const Libgav1DecoderSettings* settings);
+
+LIBGAV1_PUBLIC Libgav1StatusCode
+Libgav1DecoderEnqueueFrame(Libgav1Decoder* decoder, const uint8_t* data,
+                           size_t size, int64_t user_private_data);
+
+LIBGAV1_PUBLIC Libgav1StatusCode Libgav1DecoderDequeueFrame(
+    Libgav1Decoder* decoder, const Libgav1DecoderBuffer** out_ptr);
+
+LIBGAV1_PUBLIC Libgav1StatusCode
+Libgav1DecoderSignalEOS(Libgav1Decoder* decoder);
+
+LIBGAV1_PUBLIC int Libgav1DecoderGetMaxAllowedFrames(
+    const Libgav1Decoder* decoder);
+
+LIBGAV1_PUBLIC int Libgav1DecoderGetMaxBitdepth();
+
+#if defined(__cplusplus)
+}  // extern "C"
 
 namespace libgav1 {
 
@@ -96,5 +133,6 @@ class LIBGAV1_PUBLIC Decoder {
 };
 
 }  // namespace libgav1
+#endif  // defined(__cplusplus)
 
 #endif  // LIBGAV1_SRC_GAV1_DECODER_H_

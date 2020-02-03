@@ -24,7 +24,11 @@
 // All the declarations in this file are part of the public ABI. This file may
 // be included by both C and C++ files.
 
+#if defined(__cplusplus)
+#include <cstdint>
+#else
 #include <stdint.h>
+#endif  // defined(__cplusplus)
 
 #include "gav1/decoder_buffer.h"
 

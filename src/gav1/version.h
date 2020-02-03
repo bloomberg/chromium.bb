@@ -23,27 +23,49 @@
 // (https://semver.org).
 
 #define LIBGAV1_MAJOR_VERSION 0
-#define LIBGAV1_MINOR_VERSION 5
+#define LIBGAV1_MINOR_VERSION 6
 #define LIBGAV1_PATCH_VERSION 0
 
 #define LIBGAV1_VERSION                                           \
   ((LIBGAV1_MAJOR_VERSION << 16) | (LIBGAV1_MINOR_VERSION << 8) | \
    LIBGAV1_PATCH_VERSION)
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
+// Returns the library's version number, packed in an int using 8 bits for
+// each of major/minor/patch. e.g, 1.2.3 is 0x010203.
+LIBGAV1_PUBLIC int Libgav1GetVersion();
+
+// Returns the library's version number as a string in the format
+// 'MAJOR.MINOR.PATCH'. Always returns a valid (non-NULL) string.
+LIBGAV1_PUBLIC const char* Libgav1GetVersionString();
+
+// Returns the build configuration used to produce the library. Always returns
+// a valid (non-NULL) string.
+LIBGAV1_PUBLIC const char* Libgav1GetBuildConfiguration();
+
+#if defined(__cplusplus)
+}  // extern "C"
+
 namespace libgav1 {
 
 // Returns the library's version number, packed in an int using 8 bits for
 // each of major/minor/patch. e.g, 1.2.3 is 0x010203.
-LIBGAV1_PUBLIC int GetVersion();
+inline int GetVersion() { return Libgav1GetVersion(); }
 
 // Returns the library's version number as a string in the format
 // 'MAJOR.MINOR.PATCH'. Always returns a valid (non-NULL) string.
-LIBGAV1_PUBLIC const char* GetVersionString();
+inline const char* GetVersionString() { return Libgav1GetVersionString(); }
 
 // Returns the build configuration used to produce the library. Always returns
 // a valid (non-NULL) string.
-LIBGAV1_PUBLIC const char* GetBuildConfiguration();
+inline const char* GetBuildConfiguration() {
+  return Libgav1GetBuildConfiguration();
+}
 
 }  // namespace libgav1
+#endif  // defined(__cplusplus)
 
 #endif  // LIBGAV1_SRC_GAV1_VERSION_H_

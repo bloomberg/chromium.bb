@@ -14,8 +14,6 @@
 
 #include "src/gav1/version.h"
 
-namespace libgav1 {
-
 #define LIBGAV1_TOSTRING(x) #x
 #define LIBGAV1_STRINGIFY(x) LIBGAV1_TOSTRING(x)
 #define LIBGAV1_DOT_SEPARATED(M, m, p) M##.##m##.##p
@@ -26,14 +24,16 @@ namespace libgav1 {
 
 #define LIBGAV1_VERSION_STRING LIBGAV1_STRINGIFY(LIBGAV1_DOT_VERSION)
 
-int GetVersion() { return LIBGAV1_VERSION; }
-const char* GetVersionString() { return LIBGAV1_VERSION_STRING; }
+extern "C" {
 
-const char* GetBuildConfiguration() {
+int Libgav1GetVersion() { return LIBGAV1_VERSION; }
+const char* Libgav1GetVersionString() { return LIBGAV1_VERSION_STRING; }
+
+const char* Libgav1GetBuildConfiguration() {
   // TODO(jzern): cmake can generate the detail or in other cases we could
   // produce one based on the known defines along with the defaults based on
   // the toolchain, e.g., LIBGAV1_ENABLE_NEON from cpu.h.
   return "Not available.";
 }
 
-}  // namespace libgav1
+}  // extern "C"

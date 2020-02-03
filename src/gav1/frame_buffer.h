@@ -20,8 +20,13 @@
 // All the declarations in this file are part of the public ABI. This file may
 // be included by both C and C++ files.
 
+#if defined(__cplusplus)
+#include <cstddef>
+#include <cstdint>
+#else
 #include <stddef.h>
 #include <stdint.h>
+#endif  // defined(__cplusplus)
 
 // The callback functions use the C linkage conventions.
 #if defined(__cplusplus)
