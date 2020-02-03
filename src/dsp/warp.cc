@@ -34,12 +34,11 @@ namespace {
 // Number of extra bits of precision in warped filtering.
 constexpr int kWarpedDiffPrecisionBits = 10;
 
-// TODO(johannkoenig): Rename |clip| parameter.
-template <bool clip, int bitdepth, typename Pixel>
+template <bool is_compound, int bitdepth, typename Pixel>
 void Warp_C(const void* const source, ptrdiff_t source_stride,
             const int source_width, const int source_height,
             const int* const warp_params, const int subsampling_x,
-            const int subsampling_y, const int inter_round_bits_vertical,
+            const int subsampling_y, const int /*inter_round_bits_vertical*/,
             const int block_start_x, const int block_start_y,
             const int block_width, const int block_height, const int16_t alpha,
             const int16_t beta, const int16_t gamma, const int16_t delta,
@@ -47,12 +46,10 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
   constexpr int kRoundBitsHorizontal = (bitdepth == 12)
                                            ? kInterRoundBitsHorizontal12bpp
                                            : kInterRoundBitsHorizontal;
-  // Compound calculations are the only ones which use a different value for
-  // |inter_round_bits_vertical|. Inter/intra will be able to use the |clip|
-  // path when the offset value is removed.
-  // TODO(johannkoenig): Replace |inter_round_bits_vertical| with constants
-  // derived from |clip|.
-  assert(!clip || inter_round_bits_vertical == ((bitdepth == 12) ? 9 : 11));
+  constexpr int kRoundBitsVertical =
+      is_compound ? kInterRoundBitsCompoundVertical
+                  : (bitdepth == 12) ? kInterRoundBitsVertical12bpp
+                                     : kInterRoundBitsVertical;
   // These offsets allow intermediate calculations to remain in 16 bits when
   // |bitdepth| is 8.
   // The worst case calculations for |kWarpedFilters| are a set of positive taps
@@ -71,9 +68,9 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
   // These are not beneficial for |bitdepth| > 8 because it will always be
   // necessary to step up to 32 bit intermediates.
   // TODO(b/146439793): Remove the offset before storing the result.
-  const int unsigned_offset =
+  constexpr int unsigned_offset =
       ((1 << bitdepth) + (1 << (bitdepth - 1)))
-      << ((14 - kRoundBitsHorizontal) - inter_round_bits_vertical);
+      << ((14 - kRoundBitsHorizontal) - kRoundBitsVertical);
   constexpr int horizontal_offset = (1 << (bitdepth - 1)) << kFilterBits;
   constexpr int vertical_offset = (1 << bitdepth)
                                   << (2 * kFilterBits - kRoundBitsHorizontal);
@@ -88,9 +85,10 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
   };
   const auto* const src = static_cast<const Pixel*>(source);
   source_stride /= sizeof(Pixel);
-  using DestType = typename std::conditional<clip, Pixel, uint16_t>::type;
+  using DestType =
+      typename std::conditional<is_compound, uint16_t, Pixel>::type;
   auto* dst = static_cast<DestType*>(dest);
-  if (clip) dest_stride /= sizeof(dst[0]);
+  if (!is_compound) dest_stride /= sizeof(dst[0]);
 
   assert(block_width >= 8);
   assert(block_height >= 8);
@@ -181,13 +179,13 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           const int row = (iy4 + 7 <= 0) ? 0 : source_height - 1;
           const Pixel row_border_pixel = first_row_border[row * source_stride];
           DestType* dst_row = dst + start_x - block_start_x;
-          if (clip) {
-            Memset(dst_row, row_border_pixel, 8);
-          } else {
-            int sum = row_border_pixel << ((14 - kRoundBitsHorizontal) -
-                                           inter_round_bits_vertical);
+          if (is_compound) {
+            int sum = row_border_pixel
+                      << ((14 - kRoundBitsHorizontal) - kRoundBitsVertical);
             sum += unsigned_offset;
             Memset(dst_row, sum, 8);
+          } else {
+            Memset(dst_row, row_border_pixel, 8);
           }
           const DestType* const first_dst_row = dst_row;
           dst_row += dest_stride;
@@ -233,11 +231,11 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
               sum +=
                   kWarpedFilters[offset][k] * intermediate_result_column[y + k];
             }
-            sum = RightShiftWithRounding(sum, inter_round_bits_vertical);
-            if (clip) {
-              dst_row[x] = static_cast<DestType>(Clip3(sum, 0, kMaxPixel));
-            } else {
+            sum = RightShiftWithRounding(sum, kRoundBitsVertical);
+            if (is_compound) {
               dst_row[x] = static_cast<DestType>(sum + unsigned_offset);
+            } else {
+              dst_row[x] = static_cast<DestType>(Clip3(sum, 0, kMaxPixel));
             }
             sy += gamma;
           }
@@ -410,14 +408,14 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             sum += kWarpedFilters[offset][k] * intermediate_result[y + k][x];
           }
           assert(sum >= 0 && sum < (vertical_offset << 2));
-          sum = RightShiftWithRounding(sum, inter_round_bits_vertical);
-          if (clip) {
-            dst_row[x] = static_cast<DestType>(
-                Clip3(sum - unsigned_offset, 0, kMaxPixel));
-          } else {
+          sum = RightShiftWithRounding(sum, kRoundBitsVertical);
+          if (is_compound) {
             // Warp output is a predictor, whose type is uint16_t.
             // Clipping is applied at the stage of final pixel value output.
             dst_row[x] = static_cast<DestType>(sum);
+          } else {
+            dst_row[x] = static_cast<DestType>(
+                Clip3(sum - unsigned_offset, 0, kMaxPixel));
           }
           sy += gamma;
         }
@@ -433,15 +431,15 @@ void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
   assert(dsp != nullptr);
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  dsp->warp = Warp_C<false, 8, uint8_t>;
-  dsp->warp_clip = Warp_C<true, 8, uint8_t>;
+  dsp->warp = Warp_C</*is_compound=*/false, 8, uint8_t>;
+  dsp->warp_compound = Warp_C</*is_compound=*/true, 8, uint8_t>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp8bpp_Warp
-  dsp->warp = Warp_C<false, 8, uint8_t>;
+  dsp->warp = Warp_C</*is_compound=*/false, 8, uint8_t>;
 #endif
-#ifndef LIBGAV1_Dsp8bpp_WarpClip
-  dsp->warp_clip = Warp_C<true, 8, uint8_t>;
+#ifndef LIBGAV1_Dsp8bpp_WarpCompound
+  dsp->warp_compound = Warp_C</*is_compound=*/true, 8, uint8_t>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }
@@ -451,15 +449,15 @@ void Init10bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
   assert(dsp != nullptr);
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
-  dsp->warp = Warp_C<false, 10, uint16_t>;
-  dsp->warp_clip = Warp_C<true, 10, uint16_t>;
+  dsp->warp = Warp_C</*is_compound=*/false, 10, uint16_t>;
+  dsp->warp_compound = Warp_C</*is_compound=*/true, 10, uint16_t>;
 #else  // !LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   static_cast<void>(dsp);
 #ifndef LIBGAV1_Dsp10bpp_Warp
-  dsp->warp = Warp_C<false, 10, uint16_t>;
+  dsp->warp = Warp_C</*is_compound=*/false, 10, uint16_t>;
 #endif
-#ifndef LIBGAV1_Dsp10bpp_WarpClip
-  dsp->warp_clip = Warp_C<true, 10, uint16_t>;
+#ifndef LIBGAV1_Dsp10bpp_WarpCompound
+  dsp->warp_compound = Warp_C</*is_compound=*/true, 10, uint16_t>;
 #endif
 #endif  // LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
 }

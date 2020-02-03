@@ -1181,11 +1181,11 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
           plane);
   uint16_t* const prediction = block.scratch_buffer->prediction_buffer[index];
   if (is_compound) {
-    dsp_.warp(source, source_stride, source_width, source_height,
-              warp_params->params, subsampling_x_[plane], subsampling_y_[plane],
-              round_bits, block_start_x, block_start_y, width, height,
-              warp_params->alpha, warp_params->beta, warp_params->gamma,
-              warp_params->delta, prediction, prediction_stride);
+    dsp_.warp_compound(
+        source, source_stride, source_width, source_height, warp_params->params,
+        subsampling_x_[plane], subsampling_y_[plane], round_bits, block_start_x,
+        block_start_y, width, height, warp_params->alpha, warp_params->beta,
+        warp_params->gamma, warp_params->delta, prediction, prediction_stride);
   } else {
     void* const output = is_inter_intra ? static_cast<void*>(prediction) : dest;
     ptrdiff_t output_stride = is_inter_intra ? prediction_stride : dest_stride;
@@ -1199,11 +1199,11 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
       output_stride *= 2;
     }
 #endif
-    dsp_.warp_clip(
-        source, source_stride, source_width, source_height, warp_params->params,
-        subsampling_x_[plane], subsampling_y_[plane], round_bits, block_start_x,
-        block_start_y, width, height, warp_params->alpha, warp_params->beta,
-        warp_params->gamma, warp_params->delta, output, output_stride);
+    dsp_.warp(source, source_stride, source_width, source_height,
+              warp_params->params, subsampling_x_[plane], subsampling_y_[plane],
+              round_bits, block_start_x, block_start_y, width, height,
+              warp_params->alpha, warp_params->beta, warp_params->gamma,
+              warp_params->delta, output, output_stride);
   }
 }
 

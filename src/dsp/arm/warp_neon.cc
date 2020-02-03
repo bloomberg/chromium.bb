@@ -122,15 +122,17 @@ void HorizontalFilter(const int sx4, const int16_t alpha,
   vst1q_s16(intermediate_result_row, sum);
 }
 
-template <bool clip>
+template <bool is_compound>
 void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
                const int source_width, const int source_height,
                const int* const warp_params, const int subsampling_x,
-               const int subsampling_y, const int inter_round_bits_vertical,
+               const int subsampling_y, const int /*inter_round_bits_vertical*/,
                const int block_start_x, const int block_start_y,
                const int block_width, const int block_height,
                const int16_t alpha, const int16_t beta, const int16_t gamma,
                const int16_t delta, void* dest, const ptrdiff_t dest_stride) {
+  constexpr int inter_round_bits_vertical =
+      is_compound ? kInterRoundBitsCompoundVertical : kInterRoundBitsVertical;
   constexpr int bitdepth = 8;
   constexpr int kSingleRoundOffset = (1 << bitdepth) + (1 << (bitdepth - 1));
   union {
@@ -151,7 +153,8 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
   constexpr int vertical_offset =
       1 << (bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal);
   const auto* const src = static_cast<const uint8_t*>(source);
-  using DestType = typename std::conditional<clip, uint8_t, uint16_t>::type;
+  using DestType =
+      typename std::conditional<is_compound, uint16_t, uint8_t>::type;
   auto* dst = static_cast<DestType*>(dest);
 
   assert(block_width >= 8);
@@ -245,13 +248,13 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
 
           DestType* dst_row = dst + start_x - block_start_x;
           for (int y = 0; y < 8; ++y) {
-            if (clip) {
-              memset(dst_row, row_border_pixel, 8);
-            } else {
+            if (is_compound) {
               const uint16x8_t sum = vdupq_n_u16(
                   (row_border_pixel + kSingleRoundOffset)
-                  << (kInterRoundBitsVertical - inter_round_bits_vertical));
+                  << (kInterRoundBitsVertical - kInterRoundBitsVertical));
               vst1q_u16(reinterpret_cast<uint16_t*>(dst_row), sum);
+            } else {
+              memset(dst_row, row_border_pixel, 8);
             }
             dst_row += dest_stride;
           }
@@ -302,14 +305,14 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
                 vaddvq_s32(product_low) + vaddvq_s32(product_high);
             const int16_t sum_descale =
                 RightShiftWithRounding(sum, inter_round_bits_vertical);
-            if (clip) {
-              tmp[x] = sum_descale;
-            } else {
+            if (is_compound) {
               dst_row[x] = sum_descale + unsigned_offset;
+            } else {
+              tmp[x] = sum_descale;
             }
             sy += gamma;
           }
-          if (clip) {
+          if (!is_compound) {
             const int16x8_t sum = vld1q_s16(tmp);
             vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovun_s16(sum));
           }
@@ -344,13 +347,13 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             sum = vcombine_s16(vrshrn_n_s32(sum_low, 11),
                                vrshrn_n_s32(sum_high, 11));
           }
-          if (clip) {
-            vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovun_s16(sum));
-          } else {
+          if (is_compound) {
             const int16x8_t offset = vdupq_n_s16(unsigned_offset);
             sum = vaddq_s16(sum, offset);
             vst1q_u16(reinterpret_cast<uint16_t*>(dst_row),
                       vreinterpretq_u16_s16(sum));
+          } else {
+            vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovun_s16(sum));
           }
 #endif  // defined(__aarch64__)
           dst_row += dest_stride;
@@ -493,13 +496,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           sum_high_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_high), 11);
         }
 #endif  // defined(__aarch64__)
-        if (clip) {
-          const uint16x8_t sum = vcombine_u16(sum_low_16, sum_high_16);
-          const uint16x8_t single_round_offset =
-              vdupq_n_u16(kSingleRoundOffset);
-          const uint16x8_t sum_clip = vqsubq_u16(sum, single_round_offset);
-          vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovn_u16(sum_clip));
-        } else {
+        if (is_compound) {
           // vst1q_u16 can also be used:
           //   vst1q_u16(dst_row, vcombine_u16(sum_low_16, sum_high_16));
           // But it is slightly slower for arm64 (the same speed for 32-bit
@@ -510,6 +507,12 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           // gcc 7.2.0.
           vst1_u16(reinterpret_cast<uint16_t*>(dst_row), sum_low_16);
           vst1_u16(reinterpret_cast<uint16_t*>(dst_row) + 4, sum_high_16);
+        } else {
+          const uint16x8_t sum = vcombine_u16(sum_low_16, sum_high_16);
+          const uint16x8_t single_round_offset =
+              vdupq_n_u16(kSingleRoundOffset);
+          const uint16x8_t sum_clip = vqsubq_u16(sum, single_round_offset);
+          vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovn_u16(sum_clip));
         }
         dst_row += dest_stride;
         sy4 += delta;
@@ -524,8 +527,8 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
 void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
   assert(dsp != nullptr);
-  dsp->warp = Warp_NEON<false>;
-  dsp->warp_clip = Warp_NEON<true>;
+  dsp->warp = Warp_NEON</*is_compound=*/false>;
+  dsp->warp_compound = Warp_NEON</*is_compound=*/true>;
 }
 
 }  // namespace

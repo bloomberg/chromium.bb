@@ -580,7 +580,8 @@ using ObmcBlendFuncs = ObmcBlendFunc[kNumObmcDirections];
 //          1]      m6 m7 1)    1]
 // |subsampling_x/y| is the current frame's plane subsampling factor.
 // |inter_round_bits_vertical| is the rounding precision used after vertical
-// filtering (7 or 11). kInterRoundBitsHorizontal &
+// filtering. It is always 11. In the future kInterRoundBitsVertical and
+// kInterRoundBitsVertical12bpp will be used. kInterRoundBitsHorizontal &
 // kInterRoundBitsHorizontal12bpp can be used for the horizontal pass.
 // |block_start_x| and |block_start_y| are the starting position the current
 // coding block.
@@ -589,8 +590,9 @@ using ObmcBlendFuncs = ObmcBlendFunc[kNumObmcDirections];
 // |alpha|, |beta|, |gamma|, |delta| are valid warp parameters. See the
 // comments in the definition of struct GlobalMotion for the range of their
 // values.
-// |dest| is the output buffer. It is a predictor, whose type is uint16_t.
-// |dest_stride| is the stride, in units of uint16_t.
+// |dest| is the output buffer of type Pixel. The output values are clipped to
+// Pixel values.
+// |dest_stride| is the stride, in units of bytes.
 //
 // NOTE: WarpFunc assumes the source frame has left, right, top, and bottom
 // borders that extend the frame boundary pixels.
@@ -608,11 +610,11 @@ using WarpFunc = void (*)(const void* source, ptrdiff_t source_stride,
                           int16_t gamma, int16_t delta, void* dest,
                           ptrdiff_t dest_stride);
 
-// Warp with clipping function signature. Section 7.11.3.5.
-// Similar to WarpFunc, but |dest| is a pixel buffer, |dest_stride| is given in
-// bytes. The final output is clipped to the valid pixel range for the given
-// bitdepth.
-using WarpClipFunc = WarpFunc;
+// Warp for compound predictions. Section 7.11.3.5.
+// Similar to WarpFunc, but |dest| is a uint16_t predictor buffer,
+// |dest_stride| is given in units of uint16_t and |inter_round_bits_vertical|
+// is always 7 (kCompoundInterRoundBitsVertical).
+using WarpCompoundFunc = WarpFunc;
 
 // Film grain synthesis function signature. Section 7.18.3.
 // This function generates film grain noise and blends the noise with the
@@ -808,7 +810,7 @@ struct Dsp {
   InterIntraMaskBlendFuncs8bpp inter_intra_mask_blend_8bpp;
   ObmcBlendFuncs obmc_blend;
   WarpFunc warp;
-  WarpClipFunc warp_clip;
+  WarpCompoundFunc warp_compound;
   FilmGrainFuncs film_grain;
 };
 
