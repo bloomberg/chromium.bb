@@ -63,7 +63,7 @@ void MdnsResponderService::SetServiceConfig(
 
 void MdnsResponderService::OnRead(UdpSocket* socket,
                                   ErrorOr<UdpPacket> packet) {
-  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderService::OnRead");
+  TRACE_SCOPED(TraceCategory::kMdns, "MdnsResponderService::OnRead");
   if (!mdns_responder_) {
     return;
   }
@@ -211,7 +211,7 @@ bool MdnsResponderService::NetworkScopedDomainNameComparator::operator()(
 }
 
 void MdnsResponderService::HandleMdnsEvents() {
-  TRACE_SCOPED(TraceCategory::mDNS, "MdnsResponderService::HandleMdnsEvents");
+  TRACE_SCOPED(TraceCategory::kMdns, "MdnsResponderService::HandleMdnsEvents");
   // NOTE: In the common case, we will get a single combined packet for
   // PTR/SRV/TXT/A and then no other packets.  If we don't loop here, we would
   // start SRV/TXT queries based on the PTR response, but never check for events

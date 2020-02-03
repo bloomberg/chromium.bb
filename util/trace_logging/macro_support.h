@@ -59,7 +59,7 @@ inline bool IsTraceLoggingEnabled(TraceCategory::Value category) {
       tracing_storage, line)[sizeof(openscreen::internal::TraceIdSetter)]; \
   TRACE_INTERNAL_IGNORE_UNUSED_VAR                                         \
   const auto TRACE_INTERNAL_UNIQUE_VAR_NAME(trace_ref_) =                  \
-      TRACE_IS_ENABLED(openscreen::TraceCategory::Value::Any)              \
+      TRACE_IS_ENABLED(openscreen::TraceCategory::Value::kAny)             \
           ? openscreen::internal::TraceInstanceHelper<                     \
                 openscreen::internal::TraceIdSetter>::                     \
                 Create(TRACE_INTERNAL_CONCAT_CONST(tracing_storage, line), \

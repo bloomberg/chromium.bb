@@ -102,7 +102,7 @@ void QuicConnectionFactoryImpl::SetServerDelegate(
 
 void QuicConnectionFactoryImpl::OnRead(UdpSocket* socket,
                                        ErrorOr<UdpPacket> packet_or_error) {
-  TRACE_SCOPED(TraceCategory::Quic, "QuicConnectionFactoryImpl::OnRead");
+  TRACE_SCOPED(TraceCategory::kQuic, "QuicConnectionFactoryImpl::OnRead");
   if (packet_or_error.is_error()) {
     return;
   }

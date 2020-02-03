@@ -65,7 +65,7 @@ TlsConnectionFactoryPosix::~TlsConnectionFactoryPosix() = default;
 // TODO(rwkeane): Integrate with Auth.
 void TlsConnectionFactoryPosix::Connect(const IPEndpoint& remote_address,
                                         const TlsConnectOptions& options) {
-  TRACE_SCOPED(TraceCategory::SSL, "TlsConnectionFactoryPosix::Connect");
+  TRACE_SCOPED(TraceCategory::kSsl, "TlsConnectionFactoryPosix::Connect");
   IPAddress::Version version = remote_address.address.version();
   std::unique_ptr<TlsConnectionPosix> connection(
       new TlsConnectionPosix(version, task_runner_, platform_client_));
@@ -174,7 +174,7 @@ void TlsConnectionFactoryPosix::OnSocketAccepted(
     std::unique_ptr<StreamSocket> socket) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
-  TRACE_SCOPED(TraceCategory::SSL,
+  TRACE_SCOPED(TraceCategory::kSsl,
                "TlsConnectionFactoryPosix::OnSocketAccepted");
   std::unique_ptr<TlsConnectionPosix> connection(new TlsConnectionPosix(
       std::move(socket), task_runner_, platform_client_));

@@ -106,10 +106,10 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
                                           const uint8_t* buffer,
                                           size_t buffer_size,
                                           Clock::time_point now) {
-  TRACE_SCOPED(TraceCategory::Presentation, "Receiver::OnStreamMessage");
+  TRACE_SCOPED(TraceCategory::kPresentation, "Receiver::OnStreamMessage");
   switch (message_type) {
     case msgs::Type::kPresentationUrlAvailabilityRequest: {
-      TRACE_SCOPED(TraceCategory::Presentation,
+      TRACE_SCOPED(TraceCategory::kPresentation,
                    "kPresentationUrlAvailabilityRequest");
       OSP_VLOG << "got presentation-url-availability-request";
       msgs::PresentationUrlAvailabilityRequest request;
@@ -135,7 +135,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
     }
 
     case msgs::Type::kPresentationStartRequest: {
-      TRACE_SCOPED(TraceCategory::Presentation, "kPresentationStartRequest");
+      TRACE_SCOPED(TraceCategory::kPresentation, "kPresentationStartRequest");
       OSP_VLOG << "got presentation-start-request";
       msgs::PresentationStartRequest request;
       const ssize_t result =
@@ -196,7 +196,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
     }
 
     case msgs::Type::kPresentationConnectionOpenRequest: {
-      TRACE_SCOPED(TraceCategory::Presentation,
+      TRACE_SCOPED(TraceCategory::kPresentation,
                    "kPresentationConnectionOpenRequest");
       OSP_VLOG << "Got a presentation-connection-open-request";
       msgs::PresentationConnectionOpenRequest request;
@@ -264,7 +264,7 @@ ErrorOr<size_t> Receiver::OnStreamMessage(uint64_t endpoint_id,
     }
 
     case msgs::Type::kPresentationTerminationRequest: {
-      TRACE_SCOPED(TraceCategory::Presentation,
+      TRACE_SCOPED(TraceCategory::kPresentation,
                    "kPresentationTerminationRequest");
       OSP_VLOG << "got presentation-termination-request";
       msgs::PresentationTerminationRequest request;

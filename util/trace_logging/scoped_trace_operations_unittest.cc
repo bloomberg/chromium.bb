@@ -23,7 +23,7 @@ using ::testing::Invoke;
 
 // These tests validate that parameters are passed correctly by using the Trace
 // Internals.
-constexpr auto category = TraceCategory::mDNS;
+constexpr auto category = TraceCategory::kMdns;
 constexpr uint32_t line = 10;
 
 TEST(TraceLoggingInternalTest, CreatingNoTraceObjectValid) {

@@ -37,37 +37,37 @@ using StrictMockLoggingPlatform = ::testing::StrictMock<MockLoggingPlatform>;
 TEST(TraceLoggingTest, MacroCallScopedDoesntSegFault) {
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(1);
 #endif
-  { TRACE_SCOPED(TraceCategory::Value::Any, "test"); }
+  { TRACE_SCOPED(TraceCategory::Value::kAny, "test"); }
 }
 
 TEST(TraceLoggingTest, MacroCallUnscopedDoesntSegFault) {
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogAsyncStart(_, _, _, _, _)).Times(1);
 #endif
-  { TRACE_ASYNC_START(TraceCategory::Value::Any, "test"); }
+  { TRACE_ASYNC_START(TraceCategory::Value::kAny, "test"); }
 }
 
 TEST(TraceLoggingTest, MacroVariablesUniquelyNames) {
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(2);
   EXPECT_CALL(platform, LogAsyncStart(_, _, _, _, _)).Times(2);
 #endif
 
   {
-    TRACE_SCOPED(TraceCategory::Value::Any, "test1");
-    TRACE_SCOPED(TraceCategory::Value::Any, "test2");
-    TRACE_ASYNC_START(TraceCategory::Value::Any, "test3");
-    TRACE_ASYNC_START(TraceCategory::Value::Any, "test4");
+    TRACE_SCOPED(TraceCategory::Value::kAny, "test1");
+    TRACE_SCOPED(TraceCategory::Value::kAny, "test2");
+    TRACE_ASYNC_START(TraceCategory::Value::kAny, "test3");
+    TRACE_ASYNC_START(TraceCategory::Value::kAny, "test4");
   }
 }
 
@@ -75,7 +75,7 @@ TEST(TraceLoggingTest, ExpectTimestampsReflectDelay) {
   constexpr uint32_t delay_in_ms = 50;
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .WillOnce(DoAll(Invoke(ValidateTraceTimestampDiff<delay_in_ms>),
@@ -83,7 +83,7 @@ TEST(TraceLoggingTest, ExpectTimestampsReflectDelay) {
 #endif
 
   {
-    TRACE_SCOPED(TraceCategory::Value::Any, "Name");
+    TRACE_SCOPED(TraceCategory::Value::kAny, "Name");
     std::this_thread::sleep_for(std::chrono::milliseconds(delay_in_ms));
   }
 }
@@ -92,14 +92,14 @@ TEST(TraceLoggingTest, ExpectErrorsPassedToResult) {
   constexpr Error::Code result_code = Error::Code::kParseError;
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .WillOnce(Invoke(ValidateTraceErrorCode<result_code>));
 #endif
 
   {
-    TRACE_SCOPED(TraceCategory::Value::Any, "Name");
+    TRACE_SCOPED(TraceCategory::Value::kAny, "Name");
     TRACE_SET_RESULT(result_code);
   }
 }
@@ -107,14 +107,14 @@ TEST(TraceLoggingTest, ExpectErrorsPassedToResult) {
 TEST(TraceLoggingTest, ExpectUnsetTraceIdNotSet) {
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(1);
 #endif
 
   TraceIdHierarchy h = {kUnsetTraceId, kUnsetTraceId, kUnsetTraceId};
   {
-    TRACE_SCOPED(TraceCategory::Value::Any, "Name", h);
+    TRACE_SCOPED(TraceCategory::Value::kAny, "Name", h);
 
     auto ids = TRACE_HIERARCHY;
     EXPECT_NE(ids.current, kUnsetTraceId);
@@ -129,7 +129,7 @@ TEST(TraceLoggingTest, ExpectCreationWithIdsToWork) {
   constexpr TraceId root = 0x84;
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .WillOnce(
@@ -140,7 +140,7 @@ TEST(TraceLoggingTest, ExpectCreationWithIdsToWork) {
 
   {
     TraceIdHierarchy h = {current, parent, root};
-    TRACE_SCOPED(TraceCategory::Value::Any, "Name", h);
+    TRACE_SCOPED(TraceCategory::Value::kAny, "Name", h);
 
 #if defined(ENABLE_TRACE_LOGGING)
     auto ids = TRACE_HIERARCHY;
@@ -160,7 +160,7 @@ TEST(TraceLoggingTest, ExpectHirearchyToBeApplied) {
   constexpr TraceId root = 0x84;
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .WillOnce(DoAll(
@@ -175,7 +175,7 @@ TEST(TraceLoggingTest, ExpectHirearchyToBeApplied) {
 
   {
     TraceIdHierarchy h = {current, parent, root};
-    TRACE_SCOPED(TraceCategory::Value::Any, "Name", h);
+    TRACE_SCOPED(TraceCategory::Value::kAny, "Name", h);
 #if defined(ENABLE_TRACE_LOGGING)
     auto ids = TRACE_HIERARCHY;
     EXPECT_EQ(ids.current, current);
@@ -183,7 +183,7 @@ TEST(TraceLoggingTest, ExpectHirearchyToBeApplied) {
     EXPECT_EQ(ids.root, root);
 #endif
 
-    TRACE_SCOPED(TraceCategory::Value::Any, "Name");
+    TRACE_SCOPED(TraceCategory::Value::kAny, "Name");
 #if defined(ENABLE_TRACE_LOGGING)
     ids = TRACE_HIERARCHY;
     EXPECT_NE(ids.current, current);
@@ -199,7 +199,7 @@ TEST(TraceLoggingTest, ExpectHirearchyToEndAfterScopeWhenSetWithSetter) {
   constexpr TraceId root = 0x84;
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .WillOnce(DoAll(
@@ -212,7 +212,7 @@ TEST(TraceLoggingTest, ExpectHirearchyToEndAfterScopeWhenSetWithSetter) {
     TraceIdHierarchy ids = {current, parent, root};
     TRACE_SET_HIERARCHY(ids);
     {
-      TRACE_SCOPED(TraceCategory::Value::Any, "Name");
+      TRACE_SCOPED(TraceCategory::Value::kAny, "Name");
       ids = TRACE_HIERARCHY;
 #if defined(ENABLE_TRACE_LOGGING)
       EXPECT_NE(ids.current, current);
@@ -236,7 +236,7 @@ TEST(TraceLoggingTest, ExpectHirearchyToEndAfterScope) {
   constexpr TraceId root = 0x84;
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .WillOnce(DoAll(
@@ -251,9 +251,9 @@ TEST(TraceLoggingTest, ExpectHirearchyToEndAfterScope) {
 
   {
     TraceIdHierarchy ids = {current, parent, root};
-    TRACE_SCOPED(TraceCategory::Value::Any, "Name", ids);
+    TRACE_SCOPED(TraceCategory::Value::kAny, "Name", ids);
     {
-      TRACE_SCOPED(TraceCategory::Value::Any, "Name");
+      TRACE_SCOPED(TraceCategory::Value::kAny, "Name");
       ids = TRACE_HIERARCHY;
 #if defined(ENABLE_TRACE_LOGGING)
       EXPECT_NE(ids.current, current);
@@ -277,7 +277,7 @@ TEST(TraceLoggingTest, ExpectSetHierarchyToApply) {
   constexpr TraceId root = 0x84;
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .WillOnce(DoAll(
@@ -296,7 +296,7 @@ TEST(TraceLoggingTest, ExpectSetHierarchyToApply) {
     EXPECT_EQ(ids.root, root);
 #endif
 
-    TRACE_SCOPED(TraceCategory::Value::Any, "Name");
+    TRACE_SCOPED(TraceCategory::Value::kAny, "Name");
     ids = TRACE_HIERARCHY;
 #if defined(ENABLE_TRACE_LOGGING)
     EXPECT_NE(ids.current, current);
@@ -309,12 +309,12 @@ TEST(TraceLoggingTest, ExpectSetHierarchyToApply) {
 TEST(TraceLoggingTest, CheckTraceAsyncStartLogsCorrectly) {
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogAsyncStart(_, _, _, _, _)).Times(1);
 #endif
 
-  { TRACE_ASYNC_START(TraceCategory::Value::Any, "Name"); }
+  { TRACE_ASYNC_START(TraceCategory::Value::kAny, "Name"); }
 }
 
 TEST(TraceLoggingTest, CheckTraceAsyncStartSetsHierarchy) {
@@ -323,7 +323,7 @@ TEST(TraceLoggingTest, CheckTraceAsyncStartSetsHierarchy) {
   constexpr TraceId root = 84;
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogAsyncStart(_, _, _, _, _))
       .WillOnce(
@@ -335,7 +335,7 @@ TEST(TraceLoggingTest, CheckTraceAsyncStartSetsHierarchy) {
     TraceIdHierarchy ids = {current, parent, root};
     TRACE_SET_HIERARCHY(ids);
     {
-      TRACE_ASYNC_START(TraceCategory::Value::Any, "Name");
+      TRACE_ASYNC_START(TraceCategory::Value::kAny, "Name");
       ids = TRACE_HIERARCHY;
 #if defined(ENABLE_TRACE_LOGGING)
       EXPECT_NE(ids.current, current);
@@ -358,12 +358,12 @@ TEST(TraceLoggingTest, CheckTraceAsyncEndLogsCorrectly) {
   constexpr Error::Code result = Error::Code::kAgain;
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
-  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::Any))
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
   EXPECT_CALL(platform, LogAsyncEnd(_, _, _, id, result)).Times(1);
 #endif
 
-  TRACE_ASYNC_END(TraceCategory::Value::Any, id, result);
+  TRACE_ASYNC_END(TraceCategory::Value::kAny, id, result);
 }
 
 }  // namespace
