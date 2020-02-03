@@ -2733,6 +2733,12 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_disabled_bug': 'https://b/144683687',
       },
 
+      'eve-lacros-release': {
+          'hw_tests': [],
+          'hw_tests_override': [],
+          'hw_tests_disabled_bug': 'https://crbug.com/1048213',
+      },
+
       'flapjack-release': {
           'sign_types': ['recovery', 'factory'],
       },

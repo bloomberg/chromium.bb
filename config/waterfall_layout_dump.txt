@@ -815,6 +815,12 @@
   eve-kvm-llvm-toolchain-tryjob
   eve-kvm-release-tryjob
   eve-kvm-unittest-stress
+  eve-lacros-full-tryjob
+  eve-lacros-llvm-next-toolchain-tryjob
+  eve-lacros-llvm-toolchain-tryjob
+  eve-lacros-payloads-tryjob
+  eve-lacros-release-tryjob
+  eve-lacros-unittest-stress
   eve-llvm-next-toolchain-tryjob
   eve-llvm-toolchain-tryjob
   eve-llvm-tot-toolchain-tryjob
