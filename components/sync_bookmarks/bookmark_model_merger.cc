@@ -136,9 +136,7 @@ void ResolveDuplicateRemoteGUIDs(syncer::UpdateResponseDataList* updates) {
       continue;
     }
 
-    bool success =
-        known_guids.insert(update->entity->originator_client_item_id).second;
-    DCHECK(success);
+    known_guids.insert(update->entity->originator_client_item_id);
   }
 
   // In a second pass, detect if GUIDs in specifics conflict with each other or
