@@ -375,10 +375,13 @@ int DaalaBitReader::ReadBit() {
 
 int64_t DaalaBitReader::ReadLiteral(int num_bits) {
   assert(num_bits <= 32);
+  assert(num_bits > 0);
   uint32_t literal = 0;
-  for (int bit = num_bits - 1; bit >= 0; --bit) {
-    literal |= static_cast<uint32_t>(ReadBit()) << bit;
-  }
+  int bit = num_bits - 1;
+  do {
+    literal <<= 1;
+    literal |= static_cast<uint32_t>(ReadBit());
+  } while (--bit >= 0);
   return literal;
 }
 

@@ -256,7 +256,9 @@ void Tile::ReadCdef(const Block& block) {
   const int column = DivideBy16(column4x4);
   if (cdef_index_[row][column] == -1) {
     cdef_index_[row][column] =
-        static_cast<int16_t>(reader_.ReadLiteral(frame_header_.cdef.bits));
+        frame_header_.cdef.bits > 0
+            ? static_cast<int16_t>(reader_.ReadLiteral(frame_header_.cdef.bits))
+            : 0;
     for (int i = row4x4; i < row4x4 + block.height4x4; i += cdef_size4x4) {
       for (int j = column4x4; j < column4x4 + block.width4x4;
            j += cdef_size4x4) {
