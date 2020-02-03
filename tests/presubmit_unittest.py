@@ -3033,6 +3033,7 @@ class ThreadPoolTest(unittest.TestCase):
     super(ThreadPoolTest, self).setUp()
     mock.patch('subprocess2.Popen').start()
     mock.patch('presubmit_support.sigint_handler').start()
+    mock.patch('presubmit_support.time_time', return_value=0).start()
     presubmit.sigint_handler.wait.return_value = ('stdout', '')
     self.addCleanup(mock.patch.stopall)
 
