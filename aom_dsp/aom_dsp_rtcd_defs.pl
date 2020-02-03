@@ -481,8 +481,10 @@ if (aom_config("CONFIG_AV1_HIGHBITDEPTH") eq "yes") {
 #
 if (aom_config("CONFIG_AV1_ENCODER") eq "yes"){
     add_proto qw/void aom_fdct4x4/, "const int16_t *input, tran_low_t *output, int stride";
+    specialize qw/aom_fdct4x4 neon sse2/;
 
     add_proto qw/void aom_fdct4x4_lp/, "const int16_t *input, int16_t *output, int stride";
+    specialize qw/aom_fdct4x4_lp neon sse2/;
 
     add_proto qw/void aom_fdct8x8/, "const int16_t *input, tran_low_t *output, int stride";
     specialize qw/aom_fdct8x8 neon sse2/, "$ssse3_x86_64";

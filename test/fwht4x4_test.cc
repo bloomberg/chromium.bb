@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "aom_dsp/aom_dsp_common.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 #include "config/av1_rtcd.h"
@@ -51,7 +52,7 @@ void iwht4x4_12(const tran_low_t *in, uint8_t *out, int stride) {
   av1_highbd_iwht4x4_16_add_c(in, out, stride, 12);
 }
 
-class Trans4x4WHT : public libaom_test::TransformTestBase,
+class Trans4x4WHT : public libaom_test::TransformTestBase<tran_low_t>,
                     public ::testing::TestWithParam<Dct4x4Param> {
  public:
   virtual ~Trans4x4WHT() {}
