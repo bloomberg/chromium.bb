@@ -65,7 +65,18 @@ int32_t cros_gralloc_buffer::lock(const struct rectangle *rect, uint32_t map_fla
 			drv_bo_invalidate(bo_, lock_data_[0]);
 			vaddr = lock_data_[0]->vma->addr;
 		} else {
-			vaddr = drv_bo_map(bo_, rect, map_flags, &lock_data_[0], 0);
+			struct rectangle r = *rect;
+
+			if (!r.width && !r.height && !r.x && !r.y) {
+				/*
+				 * Android IMapper.hal: An accessRegion of all-zeros means the
+				 * entire buffer.
+				 */
+				r.width = drv_bo_get_width(bo_);
+				r.height = drv_bo_get_height(bo_);
+			}
+
+			vaddr = drv_bo_map(bo_, &r, map_flags, &lock_data_[0], 0);
 		}
 
 		if (vaddr == MAP_FAILED) {
