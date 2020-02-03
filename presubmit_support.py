@@ -480,6 +480,9 @@ class GerritAccessor(object):
       reviewers = changeinfo.get('reviewers', {}).get('REVIEWER', [])
     return [r.get('email') for r in reviewers]
 
+  def UpdateDescription(self, description, issue):
+    gerrit_util.SetCommitMessage(self.host, issue, description, notify='NONE')
+
 
 class OutputApi(object):
   """An instance of OutputApi gets passed to presubmit scripts so that they
