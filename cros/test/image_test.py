@@ -352,7 +352,7 @@ class SymbolsTest(image_test_lib.ImageTestCase):
       return self._known_symtabs[file_name]
 
     # We use StringIO here to obviate fseek/fread time in pyelftools.
-    stream = StringIO(osutils.ReadFile(file_name))
+    stream = StringIO(osutils.ReadFile(file_name, mode='rb'))
 
     try:
       elf = elffile.ELFFile(stream)
