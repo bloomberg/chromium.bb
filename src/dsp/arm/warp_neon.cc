@@ -131,11 +131,10 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
                const int block_height, const int16_t alpha, const int16_t beta,
                const int16_t gamma, const int16_t delta, void* dest,
                const ptrdiff_t dest_stride) {
-  // TODO(johannkoenig): Remove this and put uses in |is_compound| checks.
-  constexpr int inter_round_bits_vertical =
-      is_compound ? kInterRoundBitsCompoundVertical : kInterRoundBitsVertical;
   constexpr int bitdepth = 8;
   constexpr int kSingleRoundOffset = (1 << bitdepth) + (1 << (bitdepth - 1));
+  constexpr int kRoundBitsVertical =
+      is_compound ? kInterRoundBitsCompoundVertical : kInterRoundBitsVertical;
   union {
     // Intermediate_result is the output of the horizontal filtering and
     // rounding. The range is within 13 (= bitdepth + kFilterBits + 1 -
@@ -147,9 +146,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
     // same, store one sample per row in a column vector.
     int16_t intermediate_result_column[15];
   };
-  const int unsigned_offset =
-      ((1 << bitdepth) + (1 << (bitdepth - 1)))
-      << (kInterRoundBitsVertical - inter_round_bits_vertical);
+  constexpr int unsigned_offset = (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   constexpr int horizontal_offset = 1 << (bitdepth + kFilterBits - 1);
   constexpr int vertical_offset =
       1 << (bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal);
@@ -305,7 +302,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             const int32_t sum =
                 vaddvq_s32(product_low) + vaddvq_s32(product_high);
             const int16_t sum_descale =
-                RightShiftWithRounding(sum, inter_round_bits_vertical);
+                RightShiftWithRounding(sum, kRoundBitsVertical);
             if (is_compound) {
               dst_row[x] = sum_descale + unsigned_offset;
             } else {
@@ -336,18 +333,9 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             sum_high =
                 vmlal_n_s16(sum_high, vget_high_s16(filter[k]), intermediate);
           }
-          assert(inter_round_bits_vertical == 7 ||
-                 inter_round_bits_vertical == 11);
-          int16x8_t sum;
-          // TODO(johannkoenig): Re-evaluate this when inter_round_bits_vertical
-          // is a compile time constant.
-          if (inter_round_bits_vertical == 7) {
-            sum = vcombine_s16(vrshrn_n_s32(sum_low, 7),
-                               vrshrn_n_s32(sum_high, 7));
-          } else {
-            sum = vcombine_s16(vrshrn_n_s32(sum_low, 11),
-                               vrshrn_n_s32(sum_high, 11));
-          }
+          int16x8_t sum =
+              vcombine_s16(vrshrn_n_s32(sum_low, kRoundBitsVertical),
+                           vrshrn_n_s32(sum_high, kRoundBitsVertical));
           if (is_compound) {
             const int16x8_t offset = vdupq_n_s16(unsigned_offset);
             sum = vaddq_s16(sum, offset);
@@ -466,50 +454,15 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           sum_high = vmlal_s16(sum_high, vget_high_s16(filter[k]),
                                vget_high_s16(intermediate));
         }
-        assert(inter_round_bits_vertical == 7 ||
-               inter_round_bits_vertical == 11);
-        // Since inter_round_bits_vertical can be 7 or 11, and all the narrowing
-        // shift intrinsics require the shift argument to be a constant
-        // (immediate), we have two options:
-        // 1. Call a non-narrowing shift, followed by a narrowing extract.
-        // 2. Call a narrowing shift (with a constant shift of 7 or 11) in an
-        //    if-else statement.
-#if defined(__aarch64__)
-        // This version is slightly faster for arm64 (1106 ms vs 1112 ms).
-        // This version is slower for 32-bit arm (1235 ms vs 1149 ms).
-        const int32x4_t shift = vdupq_n_s32(-inter_round_bits_vertical);
-        const uint32x4_t sum_low_shifted =
-            vrshlq_u32(vreinterpretq_u32_s32(sum_low), shift);
-        const uint32x4_t sum_high_shifted =
-            vrshlq_u32(vreinterpretq_u32_s32(sum_high), shift);
-        const uint16x4_t sum_low_16 = vmovn_u32(sum_low_shifted);
-        const uint16x4_t sum_high_16 = vmovn_u32(sum_high_shifted);
-#else   // !defined(__aarch64__)
-        // This version is faster for 32-bit arm.
-        // This version is slightly slower for arm64.
-        uint16x4_t sum_low_16;
-        uint16x4_t sum_high_16;
-        if (inter_round_bits_vertical == 7) {
-          sum_low_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_low), 7);
-          sum_high_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_high), 7);
-        } else {
-          sum_low_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_low), 11);
-          sum_high_16 = vrshrn_n_u32(vreinterpretq_u32_s32(sum_high), 11);
-        }
-#endif  // defined(__aarch64__)
+        // Because of the offset these values are unsigned.
+        const uint32x4_t sum_low_u32 = vreinterpretq_u32_s32(sum_low);
+        const uint32x4_t sum_high_u32 = vreinterpretq_u32_s32(sum_high);
+        const uint16x8_t sum =
+            vcombine_u16(vrshrn_n_u32(sum_low_u32, kRoundBitsVertical),
+                         vrshrn_n_u32(sum_high_u32, kRoundBitsVertical));
         if (is_compound) {
-          // vst1q_u16 can also be used:
-          //   vst1q_u16(dst_row, vcombine_u16(sum_low_16, sum_high_16));
-          // But it is slightly slower for arm64 (the same speed for 32-bit
-          // arm).
-          //
-          // vst1_u16_x2 could be used, but it is also slightly slower for arm64
-          // and causes a bus error for 32-bit arm. Also, it is not supported by
-          // gcc 7.2.0.
-          vst1_u16(reinterpret_cast<uint16_t*>(dst_row), sum_low_16);
-          vst1_u16(reinterpret_cast<uint16_t*>(dst_row) + 4, sum_high_16);
+          vst1q_u16(reinterpret_cast<uint16_t*>(dst_row), sum);
         } else {
-          const uint16x8_t sum = vcombine_u16(sum_low_16, sum_high_16);
           const uint16x8_t single_round_offset =
               vdupq_n_u16(kSingleRoundOffset);
           const uint16x8_t sum_clip = vqsubq_u16(sum, single_round_offset);
