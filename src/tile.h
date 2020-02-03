@@ -455,9 +455,8 @@ class Tile : public Allocable {
   template <bool is_dc_coefficient>
   LIBGAV1_ALWAYS_INLINE bool ReadSignAndApplyDequantization(
       const Block& block, int32_t* quantized_buffer, const uint16_t* scan,
-      int i, int adjusted_tx_width_log2, int tx_width, int q_value,
-      const uint8_t* quantizer_matrix, int shift, int max_value,
-      uint16_t* dc_sign_cdf, int8_t* dc_category,
+      int i, int tx_width, int q_value, const uint8_t* quantizer_matrix,
+      int shift, int max_value, uint16_t* dc_sign_cdf, int8_t* dc_category,
       int* coefficient_level);  // Part of 5.11.39.
   int ReadCoeffBaseRange(int clamped_tx_size_context, int cdf_context,
                          int plane_type);  // Part of 5.11.39.

@@ -270,14 +270,6 @@ PredictionMode GetSinglePredictionMode(int index, PredictionMode y_mode) {
 constexpr uint8_t kQuantizationShift[kNumTransformSizes] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 2, 1, 2, 2};
 
-// Input: 1d array index |index|, which indexes into a 2d array of width
-//     1 << |tx_width_log2|.
-// Output: 1d array index which indexes into a 2d array of width
-//     (1 << |tx_width_log2|) + kQuantizedCoefficientBufferPadding.
-int PaddedIndex(int index, int tx_width_log2) {
-  return index + MultiplyBy4(index >> tx_width_log2);
-}
-
 // Returns the minimum of |length| or |max|-|start|. This is used to clamp array
 // indices when accessing arrays whose bound is equal to |max|.
 int GetNumElements(int length, int start, int max) {
@@ -894,32 +886,35 @@ int Tile::GetCoeffBaseRangeContextEob(int adjusted_tx_width_log2, int pos,
 }
 
 // Section 8.3.2 in the spec, under coeff_base and coeff_br.
+// Bottom boundary checks are avoided by the padded rows.
+// For a coefficient near the right boundary, the two right neighbors and the
+// one bottom-right neighbor may be out of boundary. We don't check the right
+// boundary for them, because the out of boundary neighbors project to positions
+// above the diagonal line which goes through the current coefficient and these
+// positions are still all 0s according to the diagonal scan order.
 void Tile::ReadCoeffBase2D(
     const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
     int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
     uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
     int32_t* const quantized_buffer) {
   const int tx_width = 1 << adjusted_tx_width_log2;
-  const int padded_tx_width = tx_width + kQuantizedCoefficientBufferPadding;
   int i = eob - 2;
   do {
     const uint16_t pos = scan[i];
     const int row = pos >> adjusted_tx_width_log2;
     const int column = pos & (tx_width - 1);
-    int32_t* const quantized =
-        &quantized_buffer[PaddedIndex(pos, adjusted_tx_width_log2)];
+    int32_t* const quantized = &quantized_buffer[pos];
     int context;
     if (pos == 0) {
       context = 0;
     } else {
       context = std::min(
-          4, DivideBy2(1 +
-                       (std::min(quantized[1], 3) +                    // {0, 1}
-                        std::min(quantized[padded_tx_width], 3) +      // {1, 0}
-                        std::min(quantized[padded_tx_width + 1], 3) +  // {1, 1}
-                        std::min(quantized[2], 3) +                    // {0, 2}
-                        std::min(quantized[MultiplyBy2(padded_tx_width)],
-                                 3))));  // {2, 0}
+          4, DivideBy2(1 + (std::min(quantized[1], 3) +             // {0, 1}
+                            std::min(quantized[tx_width], 3) +      // {1, 0}
+                            std::min(quantized[tx_width + 1], 3) +  // {1, 1}
+                            std::min(quantized[2], 3) +             // {0, 2}
+                            std::min(quantized[MultiplyBy2(tx_width)],
+                                     3))));  // {2, 0}
       context += kCoeffBaseContextOffset[tx_size][std::min(row, 4)]
                                         [std::min(column, 4)];
     }
@@ -929,10 +924,9 @@ void Tile::ReadCoeffBase2D(
       // No need to clip quantized values to COEFF_BASE_RANGE + NUM_BASE_LEVELS
       // + 1, because we clip the overall output to 6 and the unclipped
       // quantized values will always result in an output of greater than 6.
-      context =
-          std::min(6, DivideBy2(1 + quantized[1] +                 // {0, 1}
-                                quantized[padded_tx_width] +       // {1, 0}
-                                quantized[padded_tx_width + 1]));  // {1, 1}
+      context = std::min(6, DivideBy2(1 + quantized[1] +          // {0, 1}
+                                      quantized[tx_width] +       // {1, 0}
+                                      quantized[tx_width + 1]));  // {1, 1}
       if (pos != 0) {
         context += 14 >> static_cast<int>((row | column) < 2);
       }
@@ -943,25 +937,36 @@ void Tile::ReadCoeffBase2D(
 }
 
 // Section 8.3.2 in the spec, under coeff_base and coeff_br.
+// Bottom boundary checks are avoided by the padded rows.
+// For a coefficient near the right boundary, the four right neighbors may be
+// out of boundary. We don't do the boundary check for the first three right
+// neighbors, because even for the transform blocks with smallest width 4, the
+// first three out of boundary neighbors project to positions left to the
+// current coefficient and these positions are still all 0s according to the
+// column scan order. However, when transform block with is 4 and the current
+// coefficient is on the right boundary, its fourth right neighbor projects to
+// the under position on the same column, which could be nonzero. Therefore, we
+// must skip the fourth right neighbor. To make it simple, for any coefficient,
+// we always do the boundary check for its fourth right neighbor.
 void Tile::ReadCoeffBaseHorizontal(
     const uint16_t* scan, PlaneType plane_type, TransformSize /*tx_size*/,
     int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
     uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
     int32_t* const quantized_buffer) {
   const int tx_width = 1 << adjusted_tx_width_log2;
-  const int padded_tx_width = tx_width + kQuantizedCoefficientBufferPadding;
   int i = eob - 2;
   do {
     const uint16_t pos = scan[i];
     const int column = pos & (tx_width - 1);
-    int32_t* const quantized =
-        &quantized_buffer[PaddedIndex(pos, adjusted_tx_width_log2)];
+    int32_t* const quantized = &quantized_buffer[pos];
     int context = std::min(
-        4, DivideBy2(1 + (std::min(quantized[1], 3) +                // {0, 1}
-                          std::min(quantized[padded_tx_width], 3) +  // {1, 0}
-                          std::min(quantized[2], 3) +                // {0, 2}
-                          std::min(quantized[3], 3) +                // {0, 3}
-                          std::min(quantized[4], 3))));              // {0, 4}
+        4,
+        DivideBy2(1 + (std::min(quantized[1], 3) +         // {0, 1}
+                       std::min(quantized[tx_width], 3) +  // {1, 0}
+                       std::min(quantized[2], 3) +         // {0, 2}
+                       std::min(quantized[3], 3) +         // {0, 3}
+                       std::min(quantized[4],
+                                (column + 4 < tx_width) ? 3 : 0))));  // {0, 4}
     context += kCoeffBasePositionContextOffset[column];
     int level =
         reader_.ReadSymbol<kCoeffBaseSymbolCount>(coeff_base_cdf[context]);
@@ -969,9 +974,9 @@ void Tile::ReadCoeffBaseHorizontal(
       // No need to clip quantized values to COEFF_BASE_RANGE + NUM_BASE_LEVELS
       // + 1, because we clip the overall output to 6 and the unclipped
       // quantized values will always result in an output of greater than 6.
-      context = std::min(6, DivideBy2(1 + quantized[1] +            // {0, 1}
-                                      quantized[padded_tx_width] +  // {1, 0}
-                                      quantized[2]));               // {0, 2}
+      context = std::min(6, DivideBy2(1 + quantized[1] +     // {0, 1}
+                                      quantized[tx_width] +  // {1, 0}
+                                      quantized[2]));        // {0, 2}
       if (pos != 0) {
         context += 14 >> static_cast<int>(column == 0);
       }
@@ -982,28 +987,29 @@ void Tile::ReadCoeffBaseHorizontal(
 }
 
 // Section 8.3.2 in the spec, under coeff_base and coeff_br.
+// Bottom boundary checks are avoided by the padded rows.
+// Right boundary check is performed explicitly.
 void Tile::ReadCoeffBaseVertical(
     const uint16_t* scan, PlaneType plane_type, TransformSize /*tx_size*/,
     int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
     uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
     int32_t* const quantized_buffer) {
   const int tx_width = 1 << adjusted_tx_width_log2;
-  const int padded_tx_width = tx_width + kQuantizedCoefficientBufferPadding;
   int i = eob - 2;
   do {
     const uint16_t pos = scan[i];
     const int row = pos >> adjusted_tx_width_log2;
-    int32_t* const quantized =
-        &quantized_buffer[PaddedIndex(pos, adjusted_tx_width_log2)];
+    const int column = pos & (tx_width - 1);
+    int32_t* const quantized = &quantized_buffer[pos];
+    const int quantized_column1 = (column + 1 < tx_width) ? quantized[1] : 0;
     int context = std::min(
-        4,
-        DivideBy2(1 + (std::min(quantized[1], 3) +                // {0, 1}
-                       std::min(quantized[padded_tx_width], 3) +  // {1, 0}
-                       std::min(quantized[MultiplyBy2(padded_tx_width)],
-                                3) +                                  // {2, 0}
-                       std::min(quantized[padded_tx_width * 3], 3) +  // {3, 0}
-                       std::min(quantized[MultiplyBy4(padded_tx_width)],
-                                3))));  // {4, 0}
+        4, DivideBy2(1 + (std::min(quantized_column1, 3) +    // {0, 1}
+                          std::min(quantized[tx_width], 3) +  // {1, 0}
+                          std::min(quantized[MultiplyBy2(tx_width)],
+                                   3) +                           // {2, 0}
+                          std::min(quantized[tx_width * 3], 3) +  // {3, 0}
+                          std::min(quantized[MultiplyBy4(tx_width)],
+                                   3))));  // {4, 0}
     context += kCoeffBasePositionContextOffset[row];
     int level =
         reader_.ReadSymbol<kCoeffBaseSymbolCount>(coeff_base_cdf[context]);
@@ -1011,10 +1017,10 @@ void Tile::ReadCoeffBaseVertical(
       // No need to clip quantized values to COEFF_BASE_RANGE + NUM_BASE_LEVELS
       // + 1, because we clip the overall output to 6 and the unclipped
       // quantized values will always result in an output of greater than 6.
-      int context = std::min(
-          6, DivideBy2(1 + quantized[1] +                          // {0, 1}
-                       quantized[padded_tx_width] +                // {1, 0}
-                       quantized[MultiplyBy2(padded_tx_width)]));  // {2, 0}
+      int context =
+          std::min(6, DivideBy2(1 + quantized_column1 +              // {0, 1}
+                                quantized[tx_width] +                // {1, 0}
+                                quantized[MultiplyBy2(tx_width)]));  // {2, 0}
       if (pos != 0) {
         context += 14 >> static_cast<int>(row == 0);
       }
@@ -1125,13 +1131,12 @@ void Tile::ScaleMotionVector(const MotionVector& mv, const Plane plane,
 template <bool is_dc_coefficient>
 bool Tile::ReadSignAndApplyDequantization(
     const Block& block, int32_t* const quantized_buffer,
-    const uint16_t* const scan, int i, int adjusted_tx_width_log2, int tx_width,
-    int q_value, const uint8_t* const quantizer_matrix, int shift,
-    int max_value, uint16_t* const dc_sign_cdf, int8_t* const dc_category,
+    const uint16_t* const scan, int i, int tx_width, int q_value,
+    const uint8_t* const quantizer_matrix, int shift, int max_value,
+    uint16_t* const dc_sign_cdf, int8_t* const dc_category,
     int* const coefficient_level) {
   int pos = is_dc_coefficient ? 0 : scan[i];
-  const int pos_index =
-      is_dc_coefficient ? 0 : PaddedIndex(pos, adjusted_tx_width_log2);
+  const int pos_index = is_dc_coefficient ? 0 : pos;
   // If quantized_buffer[pos_index] is zero, then the rest of the function has
   // no effect.
   if (quantized_buffer[pos_index] == 0) return true;
@@ -1249,10 +1254,6 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
   memset(*block.residual, 0, tx_width * tx_height * residual_size_);
   const int clamped_tx_width = std::min(tx_width, 32);
   const int clamped_tx_height = std::min(tx_height, 32);
-  const int padded_tx_width =
-      clamped_tx_width + kQuantizedCoefficientBufferPadding;
-  const int padded_tx_height =
-      clamped_tx_height + kQuantizedCoefficientBufferPadding;
   if (plane == kPlaneY) {
     ReadTransformType(block, x4, y4, tx_size);
   }
@@ -1305,14 +1306,21 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
     }
   }
   int32_t* const quantized = block.scratch_buffer->quantized_buffer;
-  // Only the first |padded_tx_width| * |padded_tx_height| values of |quantized|
-  // will be used by this function and the functions to which it is passed into.
-  // So we simply need to zero out those values before it is being used. If
-  // |eob| == 1, then only the first index will be populated and used. So there
-  // is no need to initialize this array in that case.
+  // Only the first |clamped_tx_width| * |padded_tx_height| values of
+  // |quantized| will be used by this function and the functions to which it is
+  // passed into. So we simply need to zero out those values before it is being
+  // used. If |eob| == 1, then only the first index will be populated and used.
+  // So there is no need to initialize this array in that case.
   if (eob > 1) {
+    static const uint8_t
+        kQuantizedCoefficientBufferPadding[kNumTransformClasses] = {
+            kQuantizedCoefficientBufferPadding2D,
+            kQuantizedCoefficientBufferPaddingHorizontal,
+            kQuantizedCoefficientBufferPaddingVertical};
+    const int padded_tx_height =
+        clamped_tx_height + kQuantizedCoefficientBufferPadding[tx_class];
     memset(quantized, 0,
-           padded_tx_width * padded_tx_height * sizeof(quantized[0]));
+           clamped_tx_width * padded_tx_height * sizeof(quantized[0]));
   }
   const uint16_t* scan = kScan[tx_class][tx_size];
   const TransformSize adjusted_tx_size = kAdjustedTransformSize[tx_size];
@@ -1333,7 +1341,7 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
           GetCoeffBaseRangeContextEob(adjusted_tx_width_log2, pos, tx_class),
           plane_type);
     }
-    quantized[PaddedIndex(pos, adjusted_tx_width_log2)] = level;
+    quantized[pos] = level;
   }
   if (eob > 1) {
     // Read all the other coefficients.
@@ -1375,16 +1383,14 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
           : nullptr;
   assert(scan[0] == 0);
   if (!ReadSignAndApplyDequantization</*is_dc_coefficient=*/true>(
-          block, quantized, scan, 0, adjusted_tx_width_log2, tx_width,
-          dc_q_value, quantizer_matrix, shift, max_value, dc_sign_cdf,
-          &dc_category, &coefficient_level)) {
+          block, quantized, scan, 0, tx_width, dc_q_value, quantizer_matrix,
+          shift, max_value, dc_sign_cdf, &dc_category, &coefficient_level)) {
     return -1;
   }
   for (int i = 1; i < eob; ++i) {
     if (!ReadSignAndApplyDequantization</*is_dc_coefficient=*/false>(
-            block, quantized, scan, i, adjusted_tx_width_log2, tx_width,
-            ac_q_value, quantizer_matrix, shift, max_value, nullptr, nullptr,
-            &coefficient_level)) {
+            block, quantized, scan, i, tx_width, ac_q_value, quantizer_matrix,
+            shift, max_value, nullptr, nullptr, &coefficient_level)) {
       return -1;
     }
   }
