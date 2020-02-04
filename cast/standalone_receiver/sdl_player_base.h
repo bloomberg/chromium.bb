@@ -83,8 +83,24 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
   virtual void Present() = 0;
 
  private:
+  struct PendingFrame : public PresentableFrame {
+    Clock::time_point start_time;
+
+    PendingFrame();
+    ~PendingFrame();
+    PendingFrame(PendingFrame&& other) noexcept;
+    PendingFrame& operator=(PendingFrame&& other) noexcept;
+  };
+
   // Receiver::Consumer implementation.
   void OnFramesReady(int next_frame_buffer_size) final;
+
+  // Determine the presentation time of the frame. Ideally, this will occur
+  // based on the time progression of the media, given by the RTP timestamps.
+  // However, if this falls too far out-of-sync with the system reference clock,
+  // re-synchronize, possibly causing user-visible "jank."
+  Clock::time_point ResyncAndDeterminePresentationTime(
+      const EncodedFrame& frame);
 
   // AVCodecDecoder::Client implementation. These are called-back from
   // |decoder_| to provide results.
@@ -123,14 +139,7 @@ class SDLPlayerBase : public Receiver::Consumer, public Decoder::Client {
 
   // Queue of frames currently being decoded and decoded frames awaiting
   // rendering.
-  struct PendingFrame : public PresentableFrame {
-    Clock::time_point start_time;
 
-    PendingFrame();
-    ~PendingFrame();
-    PendingFrame(PendingFrame&& other) noexcept;
-    PendingFrame& operator=(PendingFrame&& other) noexcept;
-  };
   std::map<FrameId, PendingFrame> frames_to_render_;
 
   // Buffer for holding EncodedFrame::data.

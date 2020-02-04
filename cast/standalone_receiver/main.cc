@@ -20,6 +20,8 @@
 #include "platform/impl/logging.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/task_runner.h"
+#include "platform/impl/text_trace_logging_platform.h"
+#include "util/trace_logging.h"
 
 namespace openscreen {
 namespace cast {
@@ -157,6 +159,7 @@ int main(int argc, const char* argv[]) {
     }
   };
 
+  openscreen::TextTraceLoggingPlatform platform;
   openscreen::SetLogLevel(openscreen::LogLevel::kInfo);
   auto* const platform_client = new PlatformClientExposingTaskRunner(
       std::make_unique<TaskRunnerImpl>(&Clock::now));

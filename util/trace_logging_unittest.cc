@@ -44,6 +44,16 @@ TEST(TraceLoggingTest, MacroCallScopedDoesntSegFault) {
   { TRACE_SCOPED(TraceCategory::Value::kAny, "test"); }
 }
 
+TEST(TraceLoggingTest, MacroCallDefaultScopedDoesntSegFault) {
+  StrictMockLoggingPlatform platform;
+#if defined(ENABLE_TRACE_LOGGING)
+  EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
+      .Times(AtLeast(1));
+  EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(1);
+#endif
+  { TRACE_DEFAULT_SCOPED(TraceCategory::Value::kAny); }
+}
+
 TEST(TraceLoggingTest, MacroCallUnscopedDoesntSegFault) {
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
@@ -59,7 +69,7 @@ TEST(TraceLoggingTest, MacroVariablesUniquelyNames) {
 #if defined(ENABLE_TRACE_LOGGING)
   EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
       .Times(AtLeast(1));
-  EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(2);
+  EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(3);
   EXPECT_CALL(platform, LogAsyncStart(_, _, _, _, _)).Times(2);
 #endif
 
@@ -68,6 +78,7 @@ TEST(TraceLoggingTest, MacroVariablesUniquelyNames) {
     TRACE_SCOPED(TraceCategory::Value::kAny, "test2");
     TRACE_ASYNC_START(TraceCategory::Value::kAny, "test3");
     TRACE_ASYNC_START(TraceCategory::Value::kAny, "test4");
+    TRACE_DEFAULT_SCOPED(TraceCategory::Value::kAny);
   }
 }
 
@@ -230,7 +241,7 @@ TEST(TraceLoggingTest, ExpectHirearchyToEndAfterScopeWhenSetWithSetter) {
   }
 }
 
-TEST(TraceLoggingTest, ExpectHirearchyToEndAfterScope) {
+TEST(TraceLoggingTest, ExpectHierarchyToEndAfterScope) {
   constexpr TraceId current = 0x32;
   constexpr TraceId parent = 0x47;
   constexpr TraceId root = 0x84;

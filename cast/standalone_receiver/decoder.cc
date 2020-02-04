@@ -3,6 +3,7 @@
 #include <sstream>
 
 #include "util/logging.h"
+#include "util/trace_logging.h"
 
 namespace openscreen {
 namespace cast {
@@ -41,6 +42,7 @@ Decoder::Decoder(const std::string& codec_name) : codec_name_(codec_name) {}
 Decoder::~Decoder() = default;
 
 void Decoder::Decode(FrameId frame_id, const Decoder::Buffer& buffer) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneReceiver);
   if (!codec_ && !Initialize()) {
     return;
   }
@@ -93,6 +95,7 @@ void Decoder::Decode(FrameId frame_id, const Decoder::Buffer& buffer) {
 }
 
 bool Decoder::Initialize() {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneReceiver);
   // NOTE: The codec_name values found in OFFER messages, such as "vp8" or
   // "h264" or "opus" are valid input strings to FFMPEG's look-up function, so
   // no translation is required here.

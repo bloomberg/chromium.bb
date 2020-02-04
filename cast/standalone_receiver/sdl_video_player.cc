@@ -8,6 +8,7 @@
 
 #include "cast/standalone_receiver/avcodec_glue.h"
 #include "util/logging.h"
+#include "util/trace_logging.h"
 
 namespace openscreen {
 namespace cast {
@@ -36,6 +37,7 @@ SDLVideoPlayer::~SDLVideoPlayer() = default;
 
 bool SDLVideoPlayer::RenderWhileIdle(
     const SDLPlayerBase::PresentableFrame* frame) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneReceiver);
   // Attempt to re-render the same content.
   if (state() == kPresented && frame) {
     const auto result = RenderNextFrame(*frame);
@@ -65,6 +67,7 @@ bool SDLVideoPlayer::RenderWhileIdle(
 
 ErrorOr<Clock::time_point> SDLVideoPlayer::RenderNextFrame(
     const SDLPlayerBase::PresentableFrame& frame) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneReceiver);
   OSP_DCHECK(frame.decoded_frame);
   const AVFrame& picture = *frame.decoded_frame;
 
@@ -159,6 +162,7 @@ ErrorOr<Clock::time_point> SDLVideoPlayer::RenderNextFrame(
 }
 
 void SDLVideoPlayer::Present() {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneReceiver);
   SDL_RenderPresent(renderer_);
 }
 

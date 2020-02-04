@@ -12,6 +12,8 @@
 #include "cast/standalone_receiver/dummy_player.h"
 #endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 
+#include "util/trace_logging.h"
+
 namespace openscreen {
 namespace cast {
 
@@ -40,9 +42,12 @@ StreamingPlaybackController::StreamingPlaybackController(
 }
 #endif  // defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
 
+// TODO(jophba): add async tracing to streaming implementation for exposing
+// how long the OFFER/ANSWER and receiver startup takes.
 void StreamingPlaybackController::OnNegotiated(
     const ReceiverSession* session,
     ReceiverSession::ConfiguredReceivers receivers) {
+  TRACE_DEFAULT_SCOPED(TraceCategory::kStandaloneReceiver);
 #if defined(CAST_STANDALONE_RECEIVER_HAVE_EXTERNAL_LIBS)
   if (receivers.audio) {
     audio_player_ = std::make_unique<SDLAudioPlayer>(
