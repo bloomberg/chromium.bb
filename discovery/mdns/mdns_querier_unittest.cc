@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "discovery/common/testing/mock_reporting_client.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_receiver.h"
 #include "discovery/mdns/mdns_record_changed_callback.h"
@@ -24,6 +25,7 @@ using testing::_;
 using testing::Args;
 using testing::Invoke;
 using testing::Return;
+using testing::StrictMock;
 using testing::WithArgs;
 
 // Only compare NAME, CLASS, TYPE and RDATA
@@ -105,7 +107,8 @@ class MdnsQuerierTest : public testing::Test {
 
   std::unique_ptr<MdnsQuerier> CreateQuerier() {
     return std::make_unique<MdnsQuerier>(&sender_, &receiver_, &task_runner_,
-                                         &FakeClock::now, &random_);
+                                         &FakeClock::now, &random_,
+                                         &reporting_client_);
   }
 
  protected:
@@ -138,6 +141,7 @@ class MdnsQuerierTest : public testing::Test {
   MdnsSender sender_;
   MdnsReceiver receiver_;
   MdnsRandom random_;
+  StrictMock<MockReportingClient> reporting_client_;
 
   MdnsRecord record0_created_;
   MdnsRecord record0_updated_;

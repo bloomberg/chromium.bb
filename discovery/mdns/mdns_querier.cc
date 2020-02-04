@@ -4,6 +4,7 @@
 
 #include "discovery/mdns/mdns_querier.h"
 
+#include "discovery/common/reporting_client.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_receiver.h"
 #include "discovery/mdns/mdns_sender.h"
@@ -38,17 +39,20 @@ MdnsQuerier::MdnsQuerier(MdnsSender* sender,
                          MdnsReceiver* receiver,
                          TaskRunner* task_runner,
                          ClockNowFunctionPtr now_function,
-                         MdnsRandom* random_delay)
+                         MdnsRandom* random_delay,
+                         ReportingClient* reporting_client)
     : sender_(sender),
       receiver_(receiver),
       task_runner_(task_runner),
       now_function_(now_function),
-      random_delay_(random_delay) {
+      random_delay_(random_delay),
+      reporting_client_(reporting_client) {
   OSP_DCHECK(sender_);
   OSP_DCHECK(receiver_);
   OSP_DCHECK(task_runner_);
   OSP_DCHECK(now_function_);
   OSP_DCHECK(random_delay_);
+  OSP_DCHECK(reporting_client_);
 
   receiver_->AddResponseCallback(this);
 }
@@ -263,8 +267,12 @@ void MdnsQuerier::ProcessSharedRecord(const MdnsRecord& record) {
       // Already have this shared record, update the existing one.
       // This is a TTL only update since we've already checked that RDATA
       // matches. No notification is necessary on a TTL only update.
-      // TODO(crbug.com/openscreen/87): Handle errors returned by Update().
-      tracker->Update(record);
+      ErrorOr<MdnsRecordTracker::UpdateType> result = tracker->Update(record);
+      if (result.is_error()) {
+        reporting_client_->OnRecoverableError(
+            Error(Error::Code::kUpdateReceivedRecordFailure,
+                  result.error().ToString()));
+      }
       return;
     }
   }
@@ -294,9 +302,12 @@ void MdnsQuerier::ProcessUniqueRecord(const MdnsRecord& record) {
   } else if (records_for_key == 1) {
     // There's only one record with this key.
     MdnsRecordTracker* tracker = records_it.first->second.get();
-    // TODO(crbug.com/openscreen/87): Handle errors returned by Update().
     ErrorOr<MdnsRecordTracker::UpdateType> result = tracker->Update(record);
-    if (result.is_value()) {
+    if (result.is_error()) {
+      reporting_client_->OnRecoverableError(
+          Error(Error::Code::kUpdateReceivedRecordFailure,
+                result.error().ToString()));
+    } else {
       switch (result.value()) {
         case MdnsRecordTracker::UpdateType::kGoodbye:
           tracker->ExpireSoon();
@@ -323,10 +334,13 @@ void MdnsQuerier::ProcessUniqueRecord(const MdnsRecord& record) {
           record.dns_class() == tracked_record.dns_class()) {
         if (record.rdata() == tracked_record.rdata()) {
           is_new_record = false;
-          // TODO(crbug.com/openscreen/87): Handle errors returned by Update().
           ErrorOr<MdnsRecordTracker::UpdateType> result =
               tracker->Update(record);
-          if (result.is_value()) {
+          if (result.is_error()) {
+            reporting_client_->OnRecoverableError(
+                Error(Error::Code::kUpdateReceivedRecordFailure,
+                      result.error().ToString()));
+          } else {
             switch (result.value()) {
               case MdnsRecordTracker::UpdateType::kGoodbye:
                 tracker->ExpireSoon();

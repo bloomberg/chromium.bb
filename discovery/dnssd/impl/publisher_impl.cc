@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "discovery/common/reporting_client.h"
 #include "discovery/dnssd/impl/conversion_layer.h"
 #include "discovery/dnssd/impl/instance_key.h"
 #include "discovery/mdns/public/mdns_constants.h"
@@ -61,9 +62,11 @@ int EraseRecordsWithServiceId(std::map<DnsSdInstanceRecord, T>* records,
 
 }  // namespace
 
-PublisherImpl::PublisherImpl(MdnsService* publisher)
-    : mdns_publisher_(publisher) {
+PublisherImpl::PublisherImpl(MdnsService* publisher,
+                             ReportingClient* reporting_client)
+    : mdns_publisher_(publisher), reporting_client_(reporting_client) {
   OSP_DCHECK(mdns_publisher_);
+  OSP_DCHECK(reporting_client_);
 }
 
 PublisherImpl::~PublisherImpl() = default;
@@ -213,7 +216,11 @@ void PublisherImpl::OnDomainFound(const DomainName& requested_name,
   }
 
   for (const auto& mdns_record : GetDnsRecords(publication)) {
-    mdns_publisher_->RegisterRecord(mdns_record);
+    Error result = mdns_publisher_->RegisterRecord(mdns_record);
+    if (!result.ok()) {
+      reporting_client_->OnRecoverableError(
+          Error(Error::Code::kRecordPublicationError, result.ToString()));
+    }
   }
 
   auto pair = published_records_.emplace(std::move(requested_record),

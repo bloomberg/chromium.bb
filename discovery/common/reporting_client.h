@@ -23,6 +23,12 @@ class ReportingClient {
   // infrastructure from which recovery cannot be initiated. For example, an
   // error binding a multicast socket.
   virtual void OnFatalError(Error error) = 0;
+
+  // This method is called when an error is detected by the underlying
+  // infrastructure which does not prevent further functionality of the runtime.
+  // For example, a conversion failure between DnsSdInstanceRecord and the
+  // externally supplied class.
+  virtual void OnRecoverableError(Error error) = 0;
 };
 
 }  // namespace discovery

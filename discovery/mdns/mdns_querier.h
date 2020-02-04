@@ -19,6 +19,7 @@ class MdnsRandom;
 class MdnsSender;
 class MdnsQuestionTracker;
 class MdnsRecordTracker;
+class ReportingClient;
 
 class MdnsQuerier : public MdnsReceiver::ResponseClient {
  public:
@@ -26,7 +27,8 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
               MdnsReceiver* receiver,
               TaskRunner* task_runner,
               ClockNowFunctionPtr now_function,
-              MdnsRandom* random_delay);
+              MdnsRandom* random_delay,
+              ReportingClient* reporting_client);
   MdnsQuerier(const MdnsQuerier& other) = delete;
   MdnsQuerier(MdnsQuerier&& other) noexcept = delete;
   MdnsQuerier& operator=(const MdnsQuerier& other) = delete;
@@ -87,6 +89,7 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
   TaskRunner* const task_runner_;
   const ClockNowFunctionPtr now_function_;
   MdnsRandom* const random_delay_;
+  ReportingClient* reporting_client_;
 
   // A collection of active question trackers, each is uniquely identified by
   // domain name, DNS record type, and DNS record class. Multimap key is domain

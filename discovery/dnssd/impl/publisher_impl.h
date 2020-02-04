@@ -15,10 +15,12 @@
 namespace openscreen {
 namespace discovery {
 
+class ReportingClient;
+
 class PublisherImpl : public DnsSdPublisher,
                       public MdnsDomainConfirmedProvider {
  public:
-  PublisherImpl(MdnsService* publisher);
+  PublisherImpl(MdnsService* publisher, ReportingClient* reporting_client);
   ~PublisherImpl() override;
 
   // DnsSdPublisher overrides.
@@ -43,6 +45,7 @@ class PublisherImpl : public DnsSdPublisher,
   std::map<DnsSdInstanceRecord, DnsSdInstanceRecord> published_records_;
 
   MdnsService* const mdns_publisher_;
+  ReportingClient* const reporting_client_;
 
   friend class PublisherTesting;
 };

@@ -24,7 +24,7 @@ ServiceImpl::ServiceImpl(TaskRunner* task_runner,
                          const Config& config)
     : mdns_service_(MdnsService::Create(task_runner, reporting_client, config)),
       querier_(mdns_service_.get()),
-      publisher_(mdns_service_.get()) {}
+      publisher_(mdns_service_.get(), reporting_client) {}
 
 ServiceImpl::~ServiceImpl() = default;
 

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "discovery/common/testing/mock_reporting_client.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
@@ -50,7 +51,7 @@ class MockMdnsService : public MdnsService {
 
 class PublisherTesting : public PublisherImpl {
  public:
-  PublisherTesting() : PublisherImpl(&mock_service_) {}
+  PublisherTesting() : PublisherImpl(&mock_service_, &reporting_client_) {}
 
   MockMdnsService& mdns_service() { return mock_service_; }
 
@@ -58,6 +59,7 @@ class PublisherTesting : public PublisherImpl {
 
  private:
   StrictMock<MockMdnsService> mock_service_;
+  StrictMock<MockReportingClient> reporting_client_;
 };
 
 TEST(DnsSdPublisherImplTests, TestRegistrationAndDegrestration) {

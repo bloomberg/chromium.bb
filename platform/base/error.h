@@ -157,6 +157,10 @@ class Error {
 
     kCreateSignatureFailed,
 
+    // Discovery errors.
+    kUpdateReceivedRecordFailure,
+    kRecordPublicationError,
+
     // Generic errors.
     kUnknownError,
     kNotImplemented,
@@ -192,6 +196,8 @@ class Error {
   std::string& message() { return message_; }
 
   static const Error& None();
+
+  std::string ToString() const;
 
  private:
   Code code_ = Code::kNone;

@@ -4,6 +4,8 @@
 
 #include "platform/base/error.h"
 
+#include <sstream>
+
 namespace openscreen {
 
 Error::Error() = default;
@@ -224,10 +226,20 @@ std::ostream& operator<<(std::ostream& os, const Error::Code& code) {
       return os << "Failure: kCastV2ChannelPolicyMismatch";
     case Error::Code::kCreateSignatureFailed:
       return os << "Failure: kCreateSignatureFailed";
+    case Error::Code::kUpdateReceivedRecordFailure:
+      return os << "Failure: kUpdateReceivedRecordFailure";
+    case Error::Code::kRecordPublicationError:
+      return os << "Failure: kRecordPublicationError";
   }
 
   // Unused 'return' to get around failure on GCC.
   return os;
+}
+
+std::string Error::ToString() const {
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
 }
 
 std::ostream& operator<<(std::ostream& out, const Error& error) {
