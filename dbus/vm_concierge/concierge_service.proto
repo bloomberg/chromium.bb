@@ -583,6 +583,9 @@ message VmDiskInfo {
 
   // The size of the image in bytes.
   uint64 size = 3;
+
+  // The minimum size the image may be resized to, or 0 if unknown.
+  uint64 min_size = 4;
 }
 
 // Response to ListVmDisks {
