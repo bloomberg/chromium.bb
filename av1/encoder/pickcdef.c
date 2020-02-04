@@ -276,13 +276,13 @@ static void pick_cdef_from_qp(AV1_COMMON *const cm) {
   int predicted_uv_f2 = 0;
   aom_clear_system_state();
   if (!frame_is_intra_only(cm)) {
-    predicted_y_f1 = clamp((int)roundf(-q * q * 0.0000023593946f +
+    predicted_y_f1 = clamp((int)roundf(q * q * -0.0000023593946f +
                                        q * 0.0068615186f + 0.02709886f),
                            0, 15);
-    predicted_y_f2 = clamp((int)roundf(-q * q * 0.00000057629734f +
+    predicted_y_f2 = clamp((int)roundf(q * q * -0.00000057629734f +
                                        q * 0.0013993345f + 0.03831067f),
                            0, 3);
-    predicted_uv_f1 = clamp((int)roundf(-q * q * 0.0000007095069f +
+    predicted_uv_f1 = clamp((int)roundf(q * q * -0.0000007095069f +
                                         q * 0.0034628846f + 0.00887099f),
                             0, 15);
     predicted_uv_f2 = clamp((int)roundf(q * q * 0.00000023874085f +
@@ -292,11 +292,11 @@ static void pick_cdef_from_qp(AV1_COMMON *const cm) {
     predicted_y_f1 = clamp(
         (int)roundf(q * q * 0.0000033731974f + q * 0.008070594f + 0.0187634f),
         0, 15);
-    predicted_y_f2 = clamp((int)roundf(-q * q * -0.0000029167343f +
-                                       q * 0.0027798624f + 0.0079405f),
-                           0, 3);
+    predicted_y_f2 = clamp(
+        (int)roundf(q * q * 0.0000029167343f + q * 0.0027798624f + 0.0079405f),
+        0, 3);
     predicted_uv_f1 = clamp(
-        (int)roundf(-q * q * 0.0000130790995f + q * 0.012892405f - 0.00748388f),
+        (int)roundf(q * q * -0.0000130790995f + q * 0.012892405f - 0.00748388f),
         0, 15);
     predicted_uv_f2 = clamp((int)roundf(q * q * 0.0000032651783f +
                                         q * 0.00035520183f + 0.00228092f),
