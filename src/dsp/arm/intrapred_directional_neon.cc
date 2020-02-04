@@ -26,6 +26,7 @@
 #include <cstring>  // memset
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 
@@ -899,7 +900,7 @@ void DirectionalIntraPredictorZone3_NEON(void* const dest,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->directional_intra_predictor_zone1 = DirectionalIntraPredictorZone1_NEON;
   dsp->directional_intra_predictor_zone2 = DirectionalIntraPredictorZone2_NEON;

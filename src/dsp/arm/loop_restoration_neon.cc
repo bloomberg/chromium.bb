@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/constants.h"
 
@@ -2061,7 +2062,7 @@ void SelfGuidedFilter_NEON(const void* const source, void* const dest,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->loop_restorations[0] = WienerFilter_NEON;
   dsp->loop_restorations[1] = SelfGuidedFilter_NEON;

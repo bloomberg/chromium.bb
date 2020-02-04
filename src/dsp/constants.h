@@ -27,6 +27,10 @@
 namespace libgav1 {
 
 enum {
+  // Documentation variables.
+  kBitdepth8 = 8,
+  kBitdepth10 = 10,
+  kBitdepth12 = 12,
   // Weights are quadratic from '1' to '1 / block_size', scaled by
   // 2^kSmoothWeightScale.
   kSmoothWeightScale = 8,

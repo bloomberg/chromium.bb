@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 
@@ -31,8 +32,6 @@ namespace libgav1 {
 namespace dsp {
 namespace low_bitdepth {
 namespace {
-
-constexpr int kBitdepth8 = 8;
 
 template <int subsampling_x, int subsampling_y>
 inline uint16x8_t GetMask4x2(const uint8_t* mask, ptrdiff_t mask_stride) {
@@ -392,7 +391,7 @@ inline void InterIntraMaskBlend8bpp_NEON(
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->mask_blend[0][0] = MaskBlend_NEON<0, 0>;
   dsp->mask_blend[1][0] = MaskBlend_NEON<1, 0>;

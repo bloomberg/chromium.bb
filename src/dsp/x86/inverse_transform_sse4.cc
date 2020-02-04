@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/dsp/x86/common_sse4.h"
 #include "src/dsp/x86/transpose_sse4.h"
@@ -2405,7 +2406,7 @@ void InitAll(Dsp* const dsp) {
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
 #if LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS
   InitAll<int16_t, uint8_t>(dsp);

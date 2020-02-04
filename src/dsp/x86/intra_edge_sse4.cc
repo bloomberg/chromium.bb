@@ -242,7 +242,7 @@ void IntraEdgeUpsampler_SSE4_1(void* buffer, int size) {
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
 #if DSP_ENABLED_8BPP_SSE4_1(IntraEdgeFilter)
   dsp->intra_edge_filter = IntraEdgeFilter_SSE4_1;

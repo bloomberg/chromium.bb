@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 
 namespace libgav1 {
@@ -1168,7 +1169,7 @@ void Vertical14_NEON(void* const dest, const ptrdiff_t stride,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->loop_filters[kLoopFilterSize4][kLoopFilterTypeHorizontal] =
       Horizontal4_NEON;

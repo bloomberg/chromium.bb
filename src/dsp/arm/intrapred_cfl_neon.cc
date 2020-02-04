@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 
@@ -371,7 +372,7 @@ inline void CflIntraPredictor32xN_NEON(
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
 
   dsp->cfl_subsamplers[kTransformSize4x4][kSubsamplingType420] =

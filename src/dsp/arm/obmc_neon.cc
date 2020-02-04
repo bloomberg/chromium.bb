@@ -26,6 +26,7 @@
 #include <cstring>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 
@@ -366,7 +367,7 @@ void OverlapBlendFromTop_NEON(void* const prediction,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->obmc_blend[kObmcDirectionVertical] = OverlapBlendFromTop_NEON;
   dsp->obmc_blend[kObmcDirectionHorizontal] = OverlapBlendFromLeft_NEON;

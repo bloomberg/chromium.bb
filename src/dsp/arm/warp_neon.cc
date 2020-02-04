@@ -479,7 +479,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->warp = Warp_NEON</*is_compound=*/false>;
   dsp->warp_compound = Warp_NEON</*is_compound=*/true>;

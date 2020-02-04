@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/dsp/x86/common_sse4.h"
 #include "src/utils/common.h"
@@ -299,7 +300,7 @@ void OverlapBlendFromTop_SSE4_1(void* const prediction,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
 #if DSP_ENABLED_8BPP_SSE4_1(ObmcVertical)
   dsp->obmc_blend[kObmcDirectionVertical] = OverlapBlendFromTop_SSE4_1;

@@ -28,6 +28,7 @@
 #include "src/dsp/arm/common_neon.h"
 #include "src/dsp/arm/film_grain_neon.h"
 #include "src/dsp/common.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/dsp/film_grain_impl.h"
 #include "src/utils/common.h"
@@ -1061,7 +1062,7 @@ void ConstructNoiseImageOverlap8bpp_NEON(const void* noise_stripes_buffer,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
 
   // LumaAutoRegressionFunc[auto_regression_coeff_lag]
@@ -1113,7 +1114,7 @@ namespace high_bitdepth {
 namespace {
 
 void Init10bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
   assert(dsp != nullptr);
 
   // LumaAutoRegressionFunc[auto_regression_coeff_lag]

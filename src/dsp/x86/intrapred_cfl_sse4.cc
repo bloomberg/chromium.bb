@@ -786,7 +786,7 @@ void CflSubsampler420_WxH_SSE4_1(
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
 #if DSP_ENABLED_8BPP_SSE4_1(TransformSize4x4_CflSubsampler420)
   dsp->cfl_subsamplers[kTransformSize4x4][kSubsamplingType420] =

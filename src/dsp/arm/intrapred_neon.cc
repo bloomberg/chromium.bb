@@ -534,7 +534,7 @@ struct DcDefs {
 };
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   // 4x4
   dsp->intra_predictors[kTransformSize4x4][kIntraPredictorDcTop] =
@@ -974,7 +974,7 @@ struct DcDefs {
 };
 
 void Init10bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
   assert(dsp != nullptr);
   dsp->intra_predictors[kTransformSize4x4][kIntraPredictorDcTop] =
       DcDefs::_4x4::DcTop;

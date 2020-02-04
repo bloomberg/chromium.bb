@@ -20,6 +20,7 @@
 
 #include <arm_neon.h>
 
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/constants.h"
 
@@ -67,7 +68,7 @@ void ComputeSuperRes_NEON(const void* source, const int upscaled_width,
 }
 
 void Init8bpp() {
-  Dsp* dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   dsp->super_res_row = ComputeSuperRes_NEON;
 }
 

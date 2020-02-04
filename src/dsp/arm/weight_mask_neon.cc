@@ -26,6 +26,7 @@
 #include <cstdint>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 
@@ -561,7 +562,7 @@ void WeightMask128x128_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
       WeightMask##width##x##height##_NEON<0>;                  \
   dsp->weight_mask[w_index][h_index][1] = WeightMask##width##x##height##_NEON<1>
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   INIT_WEIGHT_MASK_8BPP(4, 4, 0, 0);
   INIT_WEIGHT_MASK_8BPP(4, 8, 0, 1);

@@ -440,7 +440,7 @@ inline void SmoothHorizontal16PlusxN_NEON(void* const dest, ptrdiff_t stride,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   // 4x4
   dsp->intra_predictors[kTransformSize4x4][kIntraPredictorSmooth] =

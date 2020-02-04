@@ -23,6 +23,7 @@
 #include <cassert>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"  // RightShiftWithRounding()
 
@@ -276,7 +277,7 @@ void IntraEdgeUpsampler_NEON(void* buffer, const int size) {
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->intra_edge_filter = IntraEdgeFilter_NEON;
   dsp->intra_edge_upsampler = IntraEdgeUpsampler_NEON;

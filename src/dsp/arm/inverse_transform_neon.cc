@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/common.h"
@@ -3196,7 +3197,7 @@ void Wht4TransformLoop_NEON(TransformType tx_type, TransformSize tx_size,
 //------------------------------------------------------------------------------
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   // Maximum transform size for Dct is 64.
   dsp->inverse_transforms[k1DTransformSize4][k1DTransformDct] =

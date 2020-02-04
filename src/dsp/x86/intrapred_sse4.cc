@@ -2740,7 +2740,7 @@ void FilterIntraPredictor_SSE4_1(void* const dest, ptrdiff_t stride,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   static_cast<void>(dsp);
 // These guards check if this version of the function was not superseded by

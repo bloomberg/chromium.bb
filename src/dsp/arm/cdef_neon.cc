@@ -26,6 +26,7 @@
 #include <cstdlib>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 
@@ -261,8 +262,6 @@ void CdefDirection_NEON(const void* const source, ptrdiff_t stride,
 
 // TODO(johannkoenig): Dedup these constants.
 // CdefFilter:
-constexpr int kBitdepth8 = 8;
-
 constexpr uint16_t kCdefLargeValue = 0x4000;
 
 constexpr uint8_t kPrimaryTaps[2][2] = {{4, 2}, {3, 3}};

@@ -24,6 +24,7 @@
 #include <cstdint>
 
 #include "src/dsp/arm/common_neon.h"
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 
@@ -31,7 +32,6 @@ namespace libgav1 {
 namespace dsp {
 namespace {
 
-constexpr int kBitdepth8 = 8;
 constexpr int kInterPostRoundBit = 4;
 // An offset to cancel offsets used in compound predictor generation that
 // make intermediate computations non negative.
@@ -140,7 +140,7 @@ void AverageBlend_NEON(const uint16_t* prediction_0,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->average_blend = AverageBlend_NEON;
 }

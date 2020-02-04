@@ -19,6 +19,7 @@
 
 #include <smmintrin.h>
 
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/dsp/x86/common_sse4.h"
 #include "src/utils/constants.h"
@@ -131,7 +132,7 @@ void ComputeSuperRes_SSE4_1(const void* source, const int upscaled_width,
 }
 
 void Init8bpp() {
-  Dsp* dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   dsp->super_res_row = ComputeSuperRes_SSE4_1;
 }
 

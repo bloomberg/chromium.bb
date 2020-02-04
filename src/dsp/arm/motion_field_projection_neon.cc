@@ -24,6 +24,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
 #include "src/utils/constants.h"
@@ -338,14 +339,14 @@ void MotionFieldProjectionKernel_NEON(
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->motion_field_projection_kernel = MotionFieldProjectionKernel_NEON;
 }
 
 #if LIBGAV1_MAX_BITDEPTH >= 10
 void Init10bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
   assert(dsp != nullptr);
   dsp->motion_field_projection_kernel = MotionFieldProjectionKernel_NEON;
 }

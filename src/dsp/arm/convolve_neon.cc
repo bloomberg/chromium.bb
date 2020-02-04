@@ -35,7 +35,6 @@ namespace dsp {
 namespace low_bitdepth {
 namespace {
 
-constexpr int kBitdepth8 = 8;
 constexpr int kIntermediateStride = kMaxSuperBlockSizeInPixels;
 constexpr int kSubPixelMask = (1 << kSubPixelBits) - 1;
 constexpr int kHorizontalOffset = 3;
@@ -3315,7 +3314,7 @@ void ConvolveIntraBlockCopy2D_NEON(
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   dsp->convolve[0][0][0][1] = ConvolveHorizontal_NEON;
   dsp->convolve[0][0][1][0] = ConvolveVertical_NEON;

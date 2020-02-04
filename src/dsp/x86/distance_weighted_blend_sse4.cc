@@ -23,6 +23,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/dsp/x86/common_sse4.h"
 #include "src/utils/common.h"
@@ -31,7 +32,6 @@ namespace libgav1 {
 namespace dsp {
 namespace {
 
-constexpr int kBitdepth8 = 8;
 constexpr int kInterPostRoundBit = 4;
 
 inline __m128i ComputeWeightedAverage8(const __m128i& pred0,
@@ -222,7 +222,7 @@ void DistanceWeightedBlend_SSE4_1(
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
 #if DSP_ENABLED_8BPP_SSE4_1(DistanceWeightedBlend)
   dsp->distance_weighted_blend = DistanceWeightedBlend_SSE4_1;

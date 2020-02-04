@@ -24,6 +24,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
 #include "src/dsp/x86/common_sse4.h"
 
@@ -1100,7 +1101,7 @@ void Vertical14(void* dest, ptrdiff_t stride, int outer_thresh,
 }
 
 void Init8bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(8);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
   static_cast<void>(dsp);
 #if DSP_ENABLED_8BPP_SSE4_1(LoopFilterSize4_LoopFilterTypeHorizontal)
@@ -2191,10 +2192,10 @@ void LoopFilterFuncs_SSE4_1<bitdepth>::Vertical14(void* dest, ptrdiff_t stride8,
   StoreUnaligned16(dst - 8 + 8 + 3 * stride, x3);
 }
 
-using Defs10bpp = LoopFilterFuncs_SSE4_1<10>;
+using Defs10bpp = LoopFilterFuncs_SSE4_1<kBitdepth10>;
 
 void Init10bpp() {
-  Dsp* const dsp = dsp_internal::GetWritableDspTable(10);
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
   assert(dsp != nullptr);
   static_cast<void>(dsp);
 #if DSP_ENABLED_10BPP_SSE4_1(LoopFilterSize4_LoopFilterTypeHorizontal)
