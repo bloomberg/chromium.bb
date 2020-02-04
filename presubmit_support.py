@@ -1366,13 +1366,13 @@ class GetTryMastersExecuter(object):
 
 class GetPostUploadExecuter(object):
   @staticmethod
-  def ExecPresubmitScript(script_text, presubmit_path, cl, change):
+  def ExecPresubmitScript(script_text, presubmit_path, gerrit_obj, change):
     """Executes PostUploadHook() from a single presubmit script.
 
     Args:
       script_text: The text of the presubmit script.
       presubmit_path: Project script to run.
-      cl: The Changelist object.
+      gerrit_obj: The GerritAccessor object.
       change: The Change object.
 
     Return:
@@ -1393,7 +1393,7 @@ class GetPostUploadExecuter(object):
     if not len(inspect.getargspec(post_upload_hook)[0]) == 3:
       raise PresubmitFailure(
           'Expected function "PostUploadHook" to take three arguments.')
-    return post_upload_hook(cl, change, OutputApi(False))
+    return post_upload_hook(gerrit_obj, change, OutputApi(False))
 
 
 def _MergeMasters(masters1, masters2):
@@ -1459,7 +1459,7 @@ def DoGetTryMasters(change,
 
 
 def DoPostUploadExecuter(change,
-                         cl,
+                         gerrit_obj,
                          repository_root,
                          verbose,
                          output_stream):
@@ -1467,7 +1467,7 @@ def DoPostUploadExecuter(change,
 
   Args:
     change: The Change object.
-    cl: The Changelist object.
+    gerrit_obj: The GerritAccessor object.
     repository_root: The repository root.
     verbose: Prints debug info.
     output_stream: A stream to write debug output to.
@@ -1490,7 +1490,7 @@ def DoPostUploadExecuter(change,
     # Accept CRLF presubmit script.
     presubmit_script = gclient_utils.FileRead(filename, 'rU')
     results.extend(executer.ExecPresubmitScript(
-        presubmit_script, filename, cl, change))
+        presubmit_script, filename, gerrit_obj, change))
   output_stream.write('\n')
   if results:
     output_stream.write('** Post Upload Hook Messages **\n')

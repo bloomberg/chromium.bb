@@ -1610,7 +1610,7 @@ class Changelist(object):
       if settings.GetRunPostUploadHook():
         presubmit_support.DoPostUploadExecuter(
             change,
-            self,
+            self.GetGerritObjForPresubmit(),
             settings.GetRoot(),
             options.verbose,
             sys.stdout)
