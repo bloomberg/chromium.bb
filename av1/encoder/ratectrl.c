@@ -2068,4 +2068,5 @@ void av1_get_one_pass_rt_params(AV1_COMP *cpi,
   if (set_reference_structure && cpi->oxcf.speed >= 6 &&
       cm->number_spatial_layers == 1 && cm->number_temporal_layers == 1)
     set_reference_structure_one_pass_rt(cpi, gf_update);
+  cm->current_frame.frame_type = frame_params->frame_type;
 }
