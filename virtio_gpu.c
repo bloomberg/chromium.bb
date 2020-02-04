@@ -38,6 +38,7 @@ static const uint32_t texture_source_formats[] = { DRM_FORMAT_NV12, DRM_FORMAT_R
 
 struct virtio_gpu_priv {
 	int has_3d;
+	union virgl_caps caps;
 };
 
 static uint32_t translate_format(uint32_t drm_fourcc)
@@ -64,6 +65,56 @@ static uint32_t translate_format(uint32_t drm_fourcc)
 		return VIRGL_FORMAT_YV12;
 	default:
 		return 0;
+	}
+}
+
+static bool virtio_gpu_supports_format(struct virgl_supported_format_mask *supported,
+				       uint32_t drm_format)
+{
+	uint32_t virgl_format = translate_format(drm_format);
+	if (!virgl_format) {
+		return false;
+	}
+
+	uint32_t bitmask_index = virgl_format / 32;
+	uint32_t bit_index = virgl_format % 32;
+	return supported->bitmask[bitmask_index] & (1 << bit_index);
+}
+
+// Adds the given buffer combination to the list of supported buffer combinations if the
+// combination is supported by the virtio backend.
+static void virtio_gpu_add_combination(struct driver *drv, uint32_t drm_format,
+				       struct format_metadata *metadata, uint64_t use_flags)
+{
+	struct virtio_gpu_priv *priv = (struct virtio_gpu_priv *)drv->priv;
+
+	if (priv->has_3d) {
+		if ((use_flags & BO_USE_RENDERING) != 0 &&
+		    !virtio_gpu_supports_format(&priv->caps.v1.render, drm_format)) {
+			drv_log("Skipping unsupported render format: %d\n", drm_format);
+			return;
+		}
+
+		if ((use_flags & BO_USE_TEXTURE) != 0 &&
+		    !virtio_gpu_supports_format(&priv->caps.v1.sampler, drm_format)) {
+			drv_log("Skipping unsupported texture format: %d\n", drm_format);
+			return;
+		}
+	}
+
+	drv_add_combination(drv, drm_format, metadata, use_flags);
+}
+
+// Adds each given buffer combination to the list of supported buffer combinations if the
+// combination supported by the virtio backend.
+static void virtio_gpu_add_combinations(struct driver *drv, const uint32_t *drm_formats,
+					uint32_t num_formats, struct format_metadata *metadata,
+					uint64_t use_flags)
+{
+	uint32_t i;
+
+	for (i = 0; i < num_formats; i++) {
+		virtio_gpu_add_combination(drv, drm_formats[i], metadata, use_flags);
 	}
 }
 
@@ -178,6 +229,48 @@ static void *virtio_virgl_bo_map(struct bo *bo, struct vma *vma, size_t plane, u
 		    gem_map.offset);
 }
 
+static int virtio_gpu_get_caps(struct driver *drv, union virgl_caps *caps)
+{
+	int ret;
+	struct drm_virtgpu_get_caps cap_args;
+	struct drm_virtgpu_getparam param_args;
+	uint32_t can_query_v2 = 0;
+
+	memset(&param_args, 0, sizeof(param_args));
+	param_args.param = VIRTGPU_PARAM_CAPSET_QUERY_FIX;
+	param_args.value = (uint64_t)(uintptr_t)&can_query_v2;
+	ret = drmIoctl(drv->fd, DRM_IOCTL_VIRTGPU_GETPARAM, &param_args);
+	if (ret) {
+		drv_log("DRM_IOCTL_VIRTGPU_GETPARAM failed with %s\n", strerror(errno));
+	}
+
+	memset(&cap_args, 0, sizeof(cap_args));
+	cap_args.addr = (unsigned long long)caps;
+	if (can_query_v2) {
+		cap_args.cap_set_id = 2;
+		cap_args.size = sizeof(union virgl_caps);
+	} else {
+		cap_args.cap_set_id = 1;
+		cap_args.size = sizeof(struct virgl_caps_v1);
+	}
+
+	ret = drmIoctl(drv->fd, DRM_IOCTL_VIRTGPU_GET_CAPS, &cap_args);
+	if (ret) {
+		drv_log("DRM_IOCTL_VIRTGPU_GET_CAPS failed with %s\n", strerror(errno));
+
+		// Fallback to v1
+		cap_args.cap_set_id = 1;
+		cap_args.size = sizeof(struct virgl_caps_v1);
+
+		ret = drmIoctl(drv->fd, DRM_IOCTL_VIRTGPU_GET_CAPS, &cap_args);
+		if (ret) {
+			drv_log("DRM_IOCTL_VIRTGPU_GET_CAPS failed with %s\n", strerror(errno));
+		}
+	}
+
+	return ret;
+}
+
 static int virtio_gpu_init(struct driver *drv)
 {
 	int ret;
@@ -198,34 +291,38 @@ static int virtio_gpu_init(struct driver *drv)
 	}
 
 	if (priv->has_3d) {
+		virtio_gpu_get_caps(drv, &priv->caps);
+
 		/* This doesn't mean host can scanout everything, it just means host
 		 * hypervisor can show it. */
-		drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				     &LINEAR_METADATA, BO_USE_RENDER_MASK | BO_USE_SCANOUT);
-		drv_add_combinations(drv, texture_source_formats,
-				     ARRAY_SIZE(texture_source_formats), &LINEAR_METADATA,
-				     BO_USE_TEXTURE_MASK);
+		virtio_gpu_add_combinations(drv, render_target_formats,
+					    ARRAY_SIZE(render_target_formats), &LINEAR_METADATA,
+					    BO_USE_RENDER_MASK | BO_USE_SCANOUT);
+		virtio_gpu_add_combinations(drv, texture_source_formats,
+					    ARRAY_SIZE(texture_source_formats), &LINEAR_METADATA,
+					    BO_USE_TEXTURE_MASK);
 	} else {
 		/* Virtio primary plane only allows this format. */
-		drv_add_combination(drv, DRM_FORMAT_XRGB8888, &LINEAR_METADATA,
-				    BO_USE_RENDER_MASK | BO_USE_SCANOUT);
+		virtio_gpu_add_combination(drv, DRM_FORMAT_XRGB8888, &LINEAR_METADATA,
+					   BO_USE_RENDER_MASK | BO_USE_SCANOUT);
 		/* Virtio cursor plane only allows this format and Chrome cannot live without
 		 * ARGB888 renderable format. */
-		drv_add_combination(drv, DRM_FORMAT_ARGB8888, &LINEAR_METADATA,
-				    BO_USE_RENDER_MASK | BO_USE_CURSOR);
+		virtio_gpu_add_combination(drv, DRM_FORMAT_ARGB8888, &LINEAR_METADATA,
+					   BO_USE_RENDER_MASK | BO_USE_CURSOR);
 		/* Android needs more, but they cannot be bound as scanouts anymore after
 		 * "drm/virtio: fix DRM_FORMAT_* handling" */
-		drv_add_combinations(drv, render_target_formats, ARRAY_SIZE(render_target_formats),
-				     &LINEAR_METADATA, BO_USE_RENDER_MASK);
-		drv_add_combinations(drv, dumb_texture_source_formats,
-				     ARRAY_SIZE(dumb_texture_source_formats), &LINEAR_METADATA,
-				     BO_USE_TEXTURE_MASK);
-		drv_add_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
-				    BO_USE_SW_MASK | BO_USE_LINEAR);
+		virtio_gpu_add_combinations(drv, render_target_formats,
+					    ARRAY_SIZE(render_target_formats), &LINEAR_METADATA,
+					    BO_USE_RENDER_MASK);
+		virtio_gpu_add_combinations(drv, dumb_texture_source_formats,
+					    ARRAY_SIZE(dumb_texture_source_formats),
+					    &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
+		virtio_gpu_add_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
+					   BO_USE_SW_MASK | BO_USE_LINEAR);
 	}
 
 	/* Android CTS tests require this. */
-	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
+	virtio_gpu_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
 
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
 			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE | BO_USE_HW_VIDEO_DECODER |
