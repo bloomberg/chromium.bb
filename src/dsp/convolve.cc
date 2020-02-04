@@ -228,6 +228,8 @@ void ConvolveCompound2D_C(const void* const reference,
                     kVerticalOffset * src_stride - kHorizontalOffset;
   auto* dest = static_cast<uint16_t*>(prediction);
   int filter_id = (subpixel_x >> 6) & kSubPixelMask;
+  // If |filter_id| == 0 then ConvolveVertical() should be called.
+  assert(filter_id != 0);
   int y = 0;
   do {
     int x = 0;
@@ -247,6 +249,8 @@ void ConvolveCompound2D_C(const void* const reference,
   filter_index = GetFilterIndex(vertical_filter_index, height);
   intermediate = intermediate_result;
   filter_id = ((subpixel_y & 1023) >> 6) & kSubPixelMask;
+  // If |filter_id| == 0 then ConvolveHorizontal() should be called.
+  assert(filter_id != 0);
   // TODO(b/146439793): Remove this offset.
   const int blend_offset = (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   y = 0;
@@ -304,6 +308,8 @@ void Convolve2D_C(const void* const reference, const ptrdiff_t reference_stride,
   auto* dest = static_cast<Pixel*>(prediction);
   const ptrdiff_t dest_stride = pred_stride / sizeof(Pixel);
   int filter_id = (subpixel_x >> 6) & kSubPixelMask;
+  // If |filter_id| == 0 then ConvolveVertical() should be called.
+  assert(filter_id != 0);
   int y = 0;
   do {
     int x = 0;
@@ -323,6 +329,8 @@ void Convolve2D_C(const void* const reference, const ptrdiff_t reference_stride,
   filter_index = GetFilterIndex(vertical_filter_index, height);
   intermediate = intermediate_result;
   filter_id = ((subpixel_y & 1023) >> 6) & kSubPixelMask;
+  // If |filter_id| == 0 then ConvolveHorizontal() should be called.
+  assert(filter_id != 0);
   y = 0;
   do {
     int x = 0;
@@ -402,20 +410,9 @@ void ConvolveVertical_C(const void* const reference,
   auto* dest = static_cast<Pixel*>(prediction);
   const ptrdiff_t dest_stride = pred_stride / sizeof(Pixel);
   const int filter_id = (subpixel_y >> 6) & kSubPixelMask;
-  // First filter is always a copy.
-  if (filter_id == 0) {
-    // TODO(johannkoenig): Remove this and assert |filter_id| == 0 is not
-    // possible.
-    // Move |src| down the actual values and not the start of the context.
-    src = static_cast<const Pixel*>(reference);
-    int y = 0;
-    do {
-      memcpy(dest, src, width * sizeof(src[0]));
-      src += src_stride;
-      dest += dest_stride;
-    } while (++y < height);
-    return;
-  }
+  // Copy filters must call ConvolveCopy().
+  assert(filter_id != 0);
+
   const int max_pixel_value = (1 << bitdepth) - 1;
   int y = 0;
   do {
@@ -500,6 +497,8 @@ void ConvolveCompoundHorizontal_C(
   const ptrdiff_t src_stride = reference_stride / sizeof(Pixel);
   auto* dest = static_cast<uint16_t*>(prediction);
   const int filter_id = (subpixel_x >> 6) & kSubPixelMask;
+  // Copy filters must call ConvolveCopy().
+  assert(filter_id != 0);
   // TODO(b/146439793): Remove this offset.
   const int blend_offset = (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   int y = 0;
@@ -541,6 +540,8 @@ void ConvolveCompoundVertical_C(const void* const reference,
       static_cast<const Pixel*>(reference) - kVerticalOffset * src_stride;
   auto* dest = static_cast<uint16_t*>(prediction);
   const int filter_id = (subpixel_y >> 6) & kSubPixelMask;
+  // Copy filters must call ConvolveCopy().
+  assert(filter_id != 0);
   // TODO(b/146439793): Remove this offset.
   const int blend_offset = (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   int y = 0;

@@ -795,6 +795,8 @@ LIBGAV1_ALWAYS_INLINE void DoHorizontalPass(
   // by using the vmlsl_u8 instruction.  Positive taps use vmlal_u8.
   uint8x8_t v_tap[kSubPixelTaps];
   const int filter_id = (subpixel >> 6) & kSubPixelMask;
+  assert(filter_id != 0);
+
   for (int k = 0; k < kSubPixelTaps; ++k) {
     v_tap[k] = vdup_n_u8(kAbsHalfSubPixelFilters[filter_index][filter_id][k]);
   }
@@ -883,6 +885,8 @@ void Convolve2D_NEON(const void* const reference,
   auto* dest = static_cast<uint8_t*>(prediction);
   const ptrdiff_t dest_stride = pred_stride;
   const int filter_id = ((subpixel_y & 1023) >> 6) & kSubPixelMask;
+  assert(filter_id != 0);
+
   const int16x8_t taps =
       vmovl_s8(vld1_s8(kHalfSubPixelFilters[vert_filter_index][filter_id]));
 
@@ -2400,18 +2404,7 @@ void ConvolveVertical_NEON(const void* const reference,
   auto* dest = static_cast<uint8_t*>(prediction);
   const ptrdiff_t dest_stride = pred_stride;
   const int filter_id = (subpixel_y >> 6) & kSubPixelMask;
-  // First filter is always a copy.
-  if (filter_id == 0) {
-    // Move |src| down the actual values and not the start of the context.
-    src = static_cast<const uint8_t*>(reference);
-    int y = 0;
-    do {
-      memcpy(dest, src, width * sizeof(src[0]));
-      src += src_stride;
-      dest += dest_stride;
-    } while (++y < height);
-    return;
-  }
+  assert(filter_id != 0);
 
   uint8x8_t taps[8];
   for (int k = 0; k < kSubPixelTaps; ++k) {
@@ -2593,6 +2586,7 @@ void ConvolveCompoundVertical_NEON(
                     (vertical_taps / 2 - 1) * src_stride;
   auto* dest = static_cast<uint16_t*>(prediction);
   const int filter_id = (subpixel_y >> 6) & kSubPixelMask;
+  assert(filter_id != 0);
 
   uint8x8_t taps[8];
   for (int k = 0; k < kSubPixelTaps; ++k) {
@@ -2743,6 +2737,7 @@ void ConvolveCompound2D_NEON(const void* const reference,
   // Vertical filter.
   auto* dest = static_cast<uint16_t*>(prediction);
   const int filter_id = ((subpixel_y & 1023) >> 6) & kSubPixelMask;
+  assert(filter_id != 0);
 
   const ptrdiff_t dest_stride = pred_stride;
   const int16x8_t taps =
