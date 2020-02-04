@@ -143,9 +143,44 @@ static double find_best_frame_unsharp_amount(
   return unsharp_amount - step_size;
 }
 
-void av1_vmaf_preprocessing(const AV1_COMP *const cpi,
-                            YV12_BUFFER_CONFIG *const source,
-                            bool use_block_based_method) {
+void av1_vmaf_frame_preprocessing(const AV1_COMP *const cpi,
+                                  YV12_BUFFER_CONFIG *const source) {
+  const int use_hbd = source->flags & YV12_FLAG_HIGHBITDEPTH;
+  // TODO(sdeng): Add high bit depth support.
+  if (use_hbd) {
+    printf(
+        "VMAF preprocessing for high bit depth videos is unsupported yet.\n");
+    exit(0);
+  }
+
+  aom_clear_system_state();
+  const AV1_COMMON *const cm = &cpi->common;
+  const int width = source->y_width;
+  const int height = source->y_height;
+  YV12_BUFFER_CONFIG source_extended, blurred;
+  memset(&source_extended, 0, sizeof(source_extended));
+  memset(&blurred, 0, sizeof(blurred));
+  aom_alloc_frame_buffer(&source_extended, width, height, 1, 1,
+                         cm->seq_params.use_highbitdepth,
+                         cpi->oxcf.border_in_pixels, cm->byte_alignment);
+  aom_alloc_frame_buffer(&blurred, width, height, 1, 1,
+                         cm->seq_params.use_highbitdepth,
+                         cpi->oxcf.border_in_pixels, cm->byte_alignment);
+
+  av1_copy_and_extend_frame(source, &source_extended);
+
+  gaussian_blur(cpi, &source_extended, &blurred);
+  aom_free_frame_buffer(&source_extended);
+  const double best_frame_unsharp_amount =
+      find_best_frame_unsharp_amount(cpi, source, &blurred);
+
+  unsharp(source, &blurred, source, best_frame_unsharp_amount);
+  aom_free_frame_buffer(&blurred);
+  aom_clear_system_state();
+}
+
+void av1_vmaf_blk_preprocessing(const AV1_COMP *const cpi,
+                                YV12_BUFFER_CONFIG *const source) {
   const int use_hbd = source->flags & YV12_FLAG_HIGHBITDEPTH;
   // TODO(sdeng): Add high bit depth support.
   if (use_hbd) {
@@ -179,14 +214,6 @@ void av1_vmaf_preprocessing(const AV1_COMP *const cpi,
   aom_free_frame_buffer(&source_extended);
   const double best_frame_unsharp_amount =
       find_best_frame_unsharp_amount(cpi, source, &blurred);
-
-  if (!use_block_based_method) {
-    unsharp(source, &blurred, source, best_frame_unsharp_amount);
-    aom_free_frame_buffer(&sharpened);
-    aom_free_frame_buffer(&blurred);
-    aom_clear_system_state();
-    return;
-  }
 
   const int block_size = BLOCK_128X128;
   const int num_mi_w = mi_size_wide[block_size];
