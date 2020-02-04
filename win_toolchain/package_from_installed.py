@@ -277,6 +277,10 @@ def GenerateSetEnvCmd(target_dir):
     ['..', '..'] + vc_tools_parts + ['include'],
     ['..', '..'] + vc_tools_parts + ['atlmfc', 'include'],
   ])
+  libpath_dirs = [
+    ['..', '..'] + vc_tools_parts + ['lib', 'x86', 'store', 'references'],
+    ['..', '..', 'win_sdk', 'UnionMetadata', WIN_VERSION],
+  ]
   # Common to x86, x64, and arm64
   env = collections.OrderedDict([
     # Yuck: These have a trailing \ character. No good way to represent this in
@@ -284,6 +288,7 @@ def GenerateSetEnvCmd(target_dir):
     ('VSINSTALLDIR', [['..', '..\\']]),
     ('VCINSTALLDIR', [['..', '..', 'VC\\']]),
     ('INCLUDE', include_dirs),
+    ('LIBPATH', libpath_dirs),
   ])
   # x86. Always use amd64_x86 cross, not x86 on x86.
   env['VCToolsInstallDir'] = [['..', '..'] + vc_tools_parts[:]]
