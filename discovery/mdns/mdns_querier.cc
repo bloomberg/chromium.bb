@@ -385,24 +385,54 @@ void MdnsQuerier::ProcessCallbacks(const MdnsRecord& record,
 }
 
 void MdnsQuerier::AddQuestion(const MdnsQuestion& question) {
-  const MdnsQuestionTracker::KnownAnswerQuery query(
-      [this](const DomainName& name, DnsType type, DnsClass clazz) {
-        return GetKnownAnswers(name, type, clazz);
-      });
-  questions_.emplace(question.name(),
-                     std::make_unique<MdnsQuestionTracker>(
-                         std::move(question), query, sender_, task_runner_,
-                         now_function_, random_delay_));
+  auto tracker = std::make_unique<MdnsQuestionTracker>(
+      std::move(question), sender_, task_runner_, now_function_, random_delay_);
+  MdnsQuestionTracker* ptr = tracker.get();
+  questions_.emplace(question.name(), std::move(tracker));
+
+  // Let all records associated with this question know that there is a new
+  // query that can be used for their refresh.
+  auto records_it = records_.equal_range(question.name());
+  for (auto entry = records_it.first; entry != records_it.second; ++entry) {
+    const MdnsRecord& record = entry->second->record();
+    const bool is_relevant_type = question.dns_type() == DnsType::kANY ||
+                                  question.dns_type() == record.dns_type();
+    const bool is_relevant_class = question.dns_class() == DnsClass::kANY ||
+                                   question.dns_class() == record.dns_class();
+    if (is_relevant_type && is_relevant_class) {
+      // NOTE: When the pointed to object is deleted, its dtor removes itself
+      // from all associated records.
+      entry->second->AddAssociatedQuery(ptr);
+    }
+  }
 }
 
 void MdnsQuerier::AddRecord(const MdnsRecord& record) {
   auto expiration_callback = [this](const MdnsRecord& record) {
     MdnsQuerier::OnRecordExpired(record);
   };
-  records_.emplace(record.name(),
-                   std::make_unique<MdnsRecordTracker>(
-                       std::move(record), sender_, task_runner_, now_function_,
-                       random_delay_, expiration_callback));
+
+  auto tracker = std::make_unique<MdnsRecordTracker>(
+      std::move(record), sender_, task_runner_, now_function_, random_delay_,
+      expiration_callback);
+  auto ptr = tracker.get();
+  records_.emplace(record.name(), std::move(tracker));
+
+  // Let all questions associated with this record know that there is a new
+  // record that answers them (for known answer suppression).
+  auto query_it = questions_.equal_range(record.name());
+  for (auto entry = query_it.first; entry != query_it.second; ++entry) {
+    const MdnsQuestion& query = entry->second->question();
+    const bool is_relevant_type = record.dns_type() == DnsType::kANY ||
+                                  record.dns_type() == query.dns_type();
+    const bool is_relevant_class = record.dns_class() == DnsClass::kANY ||
+                                   record.dns_class() == query.dns_class();
+    if (is_relevant_type && is_relevant_class) {
+      // NOTE: When the pointed to object is deleted, its dtor removes itself
+      // from all associated queries.
+      entry->second->AddAssociatedRecord(ptr);
+    }
+  }
 }
 
 std::vector<MdnsRecord::ConstRef> MdnsQuerier::GetKnownAnswers(

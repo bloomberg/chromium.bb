@@ -11,12 +11,14 @@
 #include "gtest/gtest.h"
 #include "platform/test/fake_clock.h"
 #include "platform/test/fake_task_runner.h"
+#include "platform/test/fake_udp_socket.h"
 
 namespace openscreen {
 namespace discovery {
 namespace {
 
-constexpr uint8_t kTruncationBitFlagMask = 0x02;
+constexpr Clock::duration kOneSecond =
+    std::chrono::duration_cast<Clock::duration>(std::chrono::seconds(1));
 
 }
 
@@ -39,47 +41,19 @@ ACTION_P2(VerifyMessageBytesWithoutId, expected_data, expected_size) {
 }
 
 ACTION_P(VerifyTruncated, is_truncated) {
-  const uint8_t* actual_data = reinterpret_cast<const uint8_t*>(arg0);
-  const size_t actual_size = arg1;
-  ASSERT_GE(actual_size, size_t{3});
-  EXPECT_EQ((actual_data[2] & kTruncationBitFlagMask) != 0, is_truncated);
+  EXPECT_EQ(arg0.is_truncated(), is_truncated);
 }
 
 ACTION_P(VerifyRecordCount, record_count) {
-  const uint8_t* actual_data = reinterpret_cast<const uint8_t*>(arg0);
-  const size_t actual_size = arg1;
-  ASSERT_GE(actual_size, size_t{8});
-  uint16_t actual_count = 0x100 * actual_data[6] + actual_data[7];
-  EXPECT_EQ(actual_count, record_count);
+  EXPECT_EQ(arg0.answers().size(), static_cast<size_t>(record_count));
 }
 
-class MockCallback {
+class MockMdnsSender : public MdnsSender {
  public:
-  MOCK_METHOD3(DoCallback,
-               std::vector<MdnsRecord::ConstRef>(const DomainName&,
-                                                 DnsType,
-                                                 DnsClass));
-};
+  MockMdnsSender(UdpSocket* socket) : MdnsSender(socket) {}
 
-class MockUdpSocket : public UdpSocket {
- public:
-  MOCK_METHOD(bool, IsIPv4, (), (const, override));
-  MOCK_METHOD(bool, IsIPv6, (), (const, override));
-  MOCK_METHOD(IPEndpoint, GetLocalEndpoint, (), (const, override));
-  MOCK_METHOD(void, Bind, (), (override));
-  MOCK_METHOD(void,
-              SetMulticastOutboundInterface,
-              (NetworkInterfaceIndex),
-              (override));
-  MOCK_METHOD(void,
-              JoinMulticastGroup,
-              (const IPAddress&, NetworkInterfaceIndex),
-              (override));
-  MOCK_METHOD(void,
-              SendMessage,
-              (const void*, size_t, const IPEndpoint&),
-              (override));
-  MOCK_METHOD(void, SetDscp, (DscpMode), (override));
+  MOCK_METHOD1(SendMulticast, Error(const MdnsMessage&));
+  MOCK_METHOD2(SendMessage, Error(const MdnsMessage&, const IPEndpoint&));
 };
 
 class MockRecordChangedCallback : public MdnsRecordChangedCallback {
@@ -93,9 +67,10 @@ class MockRecordChangedCallback : public MdnsRecordChangedCallback {
 class MdnsTrackerTest : public testing::Test {
  public:
   MdnsTrackerTest()
-      : clock_(Clock::now()),
+      : socket_(FakeUdpSocket::CreateDefault()),
+        clock_(Clock::now()),
         task_runner_(&clock_),
-        sender_(&socket_),
+        sender_(socket_.get()),
         a_question_(DomainName{"testing", "local"},
                     DnsType::kANY,
                     DnsClass::kIN,
@@ -105,14 +80,11 @@ class MdnsTrackerTest : public testing::Test {
                   DnsClass::kIN,
                   RecordType::kShared,
                   std::chrono::seconds(120),
-                  ARecordRdata(IPAddress{172, 0, 0, 1})) {
-    EXPECT_CALL(socket_, IsIPv6()).WillRepeatedly(Return(true));
-  }
+                  ARecordRdata(IPAddress{172, 0, 0, 1})) {}
 
   template <class TrackerType>
   void TrackerNoQueryAfterDestruction(TrackerType tracker) {
     tracker.reset();
-    EXPECT_CALL(socket_, SendMessage(_, _, _)).Times(0);
     // Advance fake clock by a long time interval to make sure if there's a
     // scheduled task, it will run.
     clock_.Advance(std::chrono::hours(1));
@@ -126,17 +98,27 @@ class MdnsTrackerTest : public testing::Test {
   }
 
   std::unique_ptr<MdnsQuestionTracker> CreateQuestionTracker(
-      const MdnsQuestion& question) {
-    MdnsQuestionTracker::KnownAnswerQuery cb(
-        [this](const DomainName& name, DnsType type, DnsClass clazz) {
-          return cb_.DoCallback(name, type, clazz);
-        });
-    return std::make_unique<MdnsQuestionTracker>(question, std::move(cb),
-                                                 &sender_, &task_runner_,
-                                                 &FakeClock::now, &random_);
+      const MdnsQuestion& question,
+      MdnsQuestionTracker::QueryType query_type =
+          MdnsQuestionTracker::QueryType::kContinuous) {
+    return std::make_unique<MdnsQuestionTracker>(question, &sender_,
+                                                 &task_runner_, &FakeClock::now,
+                                                 &random_, query_type);
   }
 
  protected:
+  void AdvanceThroughAllTtlFractions(std::chrono::seconds ttl) {
+    constexpr double kTtlFractions[] = {0.83, 0.88, 0.93, 0.98, 1.00};
+    Clock::duration time_passed{0};
+    for (double fraction : kTtlFractions) {
+      Clock::duration time_till_refresh =
+          std::chrono::duration_cast<Clock::duration>(ttl * fraction);
+      Clock::duration delta = time_till_refresh - time_passed;
+      time_passed = time_till_refresh;
+      clock_.Advance(delta);
+    }
+  }
+
   // clang-format off
   const std::vector<uint8_t> kQuestionQueryBytes = {
       0x00, 0x00,  // ID = 0
@@ -169,11 +151,10 @@ class MdnsTrackerTest : public testing::Test {
   };
 
   // clang-format on
-  StrictMock<MockCallback> cb_;
+  std::unique_ptr<FakeUdpSocket> socket_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;
-  MockUdpSocket socket_;
-  MdnsSender sender_;
+  StrictMock<MockMdnsSender> sender_;
   MdnsRandom random_;
 
   MdnsQuestion a_question_;
@@ -195,29 +176,55 @@ TEST_F(MdnsTrackerTest, RecordTrackerRecordAccessor) {
   EXPECT_EQ(tracker->record(), a_record_);
 }
 
-TEST_F(MdnsTrackerTest, RecordTrackerQueryAfterDelay) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
-  // Only expect 4 queries being sent, when record reaches it's TTL it's
-  // considered expired and another query is not sent
-  constexpr double kTtlFractions[] = {0.83, 0.88, 0.93, 0.98, 1.00};
-  EXPECT_CALL(socket_, SendMessage(_, _, _)).Times(4);
+TEST_F(MdnsTrackerTest, RecordTrackerQueryAfterDelayPerQuestionTracker) {
+  std::unique_ptr<MdnsQuestionTracker> question = CreateQuestionTracker(
+      a_question_, MdnsQuestionTracker::QueryType::kOneShot);
+  std::unique_ptr<MdnsQuestionTracker> question2 = CreateQuestionTracker(
+      a_question_, MdnsQuestionTracker::QueryType::kOneShot);
+  EXPECT_CALL(sender_, SendMulticast(_)).Times(2);
+  clock_.Advance(kOneSecond);
+  clock_.Advance(kOneSecond);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
 
-  Clock::duration time_passed{0};
-  for (double fraction : kTtlFractions) {
-    Clock::duration time_till_refresh =
-        std::chrono::duration_cast<Clock::duration>(a_record_.ttl() * fraction);
-    Clock::duration delta = time_till_refresh - time_passed;
-    time_passed = time_till_refresh;
-    clock_.Advance(delta);
-  }
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
+
+  // No queries without an associated tracker.
+  AdvanceThroughAllTtlFractions(a_record_.ttl());
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // 4 queries with one associated tracker.
+  tracker = CreateRecordTracker(a_record_);
+  tracker->AddAssociatedQuery(question.get());
+  EXPECT_CALL(sender_, SendMulticast(_)).Times(4);
+  AdvanceThroughAllTtlFractions(a_record_.ttl());
+  testing::Mock::VerifyAndClearExpectations(&sender_);
+
+  // 8 queries with two associated trackers.
+  tracker = CreateRecordTracker(a_record_);
+  tracker->AddAssociatedQuery(question.get());
+  tracker->AddAssociatedQuery(question2.get());
+  EXPECT_CALL(sender_, SendMulticast(_)).Times(8);
+  AdvanceThroughAllTtlFractions(a_record_.ttl());
 }
 
 TEST_F(MdnsTrackerTest, RecordTrackerSendsMessage) {
-  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
+  std::unique_ptr<MdnsQuestionTracker> question = CreateQuestionTracker(
+      a_question_, MdnsQuestionTracker::QueryType::kOneShot);
+  EXPECT_CALL(sender_, SendMulticast(_)).Times(1);
+  clock_.Advance(kOneSecond);
+  clock_.Advance(kOneSecond);
+  testing::Mock::VerifyAndClearExpectations(&sender_);
 
-  EXPECT_CALL(socket_, SendMessage(_, _, _))
-      .WillOnce(WithArgs<0, 1>(VerifyMessageBytesWithoutId(
-          kRecordQueryBytes.data(), kRecordQueryBytes.size())));
+  std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
+  tracker->AddAssociatedQuery(question.get());
+
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .Times(1)
+      .WillRepeatedly([this](const MdnsMessage& message) -> Error {
+        EXPECT_EQ(message.questions().size(), size_t{1});
+        EXPECT_EQ(message.questions()[0], a_question_);
+        return Error::None();
+      });
 
   clock_.Advance(
       std::chrono::duration_cast<Clock::duration>(a_record_.ttl() * 0.83));
@@ -234,7 +241,6 @@ TEST_F(MdnsTrackerTest, RecordTrackerNoQueryAfterLateTask) {
   // no query and instead the record will expire.
   // Check lower bound for task being late (TTL) and an arbitrarily long time
   // interval to ensure the query is not sent a later time.
-  EXPECT_CALL(socket_, SendMessage(_, _, _)).Times(0);
   clock_.Advance(a_record_.ttl());
   clock_.Advance(std::chrono::hours(1));
 }
@@ -281,9 +287,6 @@ TEST_F(MdnsTrackerTest, RecordTrackerExpirationCallbackAfterGoodbye) {
   // After a goodbye record is received, expiration is schedule in a second.
   EXPECT_EQ(tracker->Update(goodbye_record).value(),
             MdnsRecordTracker::UpdateType::kGoodbye);
-
-  // No refresh queries are sent after goodbye record is received.
-  EXPECT_CALL(socket_, SendMessage(_, _, _)).Times(0);
 
   // Advance clock to just before the expiration time of 1 second.
   clock_.Advance(std::chrono::microseconds{999999});
@@ -348,16 +351,16 @@ TEST_F(MdnsTrackerTest, QuestionTrackerQueryAfterDelay) {
   std::unique_ptr<MdnsQuestionTracker> tracker =
       CreateQuestionTracker(a_question_);
 
-  EXPECT_CALL(cb_, DoCallback(_, _, _)).Times(1);
-  EXPECT_CALL(socket_, SendMessage(_, _, _))
-      .WillOnce(WithArgs<0, 1>(VerifyTruncated(false)));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce(
+          DoAll(WithArgs<0>(VerifyTruncated(false)), Return(Error::None())));
   clock_.Advance(std::chrono::milliseconds(120));
 
   std::chrono::seconds interval{1};
   while (interval < std::chrono::hours(1)) {
-    EXPECT_CALL(cb_, DoCallback(_, _, _)).Times(1);
-    EXPECT_CALL(socket_, SendMessage(_, _, _))
-        .WillOnce(WithArgs<0, 1>(VerifyTruncated(false)));
+    EXPECT_CALL(sender_, SendMulticast(_))
+        .WillOnce(
+            DoAll(WithArgs<0>(VerifyTruncated(false)), Return(Error::None())));
     clock_.Advance(interval);
     interval *= 2;
   }
@@ -367,12 +370,15 @@ TEST_F(MdnsTrackerTest, QuestionTrackerSendsMessage) {
   std::unique_ptr<MdnsQuestionTracker> tracker =
       CreateQuestionTracker(a_question_);
 
-  EXPECT_CALL(cb_, DoCallback(_, _, _)).Times(1);
-  EXPECT_CALL(socket_, SendMessage(_, _, _))
-      .WillOnce(WithArgs<0, 1>(
-          DoAll(VerifyMessageBytesWithoutId(kQuestionQueryBytes.data(),
-                                            kQuestionQueryBytes.size()),
-                VerifyTruncated(false))));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce(DoAll(
+          WithArgs<0>(VerifyTruncated(false)),
+          [this](const MdnsMessage& message) -> Error {
+            EXPECT_EQ(message.questions().size(), size_t{1});
+            EXPECT_EQ(message.questions()[0], a_question_);
+            return Error::None();
+          },
+          Return(Error::None())));
 
   clock_.Advance(std::chrono::milliseconds(120));
 }
@@ -387,20 +393,23 @@ TEST_F(MdnsTrackerTest, QuestionTrackerSendsMultipleMessages) {
   std::unique_ptr<MdnsQuestionTracker> tracker =
       CreateQuestionTracker(a_question_);
 
-  std::vector<MdnsRecord> answers;
+  std::vector<std::unique_ptr<MdnsRecordTracker>> answers;
   for (int i = 0; i < 100; i++) {
-    answers.push_back(a_record_);
+    auto record = CreateRecordTracker(a_record_);
+    tracker->AddAssociatedRecord(record.get());
+    answers.push_back(std::move(record));
   }
-  std::vector<MdnsRecord::ConstRef> answer_refs(answers.begin(), answers.end());
 
-  EXPECT_CALL(cb_, DoCallback(_, _, _)).WillOnce(Return(answer_refs));
-  EXPECT_CALL(socket_, SendMessage(_, _, _))
-      .WillOnce(
-          WithArgs<0, 1>(DoAll(VerifyTruncated(true), VerifyRecordCount(49))))
-      .WillOnce(
-          WithArgs<0, 1>(DoAll(VerifyTruncated(true), VerifyRecordCount(50))))
-      .WillOnce(
-          WithArgs<0, 1>(DoAll(VerifyTruncated(false), VerifyRecordCount(1))));
+  EXPECT_CALL(sender_, SendMulticast(_))
+      .WillOnce(DoAll(WithArgs<0>(VerifyTruncated(true)),
+                      WithArgs<0>(VerifyRecordCount(49)),
+                      Return(Error::None())))
+      .WillOnce(DoAll(WithArgs<0>(VerifyTruncated(true)),
+                      WithArgs<0>(VerifyRecordCount(50)),
+                      Return(Error::None())))
+      .WillOnce(DoAll(WithArgs<0>(VerifyTruncated(false)),
+                      WithArgs<0>(VerifyRecordCount(1)),
+                      Return(Error::None())));
 
   clock_.Advance(std::chrono::milliseconds(120));
 }
