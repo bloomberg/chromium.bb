@@ -97,8 +97,8 @@ extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
                               static_cast<uint64_t>(uv_stride) +
                           (stride_alignment - 1);
 
-  if (y_plane_size != static_cast<size_t>(y_plane_size) ||
-      uv_plane_size != static_cast<size_t>(uv_plane_size)) {
+  // Check if it is safe to cast y_plane_size and uv_plane_size to size_t.
+  if (y_plane_size > SIZE_MAX || uv_plane_size > SIZE_MAX) {
     return -1;
   }
 
@@ -126,9 +126,9 @@ extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
     return -1;
   }
 
-  uint8_t* y_buffer = frame_buffer1->data[0];
-  uint8_t* u_buffer = !is_monochrome ? frame_buffer1->data[1] : nullptr;
-  uint8_t* v_buffer = !is_monochrome ? frame_buffer1->data[2] : nullptr;
+  uint8_t* const y_buffer = frame_buffer1->data[0];
+  uint8_t* const u_buffer = !is_monochrome ? frame_buffer1->data[1] : nullptr;
+  uint8_t* const v_buffer = !is_monochrome ? frame_buffer1->data[2] : nullptr;
 
   int left_border_bytes = left_border;
   int uv_left_border_bytes = uv_left_border;
