@@ -169,10 +169,10 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertEqual(
         content, {
             'fs-type': _FS_TYPE_SQUASHFS,
-            'pre-allocated-size': _PRE_ALLOCATED_BLOCKS * 4096,
+            'pre-allocated-size': str(_PRE_ALLOCATED_BLOCKS * _BLOCK_SIZE),
             'id': _ID,
             'package': _PACKAGE,
-            'size': blocks * 4096,
+            'size': str(blocks * _BLOCK_SIZE),
             'table-sha256-hash': 'deadbeef',
             'name': _NAME,
             'image-sha256-hash': '01234567',
