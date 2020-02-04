@@ -16,6 +16,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/variant.h"
 #include "discovery/mdns/public/mdns_constants.h"
+#include "platform/base/interface_info.h"
 #include "platform/base/ip_address.h"
 #include "util/logging.h"
 
@@ -150,7 +151,8 @@ class SrvRecordRdata {
 class ARecordRdata {
  public:
   ARecordRdata();
-  explicit ARecordRdata(IPAddress ipv4_address);
+  explicit ARecordRdata(IPAddress ipv4_address,
+                        NetworkInterfaceIndex interface_index = 0);
   ARecordRdata(const ARecordRdata& other);
   ARecordRdata(ARecordRdata&& other);
 
@@ -161,6 +163,7 @@ class ARecordRdata {
 
   size_t MaxWireSize() const;
   const IPAddress& ipv4_address() const { return ipv4_address_; }
+  NetworkInterfaceIndex interface_index() const { return interface_index_; }
 
   template <typename H>
   friend H AbslHashValue(H h, const ARecordRdata& rdata) {
@@ -169,6 +172,7 @@ class ARecordRdata {
 
  private:
   IPAddress ipv4_address_{0, 0, 0, 0};
+  NetworkInterfaceIndex interface_index_;
 };
 
 // AAAA Record format (http://www.ietf.org/rfc/rfc1035.txt):
@@ -176,7 +180,8 @@ class ARecordRdata {
 class AAAARecordRdata {
  public:
   AAAARecordRdata();
-  explicit AAAARecordRdata(IPAddress ipv6_address);
+  explicit AAAARecordRdata(IPAddress ipv6_address,
+                           NetworkInterfaceIndex interface_index = 0);
   AAAARecordRdata(const AAAARecordRdata& other);
   AAAARecordRdata(AAAARecordRdata&& other);
 
@@ -187,6 +192,7 @@ class AAAARecordRdata {
 
   size_t MaxWireSize() const;
   const IPAddress& ipv6_address() const { return ipv6_address_; }
+  NetworkInterfaceIndex interface_index() const { return interface_index_; }
 
   template <typename H>
   friend H AbslHashValue(H h, const AAAARecordRdata& rdata) {
@@ -196,6 +202,7 @@ class AAAARecordRdata {
  private:
   IPAddress ipv6_address_{0x0000, 0x0000, 0x0000, 0x0000,
                           0x0000, 0x0000, 0x0000, 0x0000};
+  NetworkInterfaceIndex interface_index_;
 };
 
 // PTR record format (http://www.ietf.org/rfc/rfc1035.txt):
