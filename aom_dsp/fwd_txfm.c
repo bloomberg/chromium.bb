@@ -114,12 +114,12 @@ void aom_fdct4x4_lp_c(const int16_t *input, int16_t *output, int stride) {
       step[1] = in_high[1] + in_high[2];
       step[2] = in_high[1] - in_high[2];
       step[3] = in_high[0] - in_high[3];
-      temp1 = (step[0] + step[1]) * cospi_16_64;
-      temp2 = (step[0] - step[1]) * cospi_16_64;
+      temp1 = (step[0] + step[1]) * (int32_t)cospi_16_64;
+      temp2 = (step[0] - step[1]) * (int32_t)cospi_16_64;
       out[0] = (int16_t)fdct_round_shift(temp1);
       out[2] = (int16_t)fdct_round_shift(temp2);
-      temp1 = step[2] * cospi_24_64 + step[3] * cospi_8_64;
-      temp2 = -step[2] * cospi_8_64 + step[3] * cospi_24_64;
+      temp1 = step[2] * (int32_t)cospi_24_64 + step[3] * (int32_t)cospi_8_64;
+      temp2 = -step[2] * (int32_t)cospi_8_64 + step[3] * (int32_t)cospi_24_64;
       out[1] = (int16_t)fdct_round_shift(temp1);
       out[3] = (int16_t)fdct_round_shift(temp2);
       // Do next column (which is a transposed row in second/horizontal pass)
