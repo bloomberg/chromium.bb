@@ -1070,18 +1070,6 @@
       ]
     },
     {
-      "name": "puff",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "pyro",
       "configs": [
         {
@@ -3901,6 +3889,31 @@
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt",
           "board_id": 427,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "name": "puff",
+      "reference_board_name": "puff",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "puff",
+          "name": "puff",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 411,
+          "is_active": true
+        },
+        {
+          "board_name": "puff",
+          "name": "unprovisioned_puff",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt",
+          "board_id": 411,
           "is_active": true
         }
       ]
