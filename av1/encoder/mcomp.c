@@ -86,8 +86,8 @@ int av1_init_search_range(int size) {
 }
 
 // Returns the rate of encoding the current motion vector based on the
-// joint_cost and comp_cost. joint_costs covers the cost of transimitting
-// JOINT_MV, and comp_cost covers the cost of transitting the actual motoin
+// joint_cost and comp_cost. joint_costs covers the cost of transmitting
+// JOINT_MV, and comp_cost covers the cost of transmitting the actual motion
 // vector.
 static INLINE int mv_cost(const MV *mv, const int *joint_cost,
                           int *const comp_cost[2]) {
@@ -95,9 +95,9 @@ static INLINE int mv_cost(const MV *mv, const int *joint_cost,
          comp_cost[1][mv->col];
 }
 
-// Returns the cost of encoding the motion vector diff := mv - *ref. The cost is
-// defined as the rate reqjuired to encode diff * weight, rounded to the nearest
-// 2 ** 7.
+// Returns the cost of encoding the motion vector diff := *mv - *ref. The cost
+// is defined as the rate required to encode diff * weight, rounded to the
+// nearest 2 ** 7.
 // This is NOT used during motion compensation.
 int av1_mv_bit_cost(const MV *mv, const MV *ref, const int *mvjcost,
                     int *mvcost[2], int weight) {
