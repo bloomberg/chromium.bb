@@ -420,7 +420,7 @@ static const arg_def_t tile_rows =
 static const arg_def_t enable_tpl_model =
     ARG_DEF(NULL, "enable-tpl-model", 1,
             "RDO based on frame temporal dependency "
-            "(0: off, 1: backward source based, 2: forward 2-pass). "
+            "(0: off, 1: backward source based). "
             "This is required for deltaq mode.");
 static const arg_def_t enable_keyframe_filtering =
     ARG_DEF(NULL, "enable-keyframe-filtering", 1,

@@ -33,8 +33,6 @@ void av1_tpl_setup_stats(AV1_COMP *cpi,
                          const EncodeFrameParams *const frame_params,
                          const EncodeFrameInput *const frame_input);
 
-void av1_tpl_setup_forward_stats(AV1_COMP *cpi);
-
 int av1_tpl_ptr_pos(AV1_COMP *cpi, int mi_row, int mi_col, int stride);
 
 void av1_tpl_rdmult_setup(AV1_COMP *cpi);

@@ -293,10 +293,6 @@ static int get_hier_tpl_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   const TplDepFrame *tpl_frame = &cpi->tpl_frame[tpl_idx];
   MACROBLOCKD *const xd = &x->e_mbd;
   const int deltaq_rdmult = set_deltaq_rdmult(cpi, xd);
-  if (cpi->tpl_model_pass == 1) {
-    assert(cpi->oxcf.enable_tpl_model == 2);
-    return deltaq_rdmult;
-  }
   if (tpl_frame->is_valid == 0) return deltaq_rdmult;
   if (!is_frame_tpl_eligible((AV1_COMP *)cpi)) return deltaq_rdmult;
   if (tpl_idx >= MAX_LAG_BUFFERS) return deltaq_rdmult;
@@ -3837,10 +3833,6 @@ static int get_tpl_stats_b(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row,
                            int mi_col, int64_t *intra_cost_b,
                            int64_t *inter_cost_b, int *stride) {
   if (!cpi->oxcf.enable_tpl_model) return 0;
-  if (cpi->tpl_model_pass == 1) {
-    assert(cpi->oxcf.enable_tpl_model == 2);
-    return 0;
-  }
   if (cpi->oxcf.superres_mode != SUPERRES_NONE) return 0;
   if (cpi->common.current_frame.frame_type == KEY_FRAME) return 0;
   const FRAME_UPDATE_TYPE update_type = get_frame_update_type(&cpi->gf_group);
@@ -3907,11 +3899,6 @@ static int get_q_for_deltaq_objective(AV1_COMP *const cpi, BLOCK_SIZE bsize,
   int64_t mc_dep_cost = 0;
   const int mi_wide = mi_size_wide[bsize];
   const int mi_high = mi_size_high[bsize];
-
-  if (cpi->tpl_model_pass == 1) {
-    assert(cpi->oxcf.enable_tpl_model == 2);
-    return cm->base_qindex;
-  }
 
   if (tpl_frame->is_valid == 0) return cm->base_qindex;
 
@@ -4240,12 +4227,6 @@ static AOM_INLINE void adjust_rdmult_tpl_model(AV1_COMP *cpi, MACROBLOCK *x,
                                                int mi_row, int mi_col) {
   const BLOCK_SIZE sb_size = cpi->common.seq_params.sb_size;
   const int orig_rdmult = cpi->rd.RDMULT;
-
-  if (cpi->tpl_model_pass == 1) {
-    assert(cpi->oxcf.enable_tpl_model == 2);
-    x->rdmult = orig_rdmult;
-    return;
-  }
 
   assert(IMPLIES(cpi->gf_group.size > 0,
                  cpi->gf_group.index < cpi->gf_group.size));

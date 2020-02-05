@@ -919,9 +919,6 @@ typedef struct AV1_COMP {
   // number of show frames encoded in current gf_group
   int num_gf_group_show_frames;
 
-  // when two pass tpl model is used, set to 1 for the
-  // first pass, then 0 for the final pass.
-  int tpl_model_pass;
   // Number of gf_group frames for tpl stats
   int tpl_gf_group_frames;
 

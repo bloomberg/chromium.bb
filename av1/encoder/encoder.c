@@ -4125,8 +4125,7 @@ static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
   av1_set_speed_features_framesize_dependent(cpi, cpi->speed);
 
 #if !CONFIG_REALTIME_ONLY
-  if (cpi->oxcf.enable_tpl_model && cpi->tpl_model_pass == 0 &&
-      is_frame_tpl_eligible(cpi)) {
+  if (cpi->oxcf.enable_tpl_model && is_frame_tpl_eligible(cpi)) {
     process_tpl_stats_frame(cpi);
     av1_tpl_rdmult_setup(cpi);
   }
@@ -5343,15 +5342,6 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
       loop = 1;
     }
 
-#if !CONFIG_REALTIME_ONLY
-    if (cpi->tpl_model_pass == 1) {
-      assert(cpi->oxcf.enable_tpl_model == 2);
-      av1_tpl_setup_forward_stats(cpi);
-      cpi->tpl_model_pass = 0;
-      loop = 1;
-    }
-#endif
-
     if (loop) {
       ++loop_count;
       ++loop_at_this_size;
@@ -6193,15 +6183,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       break;
   }
   cm->timing_info_present &= !seq_params->reduced_still_picture_hdr;
-
-  if (is_stat_consumption_stage_twopass(cpi) &&
-      cpi->oxcf.enable_tpl_model == 2 &&
-      current_frame->frame_type == INTER_FRAME) {
-    if (!cm->show_frame) {
-      assert(cpi->tpl_model_pass == 0);
-      cpi->tpl_model_pass = 1;
-    }
-  }
 
   int largest_tile_id = 0;
 #if CONFIG_SUPERRES_IN_RECODE
