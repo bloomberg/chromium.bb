@@ -721,6 +721,8 @@ void DesktopWindowTreeHostPlatform::Relayout() {
   NonClientView* non_client_view = widget->non_client_view();
   // non_client_view may be NULL, especially during creation.
   if (non_client_view) {
+    if (non_client_view->frame_view())
+      non_client_view->frame_view()->InvalidateLayout();
     non_client_view->client_view()->InvalidateLayout();
     non_client_view->InvalidateLayout();
   }
