@@ -699,7 +699,7 @@ class ChromeSDKCommand(command.CliCommand):
   _CHROME_CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
   _HOST_BINUTILS_DIR = 'third_party/binutils/Linux_x64/Release/bin/'
 
-  EBUILD_ENV = (
+  EBUILD_ENV_PATHS = (
       # Compiler tools.
       'CXX',
       'CC',
@@ -709,7 +709,9 @@ class ChromeSDKCommand(command.CliCommand):
       'NM',
       'RANLIB',
       'READELF',
+  )
 
+  EBUILD_ENV = EBUILD_ENV_PATHS + (
       # Compiler flags.
       'CFLAGS',
       'CXXFLAGS',
@@ -943,12 +945,8 @@ class ChromeSDKCommand(command.CliCommand):
       if v_cur != v_new:
         logging.info('MISMATCHED ARG: %s: %s != %s', k, v_cur, v_new)
 
-  def _SetupTCEnvironment(self, sdk_ctx, options, env):
+  def _SetupTCEnvironment(self, options, env):
     """Sets up toolchain-related environment variables."""
-    target_tc_path = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
-    tc_bin_path = os.path.join(target_tc_path, 'bin')
-    env['PATH'] = '%s:%s' % (tc_bin_path, os.environ['PATH'])
-
     chrome_clang_path = os.path.join(options.chrome_src, self._CHROME_CLANG_DIR)
 
     # For host compiler, we use the compiler that comes with Chrome
@@ -962,21 +960,25 @@ class ChromeSDKCommand(command.CliCommand):
     env['NM_host'] = os.path.join(binutils_path, 'nm')
     env['READELF_host'] = os.path.join(binutils_path, 'readelf')
 
-  def _ModifyPathForGomaBuild(self, compiler, tc_path=None):
+  def _AbsolutizeBinaryPath(self, binary, tc_path):
     """Modify toolchain path for goma build.
 
-    This function relativizes path of -B flag, but absolutize compiler path.
-    Compiler path will be relativized in build/toolchain/cros/BUILD.gn for
-    directory independent cache sharing in some distributed build system.
+    This function absolutizes the path to the given toolchain binary, which
+    will then be relativized in build/toolchain/cros/BUILD.gn. This ensures the
+    paths are the same across different machines & checkouts, which improves
+    cache hit rate in distributed build systems (i.e. goma).
+
+    Args:
+      binary: Name of toolchain binary.
+      tc_path: Path to toolchain directory.
+
+    Returns:
+      Absolute path to the binary in the toolchain dir.
     """
-    args = []
-    for i, v in enumerate(compiler.split()):
-      if v.startswith('-B'):
-        v = '-B' + os.path.relpath(v[len('-B'):], self._BuildDir())
-      elif i == 0 and os.path.basename(v) == v:
-        v = os.path.join(tc_path, 'bin', v)
-      args.append(v)
-    return ' '.join(args)
+    # If binary doesn't contain a '/', assume it's located in the toolchain dir.
+    if os.path.basename(binary) == binary:
+      return os.path.join(tc_path, 'bin', binary)
+    return binary
 
   def _SetupEnvironment(self, board, sdk_ctx, options, goma_dir=None,
                         goma_port=None):
@@ -1017,10 +1019,10 @@ class ChromeSDKCommand(command.CliCommand):
 
     env = osutils.SourceEnvironment(environment, self.EBUILD_ENV)
     gn_args = gn_helpers.FromGNArgs(env['GN_ARGS'])
-    self._SetupTCEnvironment(sdk_ctx, options, env)
+    self._SetupTCEnvironment(options, env)
 
     # Add managed components to the PATH.
-    env['PATH'] = '%s:%s' % (constants.CHROMITE_BIN_DIR, env['PATH'])
+    env['PATH'] = '%s:%s' % (constants.CHROMITE_BIN_DIR, os.environ['PATH'])
     env['PATH'] = '%s:%s' % (os.path.dirname(self.sdk.gs_ctx.gsutil_bin),
                              env['PATH'])
 
@@ -1065,27 +1067,24 @@ class ChromeSDKCommand(command.CliCommand):
     gn_args['linux_use_bundled_binutils'] = True
 
     target_tc_path = sdk_ctx.key_map[self.sdk.TARGET_TOOLCHAIN_KEY].path
-    modified_env_cc = self._ModifyPathForGomaBuild(env['CC'], target_tc_path)
-    modified_env_cxx = self._ModifyPathForGomaBuild(env['CXX'], target_tc_path)
-    gn_args['cros_target_cc'] = modified_env_cc.split()[0]
-    gn_args['cros_target_cxx'] = modified_env_cxx.split()[0]
+    for env_path in self.EBUILD_ENV_PATHS:
+      env[env_path] = self._AbsolutizeBinaryPath(env[env_path], target_tc_path)
+    gn_args['cros_target_cc'] = env['CC']
+    gn_args['cros_target_cxx'] = env['CXX']
     gn_args['cros_target_ld'] = env['LD']
     gn_args['cros_target_nm'] = env['NM']
+    gn_args['cros_target_ar'] = env['AR']
     gn_args['cros_target_readelf'] = env['READELF']
-    gn_args['cros_target_extra_cflags'] = ' '.join(
-        [env.get('CFLAGS', '')] + modified_env_cc.split()[1:])
-    gn_args['cros_target_extra_cxxflags'] = ' '.join(
-        [env.get('CXXFLAGS', '')] + modified_env_cxx.split()[1:])
-    gn_args['cros_host_cc'] = self._ModifyPathForGomaBuild(env['CC_host'])
-    gn_args['cros_host_cxx'] = self._ModifyPathForGomaBuild(env['CXX_host'])
+    gn_args['cros_target_extra_cflags'] = env.get('CFLAGS', '')
+    gn_args['cros_target_extra_cxxflags'] = env.get('CXXFLAGS', '')
+    gn_args['cros_host_cc'] = env['CC_host']
+    gn_args['cros_host_cxx'] = env['CXX_host']
     gn_args['cros_host_ld'] = env['LD_host']
     gn_args['cros_host_nm'] = env['NM_host']
     gn_args['cros_host_ar'] = env['AR_host']
     gn_args['cros_host_readelf'] = env['READELF_host']
-    gn_args['cros_v8_snapshot_cc'] = self._ModifyPathForGomaBuild(
-        env['CC_host'])
-    gn_args['cros_v8_snapshot_cxx'] = self._ModifyPathForGomaBuild(
-        env['CXX_host'])
+    gn_args['cros_v8_snapshot_cc'] = env['CC_host']
+    gn_args['cros_v8_snapshot_cxx'] = env['CXX_host']
     gn_args['cros_v8_snapshot_ld'] = env['LD_host']
     gn_args['cros_v8_snapshot_nm'] = env['NM_host']
     gn_args['cros_v8_snapshot_ar'] = env['AR_host']
