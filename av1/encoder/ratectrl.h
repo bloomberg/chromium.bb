@@ -78,6 +78,10 @@ typedef struct {
   int base_frame_target;  // A baseline frame target before adjustment
                           // for previous under or over shoot.
   int this_frame_target;  // Actual frame target after rc adjustment.
+
+  // gop bit budget
+  int64_t gf_group_bits;
+
   int projected_frame_size;
   int sb64_target_rate;
   int last_q[FRAME_TYPES];  // Separate values for Intra/Inter

@@ -24,6 +24,7 @@
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/encoder/gop_structure.h"
+#include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/use_flat_gop_model_params.h"
 
@@ -677,11 +678,9 @@ static int adjust_boost_bits_for_target_level(AV1_COMP *const cpi,
   return bits_assigned;
 }
 
-static void allocate_gf_group_bits(
-    GF_GROUP *gf_group, RATE_CONTROL *const rc, int64_t gf_group_bits,
-    int gf_arf_bits, int max_bits,
-    const EncodeFrameParams *const frame_params) {
-  const int key_frame = (frame_params->frame_type == KEY_FRAME);
+static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
+                                   int64_t gf_group_bits, int gf_arf_bits,
+                                   int max_bits, int key_frame) {
   int64_t total_group_bits = gf_group_bits;
 
   // For key frames the frame target rate is already set and it
@@ -878,7 +877,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   int flash_detected;
   int64_t gf_group_bits;
-  int gf_arf_bits;
   const int is_intra_only = frame_params->frame_type == KEY_FRAME ||
                             frame_params->frame_type == INTRA_ONLY_FRAME;
   const int arf_active_or_kf = is_intra_only || rc->source_alt_ref_active;
@@ -1202,6 +1200,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 
   // Calculate the bits to be allocated to the gf/arf group as a whole
   gf_group_bits = calculate_total_gf_group_bits(cpi, gf_group_err);
+  rc->gf_group_bits = gf_group_bits;
 
 #if GROUP_ADAPTIVE_MAXQ
   // Calculate an estimate of the maxq needed for the group.
@@ -1243,21 +1242,11 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   }
 #endif
 
-  // Calculate the extra bits to be used for boosted frame(s)
-  gf_arf_bits = calculate_boost_bits(rc->baseline_gf_interval, rc->gfu_boost,
-                                     gf_group_bits);
-  gf_arf_bits =
-      adjust_boost_bits_for_target_level(cpi, gf_arf_bits, gf_group_bits, 1);
-
   // Adjust KF group bits and error remaining.
   twopass->kf_group_error_left -= (int64_t)gf_group_err;
 
   // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
   av1_gop_setup_structure(cpi, frame_params);
-
-  // Allocate bits to each of the frames in the GF group.
-  allocate_gf_group_bits(&cpi->gf_group, rc, gf_group_bits, gf_arf_bits,
-                         frame_max_bits(rc, oxcf), frame_params);
 
   // Reset the file position.
   reset_fpf_position(twopass, start_pos);
@@ -1272,6 +1261,24 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // Reset rolling actual and target bits counters for ARF groups.
   twopass->rolling_arf_group_target_bits = 1;
   twopass->rolling_arf_group_actual_bits = 1;
+
+  av1_gop_bit_allocation(cpi, frame_params->frame_type == KEY_FRAME,
+                         gf_group_bits);
+}
+
+void av1_gop_bit_allocation(AV1_COMP *cpi, int is_key_frame,
+                            int64_t gf_group_bits) {
+  RATE_CONTROL *const rc = &cpi->rc;
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
+
+  // Calculate the extra bits to be used for boosted frame(s)
+  int gf_arf_bits = calculate_boost_bits(rc->baseline_gf_interval,
+                                         rc->gfu_boost, gf_group_bits);
+  gf_arf_bits =
+      adjust_boost_bits_for_target_level(cpi, gf_arf_bits, gf_group_bits, 1);
+  // Allocate bits to each of the frames in the GF group.
+  allocate_gf_group_bits(&cpi->gf_group, rc, gf_group_bits, gf_arf_bits,
+                         frame_max_bits(rc, oxcf), is_key_frame);
 }
 
 // Minimum % intra coding observed in first pass (1.0 = 100%)
