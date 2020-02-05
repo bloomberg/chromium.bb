@@ -51,6 +51,7 @@ _MAX_UPDATES_WARNING = (
 
 _DLC_ID = 'DLC_ID'
 _DLC_PACKAGE = 'DLC_PACKAGE'
+_DLC_ENABLED = 'DLC_ENABLED'
 _ENVIRONMENT_FILENAME = 'environment.bz2'
 _DLC_INSTALL_ROOT = '/var/cache/dlc'
 
@@ -966,10 +967,10 @@ def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
     if dlc_id and dlc_package:
       _DeployDLCImage(device, sysroot, dlc_id, dlc_package)
       dlc_deployed = True
-      # Clean up directories created by emerging DLCs.
-      device.run(['rm', '-rf', '/build/rootfs/dlc'])
-      device.run(['rmdir', '--ignore-fail-on-non-empty', '/build/rootfs',
-                  '/build'])
+      # Clean up empty directories created by emerging DLCs.
+      device.run(['test', '-d', '/build/rootfs', '&&', 'rmdir',
+                  '--ignore-fail-on-non-empty', '/build/rootfs', '/build'],
+                 check=False)
 
   # Restart dlcservice so it picks up the newly installed DLC modules (in case
   # we installed new DLC images).
@@ -1007,6 +1008,8 @@ def _UninstallDLCImage(device, pkg_attrs):
 
 def _DeployDLCImage(device, sysroot, dlc_id, dlc_package):
   """Deploy (install and mount) a DLC image."""
+  # Build the DLC image if the image is outdated or doesn't exist.
+  build_dlc.InstallDlcImages(sysroot=sysroot, dlc_id=dlc_id)
 
   logging.debug('Uninstall DLC %s if it is installed.', dlc_id)
   try:
@@ -1022,7 +1025,7 @@ def _DeployDLCImage(device, sysroot, dlc_id, dlc_package):
   # of to dlc_a and dlc_b, and let dlcserive install the images to their final
   # location.
   logging.notice('Deploy the DLC image for %s', dlc_id)
-  dlc_img_path_src = os.path.join(sysroot, build_dlc.DLC_IMAGE_DIR, dlc_id,
+  dlc_img_path_src = os.path.join(sysroot, build_dlc.DLC_BUILD_DIR, dlc_id,
                                   dlc_package, build_dlc.DLC_IMAGE)
   dlc_img_path = os.path.join(_DLC_INSTALL_ROOT, dlc_id, dlc_package)
   dlc_img_path_a = os.path.join(dlc_img_path, 'dlc_a')
@@ -1039,6 +1042,17 @@ def _DeployDLCImage(device, sysroot, dlc_id, dlc_package):
   # Set the proper perms and ownership so dlcservice can access the image.
   device.run(['chmod', '-R', 'u+rwX,go+rX,go-w', _DLC_INSTALL_ROOT])
   device.run(['chown', '-R', 'dlcservice:dlcservice', _DLC_INSTALL_ROOT])
+
+  # Copy metadata to device.
+  dest_mata_dir = os.path.join('/', build_dlc.DLC_META_DIR, dlc_id, dlc_package)
+  device.run(['mkdir', '-p', dest_mata_dir])
+  src_meta_dir = os.path.join(sysroot, build_dlc.DLC_BUILD_DIR, dlc_id,
+                              dlc_package, build_dlc.DLC_TMP_META_DIR)
+  device.CopyToDevice(src_meta_dir + '/',
+                      dest_mata_dir,
+                      mode='rsync',
+                      recursive=True,
+                      remote_sudo=True)
 
 
 def _GetDLCInfo(device, pkg_path, from_dut):
@@ -1077,7 +1091,14 @@ def _GetDLCInfo(device, pkg_path, from_dut):
     # Dumps content into a file so we can use osutils.SourceEnvironment.
     path = os.path.realpath(f.name)
     osutils.WriteFile(path, environment_content, mode='wb')
-    content = osutils.SourceEnvironment(path, (_DLC_ID, _DLC_PACKAGE))
+    content = osutils.SourceEnvironment(path, (_DLC_ID, _DLC_PACKAGE,
+                                               _DLC_ENABLED))
+
+    dlc_enabled = content.get(_DLC_ENABLED)
+    if dlc_enabled is not None and (dlc_enabled is False or
+                                    str(dlc_enabled) == 'false'):
+      logging.info('Installing DLC in rootfs.')
+      return None, None
     return content.get(_DLC_ID), content.get(_DLC_PACKAGE)
 
 

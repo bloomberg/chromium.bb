@@ -859,6 +859,9 @@ class TempDir(object):
   def __del__(self):
     self.Cleanup()
 
+  def __str__(self):
+    return self.tempdir if self.tempdir else ''
+
 
 def TempDirDecorator(func):
   """Populates self.tempdir with path to a temporary writeable directory."""

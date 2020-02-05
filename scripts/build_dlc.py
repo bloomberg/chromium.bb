@@ -22,10 +22,12 @@ from chromite.lib import osutils
 from chromite.scripts import cros_set_lsb_release
 
 DLC_META_DIR = 'opt/google/dlc/'
-DLC_IMAGE_DIR = 'build/rootfs/dlc/'
+DLC_TMP_META_DIR = 'meta'
+DLC_BUILD_DIR = 'build/rootfs/dlc/'
 LSB_RELEASE = 'etc/lsb-release'
 DLC_IMAGE = 'dlc.img'
 IMAGELOADER_JSON = 'imageloader.json'
+EBUILD_PARAMETERS = 'ebuild_parameters.json'
 
 # This file has major and minor version numbers that the update_engine client
 # supports. These values are needed for generating a delta/full payload.
@@ -60,6 +62,16 @@ def HashFile(file_path):
   return sha256.hexdigest()
 
 
+def CopyFileSudo(src_path, dst_path):
+  """Copy a file with sudo permissions to a destination.
+
+  Args:
+    src_path: File to copy.
+    dst_path: Destination path of the file.
+  """
+  cros_build_lib.sudo_run(['cp', src_path, dst_path])
+
+
 def GetValueInJsonFile(json_path, key, default_value=None):
   """Reads file containing JSON and returns value or default_value for key.
 
@@ -71,6 +83,84 @@ def GetValueInJsonFile(json_path, key, default_value=None):
   """
   with open(json_path) as fd:
     return json.load(fd).get(key, default_value)
+
+
+class EbuildParams(object):
+  """Object to store and retrieve DLC ebuild parameters.
+
+  Attributes:
+    dlc_id: (str) DLC ID.
+    dlc_package: (str) DLC package.
+    fs_type: (str) file system type.
+    pre_allocated_blocks: (int) number of blocks pre-allocated on device.
+    version: (str) DLC version.
+    name: (str) DLC name.
+    preload: (bool) allow for preloading DLC.
+  """
+
+  def __init__(self, dlc_id, dlc_package, fs_type, pre_allocated_blocks,
+               version, name, preload):
+    self.dlc_id = dlc_id
+    self.dlc_package = dlc_package
+    self.fs_type = fs_type
+    self.pre_allocated_blocks = pre_allocated_blocks
+    self.version = version
+    self.name = name
+    self.preload = preload
+
+  def StoreDlcParameters(self, install_root_dir, sudo):
+    """Store DLC parameters defined in the ebuild.
+
+    Store DLC parameters defined in the ebuild in a temporary file so they can
+    be retrieved in the build_image phase.
+
+    Args:
+      install_root_dir: (str) The path to the root installation directory.
+      sudo: (bool) Use sudo to write the file.
+    """
+    ebuild_params_path = EbuildParams.GetParamsPath(install_root_dir,
+                                                    self.dlc_id,
+                                                    self.dlc_package)
+    osutils.WriteFile(ebuild_params_path,
+                      json.dumps(self.__dict__),
+                      makedirs=True, sudo=sudo)
+
+  @staticmethod
+  def GetParamsPath(install_root_dir, dlc_id, dlc_package):
+    """Get the path to the file storing the ebuild parameters.
+
+    Args:
+      install_root_dir: (str) The path to the root installation directory.
+      dlc_id: (str) DLC ID.
+      dlc_package: (str) DLC package.
+
+    Returns:
+      [str]: Path to |EBUILD_PARAMETERS|.
+    """
+    return os.path.join(install_root_dir, DLC_BUILD_DIR, dlc_id, dlc_package,
+                        EBUILD_PARAMETERS)
+
+  @classmethod
+  def LoadEbuilParams(cls, sysroot, dlc_id, dlc_package):
+    """Read the stored ebuild parameters file and return a class instance.
+
+    Args:
+      dlc_id: (str) DLC ID.
+      dlc_package: (str) DLC package.
+      sysroot: (str) The path to the build root directory.
+
+    Returns:
+      [bool] : True if |ebuild_params_path| exists, False otherwise.
+    """
+    path = cls.GetParamsPath(sysroot, dlc_id, dlc_package)
+    if not os.path.exists(path):
+      return None
+
+    with open(path) as fp:
+      return cls(**json.load(fp))
+
+  def __str__(self):
+    return str(self.__dict__)
 
 
 class DlcGenerator(object):
@@ -88,40 +178,36 @@ class DlcGenerator(object):
   # The DLC root path inside the DLC module.
   _DLC_ROOT_DIR = 'root'
 
-  def __init__(self, src_dir, sysroot, install_root_dir, fs_type,
-               pre_allocated_blocks, version, dlc_id, dlc_package, name,
-               preload):
+  def __init__(self, ebuild_params, sysroot, install_root_dir, src_dir=None):
     """Object initializer.
 
     Args:
-      src_dir: (str) path to the DLC source root directory.
       sysroot: (str) The path to the build root directory.
       install_root_dir: (str) The path to the root installation directory.
-      fs_type: (str) file system type.
-      pre_allocated_blocks: (int) number of blocks pre-allocated on device.
-      version: (str) DLC version.
-      dlc_id: (str) DLC ID.
-      dlc_package: (str) DLC Package.
-      name: (str) DLC name.
-      preload: (bool) allow for preloading DLC.
+      ebuild_params: (EbuildParams) Ebuild variables.
+      src_dir: (str) Optional path to the DLC source root directory. When None,
+               the default directory in |DLC_BUILD_DIR| is used.
     """
+    # Use a temporary directory to avoid having to use sudo every time we write
+    # into the build directory.
+    self.temp_root = osutils.TempDir(prefix='dlc', sudo_rm=True)
     self.src_dir = src_dir
     self.sysroot = sysroot
     self.install_root_dir = install_root_dir
-    self.fs_type = fs_type
-    self.pre_allocated_blocks = pre_allocated_blocks
-    self.version = version
-    self.dlc_id = dlc_id
-    self.dlc_package = dlc_package
-    self.name = name
-    self.preload = preload
+    self.ebuild_params = ebuild_params
+    # If the client is not overriding the src_dir, use the default one.
+    if not self.src_dir:
+      self.src_dir = os.path.join(self.sysroot, DLC_BUILD_DIR,
+                                  self.ebuild_params.dlc_id,
+                                  self.ebuild_params.dlc_package,
+                                  self._DLC_ROOT_DIR)
 
-    self.meta_dir = os.path.join(self.install_root_dir, DLC_META_DIR,
-                                 self.dlc_id, self.dlc_package)
-    self.image_dir = os.path.join(self.install_root_dir, DLC_IMAGE_DIR,
-                                  self.dlc_id, self.dlc_package)
-    osutils.SafeMakedirs(self.meta_dir)
-    osutils.SafeMakedirs(self.image_dir)
+    self.image_dir = os.path.join(self.temp_root.tempdir,
+                                  DLC_BUILD_DIR,
+                                  self.ebuild_params.dlc_id,
+                                  self.ebuild_params.dlc_package)
+
+    self.meta_dir = os.path.join(self.image_dir, DLC_TMP_META_DIR)
 
     # Create path for all final artifacts.
     self.dest_image = os.path.join(self.image_dir, DLC_IMAGE)
@@ -130,7 +216,16 @@ class DlcGenerator(object):
 
     # Log out the member variable values initially set.
     logging.debug('Initial internal values of DlcGenerator: %s',
-                  json.dumps(self.__dict__, sort_keys=True))
+                  repr({k:str(i) for k, i in self.__dict__.items()}))
+
+  def CopyTempContentsToBuildDir(self):
+    """Copy the temp files to the build directory using sudo."""
+    logging.info('Copy files from temporary directory (%s) to build directory '
+                 '(%s).', self.temp_root.tempdir.rstrip('/') + '/.',
+                 self.install_root_dir)
+    cros_build_lib.sudo_run(['cp', '-dR',
+                             self.temp_root.tempdir.rstrip('/') + '/.',
+                             self.install_root_dir])
 
   def SquashOwnerships(self, path):
     """Squash the owernships & permissions for files.
@@ -147,6 +242,8 @@ class DlcGenerator(object):
     """Create an ext4 image."""
     with osutils.TempDir(prefix='dlc_') as temp_dir:
       mount_point = os.path.join(temp_dir, 'mount_point')
+      # Create the directory where the image is located if it doesn't exist.
+      osutils.SafeMakedirs(os.path.split(self.dest_image)[0])
       # Create a raw image file.
       with open(self.dest_image, 'w') as f:
         f.truncate(self._BLOCKS * self._BLOCK_SIZE)
@@ -222,13 +319,13 @@ class DlcGenerator(object):
           (platform_lsb_release, cros_set_lsb_release.LSB_KEY_APPID_RELEASE))
 
     fields = (
-        (DLC_ID_KEY, self.dlc_id),
-        (DLC_PACKAGE_KEY, self.dlc_package),
-        (DLC_NAME_KEY, self.name),
+        (DLC_ID_KEY, self.ebuild_params.dlc_id),
+        (DLC_PACKAGE_KEY, self.ebuild_params.dlc_package),
+        (DLC_NAME_KEY, self.ebuild_params.name),
         # The DLC appid is generated by concatenating the platform appid with
         # the DLC ID using an underscore. This pattern should never be changed
         # once set otherwise it can break a lot of things!
-        (DLC_APPID_KEY, '%s_%s' % (app_id, self.dlc_id)),
+        (DLC_APPID_KEY, '%s_%s' % (app_id, self.ebuild_params.dlc_id)),
     )
 
     lsb_release = os.path.join(dlc_dir, LSB_RELEASE)
@@ -254,18 +351,19 @@ class DlcGenerator(object):
   def CreateImage(self):
     """Create the image and copy the DLC files to it."""
     logging.info('Creating the DLC image.')
-    if self.fs_type == _EXT4_TYPE:
+    if self.ebuild_params.fs_type == _EXT4_TYPE:
       self.CreateExt4Image()
-    elif self.fs_type == _SQUASHFS_TYPE:
+    elif self.ebuild_params.fs_type == _SQUASHFS_TYPE:
       self.CreateSquashfsImage()
     else:
-      raise ValueError('Wrong fs type: %s used:' % self.fs_type)
+      raise ValueError('Wrong fs type: %s used:' % self.ebuild_params.fs_type)
 
   def VerifyImageSize(self):
     """Verify the image can fit to the reserved file."""
     logging.info('Verifying the DLC image size.')
     image_bytes = os.path.getsize(self.dest_image)
-    preallocated_bytes = self.pre_allocated_blocks * self._BLOCK_SIZE
+    preallocated_bytes = (self.ebuild_params.pre_allocated_blocks *
+                          self._BLOCK_SIZE)
     # Verifies the actual size of the DLC image is NOT smaller than the
     # preallocated space.
     if preallocated_bytes < image_bytes:
@@ -275,8 +373,8 @@ class DlcGenerator(object):
           'allowed to occupy. The value is smaller than the actual image size '
           '(%s) required. Increase DLC_PREALLOC_BLOCKS in your ebuild to at '
           'least %d.' %
-          (self.pre_allocated_blocks, preallocated_bytes, image_bytes,
-           self.GetOptimalImageBlockSize(image_bytes)))
+          (self.ebuild_params.pre_allocated_blocks, preallocated_bytes,
+           image_bytes, self.GetOptimalImageBlockSize(image_bytes)))
 
   def GetOptimalImageBlockSize(self, image_bytes):
     """Given the image bytes, get the least amount of blocks required."""
@@ -294,19 +392,20 @@ class DlcGenerator(object):
       [str]: content of imageloader.json file.
     """
     return {
-        'fs-type': self.fs_type,
-        'id': self.dlc_id,
-        'package': self.dlc_package,
+        'fs-type': self.ebuild_params.fs_type,
+        'id': self.ebuild_params.dlc_id,
+        'package': self.ebuild_params.dlc_package,
         'image-sha256-hash': image_hash,
         'image-type': 'dlc',
         'is-removable': True,
         'manifest-version': self._MANIFEST_VERSION,
-        'name': self.name,
-        'pre-allocated-size': str(self.pre_allocated_blocks * self._BLOCK_SIZE),
+        'name': self.ebuild_params.name,
+        'pre-allocated-size':
+            str(self.ebuild_params.pre_allocated_blocks * self._BLOCK_SIZE),
         'size': str(blocks * self._BLOCK_SIZE),
         'table-sha256-hash': table_hash,
-        'version': self.version,
-        'preload-allowed': self.preload,
+        'version': self.ebuild_params.version,
+        'preload-allowed': self.ebuild_params.preload,
     }
 
   def GenerateVerity(self):
@@ -343,43 +442,64 @@ class DlcGenerator(object):
 
   def GenerateDLC(self):
     """Generate a DLC artifact."""
-    # Create the image and copy the DLC files to it.
+    # Create directories.
+    osutils.SafeMakedirs(self.image_dir)
+    osutils.SafeMakedirs(self.meta_dir)
+
+    # Create the image into |self.temp_root| and copy the DLC files to it.
     self.CreateImage()
-    # Verify the image created is within preallocated size.
+    # Verify the image created is within pre-allocated size.
     self.VerifyImageSize()
-    # Generate hash tree and other metadata.
+    # Generate hash tree and other metadata and save them under
+    # |self.temp_root|.
     self.GenerateVerity()
+    # Copy the files from |self.temp_root| into the build directory.
+    self.CopyTempContentsToBuildDir()
+
+    # Now that the image was successfully generated, delete |ebuild_params_path|
+    # to indicate that the image in the build directory is in sync with the
+    # files installed during the build_package phase.
+    ebuild_params_path = EbuildParams.GetParamsPath(
+        self.sysroot, self.ebuild_params.dlc_id, self.ebuild_params.dlc_package)
+    osutils.SafeUnlink(ebuild_params_path, sudo=True)
 
 
-def IsDlcPreloadingAllowed(dlc_id, dlc_meta_dir):
+def IsDlcPreloadingAllowed(dlc_id, dlc_build_dir):
   """Validates that DLC and it's packages all were built with DLC_PRELOAD=true.
 
   Args:
     dlc_id: (str) DLC ID.
-    dlc_meta_dir: (str) the rooth path where DLC metadata resides.
+    dlc_build_dir: (str) the root path where DLC build files reside.
   """
 
-  dlc_id_meta_dir = os.path.join(dlc_meta_dir, dlc_id)
+  dlc_id_meta_dir = os.path.join(dlc_build_dir, dlc_id)
   if not os.path.exists(dlc_id_meta_dir):
-    logging.error('DLC Metadata directory (%s) does not exist for preloading ' \
+    logging.error('DLC build directory (%s) does not exist for preloading '
                   'check, will not preload', dlc_id_meta_dir)
     return False
 
   packages = os.listdir(dlc_id_meta_dir)
   if not packages:
-    logging.error('DLC ID Metadata directory (%s) does not have any ' \
+    logging.error('DLC ID build directory (%s) does not have any '
                   'packages, will not preload.', dlc_id_meta_dir)
     return False
 
-  return all([
-      GetValueInJsonFile(
-          json_path=os.path.join(dlc_id_meta_dir, package, IMAGELOADER_JSON),
-          key='preload-allowed',
-          default_value=False) for package in packages
-  ])
+  for package in packages:
+    image_loader_json = os.path.join(dlc_id_meta_dir, package, DLC_TMP_META_DIR,
+                                     IMAGELOADER_JSON)
+    if not os.path.exists(image_loader_json):
+      logging.error('DLC metadata file (%s) does not exist, will not preload.',
+                    image_loader_json)
+      return False
+    if not GetValueInJsonFile(json_path=image_loader_json,
+                              key='preload-allowed', default_value=False):
+      return False
+  # All packages support preload.
+  return True
 
 
-def CopyAllDlcs(sysroot, install_root_dir, preload):
+def InstallDlcImages(sysroot, dlc_id=None, install_root_dir=None, preload=False,
+                     rootfs=None, src_dir=None):
   """Copies all DLC image files into the images directory.
 
   Copies the DLC image files in the given build directory into the given DLC
@@ -388,47 +508,100 @@ def CopyAllDlcs(sysroot, install_root_dir, preload):
 
   Args:
     sysroot: Path to directory containing DLC images, e.g /build/<board>.
+    dlc_id: (str) DLC ID. If None, all the DLCs will be installed.
     install_root_dir: Path to DLC output directory, e.g.
-      src/build/images/<board>/<version>.
+      src/build/images/<board>/<version>. If None, the image will be generated
+      but will not be copied to a destination.
     preload: When true, only copies DLC(s) if built with DLC_PRELOAD=true.
+    rootfs: (str) Path to the platform rootfs.
+    src_dir: (str) Path to the DLC source root directory.
   """
-  dlc_meta_dir = os.path.join(sysroot, DLC_META_DIR)
-  dlc_image_dir = os.path.join(sysroot, DLC_IMAGE_DIR)
-
-  if not os.path.exists(dlc_image_dir):
-    logging.info('DLC Image directory (%s) does not exist, ignoring.',
-                 dlc_image_dir)
+  dlc_build_dir = os.path.join(sysroot, DLC_BUILD_DIR)
+  if not os.path.exists(dlc_build_dir):
+    logging.info('DLC build directory (%s) does not exist, ignoring.',
+                 dlc_build_dir)
     return
 
-  dlc_ids = os.listdir(dlc_image_dir)
-  if not dlc_ids:
-    logging.info('There are no DLC(s) to copy to output, ignoring.')
-    return
-
-  logging.info('Detected the following DLCs: %s', ', '.join(dlc_ids))
-
-  if preload:
-    logging.info(
-        'Will only copy DLC images built with preloading from %s to '
-        '%s.', dlc_image_dir, install_root_dir)
-    dlc_ids = [
-        dlc_id for dlc_id in dlc_ids
-        if IsDlcPreloadingAllowed(dlc_id, dlc_meta_dir)
-    ]
-    logging.info('Actual DLC(s) to be copied: %s', ', '.join(dlc_ids))
-
+  if dlc_id is not None:
+    if not os.path.exists(os.path.join(dlc_build_dir, dlc_id)):
+      raise Exception(
+          'DLC "%s" does not exist in the build directory %s.' %
+          (dlc_id, dlc_build_dir))
+    dlc_ids = [dlc_id]
   else:
-    logging.info('Copying all DLC images from %s to %s.', dlc_image_dir,
-                 install_root_dir)
-  osutils.SafeMakedirs(install_root_dir)
+    # Process all DLCs.
+    dlc_ids = os.listdir(dlc_build_dir)
+    if not dlc_ids:
+      logging.info('There are no DLC(s) to copy to output, ignoring.')
+      return
 
-  for dlc_id in dlc_ids:
-    source_dlc_dir = os.path.join(dlc_image_dir, dlc_id)
-    install_dlc_dir = os.path.join(install_root_dir, dlc_id)
-    osutils.SafeMakedirs(install_dlc_dir)
-    osutils.CopyDirContents(source_dlc_dir, install_dlc_dir)
+    logging.info('Detected the following DLCs: %s', ', '.join(dlc_ids))
 
-  logging.info('Done copying the DLCs to their destination.')
+  for d_id in dlc_ids:
+    dlc_id_path = os.path.join(dlc_build_dir, d_id)
+    dlc_packages = [direct for direct in os.listdir(dlc_id_path)
+                    if os.path.isdir(os.path.join(dlc_id_path, direct))]
+    for d_package in dlc_packages:
+      logging.info('Building image: DLC %s', d_id)
+      params = EbuildParams.LoadEbuilParams(sysroot=sysroot, dlc_id=d_id,
+                                            dlc_package=d_package)
+      # Because portage sandboxes every ebuild package during build_packages
+      # phase, we cannot delete the old image during that phase, but we can use
+      # the existence of the file |EBUILD_PARAMETERS| to know if the image
+      # has to be generated or not.
+      if not params:
+        logging.info('The ebuild parameters file (%s) for DLC (%s) does not '
+                     'exist. This means that the image was already '
+                     'generated and there is no need to create it again.',
+                     EbuildParams.GetParamsPath(sysroot, d_id, d_package), d_id)
+      else:
+        dlc_generator = DlcGenerator(
+            src_dir=src_dir,
+            sysroot=sysroot,
+            install_root_dir=sysroot,
+            ebuild_params=params)
+        dlc_generator.GenerateDLC()
+
+      # Copy the dlc images to install_root_dir.
+      if install_root_dir:
+        if preload and not IsDlcPreloadingAllowed(d_id, dlc_build_dir):
+          logging.info('Skipping installation of DLC %s because the preload '
+                       'flag is set and the DLC does not support preloading.',
+                       d_id)
+        else:
+          osutils.SafeMakedirs(install_root_dir, sudo=True)
+          source_dlc_dir = os.path.join(dlc_build_dir, d_id, d_package)
+          install_dlc_dir = os.path.join(install_root_dir, d_id, d_package)
+          osutils.SafeMakedirs(install_dlc_dir, sudo=True)
+          for filepath in (os.path.join(source_dlc_dir, fname) for fname in
+                           os.listdir(source_dlc_dir) if
+                           fname.endswith('.img')):
+            logging.info('Copying DLC(%s) image from %s to %s: ', d_id,
+                         filepath, install_dlc_dir)
+            CopyFileSudo(filepath, install_dlc_dir)
+            logging.info('Done copying DLC to %s.', install_dlc_dir)
+      else:
+        logging.info('install_root_dir value was not provided. Copying dlc'
+                     ' image skipped.')
+
+      # Create metadata directory in rootfs.
+      if rootfs:
+        meta_rootfs = os.path.join(rootfs, DLC_META_DIR, d_id, d_package)
+        osutils.SafeMakedirs(meta_rootfs, sudo=True)
+        # Copy the metadata files to rootfs.
+        meta_dir_src = os.path.join(dlc_build_dir, d_id, d_package,
+                                    DLC_TMP_META_DIR)
+        logging.info('Copying DLC(%s) metadata from %s to %s: ', d_id,
+                     meta_dir_src, meta_rootfs)
+        # Use sudo_run since osutils.CopyDirContents doesn't support sudo.
+        cros_build_lib.sudo_run(['cp', '-dR',
+                                 meta_dir_src.rstrip('/') + '/.',
+                                 meta_rootfs], print_cmd=False, stderr=True)
+
+      else:
+        logging.info('rootfs value was not provided. Copying metadata skipped.')
+
+  logging.info('Done installing DLCs.')
 
 
 def GetParser():
@@ -441,28 +614,32 @@ def GetParser():
       '--sysroot',
       type='path',
       metavar='DIR',
-      required=True,
       help="The root path to the board's build root, e.g. "
       '/build/eve')
+  # TODO(andrewlassalle): Remove src-dir in the future(2021?) if nobody uses it.
+  parser.add_argument(
+      '--src-dir',
+      type='path',
+      metavar='SRC_DIR_PATH',
+      help='Override the default Root directory path that contains all DLC '
+           'files to be packed.')
   parser.add_argument(
       '--install-root-dir',
       type='path',
       metavar='DIR',
-      required=True,
       help='If building a specific DLC, it is the root path to'
       ' install DLC images (%s) and metadata (%s). Otherwise it'
       ' is the target directory where the Chrome OS images gets'
       ' dropped in build_image, e.g. '
-      'src/build/images/<board>/latest.' % (DLC_IMAGE_DIR, DLC_META_DIR))
+      'src/build/images/<board>/latest.' % (DLC_BUILD_DIR, DLC_META_DIR))
 
   one_dlc = parser.add_argument_group('Arguments required for building only '
                                       'one DLC')
   one_dlc.add_argument(
-      '--src-dir',
+      '--rootfs',
       type='path',
-      metavar='SRC_DIR_PATH',
-      help='Root directory path that contains all DLC files '
-      'to be packed.')
+      metavar='ROOT_FS_PATH',
+      help='Path to the platform rootfs.')
   one_dlc.add_argument(
       '--pre-allocated-blocks',
       type=int,
@@ -489,10 +666,16 @@ def GetParser():
       default=False,
       action='store_true',
       help='Allow preloading of DLC.')
+  one_dlc.add_argument(
+      '--build-package',
+      default=False,
+      action='store_true',
+      help='Flag to indicate if the script is executed during the '
+           'build_packages phase.')
   return parser
 
 
-def ValidateDlcIdentifier(name):
+def ValidateDlcIdentifier(parser, name):
   """Validates the DLC identifiers like ID and package names.
 
   The name specifications are:
@@ -505,6 +688,7 @@ def ValidateDlcIdentifier(name):
   https://chromium.googlesource.com/chromiumos/platform2/+/master/dlcservice/docs/developer.md#create-a-dlc-module
 
   Args:
+    parser: Arguments parser.
     name: The value of the string to be validated.
   """
   errors = []
@@ -519,55 +703,73 @@ def ValidateDlcIdentifier(name):
 
   if errors:
     msg = '%s is invalid:\n%s' % (name, '\n'.join(errors))
-    raise Exception(msg)
+    parser.error(msg)
 
 
-def ValidateArguments(opts):
+def ValidateArguments(parser, opts, req_flags, invalid_flags):
   """Validates the correctness of the passed arguments.
 
   Args:
+    parser: Arguments parser.
     opts: Parsed arguments.
+    req_flags: all the required flags.
+    invalid_flags: all the flags that are not allowed.
   """
   # Make sure if the intention is to build one DLC, all the required arguments
-  # are passed.
-  per_dlc_req_args = ('src_dir', 'pre_allocated_blocks', 'version', 'id',
-                      'package', 'name')
-  if (opts.id and
-      not all(vars(opts)[arg] is not None for arg in per_dlc_req_args)):
-    raise Exception('If the intention is to build only one DLC, all the flags'
-                    '%s required for it should be passed .' % per_dlc_req_args)
+  # are passed and none of the invalid ones are passed. This will ensure the
+  # script is called twice per DLC.
+  if opts.id:
+    if not all(vars(opts)[x] is not None for x in req_flags):
+      parser.error('If the intention is to build only one DLC, all the flags'
+                   '%s required for it should be passed.' % req_flags)
+    if any(vars(opts)[x] is not None for x in invalid_flags):
+      parser.error('If the intention is to build only one DLC, all the flags'
+                   '%s should be passed in the build_packages phase, not in '
+                   'the build_image phase.' % invalid_flags)
+
 
   if opts.fs_type == _EXT4_TYPE:
-    raise Exception('ext4 unsupported for DLC, see https://crbug.com/890060')
+    parser.error('ext4 unsupported for DLC, see https://crbug.com/890060')
 
   if opts.id:
-    ValidateDlcIdentifier(opts.id)
+    ValidateDlcIdentifier(parser, opts.id)
   if opts.package:
-    ValidateDlcIdentifier(opts.package)
+    ValidateDlcIdentifier(parser, opts.package)
 
 
 def main(argv):
-  opts = GetParser().parse_args(argv)
+  parser = GetParser()
+  opts = parser.parse_args(argv)
   opts.Freeze()
-
-  ValidateArguments(opts)
-
-  if opts.id:
-    logging.info('Building DLC %s', opts.id)
-    dlc_generator = DlcGenerator(
-        src_dir=opts.src_dir,
-        sysroot=opts.sysroot,
-        install_root_dir=opts.install_root_dir,
-        fs_type=opts.fs_type,
-        pre_allocated_blocks=opts.pre_allocated_blocks,
-        version=opts.version,
-        dlc_id=opts.id,
-        dlc_package=opts.package,
-        name=opts.name,
-        preload=opts.preload)
-    dlc_generator.GenerateDLC()
+  per_dlc_req_args = ['id']
+  per_dlc_invalid_args = []
+  if opts.build_package:
+    per_dlc_req_args += ['pre_allocated_blocks', 'version', 'name',
+                         'package', 'install_root_dir']
+    per_dlc_invalid_args += ['src_dir', 'sysroot']
   else:
-    CopyAllDlcs(
+    per_dlc_req_args += ['sysroot']
+    per_dlc_invalid_args += ['name', 'pre_allocated_blocks', 'version',
+                             'package']
+
+  ValidateArguments(parser, opts, per_dlc_req_args, per_dlc_invalid_args)
+
+  if opts.build_package:
+    logging.info('Building package: DLC %s', opts.id)
+    params = EbuildParams(dlc_id=opts.id,
+                          dlc_package=opts.package,
+                          fs_type=opts.fs_type,
+                          name=opts.name,
+                          pre_allocated_blocks=opts.pre_allocated_blocks,
+                          version=opts.version,
+                          preload=opts.preload)
+    params.StoreDlcParameters(install_root_dir=opts.install_root_dir, sudo=True)
+
+  else:
+    InstallDlcImages(
         sysroot=opts.sysroot,
+        dlc_id=opts.id,
         install_root_dir=opts.install_root_dir,
-        preload=opts.preload)
+        preload=opts.preload,
+        src_dir=opts.src_dir,
+        rootfs=opts.rootfs)
