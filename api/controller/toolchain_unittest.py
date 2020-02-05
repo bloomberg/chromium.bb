@@ -197,16 +197,14 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
                                 self.prep, self.bundle),
     })
 
-  def _GetRequest(self, artifact_types=None):
-    if artifact_types is None:
-      artifact_types = []
+  def _GetRequest(
+      self, artifact_types=None, input_artifacts=None, additional_args=None):
     chroot = common_pb2.Chroot(path=self.tempdir)
     sysroot = sysroot_pb2.Sysroot(
         path='/build/board', build_target=common_pb2.BuildTarget(name='board'))
     return toolchain_pb2.PrepareForToolchainBuildRequest(
-        artifact_types=artifact_types,
-        chroot=chroot, sysroot=sysroot,
-    )
+        artifact_types=artifact_types, chroot=chroot, sysroot=sysroot,
+        input_artifacts=input_artifacts, additional_args=additional_args)
 
   def testRaisesForUnknown(self):
     request = self._GetRequest([BuilderConfig.Artifacts.IMAGE_ARCHIVES])
@@ -220,7 +218,7 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
         chroot=None, sysroot=None)
     toolchain.PrepareForBuild(request, self.response, self.api_config)
     self.prep.assert_called_once_with(
-        'UnverifiedOrderingFile', None, '', '', {})
+        'UnverifiedOrderingFile', None, '', '', {}, {})
 
   def testHandlesUnknownInputArtifacts(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(
@@ -232,7 +230,30 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
         ])
     toolchain.PrepareForBuild(request, self.response, self.api_config)
     self.prep.assert_called_once_with(
-        'UnverifiedOrderingFile', None, '', '', {})
+        'UnverifiedOrderingFile', None, '', '', {}, {})
+
+  def testPassesAdditionalArgs(self):
+    request = toolchain_pb2.PrepareForToolchainBuildRequest(
+        artifact_types=[BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE],
+        chroot=None, sysroot=None, input_artifacts=[
+            BuilderConfig.Artifacts.InputArtifactInfo(
+                input_artifact_type=\
+                    BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+                input_artifact_gs_locations=['path1', 'path2']),
+            BuilderConfig.Artifacts.InputArtifactInfo(
+                input_artifact_type=\
+                    BuilderConfig.Artifacts.UNVERIFIED_ORDERING_FILE,
+                input_artifact_gs_locations=['path3']),
+        ],
+        additional_args=common_pb2.PrepareForBuildAdditionalArgs(
+            chrome_cwp_profile='CWPVERSION'),
+    )
+    toolchain.PrepareForBuild(request, self.response, self.api_config)
+    self.prep.assert_called_once_with(
+        'UnverifiedOrderingFile', None, '', '', {
+            'UnverifiedOrderingFile': [
+                'gs://path1', 'gs://path2', 'gs://path3']},
+        {'chrome_cwp_profile': 'CWPVERSION'})
 
   def testHandlesDuplicateInputArtifacts(self):
     request = toolchain_pb2.PrepareForToolchainBuildRequest(
@@ -251,7 +272,7 @@ class PrepareForBuildTest(cros_test_lib.MockTempDirTestCase,
     self.prep.assert_called_once_with(
         'UnverifiedOrderingFile', None, '', '', {
             'UnverifiedOrderingFile': [
-                'gs://path1', 'gs://path2', 'gs://path3']})
+                'gs://path1', 'gs://path2', 'gs://path3']}, {})
 
 
 class BundleToolchainTest(cros_test_lib.MockTempDirTestCase,

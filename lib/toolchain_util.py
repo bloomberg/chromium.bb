@@ -183,6 +183,10 @@ class PrepareForBuildHandlerError(Error):
   """Error for PrepareForBuildHandler class."""
 
 
+class BundleArtifactsHandlerError(Error):
+  """Error for BundleArtifactsHandler class."""
+
+
 class GenerateChromeOrderfileError(Error):
   """Error for GenerateChromeOrderfile class."""
 
@@ -989,7 +993,7 @@ _EbuildInfo = collections.namedtuple('_EbuildInfo', ['path', 'CPV'])
 class _CommonPrepareBundle(object):
   """Information about Ebuild files we care about."""
   def __init__(self, artifact_name, chroot=None, sysroot_path=None,
-               build_target=None, input_artifacts=None):
+               build_target=None, input_artifacts=None, additional_args=None):
     self._gs_context = None
     self.artifact_name = artifact_name
     self.chroot = chroot
@@ -997,6 +1001,7 @@ class _CommonPrepareBundle(object):
     self.build_target = build_target
     # Turn the input artifacts list into a dictionary.
     self.input_artifacts = input_artifacts or []
+    self.additional_args = additional_args or {}
     self._ebuild_info = {}
 
   @property
@@ -1306,14 +1311,31 @@ class _CommonPrepareBundle(object):
     except ProfilesNameHelperError:
       return None
 
+  @staticmethod
+  def _RankValidCWPProfiles(name):
+    """Calculate a value used to rank valid benchmark profiles.
+
+    Args:
+      name: A name or a full path of a possible benchmark profile.
+
+    Returns:
+      A BenchmarkProfileNamedTuple used for ranking if the name
+      is a valid benchmark profile. Otherwise, returns None.
+    """
+    try:
+      return _ParseCWPProfileName(os.path.basename(name)).clock
+    except ProfilesNameHelperError:
+      return None
+
 
 class PrepareForBuildHandler(_CommonPrepareBundle):
   """Methods for updating ebuilds for toolchain artifacts."""
 
   def __init__(self, artifact_name, chroot, sysroot_path, build_target,
-               input_artifacts):
+               input_artifacts, additional_args):
     super(PrepareForBuildHandler, self).__init__(
-        artifact_name, chroot, sysroot_path, build_target, input_artifacts)
+        artifact_name, chroot, sysroot_path, build_target, input_artifacts,
+        additional_args)
     self._prepare_func = getattr(self, '_Prepare' + artifact_name)
 
   def Prepare(self):
@@ -1373,29 +1395,220 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     return PrepareForBuildReturn.NEEDED
 
   def _PrepareUnverifiedLlvmPgoFile(self):
-    # TODO(crbug/1019868): implement
+    # TODO(crbug/1019868): implement *-pgo-generate-llvm
+    raise PrepareForBuildHandlerError(
+        'Unimplemented PrepareForBuild: %s' % self.artifact_name)
+
+  def _PrepareUnverifiedChromeBenchmarkAfdoFile(self):
+    # TODO(crbug/1019868): implement benchmark-afdo-generate
     return PrepareForBuildReturn.UNKNOWN
 
-  def _PrepareUnverifiedChromeAfdoFile(self):
-    # TODO(crbug/1019868): implement
-    return PrepareForBuildReturn.UNKNOWN
+  def _PrepareVerifiedChromeBenchmarkAfdoFile(self):
+    """Unused: see _PrepareVerifiedReleaseAfdoFile."""
+    raise PrepareForBuildHandlerError(
+        'Unexpected artifact type %s.' % self.artifact_name)
 
-  def _PrepareVerifiedChromeAfdoFile(self):
-    # TODO(crbug/1019868): implement
-    return PrepareForBuildReturn.UNKNOWN
+  def _PrepareUnverifiedKernelCwpAfdoFile(self):
+    """Unused: CWP is from elsewhere."""
+    raise PrepareForBuildHandlerError(
+        'Unexpected artifact type %s.' % self.artifact_name)
 
-  def _PrepareVerifiedKernelAfdoFile(self):
-    # TODO(crbug/1019868): implement
-    return PrepareForBuildReturn.UNKNOWN
+  def _PrepareVerifiedKernelCwpAfdoFile(self):
+    # TODO(crbug/1019868): implement kernel_*-release-afdo-verify.
+    raise PrepareForBuildHandlerError(
+        'Unimplemented PrepareForBuild: %s' % self.artifact_name)
+
+  def _PrepareUnverifiedChromeCwpAfdoFile(self):
+    """Unused: CWP is from elsewhere."""
+    raise PrepareForBuildHandlerError(
+        'Unexpected artifact type %s.' % self.artifact_name)
+
+  def _PrepareVerifiedChromeCwpAfdoFile(self):
+    """Unused: see _PrepareVerifiedReleaseAfdoFile."""
+    raise PrepareForBuildHandlerError(
+        'Unexpected artifact type %s.' % self.artifact_name)
+
+  def _PrepareVerifiedReleaseAfdoFile(self):
+    """Prepare to verify the Chrome AFDO artifact and release it.
+
+    See also "chrome_afdo" code elsewhere in this file.
+    """
+    profile = self.additional_args.get('chrome_cwp_profile')
+    if not profile:
+      raise PrepareForBuildHandlerError('Could not find profile name.')
+    bench_locs = self.input_artifacts.get(
+        'UnverifiedChromeBenchmarkAfdoFile', [BENCHMARK_AFDO_GS_URL])
+    cwp_locs = self.input_artifacts.get(
+        'UnverifiedChromeCwpAfdoFile', [CWP_AFDO_GS_URL])
+
+    # This will raise a RuntimeError if no artifact is found.
+    bench = self._FindLatestAFDOArtifact(
+        bench_locs, self._RankValidBenchmarkProfiles)
+    cwp = self._FindLatestAFDOArtifact(cwp_locs, self._RankValidCWPProfiles)
+    bench_name = os.path.split(bench)[1]
+    cwp_name = os.path.split(cwp)[1]
+
+    # Check to see if we already have a verified AFDO profile.
+    # We only look at the first path in the list of vetted locations, since that
+    # is where we will publish the verified profile.
+    published_loc = self.input_artifacts.get(
+        'VerifiedReleaseAfdoFile', [RELEASE_AFDO_GS_URL_VETTED])[0]
+    merged_name = MERGED_AFDO_NAME % _GetCombinedAFDOName(
+        _ParseCWPProfileName(os.path.splitext(cwp_name)[0]), profile,
+        _ParseBenchmarkProfileName(os.path.splitext(bench_name)[0]))
+    published_name = merged_name + '-redacted.afdo' + XZ_COMPRESSION_SUFFIX
+    published_path = os.path.join(published_loc, published_name)
+
+    if self.gs_context.Exists(published_path):
+      # The verified artifact is already present: we are done.
+      logging.info('Pointless build: "%s" exists.', published_path)
+      return PrepareForBuildReturn.POINTLESS
+
+    # If we don't have an SDK, then we cannot update the manifest.
+    if self.chroot:
+      # Generate the AFDO profile to verify in ${CHROOT}/tmp/.
+      with self.chroot.tempdir() as tempdir:
+        art = self._CreateReleaseChromeAFDO(cwp, bench, tempdir, merged_name)
+        afdo_profile = os.path.join(self.chroot.tmp, os.path.basename(art))
+        os.rename(art, afdo_profile)
+      self._PatchEbuild(
+          self._GetEbuildInfo(constants.CHROME_PN),
+          {'UNVETTED_AFDO_FILE': self.chroot.chroot_path(afdo_profile)},
+          uprev=True)
+    else:
+      logging.info('No chroot: not patching ebuild.')
+    return PrepareForBuildReturn.NEEDED
+
+  def _CreateReleaseChromeAFDO(
+      self, cwp_url, bench_url, output_dir, merged_name):
+    """Create an AFDO profile to be used in release Chrome.
+
+    This means we want to merge the CWP and benchmark AFDO profiles into
+    one, and redact all ICF symbols.
+
+    Args:
+      cwp_url: Full (GS) path to the discovered CWP file to use.
+      bench_url: Full (GS) path to the verified benchmark profile.
+      output_dir: A directory to store the created artifact.  Must be inside of
+          the chroot.
+      merged_name: Basename for the merged profile.
+
+    Returns:
+      Full path to a generated release AFDO profile.
+    """
+    # Download the compressed profiles from GS.
+    cwp_compressed = os.path.join(output_dir, os.path.basename(cwp_url))
+    bench_compressed = os.path.join(output_dir, os.path.basename(bench_url))
+    self.gs_context.Copy(cwp_url, cwp_compressed)
+    self.gs_context.Copy(bench_url, bench_compressed)
+
+    # Decompress the files.
+    cwp_local = os.path.splitext(cwp_compressed)[0]
+    bench_local = os.path.splitext(bench_compressed)[0]
+    cros_build_lib.UncompressFile(cwp_compressed, cwp_local)
+    cros_build_lib.UncompressFile(bench_compressed, bench_local)
+
+    # Merge profiles.
+    merge_weights = [(cwp_local, RELEASE_CWP_MERGE_WEIGHT),
+                     (bench_local, RELEASE_BENCHMARK_MERGE_WEIGHT)]
+    merged_path = os.path.join(output_dir, merged_name)
+    self._MergeAFDOProfiles(merge_weights, merged_path)
+
+    # Redact profiles.
+    redacted_path = merged_path + '-redacted.afdo'
+    self._RedactAFDOProfile(merged_path, redacted_path)
+
+    return redacted_path
+
+  def _MergeAFDOProfiles(
+      self, profile_list, output_profile, use_compbinary=False):
+    """Merges the given profile list.
+
+    This is ultimately derived from afdo.py, but runs OUTSIDE of the chroot.
+    It converts paths to chroot-relative paths, and runs llvm-profdata in the
+    chroot.
+
+    Args:
+      profile_list: a list of (profile_path, profile_weight).
+        Profile_weight is an int that tells us how to weight the profile
+        relative to everything else.
+      output_profile: where to store the result profile.
+      use_compbinary: whether to use the new compressed binary AFDO profile
+        format.
+    """
+    if not profile_list:
+      raise ValueError('Need profiles to merge')
+
+    # A regular llvm-profdata command looks like:
+    # llvm-profdata merge [-sample] -output=/path/to/output input1 [...]
+    #
+    # Alternatively, we can specify inputs by `-weighted-input=A,file`, where A
+    # is a multiplier of the sample counts in the profile.
+    merge_command = [
+        'llvm-profdata',
+        'merge',
+        '-sample',
+        '-output=' + self.chroot.chroot_path(output_profile),
+    ] + [
+        '-weighted-input=%d,%s' % (weight, self.chroot.chroot_path(name))
+        for name, weight in profile_list
+    ]
+
+    # Here only because this was copied from afdo.py
+    if use_compbinary:
+      merge_command.append('-compbinary')
+    cros_build_lib.run(merge_command, enter_chroot=True, print_cmd=True)
+
+  def _RedactAFDOProfile(self, input_path, output_path):
+    """Redact ICF'ed symbols from AFDO profiles.
+
+    ICF can cause inflation on AFDO sampling results, so we want to remove
+    them from AFDO profiles used for Chrome.
+    See http://crbug.com/916024 for more details.
+
+    This function runs OUTSIDE of the chroot, and enters the chroot.
+
+    Args:
+      input_path: Full path to input AFDO profile.
+      output_path: Full path to output AFDO profile.
+    """
+
+    profdata_command_base = ['llvm-profdata', 'merge', '-sample']
+    # Convert the compbinary profiles to text profiles.
+    input_to_text_temp = input_path + '.text.temp'
+    cmd_to_text = profdata_command_base + [
+        '-text', self.chroot.chroot_path(input_path),
+        '-output', self.chroot.chroot_path(input_to_text_temp)
+    ]
+    cros_build_lib.run(cmd_to_text, enter_chroot=True, print_cmd=True)
+
+    # Call the redaction script.
+    redacted_temp = input_path + '.redacted.temp'
+    with open(input_to_text_temp) as f:
+      cros_build_lib.run(['redact_textual_afdo_profile'],
+                         input=f,
+                         stdout=redacted_temp,
+                         enter_chroot=True,
+                         print_cmd=True)
+
+    # Convert the profiles back to compbinary profiles.
+    # Using `compbinary` profiles saves us hundreds of MB of RAM per
+    # compilation, since it allows profiles to be lazily loaded.
+    cmd_to_compbinary = profdata_command_base + [
+        '-compbinary', self.chroot.chroot_path(redacted_temp),
+        '-output', self.chroot.chroot_path(output_path),
+    ]
+    cros_build_lib.run(cmd_to_compbinary, enter_chroot=True, print_cmd=True)
 
 
 class BundleArtifactHandler(_CommonPrepareBundle):
   """Methods for updating ebuilds for toolchain artifacts."""
 
   def __init__(self, artifact_name, chroot, sysroot_path, build_target,
-               output_dir):
+               output_dir, additional_args):
     super(BundleArtifactHandler, self).__init__(
-        artifact_name, chroot, sysroot_path, build_target)
+        artifact_name, chroot, sysroot_path, build_target,
+        additional_args=additional_args)
     self._bundle_func = getattr(self, '_Bundle' + artifact_name)
     self.output_dir = output_dir
 
@@ -1452,24 +1665,50 @@ class BundleArtifactHandler(_CommonPrepareBundle):
     return [artifact_path]
 
   def _BundleUnverifiedLlvmPgoFile(self):
-    # TODO(crbug/1019868): implement
-    return []
+    # TODO(crbug/1019868): implement *-pgo-generate-llvm
+    raise BundleArtifactsHandlerError(
+        'Unimplemented BundleArtifacts: %s' % self.artifact_name)
 
-  def _BundleUnverifiedChromeAfdoFile(self):
-    # TODO(crbug/1019868): implement
-    return []
+  def _BundleUnverifiedChromeBenchmarkAfdoFile(self):
+    # TODO(crbug/1019868): implement benchmark-afdo-generate.
+    raise BundleArtifactsHandlerError(
+        'Unimplemented BundleArtifacts: %s' % self.artifact_name)
 
-  def _BundleVerifiedChromeAfdoFile(self):
-    # TODO(crbug/1019868): implement
-    return []
+  def _BundleVerifiedChromeBenchmarkAfdoFile(self):
+    """Unused: see _BundleVerifiedReleaseAfdoFile."""
+    raise BundleArtifactsHandlerError(
+        'Unexpected artifact type %s.' % self.artifact_name)
 
-  def _BundleVerifiedKernelAfdoFile(self):
-    # TODO(crbug/1019868): implement
-    return []
+  def _BundleUnverifiedKernelCwpAfdoFile(self):
+    """Unused: this artifact comes from CWP."""
+    raise BundleArtifactsHandlerError(
+        'Unexpected artifact type %s.' % self.artifact_name)
+
+  def _BundleVerifiedKernelCwpAfdoFile(self):
+    # TODO(crbug/1019868): implement kernel_*-release-afdo-verify.
+    raise BundleArtifactsHandlerError(
+        'Unimplemented BundleArtifacts: %s' % self.artifact_name)
+
+  def _BundleUnverifiedChromeCwpAfdoFile(self):
+    """Unused: this artifact comes from CWP."""
+    raise BundleArtifactsHandlerError(
+        'Unexpected artifact type %s.' % self.artifact_name)
+
+  def _BundleVerifiedChromeCwpAfdoFile(self):
+    """Unused: see _BundleVerifiedReleaseAfdoFile."""
+    raise BundleArtifactsHandlerError(
+        'Unexpected artifact type %s.' % self.artifact_name)
+
+  def _BundleVerifiedReleaseAfdoFile(self):
+    """Bundle the verified Release AFDO file for Chrome."""
+    profile_path = self.chroot.full_path(self._GetArtifactVersionInEbuild(
+        constants.CHROME_PN, 'UNVETTED_AFDO_FILE'))
+    return _CompressAFDOFiles(
+        [profile_path], None, self.output_dir, XZ_COMPRESSION_SUFFIX)
 
 
 def PrepareForBuild(artifact_name, chroot, sysroot_path, build_target,
-                    input_artifacts):
+                    input_artifacts, additional_args):
   """Prepare for building artifacts.
 
   This code is called OUTSIDE the chroot, before it is set up.
@@ -1480,6 +1719,7 @@ def PrepareForBuild(artifact_name, chroot, sysroot_path, build_target,
     sysroot_path: path to sysroot, relative to chroot path, or None.
     build_target: name of build target, or None.
     input_artifacts: List(InputArtifactInfo) of available artifact locations.
+    additional_args: dict(key: value)  See PrepareForBuildAdditionalArgs.
 
   Returns:
     PrepareForBuildReturn
@@ -1487,10 +1727,11 @@ def PrepareForBuild(artifact_name, chroot, sysroot_path, build_target,
 
   return PrepareForBuildHandler(
       artifact_name, chroot, sysroot_path, build_target,
-      input_artifacts).Prepare()
+      input_artifacts, additional_args).Prepare()
 
 
-def BundleArtifacts(name, chroot, sysroot_path, build_target, output_dir):
+def BundleArtifacts(
+    name, chroot, sysroot_path, build_target, output_dir, additional_args):
   """Prepare for building artifacts.
 
   This code is called OUTSIDE the chroot, after it is set up.
@@ -1502,12 +1743,14 @@ def BundleArtifacts(name, chroot, sysroot_path, build_target, output_dir):
     chrome_root: path to chrome root.
     build_target: name of build target
     output_dir: path in which to place the artifacts.
+    additional_args: dict(key: value)  See PrepareForBuildAdditionalArgs.
 
   Returns:
     list of artifacts, relative to output_dir.
   """
   return BundleArtifactHandler(
-      name, chroot, sysroot_path, build_target, output_dir).Bundle()
+      name, chroot, sysroot_path, build_target, output_dir,
+      additional_args=additional_args).Bundle()
 
 
 # ###########################################################################

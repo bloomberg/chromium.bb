@@ -369,6 +369,7 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
   def setUp(self):
     self.artifact_type = 'Unspecified'
     self.input_artifacts = {}
+    self.additional_args = {}
     self.gsc_exists = None
     self.orderfile_name = (
         'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
@@ -388,7 +389,7 @@ class PrepareForBuildHandlerTest(PrepareBundleTest):
     self.input_artifacts = input_artifacts
     self.obj = toolchain_util.PrepareForBuildHandler(
         self.artifact_type, self.chroot, self.sysroot, self.board,
-        self.input_artifacts)
+        self.input_artifacts, self.additional_args)
     self.obj._gs_context = self.gs_context
     self.PatchObject(self.obj, '_GetOrderfileName', return_value='orderfile')
     self.gsc_exists = self.PatchObject(
@@ -449,6 +450,7 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
 
     self.artifact_type = 'Unspecified'
     self.outdir = None
+    self.additional_args = {}
     self.orderfile_name = (
         'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
         'benchmark-78.0.3893.0-r1.orderfile')
@@ -462,13 +464,13 @@ class BundleArtifactHandlerTest(PrepareBundleTest):
     self.copy2 = self.PatchObject(shutil, 'copy2')
 
   def SetUpBundle(self, artifact_type):
-    """Set up to test _Prepare${artifactType}."""
+    """Set up to test _Bundle${artifactType}."""
     self.artifact_type = artifact_type
     self.outdir = os.path.join(self.tempdir, 'tmp', 'output_dir')
     osutils.SafeMakedirs(self.outdir)
     self.obj = toolchain_util.BundleArtifactHandler(
         self.artifact_type, self.chroot, self.sysroot, self.board,
-        self.outdir)
+        self.outdir, self.additional_args)
     self.obj._gs_context = self.gs_context
 
   def testBundleUnverifiedOrderingFile(self):

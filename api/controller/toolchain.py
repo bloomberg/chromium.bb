@@ -42,16 +42,32 @@ _TOOLCHAIN_ARTIFACT_HANDLERS = {
         _Handlers('UnverifiedLlvmPgoFile',
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
-    BuilderConfig.Artifacts.UNVERIFIED_CHROME_AFDO_FILE:
-        _Handlers('UnverifiedChromeAfdoFile',
+    BuilderConfig.Artifacts.UNVERIFIED_CHROME_BENCHMARK_AFDO_FILE:
+        _Handlers('UnverifiedChromeBenchmarkAfdoFile',
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
-    BuilderConfig.Artifacts.VERIFIED_CHROME_AFDO_FILE:
-        _Handlers('VerifiedChromeAfdoFile',
+    BuilderConfig.Artifacts.VERIFIED_CHROME_BENCHMARK_AFDO_FILE:
+        _Handlers('VerifiedChromeBenchmarkAfdoFile',
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
-    BuilderConfig.Artifacts.VERIFIED_KERNEL_AFDO_FILE:
-        _Handlers('VerifiedKernelAfdoFile',
+    BuilderConfig.Artifacts.UNVERIFIED_KERNEL_CWP_AFDO_FILE:
+        _Handlers('UnverifiedKernelCwpAfdoFile',
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
+    BuilderConfig.Artifacts.VERIFIED_KERNEL_CWP_AFDO_FILE:
+        _Handlers('VerifiedKernelCwpAfdoFile',
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
+    BuilderConfig.Artifacts.UNVERIFIED_CHROME_CWP_AFDO_FILE:
+        _Handlers('UnverifiedChromeCwpAfdoFile',
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
+    BuilderConfig.Artifacts.VERIFIED_CHROME_CWP_AFDO_FILE:
+        _Handlers('VerifiedChromeCwpAfdoFile',
+                  toolchain_util.PrepareForBuild,
+                  toolchain_util.BundleArtifacts),
+    BuilderConfig.Artifacts.VERIFIED_RELEASE_AFDO_FILE:
+        _Handlers('VerifiedReleaseAfdoFile',
                   toolchain_util.PrepareForBuild,
                   toolchain_util.BundleArtifacts),
 }
@@ -79,6 +95,8 @@ def PrepareForBuild(input_proto, output_proto, _config):
       input_artifacts ({(str) name:[str gs_locations]}): locations for possible
           input artifacts.  The handler is expected to know which keys it should
           be using, and ignore any keys that it does not understand.
+      additional_args ({(str) name: (str) value}) Dictionary of additional
+          arguments.
 
   They locate and modify any ebuilds and/or source required for the artifact
   being created, then return a value from toolchain_util.PrepareForBuildReturn.
@@ -102,6 +120,14 @@ def PrepareForBuild(input_proto, output_proto, _config):
       input_artifacts[item.name].extend(
           ['gs://%s' % str(x) for x in art.input_artifact_gs_locations])
 
+  # Pass along any additional args.
+  additional_args = {}
+  which = input_proto.additional_args.WhichOneof('prepare_for_build_args')
+  if which:
+    # All of the additional arguments we understand are strings, so we can
+    # copy whichever argument we got without processing it.
+    additional_args[which] = getattr(input_proto.additional_args, which)
+
   results = set()
   sysroot_path = input_proto.sysroot.path
   build_target = input_proto.sysroot.build_target.name
@@ -110,7 +136,8 @@ def PrepareForBuild(input_proto, output_proto, _config):
     handler = _TOOLCHAIN_ARTIFACT_HANDLERS[artifact_type]
     if handler.prepare:
       results.add(handler.prepare(
-          handler.name, chroot, sysroot_path, build_target, input_artifacts))
+          handler.name, chroot, sysroot_path, build_target, input_artifacts,
+          additional_args))
 
   # Translate the returns from the handlers we called.
   #   If any NEEDED => NEEDED
@@ -157,6 +184,14 @@ def BundleArtifacts(input_proto, output_proto, _config):
   """
   chroot = controller_util.ParseChroot(input_proto.chroot)
 
+  # Pass along any additional args.
+  additional_args = {}
+  which = input_proto.additional_args.WhichOneof('prepare_for_build_args')
+  if which:
+    # All of the additional arguments we understand are strings, so we can
+    # copy whichever argument we got without processing it.
+    additional_args[which] = getattr(input_proto.additional_args, which)
+
   for artifact_type in input_proto.artifact_types:
     if artifact_type not in _TOOLCHAIN_ARTIFACT_HANDLERS:
       logging.error('%s not understood', artifact_type)
@@ -165,7 +200,8 @@ def BundleArtifacts(input_proto, output_proto, _config):
     if handler and handler.bundle:
       artifacts = handler.bundle(
           handler.name, chroot, input_proto.sysroot.path,
-          input_proto.sysroot.build_target.name, input_proto.output_dir)
+          input_proto.sysroot.build_target.name, input_proto.output_dir,
+          additional_args)
       if artifacts:
         art_info = output_proto.artifacts_info.add()
         art_info.artifact_type = artifact_type
