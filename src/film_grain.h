@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 The libgav1 Authors
+ * Copyright 2020 The libgav1 Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef LIBGAV1_SRC_DSP_FILM_GRAIN_IMPL_H_
-#define LIBGAV1_SRC_DSP_FILM_GRAIN_IMPL_H_
+#ifndef LIBGAV1_SRC_FILM_GRAIN_H_
+#define LIBGAV1_SRC_FILM_GRAIN_H_
 
 #include <cstddef>
 #include <cstdint>
@@ -23,69 +23,67 @@
 #include <type_traits>
 
 #include "src/dsp/common.h"
+#include "src/dsp/film_grain_common.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/constants.h"
 #include "src/utils/cpu.h"
 
 namespace libgav1 {
-namespace dsp {
-namespace film_grain {
 
-// bitdepth  min grain    max grain
-// ------------------------------
-//     8       -128        127
-//    10       -512        511
-//    12      -2048       2047
-//
-// So int8_t is big enough for bitdepth 8, whereas bitdepths 10 and 12 need
-// int16_t.
-template <int bitdepth>
-using GrainTypeForBpp =
-    typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
+// Film grain synthesis function signature. Section 7.18.3.
+// This function generates film grain noise and blends the noise with the
+// decoded frame.
+// |source_plane_y|, |source_plane_u|, and |source_plane_v| are the plane
+// buffers of the decoded frame. They are blended with the film grain noise and
+// written to |dest_plane_y|, |dest_plane_u|, and |dest_plane_v| as final
+// output for display. |source_plane_p| and |dest_plane_p| (where p is y, u, or
+// v) may point to the same buffer, in which case the film grain noise is added
+// in place.
+// |film_grain_params| are parameters read from frame header.
+// |is_monochrome| is true indicates only Y plane needs to be processed.
+// |color_matrix_is_identity| is true if the matrix_coefficients field in the
+// sequence header's color config is is MC_IDENTITY.
+// |width| is the upscaled width of the frame.
+// |height| is the frame height.
+// |subsampling_x| and |subsampling_y| are subsamplings for UV planes, not used
+// if |is_monochrome| is true.
+// Returns true on success, or false on failure (e.g., out of memory).
+using FilmGrainSynthesisFunc = bool (*)(
+    const void* source_plane_y, ptrdiff_t source_stride_y,
+    const void* source_plane_u, ptrdiff_t source_stride_u,
+    const void* source_plane_v, ptrdiff_t source_stride_v,
+    const FilmGrainParams& film_grain_params, bool is_monochrome,
+    bool color_matrix_is_identity, int width, int height, int subsampling_x,
+    int subsampling_y, void* dest_plane_y, ptrdiff_t dest_stride_y,
+    void* dest_plane_u, ptrdiff_t dest_stride_u, void* dest_plane_v,
+    ptrdiff_t dest_stride_v);
 
-template <int bitdepth>
-int GetGrainMax() {
-  return (1 << (bitdepth - 1)) - 1;
-}
+bool FilmGrainSynthesis8bpp(
+    const void* source_plane_y, ptrdiff_t source_stride_y,
+    const void* source_plane_u, ptrdiff_t source_stride_u,
+    const void* source_plane_v, ptrdiff_t source_stride_v,
+    const FilmGrainParams& film_grain_params, bool is_monochrome,
+    bool color_matrix_is_identity, int width, int height, int subsampling_x,
+    int subsampling_y, void* dest_plane_y, ptrdiff_t dest_stride_y,
+    void* dest_plane_u, ptrdiff_t dest_stride_u, void* dest_plane_v,
+    ptrdiff_t dest_stride_v);
 
-template <int bitdepth>
-int GetGrainMin() {
-  return -(1 << (bitdepth - 1));
-}
-
-int GetRandomNumber(int bits, uint16_t* seed);
-
-enum {
-  kAutoRegressionBorder = 3,
-  // The width of the luma noise array.
-  kLumaWidth = 82,
-  // The height of the luma noise array.
-  kLumaHeight = 73,
-  // The two possible widths of the chroma noise array.
-  kMinChromaWidth = 44,
-  kMaxChromaWidth = 82,
-  // The two possible heights of the chroma noise array.
-  kMinChromaHeight = 38,
-  kMaxChromaHeight = 73,
-  // The scaling lookup table maps bytes to bytes, so only uses 256 elements,
-  // plus one for overflow in 10bit lookups.
-  kScalingLookupTableSize = 257,
-  // Padding is added to the scaling lookup table to permit overwrites by
-  // InitializeScalingLookupTable_NEON.
-  kScalingLookupTablePadding = 6,
-  // Padding is added to each row of the noise image to permit overreads by
-  // BlendNoiseWithImageLuma_NEON and overwrites by WriteOverlapLine8bpp_NEON.
-  kNoiseImagePadding = 7,
-  // Padding is added to the end of the |noise_stripes_| buffer to permit
-  // overreads by WriteOverlapLine8bpp_NEON.
-  kNoiseStripePadding = 7,
-};  // anonymous enum
+bool FilmGrainSynthesis10bpp(
+    const void* source_plane_y, ptrdiff_t source_stride_y,
+    const void* source_plane_u, ptrdiff_t source_stride_u,
+    const void* source_plane_v, ptrdiff_t source_stride_v,
+    const FilmGrainParams& film_grain_params, bool is_monochrome,
+    bool color_matrix_is_identity, int width, int height, int subsampling_x,
+    int subsampling_y, void* dest_plane_y, ptrdiff_t dest_stride_y,
+    void* dest_plane_u, ptrdiff_t dest_stride_u, void* dest_plane_v,
+    ptrdiff_t dest_stride_v);
 
 // Section 7.18.3.5. Add noise synthesis process.
 template <int bitdepth>
 class FilmGrain {
  public:
-  using GrainType = GrainTypeForBpp<bitdepth>;
+  using GrainType =
+      typename std::conditional<bitdepth == 8, int8_t, int16_t>::type;
 
   FilmGrain(const FilmGrainParams& params, bool is_monochrome,
             bool color_matrix_is_identity, int subsampling_x, int subsampling_y,
@@ -109,6 +107,11 @@ class FilmGrain {
                                   int width, int height, int subsampling_x,
                                   int subsampling_y, int stripe_start_offset,
                                   Array2D<GrainType>* noise_image);
+
+  static void InitializeScalingLookupTable(int num_points,
+                                           const uint8_t point_value[],
+                                           const uint8_t point_scaling[],
+                                           uint8_t scaling_lut[256]);
 
   // Combines the film grain with the image data.
   bool AddNoise(const void* source_plane_y, ptrdiff_t source_stride_y,
@@ -178,8 +181,6 @@ class FilmGrain {
   Array2D<GrainType> noise_image_[kMaxPlanes];
 };
 
-}  // namespace film_grain
-}  // namespace dsp
 }  // namespace libgav1
 
-#endif  // LIBGAV1_SRC_DSP_FILM_GRAIN_IMPL_H_
+#endif  // LIBGAV1_SRC_FILM_GRAIN_H_

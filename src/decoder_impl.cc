@@ -24,6 +24,7 @@
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
+#include "src/film_grain.h"
 #include "src/frame_buffer_utils.h"
 #include "src/loop_filter_mask.h"
 #include "src/loop_restoration_info.h"
@@ -325,30 +326,60 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
           film_grain_frame->set_chroma_sample_position(
               displayable_frame->chroma_sample_position());
         }
-        const dsp::Dsp* const dsp =
-            dsp::GetDspTable(displayable_frame->buffer()->bitdepth());
-        if (!dsp->film_grain.synthesis(
-                displayable_frame->buffer()->data(kPlaneY),
-                displayable_frame->buffer()->stride(kPlaneY),
-                displayable_frame->buffer()->data(kPlaneU),
-                displayable_frame->buffer()->stride(kPlaneU),
-                displayable_frame->buffer()->data(kPlaneV),
-                displayable_frame->buffer()->stride(kPlaneV),
-                displayable_frame->film_grain_params(),
-                displayable_frame->buffer()->is_monochrome(),
-                obu->sequence_header().color_config.matrix_coefficients ==
-                    kMatrixCoefficientsIdentity,
-                displayable_frame->upscaled_width(),
-                displayable_frame->frame_height(),
-                displayable_frame->buffer()->subsampling_x(),
-                displayable_frame->buffer()->subsampling_y(),
-                film_grain_frame->buffer()->data(kPlaneY),
-                film_grain_frame->buffer()->stride(kPlaneY),
-                film_grain_frame->buffer()->data(kPlaneU),
-                film_grain_frame->buffer()->stride(kPlaneU),
-                film_grain_frame->buffer()->data(kPlaneV),
-                film_grain_frame->buffer()->stride(kPlaneV))) {
-          LIBGAV1_DLOG(ERROR, "dsp->film_grain_synthesis() failed.");
+
+        const bool color_matrix_is_identity =
+            obu->sequence_header().color_config.matrix_coefficients ==
+            kMatrixCoefficientsIdentity;
+        bool film_grain_success;
+#if LIBGAV1_MAX_BITDEPTH >= 10
+        if (displayable_frame->buffer()->bitdepth() > 8) {
+          FilmGrain<10> film_grain(displayable_frame->film_grain_params(),
+                                   displayable_frame->buffer()->is_monochrome(),
+                                   color_matrix_is_identity,
+                                   displayable_frame->buffer()->subsampling_x(),
+                                   displayable_frame->buffer()->subsampling_y(),
+                                   displayable_frame->upscaled_width(),
+                                   displayable_frame->frame_height());
+          film_grain_success =
+              film_grain.AddNoise(displayable_frame->buffer()->data(kPlaneY),
+                                  displayable_frame->buffer()->stride(kPlaneY),
+                                  displayable_frame->buffer()->data(kPlaneU),
+                                  displayable_frame->buffer()->stride(kPlaneU),
+                                  displayable_frame->buffer()->data(kPlaneV),
+                                  displayable_frame->buffer()->stride(kPlaneV),
+                                  film_grain_frame->buffer()->data(kPlaneY),
+                                  film_grain_frame->buffer()->stride(kPlaneY),
+                                  film_grain_frame->buffer()->data(kPlaneU),
+                                  film_grain_frame->buffer()->stride(kPlaneU),
+                                  film_grain_frame->buffer()->data(kPlaneV),
+                                  film_grain_frame->buffer()->stride(kPlaneV));
+        } else {
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+          FilmGrain<8> film_grain(displayable_frame->film_grain_params(),
+                                  displayable_frame->buffer()->is_monochrome(),
+                                  color_matrix_is_identity,
+                                  displayable_frame->buffer()->subsampling_x(),
+                                  displayable_frame->buffer()->subsampling_y(),
+                                  displayable_frame->upscaled_width(),
+                                  displayable_frame->frame_height());
+          film_grain_success =
+              film_grain.AddNoise(displayable_frame->buffer()->data(kPlaneY),
+                                  displayable_frame->buffer()->stride(kPlaneY),
+                                  displayable_frame->buffer()->data(kPlaneU),
+                                  displayable_frame->buffer()->stride(kPlaneU),
+                                  displayable_frame->buffer()->data(kPlaneV),
+                                  displayable_frame->buffer()->stride(kPlaneV),
+                                  film_grain_frame->buffer()->data(kPlaneY),
+                                  film_grain_frame->buffer()->stride(kPlaneY),
+                                  film_grain_frame->buffer()->data(kPlaneU),
+                                  film_grain_frame->buffer()->stride(kPlaneU),
+                                  film_grain_frame->buffer()->data(kPlaneV),
+                                  film_grain_frame->buffer()->stride(kPlaneV));
+#if LIBGAV1_MAX_BITDEPTH >= 10
+        }
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+        if (!film_grain_success) {
+          LIBGAV1_DLOG(ERROR, "film_grain.AddNoise() failed.");
           return kLibgav1StatusOutOfMemory;
         }
         displayable_frame = std::move(film_grain_frame);

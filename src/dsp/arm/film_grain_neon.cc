@@ -30,7 +30,7 @@
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
-#include "src/dsp/film_grain_impl.h"
+#include "src/dsp/film_grain_common.h"
 #include "src/utils/common.h"
 #include "src/utils/compiler_attributes.h"
 #include "src/utils/logging.h"

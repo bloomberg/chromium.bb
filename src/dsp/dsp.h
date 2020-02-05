@@ -623,34 +623,6 @@ using WarpFunc = void (*)(const void* source, ptrdiff_t source_stride,
 // used. For vertical filtering kInterRoundBitsCompondVertical will be used.
 using WarpCompoundFunc = WarpFunc;
 
-// Film grain synthesis function signature. Section 7.18.3.
-// This function generates film grain noise and blends the noise with the
-// decoded frame.
-// |source_plane_y|, |source_plane_u|, and |source_plane_v| are the plane
-// buffers of the decoded frame. They are blended with the film grain noise and
-// written to |dest_plane_y|, |dest_plane_u|, and |dest_plane_v| as final
-// output for display. |source_plane_p| and |dest_plane_p| (where p is y, u, or
-// v) may point to the same buffer, in which case the film grain noise is added
-// in place.
-// |film_grain_params| are parameters read from frame header.
-// |is_monochrome| is true indicates only Y plane needs to be processed.
-// |color_matrix_is_identity| is true if the matrix_coefficients field in the
-// sequence header's color config is is MC_IDENTITY.
-// |width| is the upscaled width of the frame.
-// |height| is the frame height.
-// |subsampling_x| and |subsampling_y| are subsamplings for UV planes, not used
-// if |is_monochrome| is true.
-// Returns true on success, or false on failure (e.g., out of memory).
-using FilmGrainSynthesisFunc = bool (*)(
-    const void* source_plane_y, ptrdiff_t source_stride_y,
-    const void* source_plane_u, ptrdiff_t source_stride_u,
-    const void* source_plane_v, ptrdiff_t source_stride_v,
-    const FilmGrainParams& film_grain_params, bool is_monochrome,
-    bool color_matrix_is_identity, int width, int height, int subsampling_x,
-    int subsampling_y, void* dest_plane_y, ptrdiff_t dest_stride_y,
-    void* dest_plane_u, ptrdiff_t dest_stride_u, void* dest_plane_v,
-    ptrdiff_t dest_stride_v);
-
 constexpr int kNumAutoRegressionLags = 4;
 // Applies an auto-regressive filter to the white noise in |luma_grain_buffer|.
 // Section 7.18.3.3, second code block
@@ -756,7 +728,6 @@ using BlendNoiseWithImageChromaFuncs =
 //------------------------------------------------------------------------------
 
 struct FilmGrainFuncs {
-  FilmGrainSynthesisFunc synthesis;
   LumaAutoRegressionFuncs luma_auto_regression;
   ChromaAutoRegressionFuncs chroma_auto_regression;
   ConstructNoiseStripesFuncs construct_noise_stripes;
