@@ -429,10 +429,7 @@ if(CONFIG_AV1_ENCODER)
       message(FATAL_ERROR "VMAF library not found.")
     endif()
     message("-- Found VMAF library: " ${VMAF})
-    target_link_libraries(aom PRIVATE ${VMAF} -static)
-    if(BUILD_SHARED_LIBS)
-      target_link_libraries(aom_static PRIVATE ${VMAF} -static)
-    endif()
+    target_link_libraries(aom PRIVATE ${VMAF})
   endif()
 endif()
 
@@ -756,5 +753,4 @@ foreach(aom_source_var ${aom_source_vars})
 endforeach()
 
 # Generate aom.pc and setup install rule.
-message("aom_version=${aom_version}")
 setup_aom_install_targets()
