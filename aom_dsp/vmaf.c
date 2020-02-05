@@ -8,20 +8,26 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+
 #include <assert.h>
 #include <libvmaf/libvmaf.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "aom_dsp/vmaf.h"
 #include "aom_ports/system_state.h"
-#include "common/tools_common.h"
 
 typedef struct FrameData {
   const YV12_BUFFER_CONFIG *source;
   const YV12_BUFFER_CONFIG *distorted;
   int frame_set;
 } FrameData;
+
+static void vmaf_fatal_error(const char *message) {
+  fprintf(stderr, "Fatal error: %s\n", message);
+  exit(EXIT_FAILURE);
+}
 
 // A callback function used to pass data to VMAF.
 // Returns 0 after reading a frame.
@@ -82,7 +88,7 @@ void aom_calc_vmaf(const char *model_path, const YV12_BUFFER_CONFIG *source,
 
   aom_clear_system_state();
   *vmaf = vmaf_score;
-  if (ret) fatal("Failed to compute VMAF scores.");
+  if (ret) vmaf_fatal_error("Failed to compute VMAF scores.");
 }
 
 void aom_calc_vmaf_multi_frame(
@@ -102,7 +108,9 @@ void aom_calc_vmaf_multi_frame(
       /*do_ms_ssim=*/0, /*pool_method=*/NULL, /*n_thread=*/0,
       /*n_subsample=*/1, /*enable_conf_interval=*/0);
   FILE *vmaf_log = fopen("vmaf_scores.xml", "r");
-  if (vmaf_log == NULL || ret) fatal("Failed to compute VMAF scores.");
+  if (vmaf_log == NULL || ret) {
+    vmaf_fatal_error("Failed to compute VMAF scores.");
+  }
 
   int frame_index = 0;
   char buf[512];
@@ -114,7 +122,7 @@ void aom_calc_vmaf_multi_frame(
         *p2 = '\0';
         const double score = atof(&p[6]);
         if (score < 0.0 || score > 100.0) {
-          fatal("Failed to compute VMAF scores.");
+          vmaf_fatal_error("Failed to compute VMAF scores.");
         }
         vmaf[frame_index++] = score;
       }
