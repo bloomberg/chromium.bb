@@ -29,6 +29,8 @@ void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    const BUFFER_SET *ctx, BLOCK_SIZE bsize,
                                    int plane_from, int plane_to);
 
+void av1_enc_build_inter_predictor_y(MACROBLOCKD *xd, int mi_row, int mi_col);
+
 void av1_build_inter_predictor(uint8_t *dst, int dst_stride, const MV *src_mv,
                                InterPredParams *inter_pred_params);
 

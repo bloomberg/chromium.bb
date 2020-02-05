@@ -1281,8 +1281,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
     int64_t cost;
     InterpFilter filter = filters[i];
     mi->interp_filters = av1_broadcast_interp_filter(filter);
-    av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
-                                  AOM_PLANE_Y, AOM_PLANE_Y);
+    av1_enc_build_inter_predictor_y(xd, mi_row, mi_col);
     if (use_model_yrd_large)
       model_skip_for_sb_y_large(
           cpi, bsize, mi_row, mi_col, x, xd, &pf_rate[i], &pf_dist[i],
@@ -1338,8 +1337,7 @@ static void search_filter_ref(AV1_COMP *cpi, MACROBLOCK *x, RD_STATS *this_rdc,
     pd->dst.buf = (*this_mode_pred)->data;
     pd->dst.stride = (*this_mode_pred)->stride;
   } else if (best_filter_index < filter_search_size - 1) {
-    av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
-                                  AOM_PLANE_Y, AOM_PLANE_Y);
+    av1_enc_build_inter_predictor_y(xd, mi_row, mi_col);
   }
 }
 
@@ -1841,8 +1839,7 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       mi->interp_filters = (filter_ref == SWITCHABLE)
                                ? av1_broadcast_interp_filter(EIGHTTAP_REGULAR)
                                : av1_broadcast_interp_filter(filter_ref);
-      av1_enc_build_inter_predictor(cm, xd, mi_row, mi_col, NULL, bsize,
-                                    AOM_PLANE_Y, AOM_PLANE_Y);
+      av1_enc_build_inter_predictor_y(xd, mi_row, mi_col);
       if (cpi->sf.rt_sf.use_modeled_non_rd_cost) {
         model_rd_for_sb_y(cpi, bsize, x, xd, &this_rdc.rate, &this_rdc.dist,
                           &this_rdc.skip, NULL, &var_y, &sse_y, 1);

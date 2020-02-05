@@ -197,6 +197,29 @@ static void build_inter_predictors_for_plane(const AV1_COMMON *cm,
   }
 }
 
+void av1_enc_build_inter_predictor_y(MACROBLOCKD *xd, int mi_row, int mi_col) {
+  const int mi_x = mi_col * MI_SIZE;
+  const int mi_y = mi_row * MI_SIZE;
+  struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_Y];
+  InterPredParams inter_pred_params;
+
+  struct buf_2d *const dst_buf = &pd->dst;
+  uint8_t *const dst = dst_buf->buf;
+  const MV mv = xd->mi[0]->mv[0].as_mv;
+  const struct scale_factors *const sf = xd->block_ref_scale_factors[0];
+
+  av1_init_inter_params(&inter_pred_params, pd->width, pd->height, mi_y, mi_x,
+                        pd->subsampling_x, pd->subsampling_y, xd->bd,
+                        is_cur_buf_hbd(xd), false, sf, pd->pre,
+                        xd->mi[0]->interp_filters);
+
+  inter_pred_params.conv_params = get_conv_params_no_round(
+      0, AOM_PLANE_Y, xd->tmp_conv_dst, MAX_SB_SIZE, false, xd->bd);
+
+  inter_pred_params.conv_params.use_dist_wtd_comp_avg = 0;
+  av1_build_inter_predictor(dst, dst_buf->stride, &mv, &inter_pred_params);
+}
+
 void av1_enc_build_inter_predictor(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                    int mi_row, int mi_col,
                                    const BUFFER_SET *ctx, BLOCK_SIZE bsize,
