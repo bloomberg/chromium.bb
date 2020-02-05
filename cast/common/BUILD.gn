@@ -4,6 +4,7 @@
 
 import("//build_overrides/build.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("../../testing/libfuzzer/fuzzer_test.gni")
 
 source_set("certificate") {
   sources = [
@@ -49,13 +50,13 @@ source_set("channel") {
 
   deps = [
     "certificate/proto:certificate_proto",
-    "channel/proto:channel_proto",
   ]
 
   public_deps = [
     "../../platform",
     "../../third_party/abseil",
     "../../util",
+    "channel/proto:channel_proto",
   ]
 }
 
@@ -134,4 +135,18 @@ source_set("unittests") {
   data = [
     "../../test/data/cast/common/certificate",
   ]
+}
+
+openscreen_fuzzer_test("message_framer_fuzzer") {
+  sources = [
+    "channel/message_framer_fuzzer.cc",
+  ]
+  deps = [
+    ":channel",
+  ]
+
+  seed_corpus = "message_framer_fuzzer_seeds"
+
+  # NOTE: 65536 is max _body_ size.
+  libfuzzer_options = [ "max_len=65600" ]
 }

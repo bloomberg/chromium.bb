@@ -14,6 +14,9 @@ declare_args() {
 
   # Enable thread sanitizer.
   is_tsan = false
+
+  # Must be enabled for fuzzing targets.
+  use_libfuzzer = false
 }
 
 config("compiler_defaults") {
@@ -193,6 +196,13 @@ config("default_sanitizers") {
   } else if (is_tsan) {
     cflags += [ "-fsanitize=thread" ]
     ldflags += [ "-fsanitize=thread" ]
+  }
+
+  if (use_libfuzzer) {
+    cflags += [ "-fsanitize=fuzzer-no-link" ]
+    if (!is_asan) {
+      ldflags += [ "-fsanitize=address" ]
+    }
   }
 }
 

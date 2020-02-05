@@ -40,7 +40,7 @@ ErrorOr<std::vector<uint8_t>> Serialize(
   return out;
 }
 
-ErrorOr<DeserializeResult> TryDeserialize(absl::Span<uint8_t> input) {
+ErrorOr<DeserializeResult> TryDeserialize(absl::Span<const uint8_t> input) {
   if (input.size() < kHeaderSize) {
     return Error::Code::kInsufficientBuffer;
   }

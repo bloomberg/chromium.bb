@@ -33,7 +33,7 @@ struct DeserializeResult {
 // read.  Returns a parsed CastMessage if a message was received in its
 // entirety, and an error otherwise.  The result also contains the number of
 // bytes consumed from |input| when a parse succeeds.
-ErrorOr<DeserializeResult> TryDeserialize(absl::Span<uint8_t> input);
+ErrorOr<DeserializeResult> TryDeserialize(absl::Span<const uint8_t> input);
 
 }  // namespace message_serialization
 }  // namespace cast
