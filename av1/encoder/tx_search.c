@@ -374,19 +374,7 @@ static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
                      NULL, &visible_cols, &visible_rows);
   const int diff_stride = block_size_wide[plane_bsize];
   const int16_t *diff = x->plane[plane].src_diff;
-#if CONFIG_DIST_8X8
-  int txb_height = block_size_high[tx_bsize];
-  int txb_width = block_size_wide[tx_bsize];
-  if (x->using_dist_8x8 && plane == 0) {
-    const int src_stride = x->plane[plane].src.stride;
-    const int src_idx = (blk_row * src_stride + blk_col) << MI_SIZE_LOG2;
-    const int diff_idx = (blk_row * diff_stride + blk_col) << MI_SIZE_LOG2;
-    const uint8_t *src = &x->plane[plane].src.buf[src_idx];
-    return dist_8x8_diff(x, src, src_stride, diff + diff_idx, diff_stride,
-                         txb_width, txb_height, visible_cols, visible_rows,
-                         x->qindex);
-  }
-#endif
+
   diff += ((blk_row * diff_stride + blk_col) << MI_SIZE_LOG2);
   uint64_t sse =
       aom_sum_squares_2d_i16(diff, diff_stride, visible_cols, visible_rows);
@@ -1198,13 +1186,6 @@ static unsigned pixel_dist(const AV1_COMP *const cpi, const MACROBLOCK *x,
                      &txb_cols, &txb_rows, &visible_cols, &visible_rows);
   assert(visible_rows > 0);
   assert(visible_cols > 0);
-
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8 && plane == 0)
-    return (unsigned)av1_dist_8x8(cpi, x, src, src_stride, dst, dst_stride,
-                                  tx_bsize, txb_cols, txb_rows, visible_cols,
-                                  visible_rows, x->qindex);
-#endif  // CONFIG_DIST_8X8
 
   unsigned sse = pixel_dist_visible_only(cpi, x, src, src_stride, dst,
                                          dst_stride, tx_bsize, txb_rows,
@@ -2211,9 +2192,6 @@ static void search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       // Therefore transform domain distortion is not valid for these
       // transform sizes.
       txsize_sqr_up_map[tx_size] != TX_64X64;
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8) use_transform_domain_distortion = 0;
-#endif
   int calc_pixel_domain_distortion_final =
       x->use_transform_domain_distortion == 1 &&
       use_transform_domain_distortion && x->rd_model != LOW_TXFM_RD;
@@ -2608,10 +2586,6 @@ static AOM_INLINE void select_tx_block(
   const int try_no_split =
       cpi->oxcf.enable_tx64 || txsize_sqr_up_map[tx_size] != TX_64X64;
   int try_split = tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH;
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8)
-    try_split &= tx_size_wide[tx_size] >= 16 && tx_size_high[tx_size] >= 16;
-#endif
   TxCandidateInfo no_split = { INT64_MAX, 0, TX_TYPES };
 
   // TX no split
@@ -2787,11 +2761,6 @@ static AOM_INLINE void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   int64_t rd[MAX_TX_DEPTH + 1] = { INT64_MAX, INT64_MAX, INT64_MAX };
   for (int n = start_tx; depth <= MAX_TX_DEPTH;
        depth++, n = sub_tx_size_map[n]) {
-#if CONFIG_DIST_8X8
-    if (x->using_dist_8x8) {
-      if (tx_size_wide[n] < 8 || tx_size_high[n] < 8) continue;
-    }
-#endif
     if (!cpi->oxcf.enable_tx64 && txsize_sqr_up_map[n] == TX_64X64) continue;
 
     RD_STATS this_rd_stats;

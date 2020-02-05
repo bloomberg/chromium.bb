@@ -42,13 +42,6 @@ int av1_count_colors(const uint8_t *src, int stride, int rows, int cols,
 int av1_count_colors_highbd(const uint8_t *src8, int stride, int rows, int cols,
                             int bit_depth, int *val_count);
 
-#if CONFIG_DIST_8X8
-int64_t av1_dist_8x8(const struct AV1_COMP *const cpi, const MACROBLOCK *x,
-                     const uint8_t *src, int src_stride, const uint8_t *dst,
-                     int dst_stride, const BLOCK_SIZE tx_bsize, int bsw,
-                     int bsh, int visible_w, int visible_h, int qindex);
-#endif
-
 static INLINE int av1_cost_skip_txb(MACROBLOCK *x, const TXB_CTX *const txb_ctx,
                                     int plane, TX_SIZE tx_size) {
   const TX_SIZE txs_ctx = get_txsize_entropy_ctx(tx_size);

@@ -593,11 +593,6 @@ static const arg_def_t mv_cost_upd_freq =
     ARG_DEF(NULL, "mv-cost-upd-freq", 1,
             "Update freq for mv costs"
             "0: SB, 1: SB Row per Tile, 2: Tile, 3: Off");
-#if CONFIG_DIST_8X8
-static const arg_def_t enable_dist_8x8 =
-    ARG_DEF(NULL, "enable-dist-8x8", 1,
-            "Enable dist-8x8 (0: false (default), 1: true)");
-#endif  // CONFIG_DIST_8X8
 static const arg_def_t num_tg = ARG_DEF(
     NULL, "num-tile-groups", 1, "Maximum number of tile groups, default is 1");
 static const arg_def_t mtu_size =
@@ -873,9 +868,6 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &coeff_cost_upd_freq,
                                        &mode_cost_upd_freq,
                                        &mv_cost_upd_freq,
-#if CONFIG_DIST_8X8
-                                       &enable_dist_8x8,
-#endif
                                        &frame_parallel_decoding,
                                        &error_resilient_mode,
                                        &aq_mode,
@@ -981,9 +973,6 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_COEFF_COST_UPD_FREQ,
                                         AV1E_SET_MODE_COST_UPD_FREQ,
                                         AV1E_SET_MV_COST_UPD_FREQ,
-#if CONFIG_DIST_8X8
-                                        AV1E_SET_ENABLE_DIST_8X8,
-#endif
                                         AV1E_SET_FRAME_PARALLEL_DECODING,
                                         AV1E_SET_ERROR_RESILIENT_MODE,
                                         AV1E_SET_AQ_MODE,

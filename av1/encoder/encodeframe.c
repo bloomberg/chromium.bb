@@ -2845,15 +2845,6 @@ BEGIN_PARTITION_SEARCH:
   unsigned int pb_simple_motion_pred_sse = UINT_MAX;
   (void)pb_simple_motion_pred_sse;
 
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8) {
-    if (block_size_high[bsize] <= 8) partition_horz_allowed = 0;
-    if (block_size_wide[bsize] <= 8) partition_vert_allowed = 0;
-    if (block_size_high[bsize] <= 8 || block_size_wide[bsize] <= 8)
-      do_square_split = 0;
-  }
-#endif
-
   // PARTITION_NONE
   if (is_le_min_sq_part && has_rows && has_cols) partition_none_allowed = 1;
   int64_t part_none_rd = INT64_MAX;
@@ -3276,15 +3267,6 @@ BEGIN_PARTITION_SEARCH:
   int vertab_partition_allowed =
       ext_partition_allowed & cpi->oxcf.enable_ab_partitions;
 
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8) {
-    if (block_size_high[bsize] <= 8 || block_size_wide[bsize] <= 8) {
-      horzab_partition_allowed = 0;
-      vertab_partition_allowed = 0;
-    }
-  }
-#endif
-
   if (cpi->sf.part_sf.prune_ext_partition_types_search_level) {
     if (cpi->sf.part_sf.prune_ext_partition_types_search_level == 1) {
       // TODO(debargha,huisu@google.com): may need to tune the threshold for
@@ -3570,15 +3552,6 @@ BEGIN_PARTITION_SEARCH:
                              &partition_horz4_allowed, &partition_vert4_allowed,
                              pb_source_variance, mi_row, mi_col);
   }
-
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8) {
-    if (block_size_high[bsize] <= 16 || block_size_wide[bsize] <= 16) {
-      partition_horz4_allowed = 0;
-      partition_vert4_allowed = 0;
-    }
-  }
-#endif
 
   if (blksize < (min_partition_size << 2)) {
     partition_horz4_allowed = 0;
@@ -5327,11 +5300,6 @@ static AOM_INLINE void encode_frame_internal(AV1_COMP *cpi) {
   MACROBLOCKD *const xd = &x->e_mbd;
   RD_COUNTS *const rdc = &cpi->td.rd_counts;
   int i;
-
-#if CONFIG_DIST_8X8
-  x->using_dist_8x8 = cpi->oxcf.using_dist_8x8;
-  x->tune_metric = cpi->oxcf.tuning;
-#endif
 
   if (!cpi->sf.rt_sf.use_nonrd_pick_mode) {
     cm->setup_mi(cm);

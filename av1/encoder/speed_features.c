@@ -1256,11 +1256,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
          tx_size_search_methods[cpi->sf.winner_mode_sf.tx_size_search_level],
          sizeof(cpi->tx_size_search_methods));
 
-#if CONFIG_DIST_8X8
-  if (sf->tx_domain_dist_level > 0) cpi->oxcf.using_dist_8x8 = 0;
-
-  if (cpi->oxcf.using_dist_8x8) x->min_partition_size = BLOCK_8X8;
-#endif  // CONFIG_DIST_8X8
   if (cpi->oxcf.row_mt == 1 && (cpi->oxcf.max_threads > 1)) {
     if (sf->inter_sf.inter_mode_rd_model_estimation == 1) {
       // Revert to type 2
