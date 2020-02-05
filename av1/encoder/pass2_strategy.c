@@ -627,7 +627,8 @@ static int calculate_boost_factor(int frame_count, int bits,
 // Reduce the number of bits assigned to keyframe or arf if necessary, to
 // prevent bitrate spikes that may break level constraints.
 // frame_type: 0: keyframe; 1: arf.
-static int adjust_boost_bits_for_target_level(AV1_COMP *const cpi,
+static int adjust_boost_bits_for_target_level(const AV1_COMP *const cpi,
+                                              RATE_CONTROL *const rc,
                                               int bits_assigned,
                                               int64_t group_bits,
                                               int frame_type) {
@@ -651,7 +652,6 @@ static int adjust_boost_bits_for_target_level(AV1_COMP *const cpi,
         target_level, seq_params->tier[0], seq_params->profile);
     const int target_bits_per_frame =
         (int)(level_bitrate_limit / cpi->framerate);
-    RATE_CONTROL *const rc = &cpi->rc;
     if (frame_type == 0) {
       // Maximum bits for keyframe is 8 times the target_bits_per_frame.
       const int level_enforced_max_kf_bits = target_bits_per_frame * 8;
@@ -680,7 +680,7 @@ static int adjust_boost_bits_for_target_level(AV1_COMP *const cpi,
 
 static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
                                    int64_t gf_group_bits, int gf_arf_bits,
-                                   int max_bits, int key_frame) {
+                                   int max_bits, int key_frame, int use_arf) {
   int64_t total_group_bits = gf_group_bits;
 
   // For key frames the frame target rate is already set and it
@@ -696,13 +696,13 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
 
   // Deduct the boost bits for arf (or gf if it is not a key frame)
   // from the group total.
-  if (rc->source_alt_ref_pending || !key_frame) total_group_bits -= gf_arf_bits;
+  if (use_arf || !key_frame) total_group_bits -= gf_arf_bits;
 
   frame_index++;
 
   // Store the bits to spend on the ARF if there is one.
   // === [frame_index == 1] ===
-  if (rc->source_alt_ref_pending) {
+  if (use_arf) {
     gf_group->bit_allocation[frame_index] = gf_arf_bits;
     ++frame_index;
   }
@@ -711,7 +711,7 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
   int arf_depth_bits[MAX_ARF_LAYERS + 1] = { 0 };
   int arf_depth_count[MAX_ARF_LAYERS + 1] = { 0 };
   int arf_depth_boost[MAX_ARF_LAYERS + 1] = { 0 };
-  int total_arfs = rc->source_alt_ref_pending;
+  int total_arfs = use_arf;
 
   for (int idx = 0; idx < gf_group_size; ++idx) {
     if (gf_group->update_type[idx] == ARF_UPDATE ||
@@ -1262,23 +1262,25 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   twopass->rolling_arf_group_target_bits = 1;
   twopass->rolling_arf_group_actual_bits = 1;
 
-  av1_gop_bit_allocation(cpi, frame_params->frame_type == KEY_FRAME,
+  av1_gop_bit_allocation(cpi, rc, gf_group,
+                         frame_params->frame_type == KEY_FRAME, use_alt_ref,
                          gf_group_bits);
 }
 
-void av1_gop_bit_allocation(AV1_COMP *cpi, int is_key_frame,
+void av1_gop_bit_allocation(const AV1_COMP *cpi, RATE_CONTROL *const rc,
+                            GF_GROUP *gf_group, int is_key_frame, int use_arf,
                             int64_t gf_group_bits) {
-  RATE_CONTROL *const rc = &cpi->rc;
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
 
   // Calculate the extra bits to be used for boosted frame(s)
   int gf_arf_bits = calculate_boost_bits(rc->baseline_gf_interval,
                                          rc->gfu_boost, gf_group_bits);
-  gf_arf_bits =
-      adjust_boost_bits_for_target_level(cpi, gf_arf_bits, gf_group_bits, 1);
+  gf_arf_bits = adjust_boost_bits_for_target_level(cpi, rc, gf_arf_bits,
+                                                   gf_group_bits, 1);
+
   // Allocate bits to each of the frames in the GF group.
-  allocate_gf_group_bits(&cpi->gf_group, rc, gf_group_bits, gf_arf_bits,
-                         frame_max_bits(rc, oxcf), is_key_frame);
+  allocate_gf_group_bits(gf_group, rc, gf_group_bits, gf_arf_bits,
+                         frame_max_bits(rc, oxcf), is_key_frame, use_arf);
 }
 
 // Minimum % intra coding observed in first pass (1.0 = 100%)
@@ -1649,7 +1651,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
                                  twopass->kf_group_bits);
   // printf("kf boost = %d kf_bits = %d kf_zeromotion_pct = %d\n", rc->kf_boost,
   //        kf_bits, twopass->kf_zeromotion_pct);
-  kf_bits = adjust_boost_bits_for_target_level(cpi, kf_bits,
+  kf_bits = adjust_boost_bits_for_target_level(cpi, rc, kf_bits,
                                                twopass->kf_group_bits, 0);
 
   twopass->kf_group_bits -= kf_bits;

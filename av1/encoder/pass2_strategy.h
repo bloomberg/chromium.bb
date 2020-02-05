@@ -29,7 +29,8 @@ void av1_get_second_pass_params(struct AV1_COMP *cpi,
 
 void av1_twopass_postencode_update(struct AV1_COMP *cpi);
 
-void av1_gop_bit_allocation(AV1_COMP *cpi, int is_key_frame,
+void av1_gop_bit_allocation(const AV1_COMP *cpi, RATE_CONTROL *const rc,
+                            GF_GROUP *gf_group, int is_key_frame, int use_arf,
                             int64_t gf_group_bits);
 
 #ifdef __cplusplus
