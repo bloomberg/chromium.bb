@@ -163,25 +163,24 @@ index fe3de7b..54ae6e1 100755
     mock.patch('gclient_utils.FileRead').start()
     mock.patch('gclient_utils.FileWrite').start()
     mock.patch('json.load').start()
-    mock.patch('multiprocessing.cpu_count', lambda: 2)
-    mock.patch('os.chdir').start()
-    mock.patch('os.getcwd', self.RootDir)
-    mock.patch('os.listdir').start()
     mock.patch('os.path.abspath', lambda f: f).start()
+    mock.patch('os.getcwd', self.RootDir)
+    mock.patch('os.chdir').start()
+    mock.patch('os.listdir').start()
     mock.patch('os.path.isfile').start()
     mock.patch('os.remove').start()
-    mock.patch('presubmit_support._parse_files').start()
+    mock.patch('random.randint').start()
+    mock.patch('presubmit_support.warn').start()
     mock.patch('presubmit_support.sigint_handler').start()
     mock.patch('presubmit_support.time_time', return_value=0).start()
-    mock.patch('presubmit_support.warn').start()
-    mock.patch('random.randint').start()
-    mock.patch('scm.GIT.GenerateDiff').start()
     mock.patch('scm.determine_scm').start()
+    mock.patch('scm.GIT.GenerateDiff').start()
     mock.patch('subprocess2.Popen').start()
     mock.patch('sys.stderr', StringIO()).start()
     mock.patch('sys.stdout', StringIO()).start()
     mock.patch('tempfile.NamedTemporaryFile').start()
     mock.patch('threading.Timer').start()
+    mock.patch('multiprocessing.cpu_count', lambda: 2)
     if sys.version_info.major == 2:
       mock.patch('urllib2.urlopen').start()
     else:
@@ -879,9 +878,10 @@ def CheckChangeOnCommit(input_api, output_api):
                                                False, output))
 
   @mock.patch('presubmit_support.DoPresubmitChecks')
-  def testMainUnversioned(self, mockDoPresubmitChecks):
+  @mock.patch('presubmit_support.ParseFiles')
+  def testMainUnversioned(self, mockParseFiles, mockDoPresubmitChecks):
     scm.determine_scm.return_value = None
-    presubmit._parse_files.return_value = [('M', 'random_file.txt')]
+    mockParseFiles.return_value = [('M', 'random_file.txt')]
     mockDoPresubmitChecks().should_continue.return_value = False
 
     self.assertEqual(
@@ -898,202 +898,8 @@ def CheckChangeOnCommit(input_api, output_api):
     self.assertEqual(
         sys.stderr.getvalue(),
         'usage: presubmit_unittest.py [options] <files...>\n'
-        'presubmit_unittest.py: error: <files> is not optional for unversioned '
-        'directories.\n')
-
-  @mock.patch('presubmit_support.Change', mock.Mock())
-  def testParseChange_Files(self):
-    presubmit._parse_files.return_value=[('M', 'random_file.txt')]
-    scm.determine_scm.return_value = None
-    options = mock.Mock(all_files=False)
-
-    change = presubmit._parse_change(None, options)
-    self.assertEqual(presubmit.Change.return_value, change)
-    presubmit.Change.assert_called_once_with(
-        options.name,
-        options.description,
-        options.root,
-        [('M', 'random_file.txt')],
-        options.issue,
-        options.patchset,
-        options.author,
-        upstream=options.upstream)
-    presubmit._parse_files.assert_called_once_with(
-        options.files, options.recursive)
-
-  def testParseChange_NoFilesAndNoScm(self):
-    presubmit._parse_files.return_value = []
-    scm.determine_scm.return_value = None
-    parser = mock.Mock()
-    parser.error.side_effect = [SystemExit]
-    options = mock.Mock(files=[], all_files=False)
-
-    with self.assertRaises(SystemExit):
-      presubmit._parse_change(parser, options)
-    parser.error.assert_called_once_with(
-        '<files> is not optional for unversioned directories.')
-
-  def testParseChange_FilesAndAllFiles(self):
-    parser = mock.Mock()
-    parser.error.side_effect = [SystemExit]
-    options = mock.Mock(files=['foo'], all_files=True)
-
-    with self.assertRaises(SystemExit):
-      presubmit._parse_change(parser, options)
-    parser.error.assert_called_once_with(
-        '<files> cannot be specified when --all-files is set.')
-
-  @mock.patch('presubmit_support.GitChange', mock.Mock())
-  def testParseChange_FilesAndGit(self):
-    scm.determine_scm.return_value = 'git'
-    presubmit._parse_files.return_value = [('M', 'random_file.txt')]
-    options = mock.Mock(all_files=False)
-
-    change = presubmit._parse_change(None, options)
-    self.assertEqual(presubmit.GitChange.return_value, change)
-    presubmit.GitChange.assert_called_once_with(
-        options.name,
-        options.description,
-        options.root,
-        [('M', 'random_file.txt')],
-        options.issue,
-        options.patchset,
-        options.author,
-        upstream=options.upstream)
-    presubmit._parse_files.assert_called_once_with(
-        options.files, options.recursive)
-
-  @mock.patch('presubmit_support.GitChange', mock.Mock())
-  @mock.patch('scm.GIT.CaptureStatus', mock.Mock())
-  def testParseChange_NoFilesAndGit(self):
-    scm.determine_scm.return_value = 'git'
-    scm.GIT.CaptureStatus.return_value = [('A', 'added.txt')]
-    options = mock.Mock(all_files=False, files=[])
-
-    change = presubmit._parse_change(None, options)
-    self.assertEqual(presubmit.GitChange.return_value, change)
-    presubmit.GitChange.assert_called_once_with(
-        options.name,
-        options.description,
-        options.root,
-        [('A', 'added.txt')],
-        options.issue,
-        options.patchset,
-        options.author,
-        upstream=options.upstream)
-    scm.GIT.CaptureStatus.assert_called_once_with(
-        [], options.root, options.upstream)
-
-  @mock.patch('presubmit_support.GitChange', mock.Mock())
-  @mock.patch('scm.GIT.GetAllFiles', mock.Mock())
-  def testParseChange_AllFilesAndGit(self):
-    scm.determine_scm.return_value = 'git'
-    scm.GIT.GetAllFiles.return_value = ['foo.txt', 'bar.txt']
-    options = mock.Mock(all_files=True, files=[])
-
-    change = presubmit._parse_change(None, options)
-    self.assertEqual(presubmit.GitChange.return_value, change)
-    presubmit.GitChange.assert_called_once_with(
-        options.name,
-        options.description,
-        options.root,
-        [('M', 'foo.txt'), ('M', 'bar.txt')],
-        options.issue,
-        options.patchset,
-        options.author,
-        upstream=options.upstream)
-    scm.GIT.GetAllFiles.assert_called_once_with(options.root)
-
-  def testParseGerritOptions_NoGerritUrl(self):
-    options = mock.Mock(
-        gerrit_url=None,
-        gerrit_fetch=False,
-        author='author',
-        description='description')
-    gerrit_obj = presubmit._parse_gerrit_options(None, options)
-
-    self.assertIsNone(gerrit_obj)
-    self.assertEqual('author', options.author)
-    self.assertEqual('description', options.description)
-
-  @mock.patch('presubmit_support.GerritAccessor', mock.Mock())
-  def testParseGerritOptions_NoGerritFetch(self):
-    options = mock.Mock(
-        gerrit_url='https://foo-review.googlesource.com/bar',
-        gerrit_fetch=False,
-        author='author',
-        description='description')
-
-    gerrit_obj = presubmit._parse_gerrit_options(None, options)
-
-    presubmit.GerritAccessor.assert_called_once_with(
-        'foo-review.googlesource.com')
-    self.assertEqual(presubmit.GerritAccessor.return_value, gerrit_obj)
-    self.assertEqual('author', options.author)
-    self.assertEqual('description', options.description)
-
-  @mock.patch('presubmit_support.GerritAccessor', mock.Mock())
-  def testParseGerritOptions_GerritFetch(self):
-    accessor = mock.Mock()
-    accessor.GetChangeOwner.return_value = 'new owner'
-    accessor.GetChangeDescription.return_value = 'new description'
-    presubmit.GerritAccessor.return_value = accessor
-
-    options = mock.Mock(
-        gerrit_url='https://foo-review.googlesource.com/bar',
-        gerrit_fetch=True,
-        issue=123,
-        patchset=4)
-
-    gerrit_obj = presubmit._parse_gerrit_options(None, options)
-
-    presubmit.GerritAccessor.assert_called_once_with(
-        'foo-review.googlesource.com')
-    self.assertEqual(presubmit.GerritAccessor.return_value, gerrit_obj)
-    self.assertEqual('new owner', options.author)
-    self.assertEqual('new description', options.description)
-
-  def testParseGerritOptions_GerritFetchNoUrl(self):
-    parser = mock.Mock()
-    parser.error.side_effect = [SystemExit]
-    options = mock.Mock(
-        gerrit_url=None,
-        gerrit_fetch=True,
-        issue=123,
-        patchset=4)
-
-    with self.assertRaises(SystemExit):
-      presubmit._parse_gerrit_options(parser, options)
-    parser.error.assert_called_once_with(
-        '--gerrit_fetch requires --gerrit_url, --issue and --patchset.')
-
-  def testParseGerritOptions_GerritFetchNoIssue(self):
-    parser = mock.Mock()
-    parser.error.side_effect = [SystemExit]
-    options = mock.Mock(
-        gerrit_url='https://example.com',
-        gerrit_fetch=True,
-        issue=None,
-        patchset=4)
-
-    with self.assertRaises(SystemExit):
-      presubmit._parse_gerrit_options(parser, options)
-    parser.error.assert_called_once_with(
-        '--gerrit_fetch requires --gerrit_url, --issue and --patchset.')
-
-  def testParseGerritOptions_GerritFetchNoPatchset(self):
-    parser = mock.Mock()
-    parser.error.side_effect = [SystemExit]
-    options = mock.Mock(
-        gerrit_url='https://example.com',
-        gerrit_fetch=True,
-        issue=123,
-        patchset=None)
-
-    with self.assertRaises(SystemExit):
-      presubmit._parse_gerrit_options(parser, options)
-    parser.error.assert_called_once_with(
-        '--gerrit_fetch requires --gerrit_url, --issue and --patchset.')
+        'presubmit_unittest.py: error: For unversioned directory, <files> is '
+        'not optional.\n')
 
 
 class InputApiUnittest(PresubmitTestsBase):
