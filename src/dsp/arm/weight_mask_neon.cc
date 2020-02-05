@@ -38,127 +38,6 @@ namespace {
 constexpr int kRoundingBits8bpp = 4;
 
 template <bool mask_is_inverse>
-inline void WeightMask4x2_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
-                               const uint16_t* prediction_1, ptrdiff_t stride_1,
-                               uint8_t* mask, ptrdiff_t mask_stride) {
-  const uint16x8_t pred_0 =
-      vcombine_u16(vld1_u16(prediction_0), vld1_u16(prediction_0 + stride_0));
-  const uint16x8_t pred_1 =
-      vcombine_u16(vld1_u16(prediction_1), vld1_u16(prediction_1 + stride_1));
-  const uint8x8_t difference_offset = vdup_n_u8(38);
-  const uint16x8_t difference =
-      vrshrq_n_u16(vabdq_u16(pred_0, pred_1), kRoundingBits8bpp);
-  const uint8x8_t adjusted_difference =
-      vqadd_u8(vqshrn_n_u16(difference, 4), difference_offset);
-  const uint8x8_t mask_ceiling = vdup_n_u8(64);
-  const uint8x8_t mask_value = vmin_u8(adjusted_difference, mask_ceiling);
-  if (mask_is_inverse) {
-    const uint8x8_t inverted_mask_value = vsub_u8(mask_ceiling, mask_value);
-    StoreLo4(mask, inverted_mask_value);
-    StoreHi4(mask + mask_stride, inverted_mask_value);
-  } else {
-    StoreLo4(mask, mask_value);
-    StoreHi4(mask + mask_stride, mask_value);
-  }
-}
-
-template <bool mask_is_inverse>
-void WeightMask4x4_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
-                        const uint16_t* prediction_1, ptrdiff_t stride_1,
-                        uint8_t* mask, ptrdiff_t mask_stride) {
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += stride_0 << 1;
-  prediction_1 += stride_1 << 1;
-  mask += mask_stride << 1;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-}
-
-template <bool mask_is_inverse>
-void WeightMask4x8_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
-                        const uint16_t* prediction_1, ptrdiff_t stride_1,
-                        uint8_t* mask, ptrdiff_t mask_stride) {
-  const ptrdiff_t double_stride_0 = stride_0 << 1;
-  const ptrdiff_t double_stride_1 = stride_1 << 1;
-  const ptrdiff_t double_mask_stride = mask_stride << 1;
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-}
-
-template <bool mask_is_inverse>
-void WeightMask4x16_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
-                         const uint16_t* prediction_1, ptrdiff_t stride_1,
-                         uint8_t* mask, ptrdiff_t mask_stride) {
-  const ptrdiff_t double_stride_0 = stride_0 << 1;
-  const ptrdiff_t double_stride_1 = stride_1 << 1;
-  const ptrdiff_t double_mask_stride = mask_stride << 1;
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-  prediction_0 += double_stride_0;
-  prediction_1 += double_stride_1;
-  mask += double_mask_stride;
-
-  WeightMask4x2_NEON<mask_is_inverse>(prediction_0, stride_0, prediction_1,
-                                      stride_1, mask, mask_stride);
-}
-
-template <bool mask_is_inverse>
 inline void WeightMask8_NEON(const uint16_t* prediction_0,
                              const uint16_t* prediction_1, uint8_t* mask) {
   const uint16x8_t pred_0 = vld1q_u16(prediction_0);
@@ -186,16 +65,6 @@ inline void WeightMask8_NEON(const uint16_t* prediction_0,
   prediction_0 += stride_0; \
   prediction_1 += stride_1; \
   mask += mask_stride
-
-template <bool mask_is_inverse>
-void WeightMask8x4_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
-                        const uint16_t* prediction_1, ptrdiff_t stride_1,
-                        uint8_t* mask, ptrdiff_t mask_stride) {
-  WEIGHT8_AND_STRIDE;
-  WEIGHT8_AND_STRIDE;
-  WEIGHT8_AND_STRIDE;
-  WEIGHT8_WITHOUT_STRIDE;
-}
 
 template <bool mask_is_inverse>
 void WeightMask8x8_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
@@ -247,17 +116,6 @@ void WeightMask8x32_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
   prediction_0 += stride_0; \
   prediction_1 += stride_1; \
   mask += mask_stride
-
-template <bool mask_is_inverse>
-void WeightMask16x4_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
-                         const uint16_t* prediction_1, ptrdiff_t stride_1,
-                         uint8_t* mask, ptrdiff_t mask_stride) {
-  int y = 0;
-  do {
-    WEIGHT16_AND_STRIDE;
-  } while (++y < 3);
-  WEIGHT16_WITHOUT_STRIDE;
-}
 
 template <bool mask_is_inverse>
 void WeightMask16x8_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
@@ -564,28 +422,23 @@ void WeightMask128x128_NEON(const uint16_t* prediction_0, ptrdiff_t stride_0,
 void Init8bpp() {
   Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth8);
   assert(dsp != nullptr);
-  INIT_WEIGHT_MASK_8BPP(4, 4, 0, 0);
-  INIT_WEIGHT_MASK_8BPP(4, 8, 0, 1);
-  INIT_WEIGHT_MASK_8BPP(4, 16, 0, 2);
-  INIT_WEIGHT_MASK_8BPP(8, 4, 1, 0);
-  INIT_WEIGHT_MASK_8BPP(8, 8, 1, 1);
-  INIT_WEIGHT_MASK_8BPP(8, 16, 1, 2);
-  INIT_WEIGHT_MASK_8BPP(8, 32, 1, 3);
-  INIT_WEIGHT_MASK_8BPP(16, 4, 2, 0);
-  INIT_WEIGHT_MASK_8BPP(16, 8, 2, 1);
-  INIT_WEIGHT_MASK_8BPP(16, 16, 2, 2);
-  INIT_WEIGHT_MASK_8BPP(16, 32, 2, 3);
-  INIT_WEIGHT_MASK_8BPP(16, 64, 2, 4);
-  INIT_WEIGHT_MASK_8BPP(32, 8, 3, 1);
-  INIT_WEIGHT_MASK_8BPP(32, 16, 3, 2);
-  INIT_WEIGHT_MASK_8BPP(32, 32, 3, 3);
-  INIT_WEIGHT_MASK_8BPP(32, 64, 3, 4);
-  INIT_WEIGHT_MASK_8BPP(64, 16, 4, 2);
-  INIT_WEIGHT_MASK_8BPP(64, 32, 4, 3);
-  INIT_WEIGHT_MASK_8BPP(64, 64, 4, 4);
-  INIT_WEIGHT_MASK_8BPP(64, 128, 4, 5);
-  INIT_WEIGHT_MASK_8BPP(128, 64, 5, 4);
-  INIT_WEIGHT_MASK_8BPP(128, 128, 5, 5);
+  INIT_WEIGHT_MASK_8BPP(8, 8, 0, 0);
+  INIT_WEIGHT_MASK_8BPP(8, 16, 0, 1);
+  INIT_WEIGHT_MASK_8BPP(8, 32, 0, 2);
+  INIT_WEIGHT_MASK_8BPP(16, 8, 1, 0);
+  INIT_WEIGHT_MASK_8BPP(16, 16, 1, 1);
+  INIT_WEIGHT_MASK_8BPP(16, 32, 1, 2);
+  INIT_WEIGHT_MASK_8BPP(16, 64, 1, 3);
+  INIT_WEIGHT_MASK_8BPP(32, 8, 2, 0);
+  INIT_WEIGHT_MASK_8BPP(32, 16, 2, 1);
+  INIT_WEIGHT_MASK_8BPP(32, 32, 2, 2);
+  INIT_WEIGHT_MASK_8BPP(32, 64, 2, 3);
+  INIT_WEIGHT_MASK_8BPP(64, 16, 3, 1);
+  INIT_WEIGHT_MASK_8BPP(64, 32, 3, 2);
+  INIT_WEIGHT_MASK_8BPP(64, 64, 3, 3);
+  INIT_WEIGHT_MASK_8BPP(64, 128, 3, 4);
+  INIT_WEIGHT_MASK_8BPP(128, 64, 4, 3);
+  INIT_WEIGHT_MASK_8BPP(128, 128, 4, 4);
 }
 
 }  // namespace

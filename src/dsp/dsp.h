@@ -441,6 +441,7 @@ using ConvolveScaleFuncs = ConvolveScaleFunc[2];
 // |prediction_1| is the second input block.
 // |prediction_stride_0| and |prediction_stride_1| are corresponding strides.
 // |width| and |height| are the prediction width and height.
+// The valid range of block size is [8x8, 128x128] for the luma plane.
 // |mask| is the output buffer. |mask_stride| is the output buffer stride.
 using WeightMaskFunc = void (*)(const uint16_t* prediction_0,
                                 ptrdiff_t stride_0,

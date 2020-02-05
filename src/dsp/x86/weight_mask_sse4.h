@@ -30,14 +30,9 @@ void WeightMaskInit_SSE4_1();
 }  // namespace libgav1
 
 #if LIBGAV1_ENABLE_SSE4_1
-#define LIBGAV1_Dsp8bpp_WeightMask_4x4 LIBGAV1_CPU_SSE4_1
-#define LIBGAV1_Dsp8bpp_WeightMask_4x8 LIBGAV1_CPU_SSE4_1
-#define LIBGAV1_Dsp8bpp_WeightMask_4x16 LIBGAV1_CPU_SSE4_1
-#define LIBGAV1_Dsp8bpp_WeightMask_8x4 LIBGAV1_CPU_SSE4_1
 #define LIBGAV1_Dsp8bpp_WeightMask_8x8 LIBGAV1_CPU_SSE4_1
 #define LIBGAV1_Dsp8bpp_WeightMask_8x16 LIBGAV1_CPU_SSE4_1
 #define LIBGAV1_Dsp8bpp_WeightMask_8x32 LIBGAV1_CPU_SSE4_1
-#define LIBGAV1_Dsp8bpp_WeightMask_16x4 LIBGAV1_CPU_SSE4_1
 #define LIBGAV1_Dsp8bpp_WeightMask_16x8 LIBGAV1_CPU_SSE4_1
 #define LIBGAV1_Dsp8bpp_WeightMask_16x16 LIBGAV1_CPU_SSE4_1
 #define LIBGAV1_Dsp8bpp_WeightMask_16x32 LIBGAV1_CPU_SSE4_1

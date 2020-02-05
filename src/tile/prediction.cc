@@ -734,8 +734,10 @@ void Tile::InterPrediction(const Block& block, const Plane plane, const int x,
   } else if (prediction_parameters.compound_prediction_type ==
              kCompoundPredictionTypeDiffWeighted) {
     if (plane == kPlaneY) {
+      assert(prediction_width >= 8);
+      assert(prediction_height >= 8);
       dsp_.weight_mask[FloorLog2(prediction_width) -
-                       2][FloorLog2(prediction_height) - 2][static_cast<int>(
+                       3][FloorLog2(prediction_height) - 3][static_cast<int>(
           prediction_parameters.mask_is_inverse)](
           block.scratch_buffer->prediction_buffer[0], prediction_stride,
           block.scratch_buffer->prediction_buffer[1], prediction_stride,
