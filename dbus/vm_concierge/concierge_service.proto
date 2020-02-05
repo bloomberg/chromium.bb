@@ -441,6 +441,10 @@ message ExportDiskImageRequest {
 
   // The path to the disk image. This must be a relative path.
   string disk_path = 2;
+
+  // Whether we should calculate SHA256 digest of the resulting image. The
+  // digest is supposed to be written into the second attached file descriptor.
+  bool generate_sha256_digest = 3;
 }
 
 // Response to a ExportDiskImageRequest.
