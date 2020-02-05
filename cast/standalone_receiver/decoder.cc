@@ -1,6 +1,8 @@
 #include "cast/standalone_receiver/decoder.h"
 
+#include <algorithm>
 #include <sstream>
+#include <thread>
 
 #include "util/logging.h"
 #include "util/trace_logging.h"
@@ -121,6 +123,11 @@ bool Decoder::Initialize() {
     return false;
   }
 
+  // This should always be greater than zero, so that decoding doesn't block the
+  // main thread of this receiver app and cause playback timing issues. The
+  // actual number should be tuned, based on the number of CPU cores.
+  // TODO(jophba): determine a better number after running benchmarking.
+  context_->thread_count = std::max(std::thread::hardware_concurrency(), 1u);
   const int open_result = avcodec_open2(context_.get(), codec_, nullptr);
   if (open_result < 0) {
     HandleInitializationError("failed to open codec", open_result);
