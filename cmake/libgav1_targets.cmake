@@ -36,8 +36,6 @@ endmacro()
 #   - OUTPUT_NAME: Override output file basename. Target basename defaults to
 #     NAME.
 #   - TEST: Flag. Presence means treat executable as a test.
-#   - TEST_DEFINES_MAIN: Flag. Presence means the test defines a main()
-#     function.
 #   - DEFINES: List of preprocessor macro definitions.
 #   - INCLUDES: list of include directories for the target.
 #   - COMPILE_FLAGS: list of compiler flags for the target.
@@ -64,7 +62,7 @@ macro(libgav1_add_executable)
   unset(exe_LINK_FLAGS)
   unset(exe_OBJLIB_DEPS)
   unset(exe_LIB_DEPS)
-  set(optional_args TEST TEST_DEFINES_MAIN)
+  set(optional_args TEST)
   set(single_value_args NAME OUTPUT_NAME)
   set(multi_value_args SOURCES DEFINES INCLUDES COMPILE_FLAGS LINK_FLAGS
                        OBJLIB_DEPS LIB_DEPS)
@@ -132,11 +130,6 @@ macro(libgav1_add_executable)
     foreach(objlib_dep ${exe_OBJLIB_DEPS})
       target_sources(${exe_NAME} PRIVATE $<TARGET_OBJECTS:${objlib_dep}>)
     endforeach()
-  endif()
-
-  if(exe_TEST AND NOT exe_TEST_DEFINES_MAIN)
-    target_sources(${exe_NAME} PRIVATE $<TARGET_OBJECTS:libgav1_gtest>
-                   $<TARGET_OBJECTS:libgav1_gtest_main>)
   endif()
 
   if(CMAKE_THREAD_LIBS_INIT)
