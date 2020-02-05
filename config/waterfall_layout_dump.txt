@@ -293,6 +293,7 @@
     eve-arcvm-release
     eve-arm64-release
     eve-kvm-release
+    eve-lacros-release
     eve-release
     eve-userdebug-release
     excelsior-release
@@ -1438,6 +1439,7 @@
     eve-arcvm-release-tryjob
     eve-arm64-release-tryjob
     eve-kvm-release-tryjob
+    eve-lacros-release-tryjob
     eve-release-tryjob
     eve-userdebug-release-tryjob
     excelsior-release-tryjob
