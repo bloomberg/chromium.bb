@@ -14,25 +14,19 @@
 
 #include "src/gav1/decoder.h"
 
+#include <memory>
 #include <new>
 
 #include "src/decoder_impl.h"
 
 extern "C" {
 
-Libgav1Decoder* Libgav1DecoderCreate() {
-  return reinterpret_cast<Libgav1Decoder*>(new (std::nothrow)
-                                               libgav1::Decoder());
-}
+Libgav1StatusCode Libgav1DecoderCreate(const Libgav1DecoderSettings* settings,
+                                       Libgav1Decoder** decoder_out) {
+  std::unique_ptr<libgav1::Decoder> cxx_decoder(new (std::nothrow)
+                                                    libgav1::Decoder());
+  if (cxx_decoder == nullptr) return kLibgav1StatusOutOfMemory;
 
-void Libgav1DecoderDestroy(Libgav1Decoder* decoder) {
-  auto* cxx_decoder = reinterpret_cast<libgav1::Decoder*>(decoder);
-  delete cxx_decoder;
-}
-
-Libgav1StatusCode Libgav1DecoderInit(Libgav1Decoder* decoder,
-                                     const Libgav1DecoderSettings* settings) {
-  auto* cxx_decoder = reinterpret_cast<libgav1::Decoder*>(decoder);
   libgav1::DecoderSettings cxx_settings;
   cxx_settings.threads = settings->threads;
   cxx_settings.frame_parallel = settings->frame_parallel != 0;
@@ -44,7 +38,17 @@ Libgav1StatusCode Libgav1DecoderInit(Libgav1Decoder* decoder,
   cxx_settings.release_frame_buffer = settings->release_frame_buffer;
   cxx_settings.callback_private_data = settings->callback_private_data;
   cxx_settings.post_filter_mask = settings->post_filter_mask;
-  return cxx_decoder->Init(&cxx_settings);
+
+  const Libgav1StatusCode status = cxx_decoder->Init(&cxx_settings);
+  if (status == kLibgav1StatusOk) {
+    *decoder_out = reinterpret_cast<Libgav1Decoder*>(cxx_decoder.release());
+  }
+  return status;
+}
+
+void Libgav1DecoderDestroy(Libgav1Decoder* decoder) {
+  auto* cxx_decoder = reinterpret_cast<libgav1::Decoder*>(decoder);
+  delete cxx_decoder;
 }
 
 Libgav1StatusCode Libgav1DecoderEnqueueFrame(Libgav1Decoder* decoder,

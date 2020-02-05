@@ -42,12 +42,10 @@ extern "C" {
 struct Libgav1Decoder;
 typedef struct Libgav1Decoder Libgav1Decoder;
 
-LIBGAV1_PUBLIC Libgav1Decoder* Libgav1DecoderCreate();
+LIBGAV1_PUBLIC Libgav1StatusCode Libgav1DecoderCreate(
+    const Libgav1DecoderSettings* settings, Libgav1Decoder** decoder_out);
 
 LIBGAV1_PUBLIC void Libgav1DecoderDestroy(Libgav1Decoder* decoder);
-
-LIBGAV1_PUBLIC Libgav1StatusCode Libgav1DecoderInit(
-    Libgav1Decoder* decoder, const Libgav1DecoderSettings* settings);
 
 LIBGAV1_PUBLIC Libgav1StatusCode
 Libgav1DecoderEnqueueFrame(Libgav1Decoder* decoder, const uint8_t* data,
