@@ -249,7 +249,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             if (is_compound) {
               const uint16x8_t sum = vdupq_n_u16(
                   (row_border_pixel + kSingleRoundOffset)
-                  << (kInterRoundBitsVertical - kInterRoundBitsVertical));
+                  << (kInterRoundBitsVertical - kRoundBitsVertical));
               vst1q_u16(reinterpret_cast<uint16_t*>(dst_row), sum);
             } else {
               memset(dst_row, row_border_pixel, 8);
