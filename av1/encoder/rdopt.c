@@ -4075,12 +4075,24 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       best_rd_so_far, cpi->sf.winner_mode_sf.enable_multiwinner_mode_process,
       0);
 
-  // Here midx is just an interator index that should not be used by itself
+  // Here midx is just an iterator index that should not be used by itself
   // except to keep track of the number of modes searched. It should be used
   // with av1_default_mode_order to get the enum that defines the mode, which
   // can be used with av1_mode_defs to get the prediction mode and the ref
   // frames.
-  for (int midx = 0; midx < MAX_MODES; ++midx) {
+  for (THR_MODES midx = THR_MODE_START; midx < THR_MODE_END; ++midx) {
+    // Get the actual prediction mode we are trying in this iteration
+    const THR_MODES mode_enum = av1_default_mode_order[midx];
+    const MODE_DEFINITION *mode_def = &av1_mode_defs[mode_enum];
+    const PREDICTION_MODE this_mode = mode_def->mode;
+    const MV_REFERENCE_FRAME *ref_frames = mode_def->ref_frame;
+
+    const MV_REFERENCE_FRAME ref_frame = ref_frames[0];
+    const MV_REFERENCE_FRAME second_ref_frame = ref_frames[1];
+    const int is_single_pred =
+        ref_frame > INTRA_FRAME && second_ref_frame == NONE_FRAME;
+    const int comp_pred = second_ref_frame > INTRA_FRAME;
+
     // After we done with single reference modes, find the 2nd best RD
     // for a reference frame. Only search compound modes that have a reference
     // frame at least as good as the 2nd best.
@@ -4090,11 +4102,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       prune_cpd_using_sr_stats_ready = 1;
     }
 
-    const THR_MODES mode_enum = av1_default_mode_order[midx];
-    const MODE_DEFINITION *mode_def = &av1_mode_defs[mode_enum];
-    const PREDICTION_MODE this_mode = mode_def->mode;
-    const MV_REFERENCE_FRAME *ref_frames = mode_def->ref_frame;
-
     if (inter_mode_compatible_skip(cpi, x, bsize, this_mode, ref_frames))
       continue;
     const int ret = inter_mode_search_order_independent_skip(
@@ -4102,12 +4109,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         mode_def->ref_frame);
     if (ret == 1) continue;
     args.skip_motion_mode = (ret == 2);
-
-    const MV_REFERENCE_FRAME ref_frame = ref_frames[0];
-    const MV_REFERENCE_FRAME second_ref_frame = ref_frames[1];
-    const int is_single_pred =
-        ref_frame > INTRA_FRAME && second_ref_frame == NONE_FRAME;
-    const int comp_pred = second_ref_frame > INTRA_FRAME;
 
     if (sf->inter_sf.prune_compound_using_single_ref &&
         prune_cpd_using_sr_stats_ready && comp_pred &&
@@ -4285,10 +4286,6 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
         search_state.intra_search_state.best_pred_rd[REFERENCE_MODE_SELECT] =
             hybrid_rd;
     }
-
-    // TODO(anyone): evaluate the quality and speed trade-off of the early
-    // termination logic below.
-    // if (x->force_skip && !comp_pred) break;
   }
 
   if (cpi->sf.winner_mode_sf.motion_mode_for_winner_cand) {
@@ -4358,8 +4355,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
                                  x->skip_cost[skip_ctx][mbmi->skip]);
       }
       rd_stats.rdcost = RDCOST(x->rdmult, rd_stats.rate, rd_stats.dist);
-      // TODO(chiyotsai@google.com): get_prediction_mode_idx gives incorrect
-      // output once we change the mode order. Fix this!
+
       const THR_MODES mode_enum = get_prediction_mode_idx(
           mbmi->mode, mbmi->ref_frame[0], mbmi->ref_frame[1]);
 
@@ -4882,7 +4878,7 @@ static AOM_INLINE void calc_target_weighted_pred(
   const int is_hbd = is_cur_buf_hbd(xd);
   const int src_scale = AOM_BLEND_A64_MAX_ALPHA * AOM_BLEND_A64_MAX_ALPHA;
 
-  // plane 0 should not be subsampled
+  // plane 0 should not be sub-sampled
   assert(xd->plane[0].subsampling_x == 0);
   assert(xd->plane[0].subsampling_y == 0);
 
