@@ -150,7 +150,7 @@ static int tf_motion_search(AV1_COMP *cpi,
     mb->e_mbd.mi[0]->mv[0] = mb->best_mv;
     *ref_mv = mb->best_mv.as_mv;
     // On 4 sub-blocks.
-    const BLOCK_SIZE subblock_size = ss_size_lookup[BLOCK_32X32][1][1];
+    const BLOCK_SIZE subblock_size = ss_size_lookup[block_size][1][1];
     const int subblock_height = block_size_high[subblock_size];
     const int subblock_width = block_size_wide[subblock_size];
     start_mv.row = GET_MV_RAWPEL(ref_mv->row);
