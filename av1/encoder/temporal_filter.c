@@ -37,10 +37,6 @@
 
 // NOTE: All `tf` in this file means `temporal filtering`.
 
-// Motion search supports 1/8 precision for sub-pixel.
-#define GET_MV_SUBPEL(x) ((x) << 3)
-#define GET_MV_RAWPEL(x) ((x) >> 3)
-
 // Does motion search for blocks in temporal filtering. This is the first step
 // for temporal filtering. More specifically, given a frame to be filtered and
 // another frame as reference, this function searches the reference frame to
@@ -104,7 +100,7 @@ static int tf_motion_search(AV1_COMP *cpi,
           : (min_frame_size >= 480 ? MV_COST_L1_MIDRES : MV_COST_L1_LOWRES);
 
   // Starting position for motion search.
-  MV start_mv = { GET_MV_RAWPEL(ref_mv->row), GET_MV_RAWPEL(ref_mv->col) };
+  FULLPEL_MV start_mv = get_fullmv_from_mv(ref_mv);
   // Baseline position for motion search (used for rate distortion comparison).
   const MV baseline_mv = kZeroMv;
 
@@ -153,8 +149,8 @@ static int tf_motion_search(AV1_COMP *cpi,
     const BLOCK_SIZE subblock_size = ss_size_lookup[block_size][1][1];
     const int subblock_height = block_size_high[subblock_size];
     const int subblock_width = block_size_wide[subblock_size];
-    start_mv.row = GET_MV_RAWPEL(ref_mv->row);
-    start_mv.col = GET_MV_RAWPEL(ref_mv->col);
+    start_mv = get_fullmv_from_mv(ref_mv);
+
     int subblock_idx = 0;
     for (int i = 0; i < mb_height; i += subblock_height) {
       for (int j = 0; j < mb_width; j += subblock_width) {

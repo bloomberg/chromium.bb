@@ -17,13 +17,13 @@
 #include "config/aom_scale_rtcd.h"
 
 #include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/variance.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 #include "aom_scale/aom_scale.h"
 #include "aom_scale/yv12config.h"
 
-#include "aom_dsp/variance.h"
 #include "av1/common/entropymv.h"
 #include "av1/common/quant_common.h"
 #include "av1/common/reconinter.h"  // av1_setup_dst_planes()
@@ -222,7 +222,7 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
                                                 const MV *ref_mv, MV *best_mv,
                                                 int *best_motion_err) {
   MACROBLOCKD *const xd = &x->e_mbd;
-  MV ref_mv_full = { ref_mv->row >> 3, ref_mv->col >> 3 };
+  FULLPEL_MV start_mv = get_fullmv_from_mv(ref_mv);
   int tmp_err;
   const BLOCK_SIZE bsize = xd->mi[0]->sb_type;
   aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
@@ -232,14 +232,15 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   int cost_list[5];
 
   tmp_err = av1_full_pixel_search(
-      cpi, x, bsize, &ref_mv_full, step_param, 0, NSTEP, 0, x->sadperbit16,
+      cpi, x, bsize, &start_mv, step_param, 0, NSTEP, 0, x->sadperbit16,
       cond_cost_list(cpi, cost_list), ref_mv, INT_MAX, 0,
       (MI_SIZE * xd->mi_col), (MI_SIZE * xd->mi_row), 0,
       &cpi->ss_cfg[SS_CFG_FPF], 0);
 
   if (tmp_err < INT_MAX)
-    tmp_err = av1_get_mvpred_var(x, &x->best_mv.as_mv, ref_mv, &v_fn_ptr, 0) +
-              new_mv_mode_penalty;
+    tmp_err =
+        av1_get_mvpred_var(x, &x->best_mv.as_fullmv, ref_mv, &v_fn_ptr, 0) +
+        new_mv_mode_penalty;
 
   if (tmp_err < *best_motion_err) {
     *best_motion_err = tmp_err;

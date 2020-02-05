@@ -21,23 +21,46 @@ extern "C" {
 #endif
 
 #define INVALID_MV 0x80008000
+#define GET_MV_RAWPEL(x) ((x) >> 3)
+#define GET_MV_SUBPEL(x) ((x)*8)
 
+// The motion vector in units of full pixel
+typedef struct fullpel_mv {
+  int16_t row;
+  int16_t col;
+} FULLPEL_MV;
+
+// The motion vector in units of 1/8-pel
 typedef struct mv {
   int16_t row;
   int16_t col;
 } MV;
 
 static const MV kZeroMv = { 0, 0 };
+static const FULLPEL_MV kZeroFullMv = { 0, 0 };
 
 typedef union int_mv {
   uint32_t as_int;
   MV as_mv;
+  FULLPEL_MV as_fullmv;
 } int_mv; /* facilitates faster equality tests and copies */
 
 typedef struct mv32 {
   int32_t row;
   int32_t col;
 } MV32;
+
+static AOM_INLINE FULLPEL_MV get_fullmv_from_mv(const MV *subpel_mv) {
+  const FULLPEL_MV full_mv = { (int16_t)GET_MV_RAWPEL(subpel_mv->row),
+                               (int16_t)GET_MV_RAWPEL(subpel_mv->col) };
+  return full_mv;
+}
+
+static AOM_INLINE MV get_mv_from_fullmv(const FULLPEL_MV *full_mv) {
+  const MV subpel_mv = { (int16_t)GET_MV_SUBPEL(full_mv->row),
+                         (int16_t)GET_MV_SUBPEL(full_mv->col) };
+  return subpel_mv;
+}
 
 // Bits of precision used for the model
 #define WARPEDMODEL_PREC_BITS 16
@@ -289,6 +312,12 @@ static INLINE int is_equal_mv(const MV *a, const MV *b) {
 
 static INLINE void clamp_mv(MV *mv, int min_col, int max_col, int min_row,
                             int max_row) {
+  mv->col = clamp(mv->col, min_col, max_col);
+  mv->row = clamp(mv->row, min_row, max_row);
+}
+
+static INLINE void clamp_fullmv(FULLPEL_MV *mv, int min_col, int max_col,
+                                int min_row, int max_row) {
   mv->col = clamp(mv->col, min_col, max_col);
   mv->row = clamp(mv->row, min_row, max_row);
 }

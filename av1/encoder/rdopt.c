@@ -2492,21 +2492,19 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     }
 
     int step_param = cpi->mv_step_param;
-    MV mvp_full = dv_ref.as_mv;
-    mvp_full.col >>= 3;
-    mvp_full.row >>= 3;
+    FULLPEL_MV start_mv = get_fullmv_from_mv(&dv_ref.as_mv);
     const int sadpb = x->sadperbit16;
     int cost_list[5];
     const int bestsme = av1_full_pixel_search(
-        cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv_sf.search_method, 0,
+        cpi, x, bsize, &start_mv, step_param, 1, cpi->sf.mv_sf.search_method, 0,
         sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv, INT_MAX, 1,
         (MI_SIZE * mi_col), (MI_SIZE * mi_row), 1,
         &cpi->ss_cfg[SS_CFG_LOOKAHEAD], 1);
 
     x->mv_limits = tmp_mv_limits;
     if (bestsme == INT_MAX) continue;
-    mvp_full = x->best_mv.as_mv;
-    const MV dv = { .row = mvp_full.row * 8, .col = mvp_full.col * 8 };
+    const MV dv = { .row = x->best_mv.as_mv.row * 8,
+                    .col = x->best_mv.as_mv.col * 8 };
     if (mv_check_bounds(&x->mv_limits, &dv)) continue;
     if (!av1_is_dv_valid(dv, cm, xd, mi_row, mi_col, bsize,
                          cm->seq_params.mib_size_log2))

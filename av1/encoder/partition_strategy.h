@@ -173,7 +173,7 @@ static INLINE void set_offsets_for_motion_search(const AV1_COMP *const cpi,
 }
 
 static INLINE void init_simple_motion_search_mvs(PC_TREE *pc_tree) {
-  av1_zero(pc_tree->mv_ref_fulls);
+  av1_zero(pc_tree->start_mvs);
 
   av1_zero(pc_tree->sms_none_feat);
   av1_zero(pc_tree->sms_rect_feat);

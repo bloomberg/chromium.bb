@@ -326,7 +326,6 @@ static int simple_motion_search_get_best_ref(
   // Otherwise do loop through the reference frames and find the one with the
   // minimum SSE
   const MACROBLOCKD *xd = &x->e_mbd;
-  const MV *mv_ref_fulls = pc_tree->mv_ref_fulls;
 
   const int num_planes = 1;
 
@@ -336,9 +335,10 @@ static int simple_motion_search_get_best_ref(
     const int ref = refs[ref_idx];
 
     if (cpi->ref_frame_flags & av1_ref_frame_flag_list[ref]) {
+      const FULLPEL_MV *start_mvs = pc_tree->start_mvs;
       unsigned int curr_sse = 0, curr_var = 0;
       av1_simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref,
-                               mv_ref_fulls[ref], num_planes, use_subpixel);
+                               start_mvs[ref], num_planes, use_subpixel);
       curr_var = cpi->fn_ptr[bsize].vf(
           x->plane[0].src.buf, x->plane[0].src.stride, xd->plane[0].dst.buf,
           xd->plane[0].dst.stride, &curr_sse);
@@ -349,18 +349,14 @@ static int simple_motion_search_get_best_ref(
       }
 
       if (save_mv) {
-        const int new_mv_row = x->best_mv.as_mv.row / 8;
-        const int new_mv_col = x->best_mv.as_mv.col / 8;
-
-        pc_tree->mv_ref_fulls[ref].row = new_mv_row;
-        pc_tree->mv_ref_fulls[ref].col = new_mv_col;
+        pc_tree->start_mvs[ref].row = x->best_mv.as_mv.row / 8;
+        pc_tree->start_mvs[ref].col = x->best_mv.as_mv.col / 8;
 
         if (bsize >= BLOCK_8X8) {
           for (int r_idx = 0; r_idx < 4; r_idx++) {
             // Propagate the new motion vectors to a lower level
             PC_TREE *sub_tree = pc_tree->split[r_idx];
-            sub_tree->mv_ref_fulls[ref].row = new_mv_row;
-            sub_tree->mv_ref_fulls[ref].col = new_mv_col;
+            sub_tree->start_mvs[ref] = pc_tree->start_mvs[ref];
           }
         }
       }
@@ -663,10 +659,10 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
       const int this_mi_col = mi_col + (mb_col << mb_in_mi_size_wide_log2);
       unsigned int sse = 0;
       unsigned int var = 0;
-      const MV ref_mv_full = { .row = 0, .col = 0 };
+      const FULLPEL_MV start_mv = kZeroFullMv;
 
       av1_simple_motion_sse_var(cpi, x, this_mi_row, this_mi_col, mb_size,
-                                ref_mv_full, 0, &sse, &var);
+                                start_mv, 0, &sse, &var);
 
       aom_clear_system_state();
       const float mv_row = (float)(x->best_mv.as_mv.row / 8);

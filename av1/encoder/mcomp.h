@@ -20,6 +20,16 @@
 extern "C" {
 #endif
 
+// In this file, the following variables always have the same meaning:
+// start_mv: the motion vector where we start the motion search
+// ref_mv: the motion vector with respect to which we calculate the mv_cost
+// best_mv: when it is not const, it is the destination where to store the
+//   best motion vector
+// full_*: a prefix of full indicates that the mv is a FULLPEL_MV
+//
+// When a mv needs to both act as a fullpel_mv and subpel_mv, it is stored as an
+// int_mv, which is a union of int, FULLPEL_MV, and MV
+
 // The maximum number of steps in a step search given the largest
 // allowed initial step
 #define MAX_MVSEARCH_STEPS 11
@@ -39,7 +49,7 @@ extern "C" {
 
 // motion search site
 typedef struct search_site {
-  MV mv;
+  FULLPEL_MV mv;
   int offset;
 } search_site;
 
@@ -62,20 +72,20 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride);
 
 void av1_set_mv_search_range(MvLimits *mv_limits, const MV *mv);
 
-int av1_mv_bit_cost(const MV *mv, const MV *ref, const int *mvjcost,
+int av1_mv_bit_cost(const MV *mv, const MV *ref_mv, const int *mvjcost,
                     int *mvcost[2], int weight);
 
 // Utility to compute variance + MV rate cost for a given MV
-int av1_get_mvpred_var(const MACROBLOCK *x, const MV *best_mv,
-                       const MV *center_mv, const aom_variance_fn_ptr_t *vfp,
+int av1_get_mvpred_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
+                       const MV *ref_mv, const aom_variance_fn_ptr_t *vfp,
                        int use_var);
-int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
-                          const MV *center_mv, const uint8_t *second_pred,
+int av1_get_mvpred_av_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
+                          const MV *ref_mv, const uint8_t *second_pred,
                           const aom_variance_fn_ptr_t *vfp,
                           const struct buf_2d *src, const struct buf_2d *pre,
                           int use_mvcost);
-int av1_get_mvpred_mask_var(const MACROBLOCK *x, const MV *best_mv,
-                            const MV *center_mv, const uint8_t *second_pred,
+int av1_get_mvpred_mask_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
+                            const MV *ref_mv, const uint8_t *second_pred,
                             const uint8_t *mask, int mask_stride,
                             int invert_mask, const aom_variance_fn_ptr_t *vfp,
                             const struct buf_2d *src, const struct buf_2d *pre,
@@ -92,16 +102,10 @@ unsigned int av1_int_pro_motion_estimation(const struct AV1_COMP *cpi,
                                            const MV *ref_mv);
 
 // Runs sequence of diamond searches in smaller steps for RD.
-int av1_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,
-                           MV *mvp_full, int step_param, int sadpb,
-                           int further_steps, int do_refine, int *cost_list,
-                           const aom_variance_fn_ptr_t *fn_ptr,
-                           const MV *ref_mv, MV *dst_mv);
-
-int av1_hex_search(MACROBLOCK *x, MV *start_mv, int search_param,
+int av1_hex_search(MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param,
                    int sad_per_bit, int do_init_search, int *cost_list,
                    const aom_variance_fn_ptr_t *vfp, int use_mvcost,
-                   const MV *center_mv);
+                   const MV *ref_mv);
 
 typedef int(fractional_mv_step_fp)(
     MACROBLOCK *x, const AV1_COMMON *const cm, int mi_row, int mi_col,
@@ -123,32 +127,33 @@ extern fractional_mv_step_fp av1_return_min_sub_pixel_mv;
 int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
                              const aom_variance_fn_ptr_t *fn_ptr,
                              const uint8_t *mask, int mask_stride,
-                             int invert_mask, const MV *center_mv,
+                             int invert_mask, const MV *ref_mv,
                              const uint8_t *second_pred,
                              const struct buf_2d *src,
                              const struct buf_2d *pre);
 
 int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
-                             MV *ref_mv, MV *best_mv, int search_param,
-                             int sad_per_bit, int *num00,
+                             FULLPEL_MV *start_mv, FULLPEL_MV *best_mv,
+                             int search_param, int sad_per_bit, int *num00,
                              const aom_variance_fn_ptr_t *fn_ptr,
-                             const MV *center_mv, uint8_t *second_pred,
+                             const MV *ref_mv, uint8_t *second_pred,
                              uint8_t *mask, int mask_stride, int inv_mask);
 
 int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
-                          BLOCK_SIZE bsize, MV *mvp_full, int step_param,
-                          int use_var, int method, int run_mesh_search,
-                          int error_per_bit, int *cost_list, const MV *ref_mv,
-                          int var_max, int rd, int x_pos, int y_pos, int intra,
+                          BLOCK_SIZE bsize, FULLPEL_MV *start_mv,
+                          int step_param, int use_var, int method,
+                          int run_mesh_search, int error_per_bit,
+                          int *cost_list, const MV *ref_mv, int var_max, int rd,
+                          int x_pos, int y_pos, int intra,
                           const search_site_config *cfg,
                           int use_intrabc_mesh_pattern);
 
 int av1_obmc_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
-                               MV *mvp_full, int step_param, int sadpb,
+                               FULLPEL_MV *start_mv, int step_param, int sadpb,
                                int further_steps, int do_refine,
                                const aom_variance_fn_ptr_t *fn_ptr,
-                               const MV *ref_mv, MV *dst_mv, int is_second,
-                               const search_site_config *cfg);
+                               const MV *ref_mv, FULLPEL_MV *dst_mv,
+                               int is_second, const search_site_config *cfg);
 int av1_find_best_obmc_sub_pixel_tree_up(
     MACROBLOCK *x, const AV1_COMMON *const cm, int mi_row, int mi_col,
     MV *bestmv, const MV *ref_mv, int allow_hp, int error_per_bit,
@@ -169,12 +174,13 @@ unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
 // after calling this function.
 void av1_simple_motion_search(struct AV1_COMP *const cpi, MACROBLOCK *x,
                               int mi_row, int mi_col, BLOCK_SIZE bsize, int ref,
-                              MV ref_mv_full, int num_planes, int use_subpixel);
+                              FULLPEL_MV start_mv, int num_planes,
+                              int use_subpixel);
 
 // Performs a simple motion search to calculate the sse and var of the residue
 void av1_simple_motion_sse_var(struct AV1_COMP *cpi, MACROBLOCK *x, int mi_row,
                                int mi_col, BLOCK_SIZE bsize,
-                               const MV ref_mv_full, int use_subpixel,
+                               const FULLPEL_MV start_mv, int use_subpixel,
                                unsigned int *sse, unsigned int *var);
 
 static INLINE void av1_set_fractional_mv(int_mv *fractional_best_mv) {

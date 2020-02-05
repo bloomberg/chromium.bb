@@ -113,14 +113,11 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   // after full-pixel motion search.
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
 
-  MV mvp_full;
+  FULLPEL_MV start_mv;
   if (mbmi->motion_mode != SIMPLE_TRANSLATION)
-    mvp_full = mbmi->mv[0].as_mv;
+    start_mv = get_fullmv_from_mv(&mbmi->mv[0].as_mv);
   else
-    mvp_full = ref_mv;
-
-  mvp_full.col >>= 3;
-  mvp_full.row >>= 3;
+    start_mv = get_fullmv_from_mv(&ref_mv);
 
   const int sadpb = x->sadperbit16;
   int cost_list[5];
@@ -128,16 +125,16 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   switch (mbmi->motion_mode) {
     case SIMPLE_TRANSLATION:
       bestsme = av1_full_pixel_search(
-          cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv_sf.search_method,
+          cpi, x, bsize, &start_mv, step_param, 1, cpi->sf.mv_sf.search_method,
           0, sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
           (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC],
           0);
       break;
     case OBMC_CAUSAL:
       bestsme = av1_obmc_full_pixel_search(
-          cpi, x, &mvp_full, step_param, sadpb,
+          cpi, x, &start_mv, step_param, sadpb,
           MAX_MVSEARCH_STEPS - 1 - step_param, 1, &cpi->fn_ptr[bsize], &ref_mv,
-          &(x->best_mv.as_mv), 0, &cpi->ss_cfg[SS_CFG_SRC]);
+          &(x->best_mv.as_fullmv), 0, &cpi->ss_cfg[SS_CFG_SRC]);
       break;
     default: assert(0 && "Invalid motion mode!\n");
   }
@@ -270,8 +267,8 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   // Prediction buffer from second frame.
   DECLARE_ALIGNED(16, uint8_t, second_pred16[MAX_SB_SQUARE * sizeof(uint16_t)]);
   uint8_t *second_pred = get_buf_by_bd(xd, second_pred16);
+  int_mv *best_int_mv = &x->best_mv;
 
-  MV *const best_mv = &x->best_mv.as_mv;
   const int search_range = SEARCH_RANGE_8P;
   const int sadpb = x->sadperbit16;
   // Allow joint search multiple times iteratively for each reference frame
@@ -342,10 +339,7 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     av1_set_mv_search_range(&x->mv_limits, &ref_mv[id].as_mv);
 
     // Use the mv result from the single mode as mv predictor.
-    *best_mv = cur_mv[id].as_mv;
-
-    best_mv->col >>= 3;
-    best_mv->row >>= 3;
+    best_int_mv->as_fullmv = get_fullmv_from_mv(&cur_mv[id].as_mv);
 
     // Small-range full-pixel motion search.
     bestsme = av1_refining_search_8p_c(
@@ -353,13 +347,14 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
         &ref_mv[id].as_mv, second_pred, &x->plane[0].src, &ref_yv12[id]);
     if (bestsme < INT_MAX) {
       if (mask)
-        bestsme = av1_get_mvpred_mask_var(
-            x, best_mv, &ref_mv[id].as_mv, second_pred, mask, mask_stride, id,
-            &cpi->fn_ptr[bsize], &x->plane[0].src, &ref_yv12[id], 1);
+        bestsme = av1_get_mvpred_mask_var(x, &best_int_mv->as_fullmv,
+                                          &ref_mv[id].as_mv, second_pred, mask,
+                                          mask_stride, id, &cpi->fn_ptr[bsize],
+                                          &x->plane[0].src, &ref_yv12[id], 1);
       else
-        bestsme = av1_get_mvpred_av_var(x, best_mv, &ref_mv[id].as_mv,
-                                        second_pred, &cpi->fn_ptr[bsize],
-                                        &x->plane[0].src, &ref_yv12[id], 1);
+        bestsme = av1_get_mvpred_av_var(
+            x, &best_int_mv->as_fullmv, &ref_mv[id].as_mv, second_pred,
+            &cpi->fn_ptr[bsize], &x->plane[0].src, &ref_yv12[id], 1);
     }
 
     x->mv_limits = tmp_mv_limits;
@@ -382,8 +377,7 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     if (id) xd->plane[plane].pre[0] = ref_yv12[id];
 
     if (cpi->common.cur_frame_force_integer_mv) {
-      x->best_mv.as_mv.row *= 8;
-      x->best_mv.as_mv.col *= 8;
+      best_int_mv->as_mv = get_mv_from_fullmv(&best_int_mv->as_fullmv);
     }
     if (bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0) {
       int dis; /* TODO: use dis in distortion calculation later. */
@@ -399,7 +393,7 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     // Restore the pointer to the first prediction buffer.
     if (id) xd->plane[plane].pre[0] = ref_yv12[0];
     if (bestsme < last_besterr[id]) {
-      cur_mv[id].as_mv = *best_mv;
+      cur_mv[id] = *best_int_mv;
       last_besterr[id] = bestsme;
     } else {
       break;
@@ -464,7 +458,7 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 
   int bestsme = INT_MAX;
   int sadpb = x->sadperbit16;
-  MV *const best_mv = &x->best_mv.as_mv;
+  int_mv *best_int_mv = &x->best_mv;
   int search_range = SEARCH_RANGE_8P;
 
   MvLimits tmp_mv_limits = x->mv_limits;
@@ -473,10 +467,7 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   av1_set_mv_search_range(&x->mv_limits, &ref_mv.as_mv);
 
   // Use the mv result from the single mode as mv predictor.
-  *best_mv = *this_mv;
-
-  best_mv->col >>= 3;
-  best_mv->row >>= 3;
+  best_int_mv->as_fullmv = get_fullmv_from_mv(this_mv);
 
   // Small-range full-pixel motion search.
   bestsme = av1_refining_search_8p_c(
@@ -485,12 +476,13 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   if (bestsme < INT_MAX) {
     if (mask)
       bestsme = av1_get_mvpred_mask_var(
-          x, best_mv, &ref_mv.as_mv, second_pred, mask, mask_stride, ref_idx,
-          &cpi->fn_ptr[bsize], &x->plane[0].src, &ref_yv12, 1);
+          x, &best_int_mv->as_fullmv, &ref_mv.as_mv, second_pred, mask,
+          mask_stride, ref_idx, &cpi->fn_ptr[bsize], &x->plane[0].src,
+          &ref_yv12, 1);
     else
-      bestsme = av1_get_mvpred_av_var(x, best_mv, &ref_mv.as_mv, second_pred,
-                                      &cpi->fn_ptr[bsize], &x->plane[0].src,
-                                      &ref_yv12, 1);
+      bestsme = av1_get_mvpred_av_var(x, &best_int_mv->as_fullmv, &ref_mv.as_mv,
+                                      second_pred, &cpi->fn_ptr[bsize],
+                                      &x->plane[0].src, &ref_yv12, 1);
   }
 
   x->mv_limits = tmp_mv_limits;
@@ -503,8 +495,7 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   if (cpi->common.cur_frame_force_integer_mv) {
-    x->best_mv.as_mv.row *= 8;
-    x->best_mv.as_mv.col *= 8;
+    best_int_mv->as_mv = get_mv_from_fullmv(&best_int_mv->as_fullmv);
   }
   const int use_fractional_mv =
       bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;
@@ -525,7 +516,7 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   // Restore the pointer to the first unscaled prediction buffer.
   if (ref_idx) pd->pre[0] = orig_yv12;
 
-  if (bestsme < INT_MAX) *this_mv = *best_mv;
+  if (bestsme < INT_MAX) *this_mv = best_int_mv->as_mv;
 
   *rate_mv = 0;
 

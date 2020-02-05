@@ -77,7 +77,7 @@ typedef struct PC_TREE {
   int index;
 
   // Simple motion search_features
-  MV mv_ref_fulls[REF_FRAMES];
+  FULLPEL_MV start_mvs[REF_FRAMES];
   unsigned int sms_none_feat[2];
   unsigned int sms_rect_feat[8];
   int sms_none_valid;

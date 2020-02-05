@@ -121,7 +121,7 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   struct buf_2d backup_yv12[MAX_MB_PLANE] = { { 0, 0, 0, 0, 0 } };
   int step_param = cpi->mv_step_param;
   const int sadpb = x->sadperbit16;
-  MV mvp_full;
+  FULLPEL_MV start_mv;
   const int ref = mi->ref_frame[0];
   const MV ref_mv = av1_get_ref_mv(x, mi->ref_mv_idx).as_mv;
   MV center_mv;
@@ -144,10 +144,7 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   }
   av1_set_mv_search_range(&x->mv_limits, &ref_mv);
 
-  mvp_full = ref_mv;
-
-  mvp_full.col >>= 3;
-  mvp_full.row >>= 3;
+  start_mv = get_fullmv_from_mv(&ref_mv);
 
   if (!use_base_mv)
     center_mv = ref_mv;
@@ -155,13 +152,14 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
     center_mv = tmp_mv->as_mv;
 
   av1_full_pixel_search(
-      cpi, x, bsize, &mvp_full, step_param, 1, cpi->sf.mv_sf.search_method, 0,
+      cpi, x, bsize, &start_mv, step_param, 1, cpi->sf.mv_sf.search_method, 0,
       sadpb, cond_cost_list(cpi, cost_list), &center_mv, INT_MAX, 0,
       (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC], 0);
 
   x->mv_limits = tmp_mv_limits;
   *tmp_mv = x->best_mv;
   // calculate the bit cost on motion vector
+  MV mvp_full;
   mvp_full.row = tmp_mv->as_mv.row * 8;
   mvp_full.col = tmp_mv->as_mv.col * 8;
 

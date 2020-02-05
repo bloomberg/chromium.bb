@@ -135,10 +135,7 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   uint32_t sse;
   int cost_list[5];
   const MvLimits tmp_mv_limits = x->mv_limits;
-  MV best_ref_mv1_full; /* full-pixel value of best_ref_mv1 */
-
-  best_ref_mv1_full.col = center_mv.col >> 3;
-  best_ref_mv1_full.row = center_mv.row >> 3;
+  FULLPEL_MV start_mv = get_fullmv_from_mv(&center_mv);
 
   // Setup frame pointers
   x->plane[0].src.buf = cur_frame_buf;
@@ -156,10 +153,10 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
 
   assert(ss_cfg->stride == stride_ref);
 
-  av1_full_pixel_search(cpi, x, bsize, &best_ref_mv1_full, step_param, 1,
-                        search_method, 0, sadpb, cond_cost_list(cpi, cost_list),
-                        &center_mv, INT_MAX, 0, (MI_SIZE * mi_col),
-                        (MI_SIZE * mi_row), 0, ss_cfg, 0);
+  av1_full_pixel_search(cpi, x, bsize, &start_mv, step_param, 1, search_method,
+                        0, sadpb, cond_cost_list(cpi, cost_list), &center_mv,
+                        INT_MAX, 0, (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0,
+                        ss_cfg, 0);
 
   /* restore UMV window */
   x->mv_limits = tmp_mv_limits;

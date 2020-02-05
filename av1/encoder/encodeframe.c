@@ -804,9 +804,9 @@ static AOM_INLINE void pick_sb_modes(AV1_COMP *const cpi,
         av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
   }
   if (use_pb_simple_motion_pred_sse(cpi)) {
-    const MV ref_mv_full = { .row = 0, .col = 0 };
+    const FULLPEL_MV start_mv = kZeroFullMv;
     unsigned int var = 0;
-    av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, ref_mv_full, 0,
+    av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, start_mv, 0,
                               &x->simple_motion_pred_sse, &var);
   }
 
@@ -3244,10 +3244,10 @@ BEGIN_PARTITION_SEARCH:
 
   if (use_pb_simple_motion_pred_sse(cpi) &&
       pb_simple_motion_pred_sse == UINT_MAX) {
-    const MV ref_mv_full = { .row = 0, .col = 0 };
+    const FULLPEL_MV start_mv = kZeroFullMv;
     unsigned int var = 0;
 
-    av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, ref_mv_full, 0,
+    av1_simple_motion_sse_var(cpi, x, mi_row, mi_col, bsize, start_mv, 0,
                               &pb_simple_motion_pred_sse, &var);
   }
 
