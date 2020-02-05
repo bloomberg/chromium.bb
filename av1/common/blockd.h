@@ -75,24 +75,24 @@ static INLINE int is_inter_compound_mode(PREDICTION_MODE mode) {
 }
 
 static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
-  static PREDICTION_MODE lut[] = {
-    MB_MODE_COUNT,  // DC_PRED
-    MB_MODE_COUNT,  // V_PRED
-    MB_MODE_COUNT,  // H_PRED
-    MB_MODE_COUNT,  // D45_PRED
-    MB_MODE_COUNT,  // D135_PRED
-    MB_MODE_COUNT,  // D113_PRED
-    MB_MODE_COUNT,  // D157_PRED
-    MB_MODE_COUNT,  // D203_PRED
-    MB_MODE_COUNT,  // D67_PRED
-    MB_MODE_COUNT,  // SMOOTH_PRED
-    MB_MODE_COUNT,  // SMOOTH_V_PRED
-    MB_MODE_COUNT,  // SMOOTH_H_PRED
-    MB_MODE_COUNT,  // PAETH_PRED
-    MB_MODE_COUNT,  // NEARESTMV
-    MB_MODE_COUNT,  // NEARMV
-    MB_MODE_COUNT,  // GLOBALMV
-    MB_MODE_COUNT,  // NEWMV
+  static const PREDICTION_MODE lut[] = {
+    DC_PRED,        // DC_PRED
+    V_PRED,         // V_PRED
+    H_PRED,         // H_PRED
+    D45_PRED,       // D45_PRED
+    D135_PRED,      // D135_PRED
+    D113_PRED,      // D113_PRED
+    D157_PRED,      // D157_PRED
+    D203_PRED,      // D203_PRED
+    D67_PRED,       // D67_PRED
+    SMOOTH_PRED,    // SMOOTH_PRED
+    SMOOTH_V_PRED,  // SMOOTH_V_PRED
+    SMOOTH_H_PRED,  // SMOOTH_H_PRED
+    PAETH_PRED,     // PAETH_PRED
+    NEARESTMV,      // NEARESTMV
+    NEARMV,         // NEARMV
+    GLOBALMV,       // GLOBALMV
+    NEWMV,          // NEWMV
     NEARESTMV,      // NEAREST_NEARESTMV
     NEARMV,         // NEAR_NEARMV
     NEARESTMV,      // NEAREST_NEWMV
@@ -103,12 +103,12 @@ static INLINE PREDICTION_MODE compound_ref0_mode(PREDICTION_MODE mode) {
     NEWMV,          // NEW_NEWMV
   };
   assert(NELEMENTS(lut) == MB_MODE_COUNT);
-  assert(is_inter_compound_mode(mode));
+  assert(is_inter_compound_mode(mode) || is_inter_singleref_mode(mode));
   return lut[mode];
 }
 
 static INLINE PREDICTION_MODE compound_ref1_mode(PREDICTION_MODE mode) {
-  static PREDICTION_MODE lut[] = {
+  static const PREDICTION_MODE lut[] = {
     MB_MODE_COUNT,  // DC_PRED
     MB_MODE_COUNT,  // V_PRED
     MB_MODE_COUNT,  // H_PRED

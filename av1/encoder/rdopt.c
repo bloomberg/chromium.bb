@@ -730,15 +730,9 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
 }
 
 static INLINE PREDICTION_MODE get_single_mode(PREDICTION_MODE this_mode,
-                                              int ref_idx, int is_comp_pred) {
-  PREDICTION_MODE single_mode;
-  if (is_comp_pred) {
-    single_mode =
-        ref_idx ? compound_ref1_mode(this_mode) : compound_ref0_mode(this_mode);
-  } else {
-    single_mode = this_mode;
-  }
-  return single_mode;
+                                              int ref_idx) {
+  return ref_idx ? compound_ref1_mode(this_mode)
+                 : compound_ref0_mode(this_mode);
 }
 
 static AOM_INLINE void estimate_ref_frame_costs(
@@ -1711,9 +1705,7 @@ static INLINE int get_this_mv(int_mv *this_mv, PREDICTION_MODE this_mode,
                               int skip_repeated_ref_mv,
                               const MV_REFERENCE_FRAME *ref_frame,
                               const MB_MODE_INFO_EXT *mbmi_ext) {
-  const int is_comp_pred = ref_frame[1] > INTRA_FRAME;
-  const PREDICTION_MODE single_mode =
-      get_single_mode(this_mode, ref_idx, is_comp_pred);
+  const PREDICTION_MODE single_mode = get_single_mode(this_mode, ref_idx);
   assert(is_inter_singleref_mode(single_mode));
   if (single_mode == NEWMV) {
     this_mv->as_int = INVALID_MV;
@@ -1760,8 +1752,7 @@ static INLINE int build_cur_mv(int_mv *cur_mv, PREDICTION_MODE this_mode,
     ret = get_this_mv(&this_mv, this_mode, i, mbmi->ref_mv_idx,
                       skip_repeated_ref_mv, mbmi->ref_frame, x->mbmi_ext);
     if (!ret) return 0;
-    const PREDICTION_MODE single_mode =
-        get_single_mode(this_mode, i, is_comp_pred);
+    const PREDICTION_MODE single_mode = get_single_mode(this_mode, i);
     if (single_mode == NEWMV) {
       const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
       cur_mv[i] =
@@ -1809,7 +1800,7 @@ static INLINE int is_single_newmv_valid(const HandleInterModeArgs *const args,
                                         const MB_MODE_INFO *const mbmi,
                                         PREDICTION_MODE this_mode) {
   for (int ref_idx = 0; ref_idx < 2; ++ref_idx) {
-    const PREDICTION_MODE single_mode = get_single_mode(this_mode, ref_idx, 1);
+    const PREDICTION_MODE single_mode = get_single_mode(this_mode, ref_idx);
     const MV_REFERENCE_FRAME ref = mbmi->ref_frame[ref_idx];
     if (single_mode == NEWMV &&
         args->single_newmv_valid[mbmi->ref_mv_idx][ref] == 0) {
