@@ -9,12 +9,14 @@ from __future__ import print_function
 
 import distutils.version  # pylint: disable=import-error,no-name-in-module
 import errno
+import fcntl
 import glob
 import multiprocessing
 import os
 import re
 import shutil
 import socket
+import time
 
 from chromite.cli.cros import cros_chrome_sdk
 from chromite.lib import constants
@@ -199,6 +201,9 @@ class VM(device.Device):
     self.kvm_pipe_in = '%s.in' % self.kvm_monitor  # to KVM
     self.kvm_pipe_out = '%s.out' % self.kvm_monitor  # from KVM
     self.kvm_serial = '%s.serial' % self.kvm_monitor
+
+    self.copy_image_on_shutdown = False
+    self.image_copy_dir = None
 
     self.InitRemote()
 
@@ -486,11 +491,62 @@ class VM(device.Device):
     # Make sure the process actually exists.
     return os.path.isdir('/proc/%i' % pid)
 
+  def SaveVMImageOnShutdown(self, output_dir):
+    """Takes a VM snapshot via savevm and signals to save the VM image later.
+
+    Args:
+      output_dir: A path specifying the directory that the VM image should be
+          saved to.
+    """
+    logging.debug('Taking VM snapshot')
+    self.copy_image_on_shutdown = True
+    self.image_copy_dir = output_dir
+    if not self.copy_on_write:
+      logging.warning(
+          'Attempting to take a VM snapshot without --copy-on-write. Saved '
+          'VM image may not contain the desired snapshot.')
+    with open(self.kvm_pipe_in, 'w') as monitor_pipe:
+      # Saving the snapshot will take an indeterminate amount of time, so also
+      # send a fake command that the monitor will complain about so we can know
+      # when the snapshot saving is done.
+      monitor_pipe.write('savevm chromite_lib_vm_snapshot\n')
+      monitor_pipe.write('thisisafakecommand\n')
+    with open(self.kvm_pipe_out) as monitor_pipe:
+      # Set reads to be non-blocking
+      fd = monitor_pipe.fileno()
+      cur_flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+      fcntl.fcntl(fd, fcntl.F_SETFL, cur_flags | os.O_NONBLOCK)
+      # 30 second timeout.
+      success = False
+      start_time = time.time()
+      while time.time() - start_time < 30:
+        try:
+          line = monitor_pipe.readline()
+          if 'thisisafakecommand' in line:
+            logging.debug('Finished attempting to take VM snapshot')
+            success = True
+            break
+          logging.debug('VM monitor output: %s', line)
+        except IOError:
+          time.sleep(1)
+      if not success:
+        logging.warning('Timed out trying to take VM snapshot')
+
   def _KillVM(self):
     """Kill the VM process."""
     pid = self._GetVMPid()
     if pid:
       self.run(['kill', '-9', str(pid)], check=False)
+
+  def _MaybeCopyVMImage(self):
+    """Saves the VM image to a location on disk if previously told to."""
+    if not self.copy_image_on_shutdown:
+      return
+    if not self.image_copy_dir:
+      logging.debug('Told to copy VM image, but no output directory set')
+      return
+    shutil.copy(self.image_path, os.path.join(
+        self.image_copy_dir, os.path.basename(self.image_path)))
 
   def Stop(self):
     """Stop the VM."""
@@ -498,6 +554,7 @@ class VM(device.Device):
 
     self._KillVM()
     self._WaitForSSHPort()
+    self._MaybeCopyVMImage()
     self._RmVMDir()
 
   def _WaitForProcs(self, sleep=2):

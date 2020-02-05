@@ -59,6 +59,7 @@ class CrOSTest(object):
 
     self.results_src = opts.results_src
     self.results_dest_dir = opts.results_dest_dir
+    self.save_snapshot_on_failure = opts.save_snapshot_on_failure
 
     self.chrome_test = opts.chrome_test
     if self.chrome_test:
@@ -326,12 +327,26 @@ class CrOSTest(object):
       result = self._device.remote_run(
           ['/usr/local/autotest/bin/vm_sanity.py'], stream_output=True)
 
+    self._MaybeSaveVMImage(result)
     self._FetchResults()
 
     name = self.args[0] if self.args else 'Test process'
     logging.info('%s exited with status code %d.', name, result.returncode)
 
     return result.returncode
+
+  def _MaybeSaveVMImage(self, result):
+    """Tells the VM to save its image on shutdown if the test failed.
+
+    Args:
+      result: A cros_build_lib.CommandResult object from a test run.
+    """
+    if not self._device.is_vm or not self.save_snapshot_on_failure:
+      return
+    if not result.returncode:
+      return
+    osutils.SafeMakedirs(self.results_dest_dir)
+    self._device.SaveVMImageOnShutdown(self.results_dest_dir)
 
   def _FetchResults(self):
     """Fetch results files/directories."""
@@ -496,6 +511,10 @@ def ParseCommandLine(argv):
                       help='Args to pass directly to test_that for autotest.')
   parser.add_argument('--test-timeout', type=int, default=0,
                       help='Timeout for running all tests (for --tast).')
+  parser.add_argument('--save-snapshot-on-failure', action='store_true',
+                      default=False,
+                      help='Save a snapshot of the VM on test failure to '
+                           'results-dest-dir.')
 
   opts = parser.parse_args(argv)
 
@@ -524,6 +543,9 @@ def ParseCommandLine(argv):
     if os.path.isfile(opts.results_dest_dir):
       parser.error('results-dest-dir %s is an existing file.'
                    % opts.results_dest_dir)
+
+  if opts.save_snapshot_on_failure and not opts.results_dest_dir:
+    parser.error('Must specify results-dest-dir with save-snapshot-on-failure')
 
   # Ensure command is provided. For e.g. to copy out to the device and run
   # out/unittest:

@@ -7,10 +7,12 @@
 
 from __future__ import print_function
 
+import fcntl
 import multiprocessing
 import os
 import socket
 import stat
+import sys
 
 import mock
 
@@ -444,3 +446,86 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     start_mock.assert_called()
     boot_mock.assert_called()
     procs_mock.assert_called()
+
+  @mock.patch('fcntl.fcntl')
+  def testSaveVMImageOnShutdownBasic(self, fcntl_mock):
+    # mock.mock_open only seems to properly mock out read, not readline, so
+    # do it ourselves.
+    def readline_impl():
+      readline_impl.count += 1
+      if readline_impl.count == 1:
+        return 'some_output\n'
+      return 'thisisafakecommand\n'
+    readline_impl.count = 0
+
+    fcntl_mock.return_value = 0
+
+    builtin = '__builtin__' if sys.version_info[0] == 2 else 'builtins'
+    m = mock.mock_open()
+    filehandle = m()
+    filehandle.readline.side_effect = readline_impl
+    with mock.patch('%s.open' % builtin, m, create=True):
+      self._vm.SaveVMImageOnShutdown('/some/dir/')
+
+    self.assertTrue(self._vm.copy_image_on_shutdown)
+    self.assertEqual(self._vm.image_copy_dir, '/some/dir/')
+
+    write_calls = [
+        mock.call('savevm chromite_lib_vm_snapshot\n'),
+        mock.call('thisisafakecommand\n'),
+    ]
+    filehandle.write.assert_has_calls(write_calls)
+    self.assertEqual(filehandle.write.call_count, 2)
+
+    fcntl_calls = [
+        mock.call(mock.ANY, fcntl.F_GETFL),
+        mock.call(mock.ANY, fcntl.F_SETFL, os.O_NONBLOCK),
+    ]
+    fcntl_mock.assert_has_calls(fcntl_calls)
+    self.assertEqual(fcntl_mock.call_count, 2)
+
+  @mock.patch('fcntl.fcntl')
+  @mock.patch('time.time')
+  @mock.patch('time.sleep')
+  def testSaveVMImageOnShutdownTimeout(self, sleep_mock, time_mock, fcntl_mock):
+    def time_impl():
+      time_impl.count += 1
+      if time_impl.count <= 2:
+        return 0
+      if time_impl.count == 3:
+        return 30
+      if time_impl.count == 4:
+        return 31
+      return 100
+    time_impl.count = 0
+    time_mock.side_effect = time_impl
+
+    fcntl_mock.return_value = 0
+
+    self._vm.copy_on_write = True
+    builtin = '__builtin__' if sys.version_info[0] == 2 else 'builtins'
+    m = mock.mock_open()
+    filehandle = m()
+    filehandle.readline.side_effect = IOError(
+        'Resource temporarily unavailable')
+    with mock.patch('%s.open' % builtin, m, create=True):
+      self._vm.SaveVMImageOnShutdown('/some/dir/')
+
+    self.assertEqual(sleep_mock.call_count, 1)
+
+    self.assertTrue(self._vm.copy_image_on_shutdown)
+    self.assertEqual(self._vm.image_copy_dir, '/some/dir/')
+
+    write_calls = [
+        mock.call('savevm chromite_lib_vm_snapshot\n'),
+        mock.call('thisisafakecommand\n'),
+    ]
+    filehandle.write.assert_has_calls(write_calls)
+    self.assertEqual(filehandle.write.call_count, 2)
+
+    fcntl_calls = [
+        mock.call(mock.ANY, fcntl.F_GETFL),
+        mock.call(mock.ANY, fcntl.F_SETFL, os.O_NONBLOCK),
+    ]
+    fcntl_mock.assert_has_calls(fcntl_calls)
+    self.assertEqual(fcntl_mock.call_count, 2)
