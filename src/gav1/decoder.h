@@ -127,8 +127,8 @@ class LIBGAV1_PUBLIC Decoder {
   static int GetMaxBitdepth();
 
  private:
-  bool initialized_ = false;
   DecoderSettings settings_;
+  // The object is initialized if and only if impl_ != nullptr.
   std::unique_ptr<DecoderImpl> impl_;
 };
 
