@@ -46,8 +46,8 @@ sys.modules['keyring'] = None
 OFFICIAL_UPLOAD_URL = 'https://prod-crashsymbolcollector-pa.googleapis.com/v1'
 STAGING_UPLOAD_URL = 'https://staging-crashsymbolcollector-pa.googleapis.com/v1'
 
-# The crash server rejects files that are this big.
-CRASH_SERVER_FILE_LIMIT = 700 * 1024 * 1024
+# The crash server rejects files that are bigger than 1GB.
+CRASH_SERVER_FILE_LIMIT = 1024 * 1024 * 1024
 # Give ourselves a little breathing room from what the server expects.
 DEFAULT_FILE_LIMIT = CRASH_SERVER_FILE_LIMIT - (10 * 1024 * 1024)
 
