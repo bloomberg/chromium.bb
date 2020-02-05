@@ -204,6 +204,85 @@ using ButterflyRotationFunc = void (*)(__m128i* a, __m128i* b, int angle,
 //------------------------------------------------------------------------------
 // Discrete Cosine Transforms (DCT).
 
+template <int width>
+LIBGAV1_ALWAYS_INLINE bool DctDcOnly(void* dest, const void* source,
+                                     int non_zero_coeff_count,
+                                     bool should_round, int row_shift) {
+  if (non_zero_coeff_count > 1) {
+    return false;
+  }
+
+  auto* dst = static_cast<int16_t*>(dest);
+  const auto* const src = static_cast<const int16_t*>(source);
+
+  const __m128i v_src_lo = _mm_shufflelo_epi16(_mm_cvtsi32_si128(src[0]), 0);
+  const __m128i v_src =
+      (width == 4) ? v_src_lo : _mm_shuffle_epi32(v_src_lo, 0);
+  const __m128i v_mask = _mm_set1_epi16(should_round ? 0xffff : 0);
+  const __m128i v_kTransformRowMultiplier =
+      _mm_set1_epi16(kTransformRowMultiplier << 3);
+  const __m128i v_src_round =
+      _mm_mulhrs_epi16(v_src, v_kTransformRowMultiplier);
+  const __m128i s0 = _mm_blendv_epi8(v_src, v_src_round, v_mask);
+  const int16_t cos128 = Cos128(32);
+  const __m128i xy = _mm_mulhrs_epi16(s0, _mm_set1_epi16(cos128 << 3));
+
+  // Expand to 32 bits to prevent int16_t overflows during the shift add.
+  const __m128i v_row_shift_add = _mm_set1_epi32(row_shift);
+  const __m128i v_row_shift = _mm_cvtepu32_epi64(v_row_shift_add);
+  const __m128i a = _mm_cvtepi16_epi32(xy);
+  const __m128i a1 = _mm_cvtepi16_epi32(_mm_srli_si128(xy, 8));
+  const __m128i b = _mm_add_epi32(a, v_row_shift_add);
+  const __m128i b1 = _mm_add_epi32(a1, v_row_shift_add);
+  const __m128i c = _mm_sra_epi32(b, v_row_shift);
+  const __m128i c1 = _mm_sra_epi32(b1, v_row_shift);
+  const __m128i xy_shifted = _mm_packs_epi32(c, c1);
+
+  if (width == 4) {
+    StoreLo8(dst, xy_shifted);
+  } else {
+    for (int i = 0; i < width; i += 8) {
+      StoreUnaligned16(dst, xy_shifted);
+      dst += 8;
+    }
+  }
+  return true;
+}
+
+template <int height>
+LIBGAV1_ALWAYS_INLINE bool DctDcOnlyColumn(void* dest, const void* source,
+                                           int non_zero_coeff_count,
+                                           int width) {
+  if (non_zero_coeff_count > 1) {
+    return false;
+  }
+
+  auto* dst = static_cast<int16_t*>(dest);
+  const auto* const src = static_cast<const int16_t*>(source);
+  const int16_t cos128 = Cos128(32);
+
+  // Calculate dc values for first row.
+  if (width == 4) {
+    const __m128i v_src = LoadLo8(src);
+    const __m128i xy = _mm_mulhrs_epi16(v_src, _mm_set1_epi16(cos128 << 3));
+    StoreLo8(dst, xy);
+  } else {
+    int i = 0;
+    do {
+      const __m128i v_src = LoadUnaligned16(&src[i]);
+      const __m128i xy = _mm_mulhrs_epi16(v_src, _mm_set1_epi16(cos128 << 3));
+      StoreUnaligned16(&dst[i], xy);
+      i += 8;
+    } while (i < width);
+  }
+
+  // Copy first row to the rest of the block.
+  for (int y = 1; y < height; ++y) {
+    memcpy(&dst[y * width], &src[(y - 1) * width], width * sizeof(dst[0]));
+  }
+  return true;
+}
+
 template <ButterflyRotationFunc bufferfly_rotation,
           bool is_fast_bufferfly = false>
 LIBGAV1_ALWAYS_INLINE void Dct4Stages(__m128i* s) {
@@ -1767,9 +1846,16 @@ void Dct4TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
+    const bool should_round = (tx_height == 8);
+    const int row_shift = static_cast<const int>(tx_height == 16);
+
+    if (DctDcOnly<4>(&src[0], &src[0], non_zero_coeff_count, should_round,
+                     row_shift)) {
+      return;
+    }
+
     const int num_rows =
         GetNumRows<4>(tx_type, tx_height, non_zero_coeff_count);
-    const bool should_round = (tx_height == 8);
     if (should_round) {
       ApplyRounding<4>(src, num_rows);
     }
@@ -1798,18 +1884,20 @@ void Dct4TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
     FlipColumns<4>(src, tx_width);
   }
 
-  if (tx_width == 4) {
-    // Process 4 1d dct4 columns in parallel.
-    Dct4_SSE4_1<ButterflyRotation_4, false>(&src[0], &src[0], tx_width,
-                                            /*transpose=*/false);
-  } else {
-    // Process 8 1d dct4 columns in parallel per iteration.
-    int i = 0;
-    do {
-      Dct4_SSE4_1<ButterflyRotation_8, true>(&src[i], &src[i], tx_width,
-                                             /*transpose=*/false);
-      i += 8;
-    } while (i < tx_width);
+  if (!DctDcOnlyColumn<4>(&src[0], &src[0], non_zero_coeff_count, tx_width)) {
+    if (tx_width == 4) {
+      // Process 4 1d dct4 columns in parallel.
+      Dct4_SSE4_1<ButterflyRotation_4, false>(&src[0], &src[0], tx_width,
+                                              /*transpose=*/false);
+    } else {
+      // Process 8 1d dct4 columns in parallel per iteration.
+      int i = 0;
+      do {
+        Dct4_SSE4_1<ButterflyRotation_8, true>(&src[i], &src[i], tx_width,
+                                               /*transpose=*/false);
+        i += 8;
+      } while (i < tx_width);
+    }
   }
   StoreToFrameWithRound(frame, start_x, start_y, tx_width, 4, src, tx_type);
 }
@@ -1824,9 +1912,17 @@ void Dct8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
+    const bool should_round = kShouldRound[tx_size];
+    const uint8_t row_shift = kTransformRowShift[tx_size];
+
+    if (DctDcOnly<8>(&src[0], &src[0], non_zero_coeff_count, should_round,
+                     row_shift)) {
+      return;
+    }
+
     const int num_rows =
         GetNumRows<8>(tx_type, tx_height, non_zero_coeff_count);
-    if (kShouldRound[tx_size]) {
+    if (should_round) {
       ApplyRounding<8>(src, num_rows);
     }
 
@@ -1843,7 +1939,6 @@ void Dct8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
         i += 8;
       } while (i < num_rows);
     }
-    const uint8_t row_shift = kTransformRowShift[tx_size];
     if (row_shift > 0) {
       RowShift<8>(src, num_rows, row_shift);
     }
@@ -1855,18 +1950,20 @@ void Dct8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
     FlipColumns<8>(src, tx_width);
   }
 
-  if (tx_width == 4) {
-    // Process 4 1d dct8 columns in parallel.
-    Dct8_SSE4_1<ButterflyRotation_4, true>(&src[0], &src[0], 4,
-                                           /*transpose=*/false);
-  } else {
-    // Process 8 1d dct8 columns in parallel per iteration.
-    int i = 0;
-    do {
-      Dct8_SSE4_1<ButterflyRotation_8, false>(&src[i], &src[i], tx_width,
-                                              /*transpose=*/false);
-      i += 8;
-    } while (i < tx_width);
+  if (!DctDcOnlyColumn<8>(&src[0], &src[0], non_zero_coeff_count, tx_width)) {
+    if (tx_width == 4) {
+      // Process 4 1d dct8 columns in parallel.
+      Dct8_SSE4_1<ButterflyRotation_4, true>(&src[0], &src[0], 4,
+                                             /*transpose=*/false);
+    } else {
+      // Process 8 1d dct8 columns in parallel per iteration.
+      int i = 0;
+      do {
+        Dct8_SSE4_1<ButterflyRotation_8, false>(&src[i], &src[i], tx_width,
+                                                /*transpose=*/false);
+        i += 8;
+      } while (i < tx_width);
+    }
   }
   StoreToFrameWithRound(frame, start_x, start_y, tx_width, 8, src, tx_type);
 }
@@ -1881,9 +1978,17 @@ void Dct16TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
+    const bool should_round = kShouldRound[tx_size];
+    const uint8_t row_shift = kTransformRowShift[tx_size];
+
+    if (DctDcOnly<16>(&src[0], &src[0], non_zero_coeff_count, should_round,
+                      row_shift)) {
+      return;
+    }
+
     const int num_rows =
         GetNumRows<16>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
-    if (kShouldRound[tx_size]) {
+    if (should_round) {
       ApplyRounding<16>(src, num_rows);
     }
 
@@ -1900,7 +2005,6 @@ void Dct16TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
         i += 8;
       } while (i < num_rows);
     }
-    const uint8_t row_shift = kTransformRowShift[tx_size];
     // row_shift is always non zero here.
     RowShift<16>(src, num_rows, row_shift);
 
@@ -1912,18 +2016,20 @@ void Dct16TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
     FlipColumns<16>(src, tx_width);
   }
 
-  if (tx_width == 4) {
-    // Process 4 1d dct16 columns in parallel.
-    Dct16_SSE4_1<ButterflyRotation_4, true>(&src[0], &src[0], 4,
-                                            /*transpose=*/false);
-  } else {
-    int i = 0;
-    do {
-      // Process 8 1d dct16 columns in parallel per iteration.
-      Dct16_SSE4_1<ButterflyRotation_8, false>(&src[i], &src[i], tx_width,
-                                               /*transpose=*/false);
-      i += 8;
-    } while (i < tx_width);
+  if (!DctDcOnlyColumn<16>(&src[0], &src[0], non_zero_coeff_count, tx_width)) {
+    if (tx_width == 4) {
+      // Process 4 1d dct16 columns in parallel.
+      Dct16_SSE4_1<ButterflyRotation_4, true>(&src[0], &src[0], 4,
+                                              /*transpose=*/false);
+    } else {
+      int i = 0;
+      do {
+        // Process 8 1d dct16 columns in parallel per iteration.
+        Dct16_SSE4_1<ButterflyRotation_8, false>(&src[i], &src[i], tx_width,
+                                                 /*transpose=*/false);
+        i += 8;
+      } while (i < tx_width);
+    }
   }
   StoreToFrameWithRound(frame, start_x, start_y, tx_width, 16, src, tx_type);
 }
@@ -1938,9 +2044,17 @@ void Dct32TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
+    const bool should_round = kShouldRound[tx_size];
+    const uint8_t row_shift = kTransformRowShift[tx_size];
+
+    if (DctDcOnly<32>(&src[0], &src[0], non_zero_coeff_count, should_round,
+                      row_shift)) {
+      return;
+    }
+
     const int num_rows =
         GetNumRows<32>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
-    if (kShouldRound[tx_size]) {
+    if (should_round) {
       ApplyRounding<32>(src, num_rows);
     }
     // Process 8 1d dct32 rows in parallel per iteration.
@@ -1949,7 +2063,6 @@ void Dct32TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
       Dct32_SSE4_1(&src[i * 32], &src[i * 32], 32, /*transpose=*/true);
       i += 8;
     } while (i < num_rows);
-    const uint8_t row_shift = kTransformRowShift[tx_size];
     // row_shift is always non zero here.
     RowShift<32>(src, num_rows, row_shift);
 
@@ -1957,12 +2070,14 @@ void Dct32TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   }
 
   assert(!is_row);
-  // Process 8 1d dct32 columns in parallel per iteration.
-  int i = 0;
-  do {
-    Dct32_SSE4_1(&src[i], &src[i], tx_width, /*transpose=*/false);
-    i += 8;
-  } while (i < tx_width);
+  if (!DctDcOnlyColumn<32>(&src[0], &src[0], non_zero_coeff_count, tx_width)) {
+    // Process 8 1d dct32 columns in parallel per iteration.
+    int i = 0;
+    do {
+      Dct32_SSE4_1(&src[i], &src[i], tx_width, /*transpose=*/false);
+      i += 8;
+    } while (i < tx_width);
+  }
   StoreToFrameWithRound(frame, start_x, start_y, tx_width, 32, src, tx_type);
 }
 
@@ -1976,9 +2091,17 @@ void Dct64TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
+    const bool should_round = kShouldRound[tx_size];
+    const uint8_t row_shift = kTransformRowShift[tx_size];
+
+    if (DctDcOnly<64>(&src[0], &src[0], non_zero_coeff_count, should_round,
+                      row_shift)) {
+      return;
+    }
+
     const int num_rows =
         GetNumRows<32>(tx_type, std::min(tx_height, 32), non_zero_coeff_count);
-    if (kShouldRound[tx_size]) {
+    if (should_round) {
       ApplyRounding<64>(src, num_rows);
     }
     // Process 8 1d dct64 rows in parallel per iteration.
@@ -1987,7 +2110,6 @@ void Dct64TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
       Dct64_SSE4_1(&src[i * 64], &src[i * 64], 64, /*transpose=*/true);
       i += 8;
     } while (i < num_rows);
-    const uint8_t row_shift = kTransformRowShift[tx_size];
     // row_shift is always non zero here.
     RowShift<64>(src, num_rows, row_shift);
 
@@ -1995,12 +2117,14 @@ void Dct64TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   }
 
   assert(!is_row);
-  // Process 8 1d dct64 columns in parallel per iteration.
-  int i = 0;
-  do {
-    Dct64_SSE4_1(&src[i], &src[i], tx_width, /*transpose=*/false);
-    i += 8;
-  } while (i < tx_width);
+  if (!DctDcOnlyColumn<64>(&src[0], &src[0], non_zero_coeff_count, tx_width)) {
+    // Process 8 1d dct64 columns in parallel per iteration.
+    int i = 0;
+    do {
+      Dct64_SSE4_1(&src[i], &src[i], tx_width, /*transpose=*/false);
+      i += 8;
+    } while (i < tx_width);
+  }
   StoreToFrameWithRound(frame, start_x, start_y, tx_width, 64, src, tx_type);
 }
 
