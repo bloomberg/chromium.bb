@@ -381,7 +381,8 @@ static AOM_INLINE void setup_block_rdmult(const AV1_COMP *const cpi,
   }
 #if CONFIG_TUNE_VMAF
   if (cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
-      cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING) {
+      cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
+      cpi->oxcf.tuning == AOM_TUNE_VMAF_MAX_GAIN) {
     av1_set_vmaf_rdmult(cpi, x, bsize, mi_row, mi_col, &x->rdmult);
   }
 #endif

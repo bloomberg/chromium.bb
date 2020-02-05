@@ -396,6 +396,7 @@ static const struct arg_enum_list tuning_enum[] = {
 #endif
   { "vmaf_with_preprocessing", AOM_TUNE_VMAF_WITH_PREPROCESSING },
   { "vmaf_without_preprocessing", AOM_TUNE_VMAF_WITHOUT_PREPROCESSING },
+  { "vmaf", AOM_TUNE_VMAF_MAX_GAIN },
   { NULL, 0 }
 };
 static const arg_def_t tune_metric =

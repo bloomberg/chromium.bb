@@ -1286,6 +1286,7 @@ typedef enum {
   AOM_TUNE_DAALA_DIST,
   AOM_TUNE_VMAF_WITH_PREPROCESSING,
   AOM_TUNE_VMAF_WITHOUT_PREPROCESSING,
+  AOM_TUNE_VMAF_MAX_GAIN
 } aom_tune_metric;
 
 #define AOM_MAX_LAYERS 32   /**< Max number of layers */

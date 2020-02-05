@@ -5219,7 +5219,8 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
     }
 #if CONFIG_TUNE_VMAF
     if (cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
-        cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING) {
+        cpi->oxcf.tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
+        cpi->oxcf.tuning == AOM_TUNE_VMAF_MAX_GAIN) {
       av1_set_quantizer(cm, av1_get_vmaf_base_qindex(cpi, q));
     } else {
 #endif
@@ -6132,7 +6133,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
 #if CONFIG_TUNE_VMAF
   if (oxcf->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
-      oxcf->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING) {
+      oxcf->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
+      oxcf->tuning == AOM_TUNE_VMAF_MAX_GAIN) {
     av1_set_mb_vmaf_rdmult_scaling(cpi);
   }
 #endif
@@ -6431,12 +6433,11 @@ int av1_receive_raw_frame(AV1_COMP *cpi, aom_enc_frame_flags_t frame_flags,
 #if CONFIG_TUNE_VMAF
   if (!is_stat_generation_stage(cpi) &&
       cpi->oxcf.tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING) {
-    const bool use_block_based_methods = false;
-    if (use_block_based_methods) {
-      av1_vmaf_blk_preprocessing(cpi, sd);
-    } else {
-      av1_vmaf_frame_preprocessing(cpi, sd);
-    }
+    av1_vmaf_frame_preprocessing(cpi, sd);
+  }
+  if (!is_stat_generation_stage(cpi) &&
+      cpi->oxcf.tuning == AOM_TUNE_VMAF_MAX_GAIN) {
+    av1_vmaf_blk_preprocessing(cpi, sd);
   }
 #endif
 
@@ -6648,7 +6649,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
 #if CONFIG_TUNE_VMAF
   if (oxcf->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
-      oxcf->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING) {
+      oxcf->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
+      oxcf->tuning == AOM_TUNE_VMAF_MAX_GAIN) {
     update_vmaf_curve(cpi, cpi->source, &cpi->common.cur_frame->buf);
   }
 #endif
