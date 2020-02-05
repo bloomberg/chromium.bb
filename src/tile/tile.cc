@@ -941,9 +941,9 @@ void Tile::ReadCoeffBase2D(
 // For a coefficient near the right boundary, the four right neighbors may be
 // out of boundary. We don't do the boundary check for the first three right
 // neighbors, because even for the transform blocks with smallest width 4, the
-// first three out of boundary neighbors project to positions left to the
+// first three out of boundary neighbors project to positions left of the
 // current coefficient and these positions are still all 0s according to the
-// column scan order. However, when transform block with is 4 and the current
+// column scan order. However, when transform block width is 4 and the current
 // coefficient is on the right boundary, its fourth right neighbor projects to
 // the under position on the same column, which could be nonzero. Therefore, we
 // must skip the fourth right neighbor. To make it simple, for any coefficient,
