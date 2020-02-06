@@ -1389,18 +1389,23 @@ class Changelist(object):
     args = ['log', '--pretty=format:%s%n%n%b', '%s...' % (upstream_branch)]
     return RunGitWithCode(args)[1].strip()
 
-  def GetDescription(self, pretty=False, force=False):
-    if not self.has_description or force:
-      if self.GetIssue():
-        self.description = self.FetchDescription(force=force)
+  def FetchDescription(self, pretty=False):
+    assert self.GetIssue(), 'issue is required to query Gerrit'
+
+    if not self.has_description:
+      data = self._GetChangeDetail(['CURRENT_REVISION', 'CURRENT_COMMIT'])
+      current_rev = data['current_revision']
+      self.description = data['revisions'][current_rev]['commit']['message']
       self.has_description = True
-    if pretty:
-      # Set width to 72 columns + 2 space indent.
-      wrapper = textwrap.TextWrapper(width=74, replace_whitespace=True)
-      wrapper.initial_indent = wrapper.subsequent_indent = '  '
-      lines = self.description.splitlines()
-      return '\n'.join([wrapper.fill(line) for line in lines])
-    return self.description
+
+    if not pretty:
+      return self.description
+
+    # Set width to 72 columns + 2 space indent.
+    wrapper = textwrap.TextWrapper(width=74, replace_whitespace=True)
+    wrapper.initial_indent = wrapper.subsequent_indent = '  '
+    lines = self.description.splitlines()
+    return '\n'.join([wrapper.fill(line) for line in lines])
 
   def GetPatchset(self):
     """Returns the patchset number as a int or None if not set."""
@@ -1474,7 +1479,7 @@ class Changelist(object):
     issue = self.GetIssue()
     patchset = self.GetPatchset()
     if issue:
-      description = self.GetDescription()
+      description = self.FetchDescription()
     else:
       # If the change was never uploaded, use the log messages of all commits
       # up to the branch point, as git cl upload will prefill the description
@@ -1493,7 +1498,22 @@ class Changelist(object):
         upstream=upstream_branch)
 
   def UpdateDescription(self, description, force=False):
-    self.UpdateDescriptionRemote(description, force=force)
+    assert self.GetIssue(), 'issue is required to update description'
+
+    if gerrit_util.HasPendingChangeEdit(
+        self._GetGerritHost(), self._GerritChangeIdentifier()):
+      if not force:
+        confirm_or_exit(
+            'The description cannot be modified while the issue has a pending '
+            'unpublished edit. Either publish the edit in the Gerrit web UI '
+            'or delete it.\n\n', action='delete the unpublished edit')
+
+      gerrit_util.DeletePendingChangeEdit(
+        self._GetGerritHost(), self._GerritChangeIdentifier())
+    gerrit_util.SetCommitMessage(
+        self._GetGerritHost(), self._GerritChangeIdentifier(),
+        description, notify='NONE')
+
     self.description = description
     self.has_description = True
 
@@ -1873,31 +1893,13 @@ class Changelist(object):
     return 'unsent'
 
   def GetMostRecentPatchset(self):
+    if not self.GetIssue():
+      return None
+
     data = self._GetChangeDetail(['CURRENT_REVISION'])
     patchset = data['revisions'][data['current_revision']]['_number']
     self.SetPatchset(patchset)
     return patchset
-
-  def FetchDescription(self, force=False):
-    data = self._GetChangeDetail(['CURRENT_REVISION', 'CURRENT_COMMIT'],
-                                 no_cache=force)
-    current_rev = data['current_revision']
-    return data['revisions'][current_rev]['commit']['message']
-
-  def UpdateDescriptionRemote(self, description, force=False):
-    if gerrit_util.HasPendingChangeEdit(
-        self._GetGerritHost(), self._GerritChangeIdentifier()):
-      if not force:
-        confirm_or_exit(
-            'The description cannot be modified while the issue has a pending '
-            'unpublished edit. Either publish the edit in the Gerrit web UI '
-            'or delete it.\n\n', action='delete the unpublished edit')
-
-      gerrit_util.DeletePendingChangeEdit(
-        self._GetGerritHost(), self._GerritChangeIdentifier())
-    gerrit_util.SetCommitMessage(
-        self._GetGerritHost(), self._GerritChangeIdentifier(),
-        description, notify='NONE')
 
   def AddComment(self, message, publish=None):
     gerrit_util.SetReview(
@@ -2357,7 +2359,7 @@ class Changelist(object):
       self._GerritCommitMsgHookCheck(offer_removal=not options.force)
       if self.GetIssue():
         # Try to get the message from a previous upload.
-        message = self.GetDescription()
+        message = self.FetchDescription()
         if not message:
           DieWithError(
               'failed to fetch description from current Gerrit change %d\n'
@@ -3818,12 +3820,13 @@ def CMDstatus(parser, args):
     parser.error('Unsupported args: %s' % args)
 
   if options.issue is not None and not options.field:
-    parser.error('--field must be specified with --issue.')
+    parser.error('--field must be given when --issue is set.')
 
   if options.field:
     cl = Changelist(issue=options.issue)
     if options.field.startswith('desc'):
-      print(cl.GetDescription())
+      if cl.GetIssue():
+        print(cl.FetchDescription())
     elif options.field == 'id':
       issueid = cl.GetIssue()
       if issueid:
@@ -3910,7 +3913,7 @@ def CMDstatus(parser, args):
   print('Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL()))
   if not options.fast:
     print('Issue description:')
-    print(cl.GetDescription(pretty=True))
+    print(cl.FetchDescription(pretty=True))
   return 0
 
 
@@ -4098,7 +4101,7 @@ def CMDdescription(parser, args):
   if args and not args[0].isdigit():
     logging.info('canonical issue/change URL: %s\n', cl.GetIssueURL())
 
-  description = ChangeDescription(cl.GetDescription())
+  description = ChangeDescription(cl.FetchDescription())
 
   if options.display:
     print(description.description)
@@ -4115,7 +4118,7 @@ def CMDdescription(parser, args):
     description.set_description(text)
   else:
     description.prompt()
-  if cl.GetDescription().strip() != description.description:
+  if cl.FetchDescription().strip() != description.description:
     cl.UpdateDescription(description.description, force=options.force)
   return 0
 

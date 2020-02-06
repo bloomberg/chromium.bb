@@ -83,7 +83,7 @@ class ChangelistMock(object):
     pass
   def GetIssue(self):
     return 1
-  def GetDescription(self, force=False):
+  def FetchDescription(self):
     return ChangelistMock.desc
   def UpdateDescription(self, desc, force=False):
     ChangelistMock.desc = desc
@@ -169,11 +169,11 @@ class SystemExitMock(Exception):
 
 
 class TestGitClBasic(unittest.TestCase):
-  def test_get_description(self):
+  def test_fetch_description(self):
     cl = git_cl.Changelist(issue=1, codereview_host='host')
     cl.description = 'x'
     cl.has_description = True
-    self.assertEqual(cl.GetDescription(), 'x')
+    self.assertEqual(cl.FetchDescription(), 'x')
 
   def test_set_preserve_tryjobs(self):
     d = git_cl.ChangeDescription('Simple.')
@@ -2150,7 +2150,8 @@ class TestGitCl(TestCase):
       self.assertEqual(git_cl.main(['status', '--issue', '1']), 0)
     except SystemExit as ex:
       self.assertEqual(ex.code, 2)
-      self.assertRegexpMatches(out.getvalue(), r'--field must be specified')
+      self.assertIn(
+          '--field must be given when --issue is set.', out.getvalue())
 
     out = StringIO()
     self.mock(git_cl.sys, 'stderr', out)
@@ -2159,7 +2160,8 @@ class TestGitCl(TestCase):
       self.assertEqual(git_cl.main(['status', '--issue', '1']), 0)
     except SystemExit as ex:
       self.assertEqual(ex.code, 2)
-      self.assertRegexpMatches(out.getvalue(), r'--field must be specified')
+      self.assertIn(
+          '--field must be given when --issue is set.', out.getvalue())
 
   def test_StatusFieldOverrideIssue(self):
     out = StringIO()
@@ -2169,7 +2171,7 @@ class TestGitCl(TestCase):
       self.assertEqual(cl_self.issue, 1)
       return 'foobar'
 
-    self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
+    self.mock(git_cl.Changelist, 'FetchDescription', assertIssue)
     self.assertEqual(
       git_cl.main(['status', '--issue', '1', '--field', 'desc']),
       0)
@@ -2181,7 +2183,7 @@ class TestGitCl(TestCase):
       self.assertEqual(cl_self.issue, 1)
       return 'foobar'
 
-    self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
+    self.mock(git_cl.Changelist, 'FetchDescription', assertIssue)
     self.mock(git_cl.Changelist, 'CloseIssue', lambda *_: None)
     self.assertEqual(
       git_cl.main(['set-close', '--issue', '1']), 0)
@@ -2235,14 +2237,14 @@ class TestGitCl(TestCase):
       # Simulate user changing something.
       return 'Some.\n\nChange-Id: xxx\nBug: 123'
 
-    def UpdateDescriptionRemote(_, desc, force=False):
+    def UpdateDescription(_, desc, force=False):
       self.assertEqual(desc, 'Some.\n\nChange-Id: xxx\nBug: 123')
 
     self.mock(git_cl.sys, 'stdout', StringIO())
-    self.mock(git_cl.Changelist, 'GetDescription',
+    self.mock(git_cl.Changelist, 'FetchDescription',
               lambda *args: current_desc)
-    self.mock(git_cl.Changelist, 'UpdateDescriptionRemote',
-              UpdateDescriptionRemote)
+    self.mock(git_cl.Changelist, 'UpdateDescription',
+              UpdateDescription)
     self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
 
     self.calls = [
@@ -2269,7 +2271,7 @@ class TestGitCl(TestCase):
       return desc
 
     self.mock(git_cl.sys, 'stdout', StringIO())
-    self.mock(git_cl.Changelist, 'GetDescription',
+    self.mock(git_cl.Changelist, 'FetchDescription',
               lambda *args: current_desc)
     self.mock(git_cl.gclient_utils, 'RunEditor', RunEditor)
 
@@ -2428,7 +2430,7 @@ class TestGitCl(TestCase):
   def test_cmd_issue_erase_existing_with_change_id(self):
     out = StringIO()
     self.mock(git_cl.sys, 'stdout', out)
-    self.mock(git_cl.Changelist, 'GetDescription',
+    self.mock(git_cl.Changelist, 'FetchDescription',
               lambda _: 'This is a description\n\nChange-Id: Ideadbeef')
     self.calls = [
         ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
@@ -2594,18 +2596,14 @@ class TestGitCl(TestCase):
         (('GetChangeDetail', 'host', 'my%2Frepo~1',
           ['CURRENT_REVISION', 'CURRENT_COMMIT']),
          gen_detail('rev1', 'desc1')),
-        (('GetChangeDetail', 'host', 'my%2Frepo~1',
-          ['CURRENT_REVISION', 'CURRENT_COMMIT']),
-         gen_detail('rev2', 'desc2')),
     ]
 
     self._mock_gerrit_changes_for_detail_cache()
     cl = git_cl.Changelist(issue=1)
     cl._cached_remote_url = (
         True, 'https://chromium.googlesource.com/a/my/repo.git/')
-    self.assertEqual(cl.GetDescription(), 'desc1')
-    self.assertEqual(cl.GetDescription(), 'desc1')  # cache hit.
-    self.assertEqual(cl.GetDescription(force=True), 'desc2')
+    self.assertEqual(cl.FetchDescription(), 'desc1')
+    self.assertEqual(cl.FetchDescription(), 'desc1')  # cache hit.
 
   def test_print_current_creds(self):
     class CookiesAuthenticatorMock(object):
