@@ -17,7 +17,6 @@ import time
 from elftools.elf.elffile import ELFFile
 
 from chromite.lib import constants
-from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import timeout_util
@@ -54,13 +53,13 @@ def GetGdbForElf(elf):
 
 def ParseArgs(argv):
   """Parse and validate command line arguments."""
-  parser = commandline.ArgumentParser(default_log_level='warning')
-
+  description = 'Debug depthcharge using GDB'
+  parser = servo_parsing.ServodClientParser(description=description)
   parser.add_argument('-b', '--board',
                       help='The board overlay name (auto-detect by default)')
   parser.add_argument('-c', '--cgdb', action='store_true',
                       help='Use cgdb curses interface rather than plain gdb')
-  parser.add_argument('-s', '--symbols',
+  parser.add_argument('-y', '--symbols',
                       help='Root directory or complete path to symbolized ELF '
                            '(defaults to /build/<BOARD>/firmware)')
   parser.add_argument('-r', '--reboot', choices=['yes', 'no', 'auto'],
@@ -69,26 +68,9 @@ def ParseArgs(argv):
   parser.add_argument('-e', '--execute', action='append', default=[],
                       help='GDB command to run after connect (can be supplied '
                            'multiple times)')
-  parser.add_argument('--servod-rcfile', default=servo_parsing.DEFAULT_RC_FILE,
-                      dest='rcfile')
-  parser.add_argument('--servod-server')
-  # Add --name for rc servod configuration.
-  servo_parsing.ServodRCParser.AddRCEnabledNameArg(parser)
-  # Add |port_flags| as the port arguments.
-  port_flags = ['-p', '--servod-port']
-  servo_parsing.BaseServodParser.AddRCEnabledPortArg(parser,
-                                                     port_flags=port_flags)
   parser.add_argument('-t', '--tty',
                       help='TTY file to connect to (defaults to cpu_uart_pty)')
   opts = parser.parse_args(argv)
-
-  # Set |.port| and |.board| in |opts| if there's a rc match for opts.name.
-  servo_parsing.ServodRCParser.PostProcessRCElements(opts)
-
-  if not opts.servod_server:
-    opts.servod_server = client.DEFAULT_HOST
-  if not opts.port:
-    opts.port = client.DEFAULT_PORT
 
   return opts
 
@@ -174,7 +156,7 @@ def TestConnection(fd):
 
 def main(argv):
   opts = ParseArgs(argv)
-  servo = client.ServoClient(host=opts.servod_server, port=opts.port)
+  servo = client.ServoClient(host=opts.host, port=opts.port)
 
   if not opts.tty:
     try:
