@@ -6340,16 +6340,11 @@ int av1_encode(AV1_COMP *const cpi, uint8_t *const dest,
   if (current_frame->frame_type == KEY_FRAME && cm->show_frame)
     current_frame->frame_number = 0;
 
-  if (cm->show_existing_frame) {
-    current_frame->order_hint = cm->cur_frame->order_hint;
-    current_frame->display_order_hint = cm->cur_frame->display_order_hint;
-  } else {
-    current_frame->order_hint =
-        current_frame->frame_number + frame_params->order_offset;
-    current_frame->display_order_hint = current_frame->order_hint;
-    current_frame->order_hint %=
-        (1 << (cm->seq_params.order_hint_info.order_hint_bits_minus_1 + 1));
-  }
+  current_frame->order_hint =
+      current_frame->frame_number + frame_params->order_offset;
+  current_frame->display_order_hint = current_frame->order_hint;
+  current_frame->order_hint %=
+      (1 << (cm->seq_params.order_hint_info.order_hint_bits_minus_1 + 1));
 
   if (is_stat_generation_stage(cpi)) {
 #if !CONFIG_REALTIME_ONLY
