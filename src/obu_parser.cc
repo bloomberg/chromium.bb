@@ -990,9 +990,13 @@ bool ObuParser::ParseSegmentationParameters() {
               Clip3(scratch_int, -kSegmentationFeatureMaxValues[j],
                     kSegmentationFeatureMaxValues[j]);
         } else {
-          OBU_READ_LITERAL_OR_FAIL(kSegmentationFeatureBits[j]);
-          segmentation->feature_data[i][j] = Clip3(
-              static_cast<int>(scratch), 0, kSegmentationFeatureMaxValues[j]);
+          if (kSegmentationFeatureBits[j] > 0) {
+            OBU_READ_LITERAL_OR_FAIL(kSegmentationFeatureBits[j]);
+            segmentation->feature_data[i][j] = Clip3(
+                static_cast<int>(scratch), 0, kSegmentationFeatureMaxValues[j]);
+          } else {
+            segmentation->feature_data[i][j] = 0;
+          }
         }
         segmentation->last_active_segment_id = i;
         if (j >= kSegmentFeatureReferenceFrame) {

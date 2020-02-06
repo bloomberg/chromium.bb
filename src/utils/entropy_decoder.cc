@@ -379,6 +379,14 @@ int64_t DaalaBitReader::ReadLiteral(int num_bits) {
   uint32_t literal = 0;
   int bit = num_bits - 1;
   do {
+    // ARM can combine a shift operation with a constant number of bits with
+    // some other operations, such as the OR operation.
+    // Here is an ARM disassembly example:
+    // orr w1, w0, w1, lsl #1
+    // which left shifts register w1 by 1 bit and OR the shift result with
+    // register w0.
+    // The next 2 lines are equivalent to:
+    // literal |= static_cast<uint32_t>(ReadBit()) << bit;
     literal <<= 1;
     literal |= static_cast<uint32_t>(ReadBit());
   } while (--bit >= 0);

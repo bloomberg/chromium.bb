@@ -64,13 +64,22 @@ int RawBitReader::ReadBit() {
 int64_t RawBitReader::ReadLiteral(int num_bits) {
   assert(num_bits <= 32);
   if (!CanReadLiteral(num_bits)) return -1;
-  uint32_t value = 0;
-  // We can now call ReadBitImpl() since we've made sure that there are enough
-  // bits to be read.
-  for (int i = num_bits - 1; i >= 0; --i) {
-    value |= static_cast<uint32_t>(ReadBitImpl()) << i;
-  }
-  return value;
+  assert(num_bits > 0);
+  uint32_t literal = 0;
+  int bit = num_bits - 1;
+  do {
+    // ARM can combine a shift operation with a constant number of bits with
+    // some other operations, such as the OR operation.
+    // Here is an ARM disassembly example:
+    // orr w1, w0, w1, lsl #1
+    // which left shifts register w1 by 1 bit and OR the shift result with
+    // register w0.
+    // The next 2 lines are equivalent to:
+    // literal |= static_cast<uint32_t>(ReadBitImpl()) << bit;
+    literal <<= 1;
+    literal |= static_cast<uint32_t>(ReadBitImpl());
+  } while (--bit >= 0);
+  return literal;
 }
 
 bool RawBitReader::ReadInverseSignedLiteral(int num_bits, int* const value) {
@@ -155,12 +164,18 @@ bool RawBitReader::ReadUvlc(uint32_t* const value) {
       return false;
     }
   }
-  const int literal = static_cast<int>(ReadLiteral(leading_zeros));
-  if (literal == -1) {
-    LIBGAV1_DLOG(ERROR, "Not enough bits to read uvlc value.");
-    return false;
+  int literal;
+  if (leading_zeros != 0) {
+    literal = static_cast<int>(ReadLiteral(leading_zeros));
+    if (literal == -1) {
+      LIBGAV1_DLOG(ERROR, "Not enough bits to read uvlc value.");
+      return false;
+    }
+    literal += (1U << leading_zeros) - 1;
+  } else {
+    literal = 0;
   }
-  *value = literal + (1U << leading_zeros) - 1;
+  *value = literal;
   return true;
 }
 
