@@ -145,7 +145,7 @@ openscreen_fuzzer_test("message_framer_fuzzer") {
     ":channel",
   ]
 
-  seed_corpus = "message_framer_fuzzer_seeds"
+  seed_corpus = "channel/message_framer_fuzzer_seeds"
 
   # NOTE: 65536 is max _body_ size.
   libfuzzer_options = [ "max_len=65600" ]
