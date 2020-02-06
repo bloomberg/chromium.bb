@@ -1384,6 +1384,11 @@ class Changelist(object):
       return None
     return '%s/%s' % (self.GetCodereviewServer(), issue)
 
+  def GetLocalDescription(self, upstream_branch):
+    """Return the log messages of all commits up to the branch point."""
+    args = ['log', '--pretty=format:%s%n%n%b', '%s...' % (upstream_branch)]
+    return RunGitWithCode(args)[1].strip()
+
   def GetDescription(self, pretty=False, force=False):
     if not self.has_description or force:
       if self.GetIssue():
@@ -1464,20 +1469,15 @@ class Changelist(object):
       self.issue = None
       self.patchset = None
 
-  def GetChange(self, upstream_branch, author, local_description=False):
+  def GetChange(self, upstream_branch):
     if not self.GitSanityChecks(upstream_branch):
       DieWithError('\nGit sanity check failure')
 
-    root = settings.GetRelativeRoot()
-    if not root:
-      root = '.'
-    absroot = os.path.abspath(root)
-
+    root = settings.GetRoot()
     # We use the sha1 of HEAD as a name of this change.
     name = RunGitWithCode(['rev-parse', 'HEAD'])[1].strip()
-    # Need to pass a relative path for msysgit.
     try:
-      files = scm.GIT.CaptureStatus([root], '.', upstream_branch)
+      files = scm.GIT.CaptureStatus(root, upstream_branch)
     except subprocess2.CalledProcessError:
       DieWithError(
           ('\nFailed to diff against upstream branch %s\n\n'
@@ -1489,21 +1489,19 @@ class Changelist(object):
 
     issue = self.GetIssue()
     patchset = self.GetPatchset()
-    if issue and not local_description:
+    if issue:
       description = self.GetDescription()
     else:
       # If the change was never uploaded, use the log messages of all commits
       # up to the branch point, as git cl upload will prefill the description
       # with these log messages.
-      args = ['log', '--pretty=format:%s%n%n%b', '%s...' % (upstream_branch)]
-      description = RunGitWithCode(args)[1].strip()
+      description = self.GetLocalDescription(upstream_branch)
 
-    if not author:
-      author = RunGit(['config', 'user.email']).strip() or None
+    author = RunGit(['config', 'user.email']).strip() or None
     return presubmit_support.GitChange(
         name,
         description,
-        absroot,
+        root,
         files,
         issue,
         patchset,
@@ -1576,7 +1574,7 @@ class Changelist(object):
     self.EnsureCanUploadPatchset(force=options.force)
 
     # Apply watchlists on upload.
-    change = self.GetChange(base_branch, None)
+    change = self.GetChange(base_branch)
     watchlist = watchlists.Watchlists(change.RepositoryRoot())
     files = [f.LocalPath() for f in change.AffectedFiles()]
     if not options.bypass_watchlists:
@@ -2138,7 +2136,7 @@ class Changelist(object):
           committing=True,
           may_prompt=not force,
           verbose=verbose,
-          change=self.GetChange(self.GetCommonAncestorWithUpstream(), None),
+          change=self.GetChange(self.GetCommonAncestorWithUpstream()),
           parallel=parallel)
       if not hook_results.should_continue():
         return 1
@@ -4149,8 +4147,7 @@ def CMDdescription(parser, args):
       text = '\n'.join(l.rstrip() for l in sys.stdin)
     elif text == '+':
       base_branch = cl.GetCommonAncestorWithUpstream()
-      change = cl.GetChange(base_branch, None, local_description=True)
-      text = change.FullDescriptionText()
+      text = cl.GetLocalDescription(base_branch)
 
     description.set_description(text)
   else:
@@ -4182,7 +4179,7 @@ def CMDlint(parser, args):
   os.chdir(settings.GetRoot())
   try:
     cl = Changelist()
-    change = cl.GetChange(cl.GetCommonAncestorWithUpstream(), None)
+    change = cl.GetChange(cl.GetCommonAncestorWithUpstream())
     files = [f.LocalPath() for f in change.AffectedFiles()]
     if not files:
       print('Cannot lint an empty CL')
@@ -4240,7 +4237,7 @@ def CMDpresubmit(parser, args):
     base_branch = cl.GetCommonAncestorWithUpstream()
 
   if options.all:
-    base_change = cl.GetChange(base_branch, None)
+    base_change = cl.GetChange(base_branch)
     files = [('M', f) for f in base_change.AllFiles()]
     change = presubmit_support.GitChange(
         base_change.Name(),
@@ -4252,7 +4249,7 @@ def CMDpresubmit(parser, args):
         base_change.author_email,
         base_change._upstream)
   else:
-    change = cl.GetChange(base_branch, None)
+    change = cl.GetChange(base_branch)
 
   cl.RunHook(
       committing=not options.upload,
@@ -5065,8 +5062,7 @@ def CMDowners(parser, args):
   if options.show_all:
     for arg in args:
       base_branch = cl.GetCommonAncestorWithUpstream()
-      change = cl.GetChange(base_branch, None)
-      database = owners.Database(change.RepositoryRoot(), file, os.path)
+      database = owners.Database(settings.GetRoot(), file, os.path)
       database.load_data_needed_for([arg])
       print('Owners for %s:' % arg)
       for owner in sorted(database.all_possible_owners([arg], None)):
@@ -5081,7 +5077,7 @@ def CMDowners(parser, args):
     # Default to diffing against the common ancestor of the upstream branch.
     base_branch = cl.GetCommonAncestorWithUpstream()
 
-  change = cl.GetChange(base_branch, None)
+  change = cl.GetChange(base_branch)
   affected_files = [f.LocalPath() for f in change.AffectedFiles()]
 
   if options.batch:

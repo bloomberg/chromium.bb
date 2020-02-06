@@ -879,7 +879,7 @@ class TestGitCl(TestCase):
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
 
       ((['git', '-c', 'core.quotePath=false', 'diff', '--name-status',
-         '--no-renames', '-r', ancestor_revision + '...', '.'],),
+         '--no-renames', '-r', ancestor_revision + '...'],),
        'M\t.gitignore\n'),
       ((['git', 'config', 'branch.master.gerritpatchset'],), CERR1),
     ]

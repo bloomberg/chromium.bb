@@ -1771,7 +1771,7 @@ def _parse_change(parser, options):
     change_files = [('M', f) for f in scm.GIT.GetAllFiles(options.root)]
   else:
     change_files = scm.GIT.CaptureStatus(
-        [], options.root, options.upstream or None)
+        options.root, options.upstream or None)
 
   logging.info('Found %d file(s).', len(change_files))
 

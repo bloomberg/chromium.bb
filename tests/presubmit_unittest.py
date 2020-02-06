@@ -982,7 +982,7 @@ def CheckChangeOnCommit(input_api, output_api):
         options.author,
         upstream=options.upstream)
     scm.GIT.CaptureStatus.assert_called_once_with(
-        [], options.root, options.upstream)
+        options.root, options.upstream)
 
   @mock.patch('presubmit_support.GitChange', mock.Mock())
   @mock.patch('scm.GIT.GetAllFiles', mock.Mock())
