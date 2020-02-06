@@ -41,7 +41,7 @@ message ArcShutdownResponse {
 // it can use.
 message ArcVmStartupRequest {
   // The content ID of the VM.
-  int32 cid = 1;
+  uint32 cid = 1;
 }
 
 // Represents an IPv4 subnet given a base address and prefix length.
@@ -79,7 +79,7 @@ message ArcVmShutdownRequest {
   // The CID of the ARC VM; must match the CID that was sent at
   // startup.
   // Required.
-  int32 cid = 1;
+  uint32 cid = 1;
 }
 
 // Intentionally empty response.
@@ -89,7 +89,7 @@ message ArcVmShutdownResponse {
 // Notification that a Termina VM is starting up.
 message TerminaVmStartupRequest {
   // The content ID of the VM.
-  int32 cid = 1;
+  uint32 cid = 1;
 }
 
 // Information required by Concierge to continue the Termina VM startup.
@@ -108,7 +108,7 @@ message TerminaVmShutdownRequest {
   // The CID of the Termina VM; must match the PID that was sent at
   // startup.
   // Required.
-  int32 cid = 1;
+  uint32 cid = 1;
 }
 
 // Intentionally empty response.
