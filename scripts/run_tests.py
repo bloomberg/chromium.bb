@@ -37,6 +37,9 @@ from chromite.lib import proctitle
 from chromite.lib import timeout_util
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # How long (in minutes) to let a test run before we kill it.
 TEST_TIMEOUT = 20
 # How long (in minutes) before we send SIGKILL after the timeout above.
@@ -281,7 +284,8 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
   def PythonWrappers(tests):
     for test in tests:
       if pyver is None or pyver == 'py2':
-        yield (test, 'python2')
+        if os.path.basename(os.path.realpath(test)) != 'wrapper3.py':
+          yield (test, 'python2')
       if pyver is None or pyver == 'py3':
         yield (test, 'python3')
 
