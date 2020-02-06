@@ -12,6 +12,7 @@ with the prefix "UserAct".
 
 from __future__ import print_function
 
+import collections
 import inspect
 import json
 import re
@@ -577,33 +578,51 @@ def UserActAccount(opts):
           (acct['_account_id'], acct['name'], acct['email']))
 
 
+@memoize.Memoize
+def _GetActions():
+  """Get all the possible actions we support.
+
+  Returns:
+    An ordered dictionary mapping the user subcommand (e.g. "foo") to the
+    function that implements that command (e.g. UserActFoo).
+  """
+  ret = collections.OrderedDict()
+  for funcname in sorted(globals()):
+    if not funcname.startswith(ACTION_PREFIX):
+      continue
+
+    # Turn "UserActFoo" into just "Foo" for further checking below.
+    funcname_chopped = funcname[len(ACTION_PREFIX):]
+
+    # Sanity check names for devs adding new commands.  Should be quick.
+    expected_funcname = funcname_chopped.lower().capitalize()
+    if funcname_chopped != expected_funcname:
+      raise RuntimeError('callback "%s" is misnamed; should be "%s"' %
+                         (funcname_chopped, expected_funcname))
+
+    # Turn "Foo_bar" into "foo-bar".
+    cmdname = funcname_chopped.lower().replace('_', '-')
+    func = globals()[funcname]
+    ret[cmdname] = func
+
+  return ret
+
+
 def _GetActionUsages():
   """Formats a one-line usage and doc message for each action."""
-  actions = [x for x in globals() if x.startswith(ACTION_PREFIX)]
-  actions.sort()
+  actions = _GetActions()
 
-  cmds = [x[len(ACTION_PREFIX):] for x in actions]
-
-  # Sanity check names for devs adding new commands.  Should be quick.
-  for cmd in cmds:
-    expected_name = cmd.lower().capitalize()
-    if cmd != expected_name:
-      raise RuntimeError('callback "%s" is misnamed; should be "%s"' %
-                         (cmd, expected_name))
-
-  functions = [globals()[x] for x in actions]
+  cmds = list(actions.keys())
+  functions = list(actions.values())
   usages = [getattr(x, 'usage', '') for x in functions]
   docs = [x.__doc__ for x in functions]
 
-  action_usages = []
   cmd_indent = len(max(cmds, key=len))
   usage_indent = len(max(usages, key=len))
-  for cmd, usage, doc in zip(cmds, usages, docs):
-    action_usages.append(
-        '  %-*s %-*s : %s' %
-        (cmd_indent, cmd.lower().replace('_', '-'), usage_indent, usage, doc))
-
-  return '\n'.join(action_usages)
+  return '\n'.join(
+      '  %-*s %-*s : %s' % (cmd_indent, cmd, usage_indent, usage, doc)
+      for cmd, usage, doc in zip(cmds, usages, docs)
+  )
 
 
 def GetParser():
@@ -639,6 +658,8 @@ Actions:
 """
   usage += _GetActionUsages()
 
+  actions = _GetActions()
+
   site_params = config_lib.GetSiteParams()
   parser = commandline.ArgumentParser(usage=usage)
   parser.add_argument('-i', '--internal', dest='gob', action='store_const',
@@ -673,7 +694,8 @@ Actions:
                       help='Limit output to the specific project')
   parser.add_argument('-t', '--topic',
                       help='Limit output to the specific topic')
-  parser.add_argument('action', help='The gerrit action to perform')
+  parser.add_argument('action', choices=list(actions.keys()),
+                      help='The gerrit action to perform')
   parser.add_argument('args', nargs='*', help='Action arguments')
 
   return parser
@@ -695,22 +717,19 @@ def main(argv):
   COLOR = terminal.Color(enabled=opts.color)
 
   # Now look up the requested user action and run it.
-  funcname = ACTION_PREFIX + opts.action.capitalize().replace('-', '_')
-  functor = globals().get(funcname)
-  if functor:
-    argspec = inspect.getargspec(functor)
-    if argspec.varargs:
-      arg_min = getattr(functor, 'arg_min', len(argspec.args))
-      if len(opts.args) < arg_min:
-        parser.error('incorrect number of args: %s expects at least %s' %
-                     (opts.action, arg_min))
-    elif len(argspec.args) - 1 != len(opts.args):
-      parser.error('incorrect number of args: %s expects %s' %
-                   (opts.action, len(argspec.args) - 1))
-    try:
-      functor(opts, *opts.args)
-    except (cros_build_lib.RunCommandError, gerrit.GerritException,
-            gob_util.GOBError) as e:
-      cros_build_lib.Die(e)
-  else:
-    parser.error('unknown action: %s' % (opts.action,))
+  actions = _GetActions()
+  functor = actions[opts.action]
+  argspec = inspect.getargspec(functor)
+  if argspec.varargs:
+    arg_min = getattr(functor, 'arg_min', len(argspec.args))
+    if len(opts.args) < arg_min:
+      parser.error('incorrect number of args: %s expects at least %s' %
+                   (opts.action, arg_min))
+  elif len(argspec.args) - 1 != len(opts.args):
+    parser.error('incorrect number of args: %s expects %s' %
+                 (opts.action, len(argspec.args) - 1))
+  try:
+    functor(opts, *opts.args)
+  except (cros_build_lib.RunCommandError, gerrit.GerritException,
+          gob_util.GOBError) as e:
+    cros_build_lib.Die(e)
