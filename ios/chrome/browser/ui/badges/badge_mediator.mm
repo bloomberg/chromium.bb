@@ -86,6 +86,12 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 
 - (void)addInfobarBadge:(id<BadgeItem>)badgeItem
             forWebState:(web::WebState*)webState {
+  // If webStateList is NULL it means this mediator has been disconnected
+  // and shouldn't do any updates.
+  if (!self.webStateList) {
+    return;
+  }
+
   if (webState != self.webStateList->GetActiveWebState()) {
     // Don't add badge if |badgeItem| is not coming from the currently active
     // WebState.
@@ -100,8 +106,14 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 
 - (void)removeInfobarBadge:(id<BadgeItem>)badgeItem
                forWebState:(web::WebState*)webState {
+  // If webStateList is NULL it means this mediator has been disconnected
+  // and shouldn't do any updates.
+  if (!self.webStateList) {
+    return;
+  }
+
   if (webState != self.webStateList->GetActiveWebState()) {
-    // Don't add badge if |badgeItem| is not coming from the currently active
+    // Don't remove badge if |badgeItem| is not coming from the currently active
     // WebState.
     return;
   }
@@ -116,8 +128,14 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 
 - (void)updateInfobarBadge:(id<BadgeItem>)badgeItem
                forWebState:(web::WebState*)webState {
+  // If webStateList is NULL it means this mediator has been disconnected
+  // and shouldn't do any updates.
+  if (!self.webStateList) {
+    return;
+  }
+
   if (webState != self.webStateList->GetActiveWebState()) {
-    // Don't add badge if |badgeItem| is not coming from the currently active
+    // Don't update badge if |badgeItem| is not coming from the currently active
     // WebState.
     return;
   }
