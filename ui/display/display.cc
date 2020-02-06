@@ -282,7 +282,7 @@ void Display::SetRotationAsDegree(int rotation) {
 }
 
 int Display::PanelRotationAsDegree() const {
-  return RotationToDegrees(panel_rotation_);
+  return RotationToDegrees(panel_rotation());
 }
 
 // static
@@ -380,7 +380,7 @@ std::string Display::ToString() const {
       "panel_rotation=%s %s.",
       static_cast<long long int>(id_), bounds_.ToString().c_str(),
       work_area_.ToString().c_str(), device_scale_factor_,
-      ToRotationString(rotation_), ToRotationString(panel_rotation_),
+      ToRotationString(rotation_), ToRotationString(panel_rotation()),
       IsInternal() ? "internal" : "external");
 }
 
