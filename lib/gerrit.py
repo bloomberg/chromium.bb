@@ -447,6 +447,34 @@ class GerritHelper(object):
       rev = None
     gob_util.SubmitChange(self.host, self._to_changenum(change), revision=rev)
 
+  def ReviewedChange(self, change, dryrun=False):
+    """Mark a gerrit change as reviewed."""
+    if dryrun:
+      logging.info('Would have reviewed change %s', change)
+      return
+    gob_util.ReviewedChange(self.host, self._to_changenum(change))
+
+  def UnreviewedChange(self, change, dryrun=False):
+    """Unmark a gerrit change as reviewed."""
+    if dryrun:
+      logging.info('Would have unreviewed change %s', change)
+      return
+    gob_util.UnreviewedChange(self.host, self._to_changenum(change))
+
+  def IgnoreChange(self, change, dryrun=False):
+    """Ignore a gerrit change."""
+    if dryrun:
+      logging.info('Would have ignored change %s', change)
+      return
+    gob_util.IgnoreChange(self.host, self._to_changenum(change))
+
+  def UnignoreChange(self, change, dryrun=False):
+    """Unignore a gerrit change."""
+    if dryrun:
+      logging.info('Would have unignored change %s', change)
+      return
+    gob_util.UnignoreChange(self.host, self._to_changenum(change))
+
   def AbandonChange(self, change, msg='', dryrun=False):
     """Mark a gerrit change as 'Abandoned'."""
     if dryrun:

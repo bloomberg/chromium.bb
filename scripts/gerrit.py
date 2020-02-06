@@ -530,6 +530,42 @@ def UserActDeletedraft(opts, *args):
 UserActDeletedraft.usage = '<CLs...>'
 
 
+def UserActReviewed(opts, *args):
+  """Mark CLs as reviewed"""
+  def task(arg):
+    helper, cl = GetGerrit(opts, arg)
+    helper.ReviewedChange(cl, dryrun=opts.dryrun)
+  _run_parallel_tasks(task, *args)
+UserActReviewed.usage = '<CLs...>'
+
+
+def UserActUnreviewed(opts, *args):
+  """Mark CLs as unreviewed"""
+  def task(arg):
+    helper, cl = GetGerrit(opts, arg)
+    helper.UnreviewedChange(cl, dryrun=opts.dryrun)
+  _run_parallel_tasks(task, *args)
+UserActUnreviewed.usage = '<CLs...>'
+
+
+def UserActIgnore(opts, *args):
+  """Ignore CLs (suppress notifications/dashboard/etc...)"""
+  def task(arg):
+    helper, cl = GetGerrit(opts, arg)
+    helper.IgnoreChange(cl, dryrun=opts.dryrun)
+  _run_parallel_tasks(task, *args)
+UserActIgnore.usage = '<CLs...>'
+
+
+def UserActUnignore(opts, *args):
+  """Unignore CLs (enable notifications/dashboard/etc...)"""
+  def task(arg):
+    helper, cl = GetGerrit(opts, arg)
+    helper.UnignoreChange(cl, dryrun=opts.dryrun)
+  _run_parallel_tasks(task, *args)
+UserActUnignore.usage = '<CLs...>'
+
+
 def UserActAccount(opts):
   """Get the current user account information"""
   helper, _ = GetGerrit(opts)
