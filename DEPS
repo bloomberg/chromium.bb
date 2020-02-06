@@ -22,6 +22,10 @@ vars = {
   'build_with_chromium': False,
 
   'checkout_chromium_quic_boringssl': False,
+
+  # Needed to download additional clang binaries for processing coverage data
+  # (from binaries with GN arg `use_coverage=true`).
+  'checkout_clang_coverage_tools': False,
 }
 
 deps = {
@@ -115,6 +119,13 @@ hooks = [
     'pattern': '.',
     'condition': 'not build_with_chromium',
     'action': [ 'python', 'tools/clang/scripts/update.py' ],
+  },
+  {
+    'name': 'clang_coverage_tools',
+    'pattern': '.',
+    'condition': 'not build_with_chromium and checkout_clang_coverage_tools',
+    'action': ['python', 'tools/clang/scripts/update.py',
+               '--package=coverage_tools'],
   },
   {
     'name': 'clang_format_linux64',

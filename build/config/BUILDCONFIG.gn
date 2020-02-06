@@ -153,6 +153,7 @@ _shared_binary_target_configs = [
   "//build/config:no_rtti",
   "//build/config:symbol_visibility_hidden",
   "//build/config:default_sanitizers",
+  "//build/config:default_coverage",
   "//build/config:compiler_defaults",
   "//build/config:compiler_cpu_abi",
   "//build/config:default_optimization",
