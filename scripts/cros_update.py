@@ -47,7 +47,8 @@ STABLE_BUILD_CHANNEL = 'stable-channel'
 CROS_UPDATE_TIMEOUT_MIN = 30
 
 # The preserved path in remote device, won't be deleted after rebooting.
-CROS_PRESERVED_PATH = ('/usr/local/tmp/cros-update')
+CROS_PRESERVED_PATH = ('/mnt/stateful_partition/unencrypted/'
+                       'preserve/cros-update')
 
 # Standard error tmeplate to be written into status tracking log.
 CROS_ERROR_TEMPLATE = cros_update_progress.ERROR_TAG + ' %s'
