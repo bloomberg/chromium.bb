@@ -173,8 +173,10 @@ enum {
 
 enum {
   CDEF_FULL_SEARCH,
-  CDEF_FAST_SEARCH,  // Search among a subset of all possible filters.
-  CDEF_PICK_FROM_Q   // Estimate filter strength based on quantizer.
+  CDEF_FAST_SEARCH_LVL1,  // Search among a subset of all possible filters.
+  CDEF_FAST_SEARCH_LVL2,  // Search reduced subset of filters than Level 1.
+  CDEF_PICK_FROM_Q,       // Estimate filter strength based on quantizer.
+  CDEF_PICK_METHODS
 } UENUM1BYTE(CDEF_PICK_METHOD);
 
 enum {

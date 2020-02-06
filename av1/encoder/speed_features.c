@@ -378,7 +378,7 @@ static void set_good_speed_features_framesize_independent(
     sf->rd_sf.tx_domain_dist_level = boosted ? 1 : 2;
     sf->rd_sf.tx_domain_dist_thres_level = 1;
 
-    sf->lpf_sf.cdef_pick_method = CDEF_FAST_SEARCH;
+    sf->lpf_sf.cdef_pick_method = CDEF_FAST_SEARCH_LVL1;
     sf->lpf_sf.dual_sgr_penalty_level = 1;
     sf->lpf_sf.enable_sgr_ep_pruning = 1;
 
@@ -563,6 +563,9 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.disable_onesided_comp = 1;
 
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_FULL_IMAGE_NON_DUAL;
+    sf->lpf_sf.cdef_pick_method = cm->allow_screen_content_tools
+                                      ? CDEF_FAST_SEARCH_LVL1
+                                      : CDEF_FAST_SEARCH_LVL2;
     sf->lpf_sf.disable_lr_filter = 1;
 
     sf->mv_sf.prune_mesh_search = 1;
@@ -691,7 +694,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_sf.inter_tx_size_search_init_depth_sqr = 1;
     sf->tx_sf.model_based_prune_tx_search_level = 0;
 
-    sf->lpf_sf.cdef_pick_method = CDEF_FAST_SEARCH;
+    sf->lpf_sf.cdef_pick_method = CDEF_FAST_SEARCH_LVL1;
   }
 
   if (speed >= 3) {
