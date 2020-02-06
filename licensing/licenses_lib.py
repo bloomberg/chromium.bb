@@ -21,6 +21,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
 from chromite.lib import portage_util
+from chromite.cbuildbot import manifest_version
 
 # We are imported by src/repohooks/pre-upload.py in a non chroot environment
 # where yaml may not be there, so we don't error on that since it's not needed
@@ -1056,6 +1057,11 @@ class Licensing(object):
           'sys-firmware/sis-firmware',
           'www-servers/spacecast',
       }
+      # TODO(b/148306737), only allow this package prior to R84. To be removed
+      # once the proper license is in place.
+      version = manifest_version.VersionInfo.from_repo(constants.SOURCE_ROOT)
+      if int(version.chrome_branch) <= 83:
+        LEGACY_PKGS.add('sys-firmware/parade-ps8815a0-firmware')
       if not any(fullnamerev.startswith(x) for x in LEGACY_PKGS):
         raise AssertionError('Google-TOS is not a valid license.')
 
