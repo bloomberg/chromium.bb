@@ -153,21 +153,26 @@ elseif("${AOM_TARGET_CPU}" MATCHES "arm")
   if("${AOM_TARGET_SYSTEM}" STREQUAL "Darwin")
     set(AS_EXECUTABLE as)
     set(AOM_AS_FLAGS -arch ${AOM_TARGET_CPU} -isysroot ${CMAKE_OSX_SYSROOT})
-  elseif("${AOM_TARGET_SYSTEM}" STREQUAL "Linux")
-    if(NOT AS_EXECUTABLE)
-      set(AS_EXECUTABLE as)
-    endif()
   elseif("${AOM_TARGET_SYSTEM}" STREQUAL "Windows")
     if(NOT AS_EXECUTABLE)
       set(AS_EXECUTABLE ${CMAKE_C_COMPILER} -c -mimplicit-it=always)
     endif()
+  else()
+    if(NOT AS_EXECUTABLE)
+      set(AS_EXECUTABLE as)
+    endif()
   endif()
-  if(NOT AS_EXECUTABLE)
+  find_program(as_executable_found ${AS_EXECUTABLE})
+  if(NOT as_executable_found)
     message(
       FATAL_ERROR
-        "Unknown assembler for: ${AOM_TARGET_CPU}-${AOM_TARGET_SYSTEM}")
+        "Unable to find assembler and optimizations are enabled."
+        "Searched for ${AS_EXECUTABLE}. Install it, add it to your path, or "
+        "set the assembler directly by adding -DAS_EXECUTABLE=<assembler path> "
+        "to your CMake command line."
+        "To build without optimizations, add -DAOM_TARGET_CPU=generic to your "
+        "cmake command line.")
   endif()
-
   string(STRIP "${AOM_AS_FLAGS}" AOM_AS_FLAGS)
 endif()
 
