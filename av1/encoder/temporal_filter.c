@@ -870,6 +870,23 @@ void av1_apply_temporal_filter_planewise_c(
           }
         }
 
+        // Filter U-plane and V-plane using Y-plane. This is because motion
+        // search is only done on Y-plane, so the information from Y-plane will
+        // be more accurate.
+        if (plane != 0) {
+          const int ss_y_shift = subsampling_y - mbd->plane[0].subsampling_y;
+          const int ss_x_shift = subsampling_x - mbd->plane[0].subsampling_x;
+          for (int ii = 0; ii < (1 << ss_y_shift); ++ii) {
+            for (int jj = 0; jj < (1 << ss_x_shift); ++jj) {
+              const int yy = (i << ss_y_shift) + ii;  // Y-coord on Y-plane.
+              const int xx = (j << ss_x_shift) + jj;  // X-coord on Y-plane.
+              const int ww = w << ss_x_shift;         // Width of Y-plane.
+              sum_square_diff += square_diff[yy * ww + xx];
+              ++num_ref_pixels;
+            }
+          }
+        }
+
         // Control factor for non-local mean approach.
         const double r =
             (double)decay_control * (0.7 + log(noise_levels[plane] + 1.0));
@@ -935,16 +952,12 @@ void av1_apply_temporal_filter_others(
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
   if (use_planewise_strategy) {  // Commonly used for high-resolution video.
-    // TODO(any): avx2 and sse version should also support high bit-depth.
-    if (is_frame_high_bitdepth(frame_to_filter)) {
-      av1_apply_temporal_filter_planewise_c(frame_to_filter, mbd, block_size,
-                                            mb_row, mb_col, num_planes,
-                                            noise_levels, pred, accum, count);
-    } else {
-      av1_apply_temporal_filter_planewise(frame_to_filter, mbd, block_size,
+    // TODO(any): avx2 and sse2 version should also support high bit-depth, and
+    // they should be changed to consider cross-plane information (see C
+    // function) before using.
+    av1_apply_temporal_filter_planewise_c(frame_to_filter, mbd, block_size,
                                           mb_row, mb_col, num_planes,
                                           noise_levels, pred, accum, count);
-    }
   } else {  // Commonly used for low-resolution video.
     const int adj_strength = strength + 2 * (mbd->bd - 8);
     if (num_planes == 1) {
