@@ -21,9 +21,12 @@ from __future__ import print_function
 
 import json
 import os
-import os.path
+import sys
 
 from chromite.lib import commandline, cros_build_lib, portage_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def get_all_package_objects(board):

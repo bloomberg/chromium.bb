@@ -15,10 +15,14 @@ from __future__ import print_function
 
 import json
 import os
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import portage_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def is_ebuild_marked_hot(ebuild_path):

@@ -12,9 +12,14 @@ exception if no match can be found.
 
 from __future__ import print_function
 
+import sys
+
 from chromite.lib import commandline
 from chromite.lib import repo_manifest
 from chromite.lib import repo_util
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def get_parser():
