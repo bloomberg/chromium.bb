@@ -4021,12 +4021,37 @@ static int get_gfu_boost_from_r0(double r0, int frames_to_key) {
   return boost;
 }
 
-static int get_kf_boost_from_r0(double r0, int frames_to_key) {
-  double factor = sqrt((double)frames_to_key);
+static double get_kf_boost_projection_factor(int frame_count) {
+  double factor = sqrt((double)frame_count);
   factor = AOMMIN(factor, 10.0);
   factor = AOMMAX(factor, 4.0);
-  const int boost = (int)rint((75.0 + 14.0 * factor) / r0);
+  factor = (75.0 + 14.0 * factor);
+  return factor;
+}
+
+static int get_kf_boost_from_r0(double r0, int frames_to_key) {
+  double factor = get_kf_boost_projection_factor(frames_to_key);
+  const int boost = (int)rint(factor / r0);
   return boost;
+}
+
+static int get_projected_prior_boost(AV1_COMP *cpi) {
+  /*
+   * If num_stats_used_for_kf_boost >= frames_to_key, then
+   * all stats needed for prior boost calculation are available.
+   * Hence projecting the prior boost is not needed in this cases.
+   */
+  if (cpi->rc.num_stats_used_for_kf_boost >= cpi->rc.frames_to_key)
+    return cpi->rc.kf_boost;
+
+  // Get the current tpl factor (number of frames = frames_to_key).
+  double tpl_factor = get_kf_boost_projection_factor(cpi->rc.frames_to_key);
+  // Get the tpl factor when number of frames = num_stats_used_for_kf_boost.
+  double tpl_factor_num_stats =
+      get_kf_boost_projection_factor(cpi->rc.num_stats_used_for_kf_boost);
+  int projected_kf_boost =
+      (int)rint((tpl_factor * cpi->rc.kf_boost) / tpl_factor_num_stats);
+  return projected_kf_boost;
 }
 #endif
 
@@ -4099,10 +4124,15 @@ static void process_tpl_stats_frame(AV1_COMP *cpi) {
         if (cpi->oxcf.rc_mode == AOM_Q) {
           const int kf_boost =
               get_kf_boost_from_r0(cpi->rd.r0, cpi->rc.frames_to_key);
-          // printf("old kf boost %d new kf boost %d [%d]\n", cpi->rc.kf_boost,
-          //        kf_boost, cpi->rc.frames_to_key);
-          cpi->rc.kf_boost = combine_prior_with_tpl_boost(
-              cpi->rc.kf_boost, kf_boost, cpi->rc.frames_to_key);
+          if (cpi->lap_enabled) {
+            const int projected_prior_boost = get_projected_prior_boost(cpi);
+            cpi->rc.kf_boost = combine_prior_with_tpl_boost(
+                projected_prior_boost, kf_boost,
+                cpi->rc.num_stats_used_for_kf_boost);
+          } else {
+            cpi->rc.kf_boost = combine_prior_with_tpl_boost(
+                cpi->rc.kf_boost, kf_boost, cpi->rc.frames_to_key);
+          }
         }
       }
 #if !USE_TPL_CLASSIC_MODEL

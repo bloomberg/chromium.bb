@@ -172,6 +172,9 @@ typedef struct {
   int arf_q;
   int active_worst_quality;
   int base_layer_qp;
+
+  // Total number of stats used only for kf_boost calculation.
+  int num_stats_used_for_kf_boost;
 } RATE_CONTROL;
 
 struct AV1_COMP;

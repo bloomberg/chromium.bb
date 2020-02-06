@@ -1889,7 +1889,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
   rc->frames_to_key = 1;
 
-  if (cpi->oxcf.pass == 0) {
+  if (has_no_stats_stage(cpi)) {
     rc->this_key_frame_forced =
         current_frame->frame_number != 0 && rc->frames_to_key == 0;
     rc->frames_to_key = cpi->oxcf.key_freq;
@@ -1910,6 +1910,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   double recent_loop_decay[FRAMES_TO_CHECK_DECAY];
   double sr_accumulator = 0.0;
 
+  rc->num_stats_used_for_kf_boost = 1;
   // Is this a forced key frame by interval.
   rc->this_key_frame_forced = rc->next_key_frame_forced;
 
@@ -1926,6 +1927,9 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   i = 0;
   while (twopass->stats_in < twopass->stats_buf_ctx->stats_in_end &&
          rc->frames_to_key < cpi->oxcf.key_freq) {
+    // Accumulate total number of stats available till next key frame
+    rc->num_stats_used_for_kf_boost++;
+
     // Accumulate kf group error.
     kf_group_err +=
         calculate_modified_err(frame_info, twopass, oxcf, this_frame);
@@ -1974,6 +1978,12 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     ++i;
   }
 
+  /*
+   * When lap_enabled forcing frames_to_key as key_freq,
+   * since all frame stats are not available.
+   */
+  if (cpi->lap_enabled) rc->frames_to_key = cpi->oxcf.key_freq;
+
   // If there is a max kf interval set by the user we must obey it.
   // We already breakout of the loop above at 2x max.
   // This code centers the extra kf if the actual natural interval
@@ -1992,10 +2002,11 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     for (i = 0; i < rc->frames_to_key; ++i) {
       kf_group_err +=
           calculate_modified_err(frame_info, twopass, oxcf, &tmp_frame);
-      input_stats(twopass, &tmp_frame);
+      if (EOF == input_stats(twopass, &tmp_frame)) break;
     }
     rc->next_key_frame_forced = 1;
-  } else if (twopass->stats_in == twopass->stats_buf_ctx->stats_in_end ||
+  } else if ((twopass->stats_in == twopass->stats_buf_ctx->stats_in_end &&
+              is_stat_consumption_stage_twopass(cpi)) ||
              rc->frames_to_key >= cpi->oxcf.key_freq) {
     rc->next_key_frame_forced = 1;
   } else {
