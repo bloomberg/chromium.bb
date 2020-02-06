@@ -795,37 +795,31 @@ Returns:
 
 #### **class [TryserverApi](/recipes/recipe_modules/tryserver/api.py#11)([RecipeApi][recipe_engine/wkt/RecipeApi]):**
 
-&mdash; **def [add\_failure\_reason](/recipes/recipe_modules/tryserver/api.py#237)(self, reason):**
-
-Records a more detailed reason why build is failing.
-
-The reason can be any JSON-serializable object.
-
-&emsp; **@property**<br>&mdash; **def [gerrit\_change](/recipes/recipe_modules/tryserver/api.py#34)(self):**
+&emsp; **@property**<br>&mdash; **def [gerrit\_change](/recipes/recipe_modules/tryserver/api.py#32)(self):**
 
 Returns current gerrit change, if there is exactly one.
 
 Returns a self.m.buildbucket.common_pb2.GerritChange or None.
 
-&emsp; **@property**<br>&mdash; **def [gerrit\_change\_fetch\_ref](/recipes/recipe_modules/tryserver/api.py#98)(self):**
+&emsp; **@property**<br>&mdash; **def [gerrit\_change\_fetch\_ref](/recipes/recipe_modules/tryserver/api.py#96)(self):**
 
 Returns gerrit patch ref, e.g. "refs/heads/45/12345/6, or None.
 
 Populated iff gerrit_change is populated.
 
-&emsp; **@property**<br>&mdash; **def [gerrit\_change\_repo\_url](/recipes/recipe_modules/tryserver/api.py#42)(self):**
+&emsp; **@property**<br>&mdash; **def [gerrit\_change\_repo\_url](/recipes/recipe_modules/tryserver/api.py#40)(self):**
 
 Returns canonical URL of the gitiles repo of the current Gerrit CL.
 
 Populated iff gerrit_change is populated.
 
-&emsp; **@property**<br>&mdash; **def [gerrit\_change\_target\_ref](/recipes/recipe_modules/tryserver/api.py#107)(self):**
+&emsp; **@property**<br>&mdash; **def [gerrit\_change\_target\_ref](/recipes/recipe_modules/tryserver/api.py#105)(self):**
 
 Returns gerrit change destination ref, e.g. "refs/heads/master".
 
 Populated iff gerrit_change is populated.
 
-&mdash; **def [get\_files\_affected\_by\_patch](/recipes/recipe_modules/tryserver/api.py#137)(self, patch_root, \*\*kwargs):**
+&mdash; **def [get\_files\_affected\_by\_patch](/recipes/recipe_modules/tryserver/api.py#135)(self, patch_root, \*\*kwargs):**
 
 Returns list of paths to files affected by the patch.
 
@@ -835,52 +829,43 @@ Argument:
 
 Returned paths will be relative to to patch_root.
 
-&mdash; **def [get\_footer](/recipes/recipe_modules/tryserver/api.py#295)(self, tag, patch_text=None):**
+&mdash; **def [get\_footer](/recipes/recipe_modules/tryserver/api.py#255)(self, tag, patch_text=None):**
 
 Gets a specific tag from a CL description
 
-&mdash; **def [get\_footers](/recipes/recipe_modules/tryserver/api.py#275)(self, patch_text=None):**
+&mdash; **def [get\_footers](/recipes/recipe_modules/tryserver/api.py#235)(self, patch_text=None):**
 
 Retrieves footers from the patch description.
 
 footers are machine readable tags embedded in commit messages. See
 git-footers documentation for more information.
 
-&mdash; **def [initialize](/recipes/recipe_modules/tryserver/api.py#23)(self):**
+&mdash; **def [initialize](/recipes/recipe_modules/tryserver/api.py#21)(self):**
 
-&emsp; **@property**<br>&mdash; **def [is\_gerrit\_issue](/recipes/recipe_modules/tryserver/api.py#121)(self):**
+&emsp; **@property**<br>&mdash; **def [is\_gerrit\_issue](/recipes/recipe_modules/tryserver/api.py#119)(self):**
 
 Returns true iff the properties exist to match a Gerrit issue.
 
-&emsp; **@property**<br>&mdash; **def [is\_patch\_in\_git](/recipes/recipe_modules/tryserver/api.py#131)(self):**
+&emsp; **@property**<br>&mdash; **def [is\_patch\_in\_git](/recipes/recipe_modules/tryserver/api.py#129)(self):**
 
-&emsp; **@property**<br>&mdash; **def [is\_tryserver](/recipes/recipe_modules/tryserver/api.py#116)(self):**
+&emsp; **@property**<br>&mdash; **def [is\_tryserver](/recipes/recipe_modules/tryserver/api.py#114)(self):**
 
 Returns true iff we have a change to check out.
 
-&mdash; **def [normalize\_footer\_name](/recipes/recipe_modules/tryserver/api.py#299)(self, footer):**
+&mdash; **def [normalize\_footer\_name](/recipes/recipe_modules/tryserver/api.py#259)(self, footer):**
 
-&mdash; **def [set\_compile\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#200)(self):**
+&mdash; **def [set\_compile\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#198)(self):**
 
 Mark the tryjob result as a compile failure.
 
-&mdash; **def [set\_do\_not\_retry\_build](/recipes/recipe_modules/tryserver/api.py#186)(self):**
+&mdash; **def [set\_do\_not\_retry\_build](/recipes/recipe_modules/tryserver/api.py#184)(self):**
 
 A flag to indicate the build should not be retried by the CQ.
 
 This mechanism is used to reduce CQ duration when retrying will likely
 return an identical result.
 
-&emsp; **@contextlib.contextmanager**<br>&mdash; **def [set\_failure\_hash](/recipes/recipe_modules/tryserver/api.py#246)(self):**
-
-Context manager that sets a failure_hash build property on StepFailure.
-
-This can be used to easily compare whether two builds have failed
-for the same reason. For example, if a patch is bad (breaks something),
-we'd expect it to always break in the same way. Different failures
-for the same patch are usually a sign of flakiness.
-
-&mdash; **def [set\_invalid\_test\_results\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#212)(self):**
+&mdash; **def [set\_invalid\_test\_results\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#210)(self):**
 
 Mark the tryjob result as having invalid test results.
 
@@ -888,32 +873,32 @@ This means we run some tests, but the results were not valid
 (e.g. no list of specific test cases that failed, or too many
 tests failing, etc).
 
-&mdash; **def [set\_patch\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#196)(self):**
+&mdash; **def [set\_patch\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#194)(self):**
 
 Mark the tryjob result as failure to apply the patch.
 
-&mdash; **def [set\_subproject\_tag](/recipes/recipe_modules/tryserver/api.py#164)(self, subproject_tag):**
+&mdash; **def [set\_subproject\_tag](/recipes/recipe_modules/tryserver/api.py#162)(self, subproject_tag):**
 
 Adds a subproject tag to the build.
 
 This can be used to distinguish between builds that execute different steps
 depending on what was patched, e.g. blink vs. pure chromium patches.
 
-&mdash; **def [set\_test\_expired\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#229)(self):**
+&mdash; **def [set\_test\_expired\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#227)(self):**
 
 Mark the tryjob result as a test expiration.
 
 This means a test task expired and was never scheduled, most likely due to
 lack of capacity.
 
-&mdash; **def [set\_test\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#204)(self):**
+&mdash; **def [set\_test\_failure\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#202)(self):**
 
 Mark the tryjob result as a test failure.
 
 This means we started running actual tests (not prerequisite steps
 like checkout or compile), and some of these tests have failed.
 
-&mdash; **def [set\_test\_timeout\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#221)(self):**
+&mdash; **def [set\_test\_timeout\_tryjob\_result](/recipes/recipe_modules/tryserver/api.py#219)(self):**
 
 Mark the tryjob result as a test timeout.
 
