@@ -370,52 +370,52 @@ def UserActInspect(opts, *args):
 UserActInspect.usage = '<CLs...>'
 
 
-def UserActAutosubmit(opts, *args):
-  """Mark CLs with the Auto-Submit label"""
+def UserActLabel_as(opts, *args):
+  """Change the Auto-Submit label"""
   num = args[-1]
   def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Auto-Submit': num},
                      dryrun=opts.dryrun, notify=opts.notify)
   _run_parallel_tasks(task, *args[:-1])
-UserActAutosubmit.arg_min = 2
-UserActAutosubmit.usage = '<CLs...> <0|1>'
+UserActLabel_as.arg_min = 2
+UserActLabel_as.usage = '<CLs...> <0|1>'
 
 
-def UserActReview(opts, *args):
-  """Mark CLs with a code review status"""
+def UserActLabel_cr(opts, *args):
+  """Change the Code-Review label (1=LGTM 2=LGTM+Approved)"""
   num = args[-1]
   def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Code-Review': num},
                      dryrun=opts.dryrun, notify=opts.notify)
   _run_parallel_tasks(task, *args[:-1])
-UserActReview.arg_min = 2
-UserActReview.usage = '<CLs...> <-2|-1|0|1|2>'
+UserActLabel_cr.arg_min = 2
+UserActLabel_cr.usage = '<CLs...> <-2|-1|0|1|2>'
 
 
-def UserActVerify(opts, *args):
-  """Mark CLs with a verified status"""
+def UserActLabel_v(opts, *args):
+  """Change the Verified label"""
   num = args[-1]
   def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Verified': num},
                      dryrun=opts.dryrun, notify=opts.notify)
   _run_parallel_tasks(task, *args[:-1])
-UserActVerify.arg_min = 2
-UserActVerify.usage = '<CLs...> <-1|0|1>'
+UserActLabel_v.arg_min = 2
+UserActLabel_v.usage = '<CLs...> <-1|0|1>'
 
 
-def UserActReady(opts, *args):
-  """Mark CLs with CQ dryrun (1) or ready (2) status"""
+def UserActLabel_cq(opts, *args):
+  """Change the Commit-Queue label (1=dry-run 2=commit)"""
   num = args[-1]
   def task(arg):
     helper, cl = GetGerrit(opts, arg)
     helper.SetReview(cl, labels={'Commit-Queue': num},
                      dryrun=opts.dryrun, notify=opts.notify)
   _run_parallel_tasks(task, *args[:-1])
-UserActReady.arg_min = 2
-UserActReady.usage = '<CLs...> <0|1|2>'
+UserActLabel_cq.arg_min = 2
+UserActLabel_cq.usage = '<CLs...> <0|1|2>'
 
 
 def UserActSubmit(opts, *args):
@@ -563,8 +563,9 @@ def _GetActionUsages():
   cmd_indent = len(max(cmds, key=len))
   usage_indent = len(max(usages, key=len))
   for cmd, usage, doc in zip(cmds, usages, docs):
-    action_usages.append('  %-*s %-*s : %s' %
-                         (cmd_indent, cmd.lower(), usage_indent, usage, doc))
+    action_usages.append(
+        '  %-*s %-*s : %s' %
+        (cmd_indent, cmd.lower().replace('_', '-'), usage_indent, usage, doc))
 
   return '\n'.join(action_usages)
 
@@ -582,21 +583,21 @@ The Searching Changes page covers the search query syntax:
   https://gerrit-review.googlesource.com/Documentation/user-search.html
 
 Example:
-  $ gerrit todo             # List all the CLs that await your review.
-  $ gerrit mine             # List all of your open CLs.
-  $ gerrit inspect 28123    # Inspect CL 28123 on the public gerrit.
-  $ gerrit inspect *28123   # Inspect CL 28123 on the internal gerrit.
-  $ gerrit verify 28123 1   # Mark CL 28123 as verified (+1).
+  $ gerrit todo              # List all the CLs that await your review.
+  $ gerrit mine              # List all of your open CLs.
+  $ gerrit inspect 28123     # Inspect CL 28123 on the public gerrit.
+  $ gerrit inspect *28123    # Inspect CL 28123 on the internal gerrit.
+  $ gerrit label-v 28123 1   # Mark CL 28123 as verified (+1).
   $ gerrit reviewers 28123 foo@chromium.org    # Add foo@ as a reviewer on CL \
 28123.
   $ gerrit reviewers 28123 ~foo@chromium.org   # Remove foo@ as a reviewer on \
 CL 28123.
 Scripting:
-  $ gerrit ready `gerrit --raw mine` 1      # Mark *ALL* of your public CLs \
-ready.
-  $ gerrit ready `gerrit --raw -i mine` 1   # Mark *ALL* of your internal CLs \
-ready.
-  $ gerrit --json search 'assignee:self'    # Dump all pending CLs in JSON.
+  $ gerrit label-cq `gerrit --raw mine` 1      # Mark *ALL* of your public CLs \
+with Commit-Queue=1.
+  $ gerrit label-cq `gerrit --raw -i mine` 1   # Mark *ALL* of your internal \
+CLs with Commit-Queue=1.
+  $ gerrit --json search 'assignee:self'       # Dump all pending CLs in JSON.
 
 Actions:
 """
@@ -658,7 +659,8 @@ def main(argv):
   COLOR = terminal.Color(enabled=opts.color)
 
   # Now look up the requested user action and run it.
-  functor = globals().get(ACTION_PREFIX + opts.action.capitalize())
+  funcname = ACTION_PREFIX + opts.action.capitalize().replace('-', '_')
+  functor = globals().get(funcname)
   if functor:
     argspec = inspect.getargspec(functor)
     if argspec.varargs:
