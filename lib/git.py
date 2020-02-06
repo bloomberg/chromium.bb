@@ -1217,6 +1217,26 @@ def Log(git_repo, format=None, after=None, until=None,
 # pylint: enable=redefined-builtin
 
 
+def GetChangeId(git_repo, rev='HEAD'):
+  """Retrieve the Change-Id from the commit message
+
+  Args:
+    git_repo: Path to the git repository where the commit is
+    rev: Commit to inspect, defaults to HEAD
+
+  Returns:
+    The Gerrit Change-Id assigned to the commit if it exists.
+  """
+  log = Log(git_repo, max_count=1, format='format:%B', rev=rev)
+  m = re.findall(r'^Change-Id: (I[a-fA-F0-9]{40})$', log, flags=re.M)
+  if not m:
+    return None
+  elif len(m) > 1:
+    raise ValueError('Too many Change-Ids found')
+  else:
+    return m[0]
+
+
 def Commit(git_repo, message, amend=False, allow_empty=False,
            reset_author=False):
   """Commit with git.
@@ -1239,10 +1259,7 @@ def Commit(git_repo, message, amend=False, allow_empty=False,
   if reset_author:
     cmd.append('--reset-author')
   RunGit(git_repo, cmd)
-
-  log = Log(git_repo, max_count=1, format='format:%B')
-  match = re.search('Change-Id: (?P<ID>I[a-fA-F0-9]*)', log)
-  return match.group('ID') if match else None
+  return GetChangeId(git_repo)
 
 
 _raw_diff_components = ('src_mode', 'dst_mode', 'src_sha', 'dst_sha',

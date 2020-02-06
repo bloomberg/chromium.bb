@@ -113,10 +113,10 @@ class GitWrappersTest(cros_test_lib.RunCommandTempDirTestCase):
 
   CHANGE_ID = 'I0da12ef6d2c670305f0281641bc53db22faf5c1a'
   COMMIT_LOG = """
-  foo: Change to foo.
+foo: Change to foo.
 
-  Change-Id: %s
-  """ % CHANGE_ID
+Change-Id: %s
+""" % CHANGE_ID
 
   PUSH_REMOTE = 'fake_remote'
   PUSH_BRANCH = 'fake_branch'
@@ -321,6 +321,137 @@ class LogTest(cros_test_lib.RunCommandTestCase):
             '--until=1997-01-01', '--reverse', '--date=unix',
             '--', 'my/path',
         ], cwd='git/repo/path')
+
+
+class ChangeIdTest(cros_test_lib.MockTestCase):
+  """Tests for git.GetChangeId function."""
+
+  def testHEAD(self):
+    """Test the parsing of the git.GetChangeId function for HEAD."""
+
+    log_output = """
+lib/git: break out ChangeId into its own function
+
+Code in Commit() will get the Change-Id after doing a git commit,
+but in some use cases, we want to get the Change-Id of a commit
+that already exists, without changing it. Move this code into its
+own function that Commit() calls or an external user can call it
+directly.
+
+BUG=None
+TEST=Start python3
+>>> from chromite.lib import git
+>>> print(git.GetChangeId('.'))
+>>> exit(0)
+$ git show
+Compare the Change-Id printed by the python code with that shown
+
+Change-Id: Ia7b712c42ff83c52c0fb5d88d1ef6c62f49da88d
+"""
+    result = cros_build_lib.CommandResult(output=log_output)
+    self.PatchObject(git, 'RunGit', return_value=result)
+
+    changeid = git.GetChangeId('git/repo/path')
+    self.assertEqual(changeid, 'Ia7b712c42ff83c52c0fb5d88d1ef6c62f49da88d')
+
+  def testSpecificSHA(self):
+    """Test the parsing of the git.GetChangeId function for a specific SHA."""
+
+    sha = '235511fbd7158c6d02c070944eb59cf47b37fcb5'
+    log_output = """
+Add user cros-disks to group android-everybody
+
+This allows cros-disks to access 'Play Files'.
+
+BUG=chromium:996549
+TEST=Manually built and inspected group file
+
+Cq-Depend: chromium:2032906
+Change-Id: Id31c1211f95d7f5c3a94fbe8c028f65d3509f363
+Reviewed-on: https://chromium-review.googlesource.com/c/chromiumos/chromite/+/2040633
+Reviewed-by: Mike Frysinger <vapier@chromium.org>
+Commit-Queue: François Degros <fdegros@chromium.org>
+Tested-by: François Degros <fdegros@chromium.org>
+"""
+    result = cros_build_lib.CommandResult(output=log_output)
+    self.PatchObject(git, 'RunGit', return_value=result)
+
+    changeid = git.GetChangeId('git/repo/path', sha)
+    self.assertEqual(changeid, 'Id31c1211f95d7f5c3a94fbe8c028f65d3509f363')
+
+  def testNoChangeId(self):
+    """Test git.GetChangeId function if there is no Change-Id."""
+
+    log_output = """
+lib/git: break out ChangeId into its own function
+
+Code in Commit() will get the Change-Id after doing a git commit,
+but in some use cases, we want to get the Change-Id of a commit
+that already exists, without changing it. Move this code into its
+own function that Commit() calls or an external user can call it
+directly.
+
+BUG=None
+TEST=Start python3
+>>> from chromite.lib import git
+>>> print(git.GetChangeId('.'))
+>>> exit(0)
+$ git show
+Compare the Change-Id printed by the python code with that shown
+"""
+    result = cros_build_lib.CommandResult(output=log_output)
+    self.PatchObject(git, 'RunGit', return_value=result)
+
+    changeid = git.GetChangeId('git/repo/path')
+    self.assertIsNone(changeid)
+
+  def testChangeIdInTextCol1(self):
+    """Test git.GetChangeId when 'Change-Id' is in the text, not as a key."""
+
+    log_output = """
+new_variant: track branch name and change-id
+
+new_variant.py calls several scripts to create a new variant of a
+reference board. Each of these scripts adds or modifies files and
+creates a new commit. Track the branch name and change-id of each
+commit in preparation for uploading to gerrit.
+This CL builds on the changes in
+Change-Id: I53af157625257ee1ecf39a4ced979138890b54f1
+and while I would normally use a relation chain or cq-depend, I'm
+putting the text directly in here so that the unit test will fail
+until I fix the code to handle the pathological cases.
+
+Cq-Depend: chromium:2041804
+Change-Id: Ib71696f76dc80f1a76b8e7a73493c6c2668e2c6f
+"""
+    result = cros_build_lib.CommandResult(output=log_output)
+    self.PatchObject(git, 'RunGit', return_value=result)
+
+    self.assertRaises(ValueError, git.GetChangeId, 'git/repo/path')
+
+  def testChangeIdInTextNotCol1(self):
+    """Test git.GetChangeId when 'Change-Id' is in the text, not as a key."""
+
+    log_output = """
+new_variant: track branch name and change-id
+
+new_variant.py calls several scripts to create a new variant of a
+reference board. Each of these scripts adds or modifies files and
+creates a new commit. Track the branch name and change-id of each
+commit in preparation for uploading to gerrit. This CL builds on the
+changes in Change-Id: I53af157625257ee1ecf39a4ced979138890b54f1
+and while I would normally use a relation chain or cq-depend, I'm
+putting the text directly in here so that the unit test will fail
+until I fix the code to handle the pathological cases.
+
+Cq-Depend: chromium:2041804
+Change-Id: Ib71696f76dc80f1a76b8e7a73493c6c2668e2c6f
+"""
+    result = cros_build_lib.CommandResult(output=log_output)
+    self.PatchObject(git, 'RunGit', return_value=result)
+
+    changeid = git.GetChangeId('git/repo/path')
+    self.assertEqual(changeid, 'Ib71696f76dc80f1a76b8e7a73493c6c2668e2c6f')
 
 
 class ProjectCheckoutTest(cros_test_lib.TestCase):
