@@ -1915,7 +1915,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.last-upload-hash', 'deadbeef'],), ''),
       ((['git', 'config', 'branch.master.gerritsquashhash', 'deadbeef'],), ''),
     ]
-    self.assertEqual(git_cl.main(['patch', '--gerrit', '123456', '--force']), 0)
+    self.assertEqual(git_cl.main(['patch', '123456', '--force']), 0)
 
   def test_patch_gerrit_guess_by_url(self):
     self.calls += self._get_gerrit_codereview_server_calls(
@@ -2192,7 +2192,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.sys, 'stderr', out)
 
     try:
-      self.assertEqual(git_cl.main(['status', '--issue', '1', '--gerrit']), 0)
+      self.assertEqual(git_cl.main(['status', '--issue', '1']), 0)
     except SystemExit as ex:
       self.assertEqual(ex.code, 2)
       self.assertRegexpMatches(out.getvalue(), r'--field must be specified')
@@ -2207,7 +2207,7 @@ class TestGitCl(TestCase):
 
     self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
     self.assertEqual(
-      git_cl.main(['status', '--issue', '1', '--gerrit', '--field', 'desc']),
+      git_cl.main(['status', '--issue', '1', '--field', 'desc']),
       0)
     self.assertEqual(out.getvalue(), 'foobar\n')
 
@@ -2220,7 +2220,7 @@ class TestGitCl(TestCase):
     self.mock(git_cl.Changelist, 'GetDescription', assertIssue)
     self.mock(git_cl.Changelist, 'CloseIssue', lambda *_: None)
     self.assertEqual(
-      git_cl.main(['set-close', '--issue', '1', '--gerrit']), 0)
+      git_cl.main(['set-close', '--issue', '1']), 0)
 
   def test_description(self):
     out = StringIO()
@@ -2288,7 +2288,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.bug-prefix'],), CERR1),
         ((['git', 'config', 'core.editor'],), 'vi'),
     ]
-    self.assertEqual(0, git_cl.main(['description', '--gerrit']))
+    self.assertEqual(0, git_cl.main(['description']))
 
   def test_description_does_not_append_bug_line_if_fixed_is_present(self):
     current_desc = 'Some.\n\nFixed: 123\nChange-Id: xxx'
@@ -2316,7 +2316,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'rietveld.bug-prefix'],), CERR1),
         ((['git', 'config', 'core.editor'],), 'vi'),
     ]
-    self.assertEqual(0, git_cl.main(['description', '--gerrit']))
+    self.assertEqual(0, git_cl.main(['description']))
 
   def test_description_set_stdin(self):
     out = StringIO()
@@ -2748,8 +2748,7 @@ class TestGitCl(TestCase):
         'msg', None),
        None),
     ]
-    self.assertEqual(0, git_cl.main(['comment', '--gerrit', '-i', '10',
-                                     '-a', 'msg']))
+    self.assertEqual(0, git_cl.main(['comment', '-i', '10', '-a', 'msg']))
 
   def test_git_cl_comments_fetch_gerrit(self):
     self.mock(sys, 'stdout', StringIO())

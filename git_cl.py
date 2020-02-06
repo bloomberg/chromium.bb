@@ -2777,31 +2777,6 @@ class Changelist(object):
     return [r['email'] for r in details['reviewers'].get('REVIEWER', [])]
 
 
-_CODEREVIEW_IMPLEMENTATIONS = {
-  'gerrit': Changelist,
-}
-
-
-def _add_codereview_issue_select_options(parser, extra=""):
-  _add_codereview_select_options(parser)
-
-  text = ('Operate on this issue number instead of the current branch\'s '
-          'implicit issue.')
-  if extra:
-    text += ' '+extra
-  parser.add_option('-i', '--issue', type=int, help=text)
-
-
-def _add_codereview_select_options(parser):
-  """Appends --gerrit option to force specific codereview."""
-  parser.codereview_group = optparse.OptionGroup(
-      parser, 'DEPRECATED! Codereview override options')
-  parser.add_option_group(parser.codereview_group)
-  parser.codereview_group.add_option(
-      '--gerrit', action='store_true',
-      help='Deprecated. Noop. Do not use.')
-
-
 def _get_bug_line_values(default_project, bugs):
   """Given default_project and comma separated list of bugs, yields bug line
   values.
@@ -3873,9 +3848,10 @@ def CMDstatus(parser, args):
   parser.add_option(
       '-j', '--maxjobs', action='store', type=int,
       help='The maximum number of jobs to use when retrieving review status')
-
-  _add_codereview_issue_select_options(
-    parser, 'Must be in conjunction with --field.')
+  parser.add_option(
+      '-i', '--issue', type=int,
+      help='Operate on this issue instead of the current branch\'s implicit '
+      'issue. Requires --field to be set.')
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported args: %s' % args)
@@ -4014,7 +3990,6 @@ def CMDissue(parser, args):
                          'issues will be listed.')
   parser.add_option('--json',
                     help='Path to JSON output file, or "-" for stdout.')
-  _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
 
   if options.reverse:
@@ -4030,12 +4005,11 @@ def CMDissue(parser, args):
       git_config[name] = val
 
     for branch in branches:
-      for cls in _CODEREVIEW_IMPLEMENTATIONS.values():
-        config_key = _git_branch_config_key(ShortBranchName(branch),
-                                            cls.IssueConfigKey())
-        issue = git_config.get(config_key)
-        if issue:
-          issue_branch_map.setdefault(int(issue), []).append(branch)
+      config_key = _git_branch_config_key(ShortBranchName(branch),
+                                          Changelist.IssueConfigKey())
+      issue = git_config.get(config_key)
+      if issue:
+        issue_branch_map.setdefault(int(issue), []).append(branch)
     if not args:
       args = sorted(issue_branch_map.iterkeys())
     result = {}
@@ -4086,7 +4060,6 @@ def CMDcomments(parser, args):
                          'editor parsing')
   parser.add_option('-j', '--json-file',
                     help='File to write JSON summary to, or "-" for stdout')
-  _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
 
   issue = None
@@ -4144,7 +4117,6 @@ def CMDdescription(parser, args):
                     help='Delete any unpublished Gerrit edits for this issue '
                          'without prompting')
 
-  _add_codereview_select_options(parser)
   options, args = parser.parse_args(args)
 
   target_issue_arg = None
@@ -4494,7 +4466,6 @@ def CMDupload(parser, args):
                          'or a new commit is created.')
 
   orig_args = args
-  _add_codereview_select_options(parser)
   (options, args) = parser.parse_args(args)
 
   if git_common.is_dirty_git_tree('upload'):
@@ -4662,7 +4633,6 @@ def CMDpatch(parser, args):
                     help='Performs a pull before reapplying.')
   parser.add_option_group(group)
 
-  _add_codereview_select_options(parser)
   (options, args) = parser.parse_args(args)
 
   if options.reapply:
@@ -4800,7 +4770,10 @@ def CMDtry(parser, args):
       '-R', '--retry-failed', action='store_true', default=False,
       help='Retry failed jobs from the latest set of tryjobs. '
            'Not allowed with --bucket and --bot options.')
-  _add_codereview_issue_select_options(parser)
+  parser.add_option(
+      '-i', '--issue', type=int,
+      help='Operate on this issue instead of the current branch\'s implicit '
+      'issue.')
   options, args = parser.parse_args(args)
 
   # Make sure that all properties are prop=value pairs.
@@ -4889,7 +4862,10 @@ def CMDtry_results(parser, args):
       '--json', help=('Path of JSON output file to write tryjob results to,'
                       'or "-" for stdout.'))
   parser.add_option_group(group)
-  _add_codereview_issue_select_options(parser)
+  parser.add_option(
+      '-i', '--issue', type=int,
+      help='Operate on this issue instead of the current branch\'s implicit '
+      'issue.')
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
@@ -4977,7 +4953,10 @@ def CMDset_commit(parser, args):
                     help='trigger in dry run mode')
   parser.add_option('-c', '--clear', action='store_true',
                     help='stop CQ run, if any')
-  _add_codereview_issue_select_options(parser)
+  parser.add_option(
+      '-i', '--issue', type=int,
+      help='Operate on this issue instead of the current branch\'s implicit '
+      'issue.')
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
@@ -5000,7 +4979,10 @@ def CMDset_commit(parser, args):
 @metrics.collector.collect_metrics('git cl set-close')
 def CMDset_close(parser, args):
   """Closes the issue."""
-  _add_codereview_issue_select_options(parser)
+  parser.add_option(
+      '-i', '--issue', type=int,
+      help='Operate on this issue instead of the current branch\'s implicit '
+      'issue.')
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unrecognized args: %s' % ' '.join(args))
@@ -5457,17 +5439,16 @@ def CMDcheckout(parser, args):
 
   target_issue = str(issue_arg.issue)
 
-  def find_issues(issueprefix):
-    output = RunGit(['config', '--local', '--get-regexp',
-                     r'branch\..*\.%s' % issueprefix],
-                     error_ok=True)
-    for key, issue in [x.split() for x in output.splitlines()]:
-      if issue == target_issue:
-        yield re.sub(r'branch\.(.*)\.%s' % issueprefix, r'\1', key)
+  issueprefix = Changelist.IssueConfigKey()
+  output = RunGit(['config', '--local', '--get-regexp',
+                   r'branch\..*\.%s' % issueprefix],
+                   error_ok=True)
 
   branches = []
-  for cls in _CODEREVIEW_IMPLEMENTATIONS.values():
-    branches.extend(find_issues(cls.IssueConfigKey()))
+  for key, issue in [x.split() for x in output.splitlines()]:
+    if issue == target_issue:
+      branches.append(re.sub(r'branch\.(.*)\.%s' % issueprefix, r'\1', key))
+
   if len(branches) == 0:
     print('No branch found for issue %s.' % target_issue)
     return 1
