@@ -173,43 +173,7 @@ class TestGitClBasic(unittest.TestCase):
     cl = git_cl.Changelist(issue=1, codereview_host='host')
     cl.description = 'x'
     cl.has_description = True
-    cl.FetchDescription = lambda *a, **kw: 'y'
     self.assertEqual(cl.GetDescription(), 'x')
-    self.assertEqual(cl.GetDescription(force=True), 'y')
-    self.assertEqual(cl.GetDescription(), 'y')
-
-  def test_description_footers(self):
-    cl = git_cl.Changelist(issue=1, codereview_host='host')
-    cl.description = '\n'.join([
-      'This is some message',
-      '',
-      'It has some lines',
-      'and, also',
-      '',
-      'Some: Really',
-      'Awesome: Footers',
-    ])
-    cl.has_description = True
-    cl.UpdateDescriptionRemote = lambda *a, **kw: 'y'
-    msg, footers = cl.GetDescriptionFooters()
-    self.assertEqual(
-      msg, ['This is some message', '', 'It has some lines', 'and, also'])
-    self.assertEqual(footers, [('Some', 'Really'), ('Awesome', 'Footers')])
-
-    msg.append('wut')
-    footers.append(('gnarly-dude', 'beans'))
-    cl.UpdateDescriptionFooters(msg, footers)
-    self.assertEqual(cl.GetDescription().splitlines(), [
-      'This is some message',
-      '',
-      'It has some lines',
-      'and, also',
-      'wut'
-      '',
-      'Some: Really',
-      'Awesome: Footers',
-      'Gnarly-Dude: beans',
-    ])
 
   def test_set_preserve_tryjobs(self):
     d = git_cl.ChangeDescription('Simple.')
