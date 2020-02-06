@@ -160,7 +160,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='i2c', gid=404, users={'fwupdate-i2c', 'power'}),
     GroupEntry(group='android-root', gid=655360, users={'android-root'}),
     GroupEntry(group='android-everybody', gid=665357,
-               users={'chronos', 'seneschal'}),
+               users={'chronos', 'cros-disks', 'seneschal'}),
     GroupEntry(group='user-containers', gid=10000, users={'user-containers'}),
     GroupEntry(group='midis', gid=608, users={'chronos'}),
     GroupEntry(group='avfs', gid=301, users={'cros-disks'}),
