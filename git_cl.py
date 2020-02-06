@@ -5238,14 +5238,7 @@ def CMDformat(parser, args):
   parser.add_option(
       '--js',
       action='store_true',
-      default=None,
       help='Format javascript code with clang-format. '
-      'Has no effect if --no-clang-format is set.')
-  parser.add_option(
-      '--no-js',
-      action='store_true',
-      default=False,
-      help='Disable JavaScript/TypeScript formatting code with clang-format. '
       'Has no effect if --no-clang-format is set.')
   parser.add_option('--diff', action='store_true',
                     help='Print diff to stdout rather than modifying files.')
@@ -5257,10 +5250,6 @@ def CMDformat(parser, args):
     raise parser.error('Cannot set both --python and --no-python')
   if opts.no_python:
     opts.python = False
-  if opts.js is not None and opts.no_js:
-    raise parser.error('Cannot set both --js and --no-js')
-  if opts.no_js:
-    opts.js = False
 
   # Normalize any remaining args against the current path, so paths relative to
   # the current directory are still resolved as expected.
@@ -5293,8 +5282,7 @@ def CMDformat(parser, args):
   # Filter out files deleted by this CL
   diff_files = [x for x in diff_files if os.path.isfile(x)]
 
-  js_explicitly_disabled = opts.js is not None and not opts.js
-  if not js_explicitly_disabled:
+  if opts.js:
     CLANG_EXTS.extend(['.js', '.ts'])
 
   clang_diff_files = []
