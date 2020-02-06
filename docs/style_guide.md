@@ -9,10 +9,23 @@ C++14 language and library features are allowed in the Open Screen Library
 according to the
 [C++14 use in Chromium](https://chromium-cpp.appspot.com#core-whitelist) guidelines.
 
+## Modifications to the Chromium C++ Guidelines
+
+- `<functional>` and `std::function` objects are allowed.
+- `<chrono>` is allowed and encouraged for representation of time.
+- Abseil types are allowed based on the whitelist in [DEPS](https://chromium.googlesource.com/openscreen/+/refs/heads/master/DEPS).
+- **Do not** use Abseil types in public APIs.
+- `<thread>` and `<mutex>` are allowed, but discouraged from general use as the
+  library only needs to handle threading in very specific places;
+  see [threading.md](threading.md).
+
 ## Open Screen Library Features
 
 - For public API functions that return values or errors, please return
-  [`ErrorOr<T>`](https://chromium.googlesource.com/openscreen/+/master/base/error.h).
+  [`ErrorOr<T>`](https://chromium.googlesource.com/openscreen/+/master/platform/base/error.h).
+- In the implementation of public APIs invoked by the embedder, use
+  `OSP_DCHECK(TaskRunner::IsRunningOnTaskRunner())` to catch thread safety
+  problems early.
 
 ## Style Addenda
 

@@ -5,6 +5,8 @@
 #ifndef DISCOVERY_MDNS_MDNS_RECEIVER_H_
 #define DISCOVERY_MDNS_MDNS_RECEIVER_H_
 
+#include <functional>
+
 #include "platform/api/udp_socket.h"
 #include "platform/base/error.h"
 #include "platform/base/udp_packet.h"

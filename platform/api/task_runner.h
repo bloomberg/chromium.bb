@@ -14,11 +14,12 @@ namespace openscreen {
 
 // A thread-safe API surface that allows for posting tasks. The underlying
 // implementation may be single or multi-threaded, and all complication should
-// be handled by the implementation class. It is the expectation of this API
-// that the underlying impl gives the following guarantees:
+// be handled by the implementation class. The implementation must guarantee:
 // (1) Tasks shall not overlap in time/CPU.
 // (2) Tasks shall run sequentially, e.g. posting task A then B implies
 //     that A shall run before B.
+// (3) If task A is posted before task B, then any mutation in A happens-before
+//     B runs (even if A and B run on different threads).
 class TaskRunner {
  public:
   using Task = std::packaged_task<void() noexcept>;

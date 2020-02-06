@@ -5,11 +5,10 @@
 #ifndef PLATFORM_API_UDP_SOCKET_H_
 #define PLATFORM_API_UDP_SOCKET_H_
 
-#include <atomic>
-#include <cstdint>
-#include <functional>
+#include <stddef.h>  // size_t
+#include <stdint.h>  // uint8_t
+
 #include <memory>
-#include <mutex>
 
 #include "platform/api/network_interface.h"
 #include "platform/base/error.h"
@@ -19,7 +18,6 @@
 namespace openscreen {
 
 class TaskRunner;
-class UdpSocket;
 
 // An open UDP socket for sending/receiving datagrams to/from either specific
 // endpoints or over IP multicast.
