@@ -2533,8 +2533,12 @@ class TestGitCl(TestCase):
                                    bypass_hooks=True,
                                    verbose=True,
                                    parallel=False))
-    self.assertRegexpMatches(out.getvalue(), 'Issue.*123 has been submitted')
-    self.assertRegexpMatches(out.getvalue(), 'Landed as: .*deadbeef')
+    self.assertIn(
+        'Issue chromium-review.googlesource.com/123 has been submitted',
+        out.getvalue())
+    self.assertIn(
+        'Landed as: https://git.googlesource.com/test/+/deadbeef',
+        out.getvalue())
 
   def _mock_gerrit_changes_for_detail_cache(self):
     self.mock(git_cl.Changelist, '_GetGerritHost', lambda _: 'host')
@@ -2665,12 +2669,12 @@ class TestGitCl(TestCase):
          os.path.expanduser('~/.gitcookies')], ), ''),
     ]
     self.assertEqual(0, git_cl.main(['creds-check']))
-    self.assertRegexpMatches(
-        sys.stdout.getvalue(),
-        '^You seem to be using outdated .netrc for git credentials:')
-    self.assertRegexpMatches(
-        sys.stdout.getvalue(),
-        '\nConfigured git to use .gitcookies from')
+    self.assertTrue(
+        sys.stdout.getvalue().startswith(
+            'You seem to be using outdated .netrc for git credentials:'))
+    self.assertIn(
+        '\nConfigured git to use .gitcookies from',
+        sys.stdout.getvalue())
 
   def test_creds_check_gitcookies_configured_custom_broken(self):
     self._common_creds_check_mocks()
@@ -2687,12 +2691,12 @@ class TestGitCl(TestCase):
          os.path.expanduser('~/.gitcookies')], ), ''),
     ]
     self.assertEqual(0, git_cl.main(['creds-check']))
-    self.assertRegexpMatches(
-        sys.stdout.getvalue(),
-        'WARNING: You have configured custom path to .gitcookies: ')
-    self.assertRegexpMatches(
-        sys.stdout.getvalue(),
-        'However, your configured .gitcookies file is missing.')
+    self.assertIn(
+        'WARNING: You have configured custom path to .gitcookies: ',
+        sys.stdout.getvalue())
+    self.assertIn(
+        'However, your configured .gitcookies file is missing.',
+        sys.stdout.getvalue())
 
   def test_git_cl_comment_add_gerrit(self):
     self.mock(git_cl.gerrit_util, 'SetReview',
