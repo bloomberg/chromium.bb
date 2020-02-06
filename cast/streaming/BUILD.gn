@@ -89,6 +89,8 @@ source_set("sender") {
     "compound_rtcp_parser.h",
     "rtp_packetizer.cc",
     "rtp_packetizer.h",
+    "sender_packet_router.cc",
+    "sender_packet_router.h",
     "sender_report_builder.cc",
     "sender_report_builder.h",
   ]
@@ -119,6 +121,7 @@ source_set("unittests") {
     "rtp_packet_parser_unittest.cc",
     "rtp_packetizer_unittest.cc",
     "rtp_time_unittest.cc",
+    "sender_packet_router_unittest.cc",
     "sender_report_unittest.cc",
     "ssrc_unittest.cc",
   ]

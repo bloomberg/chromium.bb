@@ -19,6 +19,7 @@
 #include "util/big_endian.h"
 #include "util/json/json_serialization.h"
 #include "util/logging.h"
+#include "util/stringprintf.h"
 
 namespace openscreen {
 namespace cast {
@@ -91,32 +92,6 @@ ErrorOr<std::array<uint8_t, kAesBytesSize>> ParseAesHexBytes(
     return bytes;
   }
   return CreateParseError("AES hex string bytes");
-}
-
-char HexToChar(uint8_t hex) {
-  OSP_DCHECK(hex < 16);
-  if (hex < 10) {
-    return '0' + hex;
-  }
-  return 'a' + hex - 10;
-}
-
-std::string AesHexBytesToString(
-    const std::array<uint8_t, kAesBytesSize>& bytes) {
-  std::array<char, kAesBytesSize * kHexDigitsPerByte> buffer;
-  for (size_t i = 0; i < kAesBytesSize; ++i) {
-    const uint8_t byte = bytes[i];
-    const uint8_t top_nibble = (byte & 0b11110000) >> 4;
-    const uint8_t bottom_nibble = (byte & 0b00001111);
-
-    buffer[i * 2] = HexToChar(top_nibble);
-    buffer[i * 2 + 1] = HexToChar(bottom_nibble);
-  }
-
-  // Unfortunately, strings are not guaranteed to store their data in contiguous
-  // memory, so data() does not necessarily point to its internal storage and
-  // a copy is necessary here.
-  return std::string(buffer.data(), buffer.size());
 }
 
 ErrorOr<Stream> ParseStream(const Json::Value& value, Stream::Type type) {
@@ -317,8 +292,8 @@ ErrorOr<Json::Value> Stream::ToJson() const {
                 "this code assumes Ssrc fits in a Json::UInt");
   root["ssrc"] = static_cast<Json::UInt>(ssrc);
   root["targetDelay"] = static_cast<int>(target_delay.count());
-  root["aesKey"] = AesHexBytesToString(aes_key);
-  root["aesIvMask"] = AesHexBytesToString(aes_iv_mask);
+  root["aesKey"] = HexEncode(aes_key);
+  root["aesIvMask"] = HexEncode(aes_iv_mask);
   root["ReceiverRtcpEventLog"] = receiver_rtcp_event_log;
   root["receiverRtcpDscp"] = receiver_rtcp_dscp;
   root["timeBase"] = "1/" + std::to_string(rtp_timebase);

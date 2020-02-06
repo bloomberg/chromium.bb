@@ -42,6 +42,7 @@ class Environment : public UdpSocket::Client {
   ~Environment() override;
 
   ClockNowFunctionPtr now_function() const { return now_function_; }
+  Clock::time_point now() const { return now_function_(); }
   TaskRunner* task_runner() const { return task_runner_; }
 
   // Returns the local endpoint the socket is bound to, or the zero IPEndpoint

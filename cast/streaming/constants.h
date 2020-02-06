@@ -34,6 +34,9 @@ constexpr std::chrono::milliseconds kRtcpReportInterval(500);
 // logic can handle wrap around and compare two frame IDs meaningfully.
 constexpr int kMaxUnackedFrames = 120;
 
+// The network must support a packet size of at least this many bytes.
+constexpr int kRequiredNetworkPacketSize = 256;
+
 // The spec declares RTP timestamps must always have a timebase of 90000 ticks
 // per second for video.
 using kVideoTimebase = std::ratio<1, 90000>;
