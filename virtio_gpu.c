@@ -9,13 +9,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <virtgpu_drm.h>
 #include <xf86drm.h>
 
 #include "drv_priv.h"
 #include "helpers.h"
 #include "util.h"
 #include "virgl_hw.h"
+#include "virtgpu_drm.h"
 
 #ifndef PAGE_SIZE
 #define PAGE_SIZE 0x1000
