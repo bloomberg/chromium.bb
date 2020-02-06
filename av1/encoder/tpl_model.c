@@ -833,7 +833,7 @@ static AOM_INLINE void init_gop_frames_for_tpl(
     ref_picture_map[i] = -i - 1;
   }
 
-  *tpl_group_frames = 0;
+  *tpl_group_frames = cur_frame_idx;
 
   int gf_index;
   int use_arf = gf_group->update_type[1] == ARF_UPDATE;
@@ -896,9 +896,13 @@ static AOM_INLINE void init_gop_frames_for_tpl(
   if (cur_frame_idx == 0) return;
 
   int extend_frame_count = 0;
+  int extend_frame_length =
+      AOMMIN(cpi->rc.baseline_gf_interval,
+             cpi->rc.frames_to_key - cpi->rc.baseline_gf_interval);
   int frame_display_index = cpi->rc.baseline_gf_interval + 1;
 
-  for (; gf_index < MAX_LENGTH_TPL_FRAME_STATS && extend_frame_count < 2;
+  for (; gf_index < MAX_LENGTH_TPL_FRAME_STATS &&
+         extend_frame_count < extend_frame_length;
        ++gf_index) {
     TplDepFrame *tpl_frame = &cpi->tpl_frame[gf_index];
     FRAME_UPDATE_TYPE frame_update_type = LF_UPDATE;
@@ -935,6 +939,11 @@ static AOM_INLINE void init_gop_frames_for_tpl(
     for (int i = LAST_FRAME; i <= ALTREF_FRAME; ++i)
       tpl_frame->ref_map_index[i - LAST_FRAME] =
           ref_picture_map[cm->remapped_ref_idx[i - LAST_FRAME]];
+
+    tpl_frame->ref_map_index[ALTREF_FRAME - LAST_FRAME] = -1;
+    tpl_frame->ref_map_index[LAST3_FRAME - LAST_FRAME] = -1;
+    tpl_frame->ref_map_index[BWDREF_FRAME - LAST_FRAME] = -1;
+    tpl_frame->ref_map_index[ALTREF2_FRAME - LAST_FRAME] = -1;
 
     if (refresh_mask) ref_picture_map[refresh_frame_map_index] = gf_index;
 

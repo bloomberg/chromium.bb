@@ -862,9 +862,6 @@ static aom_codec_err_t set_encoder_config(AV1EncoderConfig *oxcf,
   oxcf->render_width = extra_cfg->render_width;
   oxcf->render_height = extra_cfg->render_height;
   oxcf->arnr_max_frames = extra_cfg->arnr_max_frames;
-  // Adjust g_lag_in_frames down if not needed
-  oxcf->lag_in_frames =
-      AOMMIN(MAX_GF_INTERVAL + oxcf->arnr_max_frames / 2, oxcf->lag_in_frames);
   oxcf->arnr_strength = extra_cfg->arnr_strength;
   oxcf->min_gf_interval = extra_cfg->min_gf_interval;
   oxcf->max_gf_interval = extra_cfg->max_gf_interval;
