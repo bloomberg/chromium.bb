@@ -659,7 +659,7 @@ void AppListControllerImpl::OnOverviewModeEnded() {
   if (!IsTabletMode())
     return;
   const int64_t display_id = last_visible_display_id_;
-  const bool app_list_visible = IsVisible();
+  const bool app_list_visible = GetTargetVisibility();
   OnHomeLauncherAnimationComplete(app_list_visible, display_id);
 }
 

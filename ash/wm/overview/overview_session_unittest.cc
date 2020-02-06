@@ -1271,6 +1271,48 @@ TEST_P(OverviewSessionTest, RemoveDisplayWithAnimation) {
   EXPECT_FALSE(InOverviewSession());
 }
 
+// Tests that tab key does not cause crash if pressed just after overview
+// session exits.
+TEST_P(OverviewSessionTest, NoCrashOnTabAfterExit) {
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  wm::ActivateWindow(window.get());
+
+  ToggleOverview();
+  EXPECT_TRUE(InOverviewSession());
+
+  ToggleOverview();
+  SendKey(ui::VKEY_TAB);
+  EXPECT_FALSE(InOverviewSession());
+}
+
+// Tests that tab key does not cause crash if pressed just after overview
+// session exits, and a child window was active before session start.
+TEST_P(OverviewSessionTest,
+       NoCrashOnTabAfterExitWithChildWindowInitiallyFocused) {
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  std::unique_ptr<aura::Window> child_window = CreateChildWindow(window.get());
+
+  wm::ActivateWindow(child_window.get());
+
+  ToggleOverview();
+  EXPECT_TRUE(InOverviewSession());
+
+  ToggleOverview();
+  SendKey(ui::VKEY_TAB);
+  EXPECT_FALSE(InOverviewSession());
+}
+
+// Tests that tab key does not cause crash if pressed just after overview
+// session exits when no windows existed before starting overview session.
+TEST_P(OverviewSessionTest, NoCrashOnTabAfterExitWithNoWindows) {
+  ToggleOverview();
+  EXPECT_TRUE(InOverviewSession());
+
+  ToggleOverview();
+  SendKey(ui::VKEY_TAB);
+  EXPECT_FALSE(InOverviewSession());
+}
+
 // Tests that dragging a window from the top of a display creates a drop target
 // on that display. The workflow will be real after the tablet disambiguation
 // work. Until then, this test can safely be disabled.
