@@ -144,29 +144,20 @@ void RunStandaloneReceiver(TaskRunnerImpl* task_runner) {
 
 int main(int argc, const char* argv[]) {
   using openscreen::Clock;
+  using openscreen::PlatformClientPosix;
   using openscreen::TaskRunner;
   using openscreen::TaskRunnerImpl;
 
-  class PlatformClientExposingTaskRunner
-      : public openscreen::PlatformClientPosix {
-   public:
-    explicit PlatformClientExposingTaskRunner(
-        std::unique_ptr<TaskRunner> task_runner)
-        : PlatformClientPosix(Clock::duration{50},
-                              Clock::duration{50},
-                              std::move(task_runner)) {
-      SetInstance(this);
-    }
-  };
-
   openscreen::TextTraceLoggingPlatform platform;
   openscreen::SetLogLevel(openscreen::LogLevel::kInfo);
-  auto* const platform_client = new PlatformClientExposingTaskRunner(
-      std::make_unique<TaskRunnerImpl>(&Clock::now));
+  auto* const task_runner = new TaskRunnerImpl(&Clock::now);
+  PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50},
+                              std::unique_ptr<TaskRunnerImpl>(task_runner));
 
-  openscreen::cast::RunStandaloneReceiver(static_cast<TaskRunnerImpl*>(
-      openscreen::PlatformClientPosix::GetInstance()->GetTaskRunner()));
+  // Runs until the process is interrupted.  Safe to pass |task_runner| as it
+  // will not be destroyed by ShutDown() until this exits.
+  openscreen::cast::RunStandaloneReceiver(task_runner);
 
-  platform_client->ShutDown();  // Deletes |platform_client|.
+  PlatformClientPosix::ShutDown();
   return 0;
 }

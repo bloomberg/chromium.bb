@@ -50,7 +50,7 @@ class TaskRunner {
 
   // Return true if the calling thread is the thread that task runner is using
   // to run tasks, false otherwise.
-  virtual bool IsRunningOnTaskRunner() { return true; }
+  virtual bool IsRunningOnTaskRunner() = 0;
 };
 
 }  // namespace openscreen

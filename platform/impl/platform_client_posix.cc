@@ -4,7 +4,8 @@
 
 #include "platform/impl/platform_client_posix.h"
 
-#include <mutex>
+#include <functional>
+#include <vector>
 
 #include "platform/impl/udp_socket_reader_posix.h"
 
@@ -13,38 +14,13 @@ namespace openscreen {
 // static
 PlatformClientPosix* PlatformClientPosix::instance_ = nullptr;
 
-PlatformClientPosix::PlatformClientPosix(
-    Clock::duration networking_operation_timeout,
-    Clock::duration networking_loop_interval)
-    : networking_loop_(networking_operations(),
-                       networking_operation_timeout,
-                       networking_loop_interval),
-      owned_task_runner_(Clock::now),
-      networking_loop_thread_(&OperationLoop::RunUntilStopped,
-                              &networking_loop_),
-      task_runner_thread_(&TaskRunnerImpl::RunUntilStopped,
-                          &owned_task_runner_.value()) {}
-
-PlatformClientPosix::PlatformClientPosix(
-    Clock::duration networking_operation_timeout,
-    Clock::duration networking_loop_interval,
-    std::unique_ptr<TaskRunner> task_runner)
-    : networking_loop_(networking_operations(),
-                       networking_operation_timeout,
-                       networking_loop_interval),
-      caller_provided_task_runner_(std::move(task_runner)),
-      networking_loop_thread_(&OperationLoop::RunUntilStopped,
-                              &networking_loop_) {}
-
-PlatformClientPosix::~PlatformClientPosix() {
-  networking_loop_.RequestStopSoon();
-  networking_loop_thread_.join();
-  if (owned_task_runner_.has_value()) {
-    owned_task_runner_.value().RequestStopSoon();
-  }
-  if (task_runner_thread_.joinable()) {
-    task_runner_thread_.join();
-  }
+// static
+void PlatformClientPosix::Create(Clock::duration networking_operation_timeout,
+                                 Clock::duration networking_loop_interval,
+                                 std::unique_ptr<TaskRunnerImpl> task_runner) {
+  SetInstance(new PlatformClientPosix(networking_operation_timeout,
+                                      networking_loop_interval,
+                                      std::move(task_runner)));
 }
 
 // static
@@ -55,21 +31,19 @@ void PlatformClientPosix::Create(Clock::duration networking_operation_timeout,
 }
 
 // static
-void PlatformClientPosix::SetInstance(PlatformClientPosix* instance) {
-  OSP_DCHECK(!instance_);
-  instance_ = instance;
-}
-
-// static
 void PlatformClientPosix::ShutDown() {
   OSP_DCHECK(instance_);
   delete instance_;
   instance_ = nullptr;
 }
 
-TaskRunner* PlatformClientPosix::GetTaskRunner() {
-  return owned_task_runner_.has_value() ? &owned_task_runner_.value()
-                                        : caller_provided_task_runner_.get();
+TlsDataRouterPosix* PlatformClientPosix::tls_data_router() {
+  std::call_once(tls_data_router_initialization_, [this]() {
+    tls_data_router_ =
+        std::make_unique<TlsDataRouterPosix>(socket_handle_waiter());
+    tls_data_router_created_.store(true);
+  });
+  return tls_data_router_.get();
 }
 
 UdpSocketReaderPosix* PlatformClientPosix::udp_socket_reader() {
@@ -80,13 +54,50 @@ UdpSocketReaderPosix* PlatformClientPosix::udp_socket_reader() {
   return udp_socket_reader_.get();
 }
 
-TlsDataRouterPosix* PlatformClientPosix::tls_data_router() {
-  std::call_once(tls_data_router_initialization_, [this]() {
-    tls_data_router_ =
-        std::make_unique<TlsDataRouterPosix>(socket_handle_waiter());
-    tls_data_router_created_.store(true);
-  });
-  return tls_data_router_.get();
+TaskRunner* PlatformClientPosix::GetTaskRunner() {
+  return task_runner_.get();
+}
+
+PlatformClientPosix::~PlatformClientPosix() {
+  networking_loop_.RequestStopSoon();
+  networking_loop_thread_.join();
+  task_runner_->RequestStopSoon();
+  if (task_runner_thread_ && task_runner_thread_->joinable()) {
+    task_runner_thread_->join();
+  }
+}
+
+// static
+void PlatformClientPosix::SetInstance(PlatformClientPosix* instance) {
+  OSP_DCHECK(!instance_);
+  instance_ = instance;
+}
+
+PlatformClientPosix::PlatformClientPosix(
+    Clock::duration networking_operation_timeout,
+    Clock::duration networking_loop_interval)
+    : networking_loop_(networking_operations(),
+                       networking_operation_timeout,
+                       networking_loop_interval),
+      task_runner_(new TaskRunnerImpl(Clock::now)),
+      networking_loop_thread_(&OperationLoop::RunUntilStopped,
+                              &networking_loop_),
+      task_runner_thread_(
+          std::thread(&TaskRunnerImpl::RunUntilStopped, task_runner_.get())) {
+  SetInstance(this);
+}
+
+PlatformClientPosix::PlatformClientPosix(
+    Clock::duration networking_operation_timeout,
+    Clock::duration networking_loop_interval,
+    std::unique_ptr<TaskRunnerImpl> task_runner)
+    : networking_loop_(networking_operations(),
+                       networking_operation_timeout,
+                       networking_loop_interval),
+      task_runner_(std::move(task_runner)),
+      networking_loop_thread_(&OperationLoop::RunUntilStopped,
+                              &networking_loop_) {
+  SetInstance(this);
 }
 
 SocketHandleWaiterPosix* PlatformClientPosix::socket_handle_waiter() {
