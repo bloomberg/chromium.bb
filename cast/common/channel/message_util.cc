@@ -4,6 +4,8 @@
 
 #include "cast/common/channel/message_util.h"
 
+#include "util/logging.h"
+
 namespace openscreen {
 namespace cast {
 namespace {
@@ -21,6 +23,20 @@ CastMessage MakeConnectionMessage(const std::string& source_id,
 }
 
 }  // namespace
+
+std::string ToString(AppAvailabilityResult availability) {
+  switch (availability) {
+    case AppAvailabilityResult::kAvailable:
+      return "Available";
+    case AppAvailabilityResult::kUnavailable:
+      return "Unavailable";
+    case AppAvailabilityResult::kUnknown:
+      return "Unknown";
+    default:
+      OSP_NOTREACHED();
+      return "bad value";
+  }
+}
 
 CastMessage MakeSimpleUTF8Message(const std::string& namespace_,
                                   std::string payload) {

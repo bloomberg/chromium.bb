@@ -52,6 +52,14 @@ static constexpr char kMessageTypeConnect[] = "CONNECT";
 static constexpr char kMessageTypeClose[] = "CLOSE";
 static constexpr char kMessageTypeConnected[] = "CONNECTED";
 
+enum class AppAvailabilityResult {
+  kAvailable,
+  kUnavailable,
+  kUnknown,
+};
+
+std::string ToString(AppAvailabilityResult availability);
+
 inline bool IsAuthMessage(const ::cast::channel::CastMessage& message) {
   return message.namespace_() == kAuthNamespace;
 }

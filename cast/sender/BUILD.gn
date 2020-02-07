@@ -27,16 +27,35 @@ source_set("channel") {
   ]
 }
 
+source_set("sender") {
+  sources = [
+    "cast_app_availability_tracker.cc",
+    "cast_app_availability_tracker.h",
+    "public/cast_media_source.cc",
+    "public/cast_media_source.h",
+  ]
+
+  public_deps = [
+    ":channel",
+    "../../platform",
+    "../../util",
+  ]
+}
+
 source_set("unittests") {
   testonly = true
   sources = [
+    "cast_app_availability_tracker_unittest.cc",
     "channel/cast_auth_util_unittest.cc",
   ]
 
   deps = [
     ":channel",
+    ":sender",
     "../../platform",
+    "../../platform:test",
     "../../testing/util",
+    "../../third_party/googletest:gmock",
     "../../third_party/googletest:gtest",
     "../common/certificate/proto:certificate_proto",
     "../common/certificate/proto:certificate_unittest_proto",
