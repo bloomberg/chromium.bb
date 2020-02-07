@@ -14,7 +14,7 @@
 #include "platform/base/error.h"
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/tls_data_router_posix.h"
-#include "platform/impl/weak_ptr.h"
+#include "util/weak_ptr.h"
 
 namespace openscreen {
 

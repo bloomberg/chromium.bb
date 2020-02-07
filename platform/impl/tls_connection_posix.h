@@ -13,7 +13,7 @@
 #include "platform/impl/platform_client_posix.h"
 #include "platform/impl/stream_socket_posix.h"
 #include "platform/impl/tls_write_buffer.h"
-#include "platform/impl/weak_ptr.h"
+#include "util/weak_ptr.h"
 
 namespace openscreen {
 

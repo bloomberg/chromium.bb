@@ -15,7 +15,7 @@
 #include "platform/impl/socket_address_posix.h"
 #include "platform/impl/socket_handle_posix.h"
 #include "platform/impl/stream_socket.h"
-#include "platform/impl/weak_ptr.h"
+#include "util/weak_ptr.h"
 
 namespace openscreen {
 

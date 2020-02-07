@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PLATFORM_IMPL_WEAK_PTR_H_
-#define PLATFORM_IMPL_WEAK_PTR_H_
+#ifndef UTIL_WEAK_PTR_H_
+#define UTIL_WEAK_PTR_H_
 
 #include <memory>
 
@@ -213,4 +213,4 @@ class WeakPtrFactory {
 
 }  // namespace openscreen
 
-#endif  // PLATFORM_IMPL_WEAK_PTR_H_
+#endif  // UTIL_WEAK_PTR_H_

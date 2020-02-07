@@ -40,6 +40,7 @@ source_set("util") {
     "trace_logging/macro_support.h",
     "trace_logging/scoped_trace_operations.cc",
     "trace_logging/scoped_trace_operations.h",
+    "weak_ptr.h",
     "yet_another_bit_vector.cc",
     "yet_another_bit_vector.h",
   ]
@@ -75,6 +76,7 @@ source_set("unittests") {
     "simple_fraction_unittest.cc",
     "trace_logging/scoped_trace_operations_unittest.cc",
     "trace_logging_unittest.cc",
+    "weak_ptr_unittest.cc",
     "yet_another_bit_vector_unittest.cc",
   ]
 
