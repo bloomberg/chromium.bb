@@ -1106,9 +1106,9 @@ class ChromeSDKCommand(command.CliCommand):
 
     # Disable ThinLTO and CFI for simplechrome. Tryjob machines do not have
     # enough file descriptors to use. crbug.com/789607
-    if not options.thinlto and 'use_thin_lto' in gn_args:
+    if not options.thinlto:
       gn_args['use_thin_lto'] = False
-    if not options.cfi and 'is_cfi' in gn_args:
+    if not options.cfi:
       gn_args['is_cfi'] = False
       gn_args['use_cfi_cast'] = False
     # We need to remove the flag -Wl,-plugin-opt,-import-instr-limit=$num
