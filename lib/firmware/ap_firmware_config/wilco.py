@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Wilco specific functions to get flash commands"""
+"""Wilco configs."""
 
 from __future__ import print_function
 from chromite.lib import cros_logging as logging

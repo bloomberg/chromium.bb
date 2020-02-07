@@ -218,7 +218,7 @@ def _flash(dut_ctl, dut_cmd_on, dut_cmd_off, flash_cmd, verbose):
 
 # TODO: Split out to actual arguments rather than an argparse namespace.
 def deploy(opts):
-  module_name = 'chromite.lib.firmware.flash_ap_commands.%s' % opts.board
+  module_name = 'chromite.lib.firmware.ap_firmware_config.%s' % opts.board
   try:
     module = importlib.import_module(module_name)
   except ImportError:
