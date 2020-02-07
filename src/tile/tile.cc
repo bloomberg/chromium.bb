@@ -1975,8 +1975,8 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
       (build_bit_mask_when_parsing_ || !split_parse_and_decode_)) {
     BuildBitMask(block);
   }
+  StoreMotionFieldMvsIntoCurrentFrame(block);
   if (!split_parse_and_decode_) {
-    StoreMotionFieldMvsIntoCurrentFrame(block);
     prediction_parameters_ = std::move(bp.prediction_parameters);
   }
   return true;
@@ -1998,7 +1998,6 @@ bool Tile::DecodeBlock(ParameterTree* const tree,
   if (kDeblockFilterBitMask && !build_bit_mask_when_parsing_) {
     BuildBitMask(block);
   }
-  StoreMotionFieldMvsIntoCurrentFrame(block);
   block.bp->prediction_parameters.reset(nullptr);
   return true;
 }
