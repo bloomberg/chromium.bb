@@ -126,14 +126,12 @@ void RefCountedBuffer::ReturnToBufferPool(RefCountedBuffer* ptr) {
   ptr->pool_->ReturnUnusedBuffer(ptr);
 }
 
-// static
-constexpr int BufferPool::kNumBuffers;
-
 BufferPool::BufferPool(
     FrameBufferSizeChangedCallback on_frame_buffer_size_changed,
     GetFrameBufferCallback2 get_frame_buffer,
     ReleaseFrameBufferCallback2 release_frame_buffer,
-    void* callback_private_data, bool using_callback_adaptor) {
+    void* callback_private_data, bool using_callback_adaptor)
+    : using_callback_adaptor_(using_callback_adaptor) {
   if (get_frame_buffer != nullptr) {
     assert(on_frame_buffer_size_changed != nullptr);
     assert(release_frame_buffer != nullptr);
@@ -142,26 +140,20 @@ BufferPool::BufferPool(
     release_frame_buffer_ = release_frame_buffer;
     callback_private_data_ = callback_private_data;
   } else {
-    internal_frame_buffers_ = InternalFrameBufferList::Create(kNumBuffers);
-    // OnInternalFrameBufferSizeChanged and GetInternalFrameBuffer check
-    // whether their private_data argument is null, so we don't need to check
-    // whether internal_frame_buffers_ is null here.
     on_frame_buffer_size_changed_ = OnInternalFrameBufferSizeChanged;
     get_frame_buffer_ = GetInternalFrameBuffer;
     release_frame_buffer_ = ReleaseInternalFrameBuffer;
-    callback_private_data_ = internal_frame_buffers_.get();
-  }
-  for (RefCountedBuffer& buffer : buffers_) {
-    buffer.SetBufferPool(this, using_callback_adaptor);
+    callback_private_data_ = &internal_frame_buffers_;
   }
 }
 
 BufferPool::~BufferPool() {
-  for (const RefCountedBuffer& buffer : buffers_) {
-    if (buffer.in_use_) {
+  for (const auto* buffer : buffers_) {
+    if (buffer->in_use_) {
       assert(false && "RefCountedBuffer still in use at destruction time.");
       LIBGAV1_DLOG(ERROR, "RefCountedBuffer still in use at destruction time.");
     }
+    delete buffer;
   }
 }
 
@@ -180,16 +172,27 @@ bool BufferPool::OnFrameBufferSizeChanged(int bitdepth,
 }
 
 RefCountedBufferPtr BufferPool::GetFreeBuffer() {
-  for (RefCountedBuffer& buffer : buffers_) {
-    if (!buffer.in_use_) {
-      buffer.in_use_ = true;
-      return RefCountedBufferPtr(&buffer, RefCountedBuffer::ReturnToBufferPool);
+  for (auto buffer : buffers_) {
+    if (!buffer->in_use_) {
+      buffer->in_use_ = true;
+      return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
     }
   }
-
-  // We should never run out of free buffers. If we reach here, there is a
-  // reference leak.
-  return RefCountedBufferPtr();
+  auto* const buffer = new (std::nothrow) RefCountedBuffer();
+  if (buffer == nullptr) {
+    LIBGAV1_DLOG(ERROR, "Failed to allocate a new reference counted buffer.");
+    return RefCountedBufferPtr();
+  }
+  if (!buffers_.push_back(buffer)) {
+    LIBGAV1_DLOG(
+        ERROR,
+        "Failed to push the new reference counted buffer into the vector.");
+    delete buffer;
+    return RefCountedBufferPtr();
+  }
+  buffer->SetBufferPool(this, using_callback_adaptor_);
+  buffer->in_use_ = true;
+  return RefCountedBufferPtr(buffer, RefCountedBuffer::ReturnToBufferPool);
 }
 
 void BufferPool::ReturnUnusedBuffer(RefCountedBuffer* buffer) {

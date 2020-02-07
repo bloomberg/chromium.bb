@@ -24,6 +24,7 @@
 #include "src/gav1/frame_buffer.h"
 #include "src/gav1/frame_buffer2.h"
 #include "src/utils/memory.h"
+#include "src/utils/vector.h"
 
 namespace libgav1 {
 
@@ -52,7 +53,7 @@ extern "C" int V1ReleaseInternalFrameBuffer(void* private_data,
 
 class InternalFrameBufferList : public Allocable {
  public:
-  static std::unique_ptr<InternalFrameBufferList> Create(size_t num_buffers);
+  InternalFrameBufferList() = default;
 
   // Not copyable or movable.
   InternalFrameBufferList(const InternalFrameBufferList&) = delete;
@@ -83,11 +84,7 @@ class InternalFrameBufferList : public Allocable {
     bool in_use = false;
   };
 
-  InternalFrameBufferList(std::unique_ptr<Buffer[]> buffers,
-                          size_t num_buffers);
-
-  const std::unique_ptr<Buffer[]> buffers_;
-  const size_t num_buffers_;
+  Vector<std::unique_ptr<Buffer>> buffers_;
 };
 
 }  // namespace libgav1

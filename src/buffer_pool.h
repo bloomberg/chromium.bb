@@ -21,7 +21,6 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
-#include <memory>
 
 #include "src/dsp/common.h"
 #include "src/gav1/decoder_buffer.h"
@@ -35,6 +34,7 @@
 #include "src/utils/segmentation.h"
 #include "src/utils/segmentation_map.h"
 #include "src/utils/types.h"
+#include "src/utils/vector.h"
 #include "src/yuv_buffer.h"
 
 namespace libgav1 {
@@ -293,17 +293,15 @@ class BufferPool {
  private:
   friend class RefCountedBuffer;
 
-  // Reference frames + 1 scratch frame (for either the current frame or the
-  // film grain frame).
-  static constexpr int kNumBuffers = kNumReferenceFrameTypes + 1;
-
   // Returns an unused buffer to the buffer pool. Called by RefCountedBuffer
   // only.
   void ReturnUnusedBuffer(RefCountedBuffer* buffer);
 
-  RefCountedBuffer buffers_[kNumBuffers];
-
-  std::unique_ptr<InternalFrameBufferList> internal_frame_buffers_;
+  // Storing a RefCountedBuffer object in a Vector is complicated because of the
+  // copy/move semantics. So the simplest way around that is to store a list of
+  // pointers in the vector.
+  Vector<RefCountedBuffer*> buffers_;
+  InternalFrameBufferList internal_frame_buffers_;
 
   // Frame buffer callbacks.
   FrameBufferSizeChangedCallback on_frame_buffer_size_changed_;
@@ -311,6 +309,7 @@ class BufferPool {
   ReleaseFrameBufferCallback2 release_frame_buffer_;
   // Private data associated with the frame buffer callbacks.
   void* callback_private_data_;
+  const bool using_callback_adaptor_;
 };
 
 }  // namespace libgav1

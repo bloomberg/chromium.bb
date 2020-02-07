@@ -33,10 +33,6 @@ int OnInternalFrameBufferSizeChanged(void* callback_private_data, int bitdepth,
                                      int bottom_border, int stride_alignment) {
   auto* buffer_list =
       static_cast<InternalFrameBufferList*>(callback_private_data);
-  // buffer_list is a null pointer if the InternalFrameBufferList::Create()
-  // call fails. For simplicity, we handle the unlikely failure of
-  // InternalFrameBufferList::Create() here, rather than at the call sites.
-  if (buffer_list == nullptr) return -1;
   return buffer_list->OnFrameBufferSizeChanged(
       bitdepth, image_format, width, height, left_border, right_border,
       top_border, bottom_border, stride_alignment);
@@ -50,10 +46,6 @@ int GetInternalFrameBuffer(void* callback_private_data, int bitdepth,
                            Libgav1FrameBuffer2* frame_buffer) {
   auto* buffer_list =
       static_cast<InternalFrameBufferList*>(callback_private_data);
-  // buffer_list is a null pointer if the InternalFrameBufferList::Create()
-  // call fails. For simplicity, we handle the unlikely failure of
-  // InternalFrameBufferList::Create() here, rather than at the call sites.
-  if (buffer_list == nullptr) return -1;
   return buffer_list->GetFrameBuffer(
       bitdepth, image_format, width, height, left_border, right_border,
       top_border, bottom_border, stride_alignment, frame_buffer);
@@ -70,10 +62,6 @@ int V1GetInternalFrameBuffer(void* private_data, size_t y_plane_min_size,
                              size_t uv_plane_min_size,
                              FrameBuffer* frame_buffer) {
   auto* buffer_list = static_cast<InternalFrameBufferList*>(private_data);
-  // buffer_list is a null pointer if the InternalFrameBufferList::Create()
-  // call fails. For simplicity, we handle the unlikely failure of
-  // InternalFrameBufferList::Create() here, rather than at the call sites.
-  if (buffer_list == nullptr) return -1;
   return buffer_list->V1GetFrameBuffer(y_plane_min_size, uv_plane_min_size,
                                        frame_buffer);
 }
@@ -85,22 +73,6 @@ int V1ReleaseInternalFrameBuffer(void* private_data,
 }
 
 }  // extern "C"
-
-// static
-std::unique_ptr<InternalFrameBufferList> InternalFrameBufferList::Create(
-    size_t num_buffers) {
-  std::unique_ptr<InternalFrameBufferList> buffer_list;
-  std::unique_ptr<Buffer[]> buffers(new (std::nothrow) Buffer[num_buffers]);
-  if (buffers != nullptr) {
-    buffer_list.reset(new (std::nothrow) InternalFrameBufferList(
-        std::move(buffers), num_buffers));
-  }
-  return buffer_list;
-}
-
-InternalFrameBufferList::InternalFrameBufferList(
-    std::unique_ptr<Buffer[]> buffers, size_t num_buffers)
-    : buffers_(std::move(buffers)), num_buffers_(num_buffers) {}
 
 int InternalFrameBufferList::OnFrameBufferSizeChanged(
     int bitdepth, Libgav1ImageFormat image_format, int width, int height,
@@ -182,21 +154,30 @@ int InternalFrameBufferList::GetFrameBuffer(
   }
   const size_t min_size = y_plane_min_size + 2 * uv_plane_min_size;
 
-  size_t i;
-  for (i = 0; i < num_buffers_; ++i) {
-    if (!buffers_[i].in_use) break;
+  Buffer* buffer = nullptr;
+  for (auto& buffer_ptr : buffers_) {
+    if (!buffer_ptr->in_use) {
+      buffer = buffer_ptr.get();
+      break;
+    }
   }
-  if (i == num_buffers_) return -1;
+  if (buffer == nullptr) {
+    std::unique_ptr<Buffer> new_buffer(new (std::nothrow) Buffer);
+    if (new_buffer == nullptr || !buffers_.push_back(std::move(new_buffer))) {
+      return -1;
+    }
+    buffer = buffers_.back().get();
+  }
 
-  if (buffers_[i].size < min_size) {
+  if (buffer->size < min_size) {
     std::unique_ptr<uint8_t[], MallocDeleter> new_data(
         static_cast<uint8_t*>(malloc(min_size)));
     if (new_data == nullptr) return -1;
-    buffers_[i].data = std::move(new_data);
-    buffers_[i].size = min_size;
+    buffer->data = std::move(new_data);
+    buffer->size = min_size;
   }
 
-  uint8_t* y_buffer = buffers_[i].data.get();
+  uint8_t* y_buffer = buffer->data.get();
   uint8_t* u_buffer = is_monochrome ? nullptr : y_buffer + y_plane_min_size;
   uint8_t* v_buffer = is_monochrome ? nullptr : u_buffer + uv_plane_min_size;
   int left_border_bytes = left_border;
@@ -217,8 +198,8 @@ int InternalFrameBufferList::GetFrameBuffer(
                 stride_alignment);
   frame_buffer->stride[0] = y_stride;
   frame_buffer->stride[1] = frame_buffer->stride[2] = uv_stride;
-  frame_buffer->private_data = &buffers_[i];
-  buffers_[i].in_use = true;
+  frame_buffer->private_data = buffer;
+  buffer->in_use = true;
   return 0;
 }
 
@@ -236,28 +217,37 @@ int InternalFrameBufferList::V1GetFrameBuffer(size_t y_plane_min_size,
   }
   const size_t min_size = y_plane_min_size + 2 * uv_plane_min_size;
 
-  size_t i;
-  for (i = 0; i < num_buffers_; ++i) {
-    if (!buffers_[i].in_use) break;
+  Buffer* buffer = nullptr;
+  for (auto& buffer_ptr : buffers_) {
+    if (!buffer_ptr->in_use) {
+      buffer = buffer_ptr.get();
+      break;
+    }
   }
-  if (i == num_buffers_) return -1;
+  if (buffer == nullptr) {
+    std::unique_ptr<Buffer> new_buffer(new (std::nothrow) Buffer);
+    if (new_buffer == nullptr || !buffers_.push_back(std::move(new_buffer))) {
+      return -1;
+    }
+    buffer = buffers_.back().get();
+  }
 
-  if (buffers_[i].size < min_size) {
+  if (buffer->size < min_size) {
     std::unique_ptr<uint8_t[], MallocDeleter> new_data(
         static_cast<uint8_t*>(malloc(min_size)));
     if (new_data == nullptr) return -1;
-    buffers_[i].data = std::move(new_data);
-    buffers_[i].size = min_size;
+    buffer->data = std::move(new_data);
+    buffer->size = min_size;
   }
 
-  frame_buffer->data[0] = buffers_[i].data.get();
+  frame_buffer->data[0] = buffer->data.get();
   frame_buffer->size[0] = y_plane_min_size;
   frame_buffer->data[1] = frame_buffer->data[0] + y_plane_min_size;
   frame_buffer->size[1] = uv_plane_min_size;
   frame_buffer->data[2] = frame_buffer->data[1] + uv_plane_min_size;
   frame_buffer->size[2] = uv_plane_min_size;
-  frame_buffer->private_data = &buffers_[i];
-  buffers_[i].in_use = true;
+  frame_buffer->private_data = buffer;
+  buffer->in_use = true;
   return 0;
 }
 
