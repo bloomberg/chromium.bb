@@ -1130,7 +1130,6 @@ class ChromeSDKCommand(command.CliCommand):
       gn_args['use_thin_lto'] = False
     if not options.cfi:
       gn_args['is_cfi'] = False
-      gn_args['use_cfi_cast'] = False
     # We need to remove the flag -Wl,-plugin-opt,-import-instr-limit=$num
     # from cros_target_extra_ldflags if options.thinlto is not set.
     # The format of ld flags is something like
