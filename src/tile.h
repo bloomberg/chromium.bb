@@ -28,7 +28,6 @@
 #include <vector>
 
 #include "src/buffer_pool.h"
-#include "src/decoder_scratch_buffer.h"
 #include "src/dsp/common.h"
 #include "src/dsp/constants.h"
 #include "src/dsp/dsp.h"
@@ -39,6 +38,7 @@
 #include "src/quantizer.h"
 #include "src/residual_buffer_pool.h"
 #include "src/symbol_decoder_context.h"
+#include "src/tile_scratch_buffer.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/block_parameters_holder.h"
 #include "src/utils/blocking_counter.h"
@@ -83,7 +83,7 @@ class Tile : public Allocable {
        BlockParametersHolder* block_parameters, Array2D<int16_t>* cdef_index,
        Array2D<TransformSize>* inter_transform_sizes, const dsp::Dsp* dsp,
        ThreadPool* thread_pool, ResidualBufferPool* residual_buffer_pool,
-       DecoderScratchBufferPool* decoder_scratch_buffer_pool,
+       TileScratchBufferPool* tile_scratch_buffer_pool,
        Array2D<SuperBlockState>* superblock_state,
        BlockingCounterWithStatus* pending_tiles);
 
@@ -98,7 +98,7 @@ class Tile : public Allocable {
   bool Decode(bool is_main_thread);  // 5.11.2.
   // Decodes all the columns of the superblock row at |row4x4| that are within
   // this Tile.
-  bool DecodeSuperBlockRow(int row4x4, DecoderScratchBuffer* scratch_buffer);
+  bool DecodeSuperBlockRow(int row4x4, TileScratchBuffer* scratch_buffer);
   const ObuSequenceHeader& sequence_header() const { return sequence_header_; }
   const ObuFrameHeader& frame_header() const { return frame_header_; }
   const RefCountedBuffer& current_frame() const { return current_frame_; }
@@ -227,27 +227,26 @@ class Tile : public Allocable {
   // the blocks in the right order.
   bool ProcessPartition(
       int row4x4_start, int column4x4_start, ParameterTree* root,
-      DecoderScratchBuffer* scratch_buffer,
+      TileScratchBuffer* scratch_buffer,
       ResidualPtr* residual);  // Iterative implementation of 5.11.4.
   bool ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
-                    ParameterTree* tree, DecoderScratchBuffer* scratch_buffer,
+                    ParameterTree* tree, TileScratchBuffer* scratch_buffer,
                     ResidualPtr* residual);   // 5.11.5.
   void ResetCdef(int row4x4, int column4x4);  // 5.11.55.
 
   // This function is used to decode a superblock when the parsing has already
   // been done for that superblock.
-  bool DecodeSuperBlock(ParameterTree* tree,
-                        DecoderScratchBuffer* scratch_buffer,
+  bool DecodeSuperBlock(ParameterTree* tree, TileScratchBuffer* scratch_buffer,
                         ResidualPtr* residual);
   // Helper function used by DecodeSuperBlock(). Note that the decode_block()
   // function in the spec is equivalent to ProcessBlock() in the code.
-  bool DecodeBlock(ParameterTree* tree, DecoderScratchBuffer* scratch_buffer,
+  bool DecodeBlock(ParameterTree* tree, TileScratchBuffer* scratch_buffer,
                    ResidualPtr* residual);
 
-  void ClearBlockDecoded(DecoderScratchBuffer* scratch_buffer, int row4x4,
+  void ClearBlockDecoded(TileScratchBuffer* scratch_buffer, int row4x4,
                          int column4x4);  // 5.11.3.
   bool ProcessSuperBlock(int row4x4, int column4x4, int block_width4x4,
-                         DecoderScratchBuffer* scratch_buffer,
+                         TileScratchBuffer* scratch_buffer,
                          ProcessingMode mode);
   void ResetLoopRestorationParams();
   void ReadLoopRestorationCoefficients(int row4x4, int column4x4,
@@ -655,7 +654,7 @@ class Tile : public Allocable {
   ThreadPool* const thread_pool_;
   ThreadingParameters threading_;
   ResidualBufferPool* const residual_buffer_pool_;
-  DecoderScratchBufferPool* const decoder_scratch_buffer_pool_;
+  TileScratchBufferPool* const tile_scratch_buffer_pool_;
   BlockingCounterWithStatus* const pending_tiles_;
   bool split_parse_and_decode_;
   // This is used only when |split_parse_and_decode_| is false.
@@ -674,7 +673,7 @@ class Tile : public Allocable {
 
 struct Tile::Block {
   Block(const Tile& tile, int row4x4, int column4x4, BlockSize size,
-        DecoderScratchBuffer* const scratch_buffer, ResidualPtr* residual)
+        TileScratchBuffer* const scratch_buffer, ResidualPtr* residual)
       : tile(tile),
         row4x4(row4x4),
         column4x4(column4x4),
@@ -820,7 +819,7 @@ struct Tile::Block {
   const BlockParameters* bp_top;
   const BlockParameters* bp_left;
   BlockParameters* bp;
-  DecoderScratchBuffer* const scratch_buffer;
+  TileScratchBuffer* const scratch_buffer;
   ResidualPtr* const residual;
 };
 

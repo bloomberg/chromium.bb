@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "src/decoder_scratch_buffer.h"
+#include "src/tile_scratch_buffer.h"
 
 namespace libgav1 {
 
 // static
-constexpr int DecoderScratchBuffer::kBlockDecodedStride;
+constexpr int TileScratchBuffer::kBlockDecodedStride;
 
 }  // namespace libgav1

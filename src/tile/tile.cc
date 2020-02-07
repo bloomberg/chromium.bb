@@ -345,7 +345,7 @@ Tile::Tile(
     Array2D<TransformSize>* const inter_transform_sizes,
     const dsp::Dsp* const dsp, ThreadPool* const thread_pool,
     ResidualBufferPool* const residual_buffer_pool,
-    DecoderScratchBufferPool* const decoder_scratch_buffer_pool,
+    TileScratchBufferPool* const tile_scratch_buffer_pool,
     Array2D<SuperBlockState>* const superblock_state,
     BlockingCounterWithStatus* const pending_tiles)
     : number_(tile_number),
@@ -385,7 +385,7 @@ Tile::Tile(
       inter_transform_sizes_(*inter_transform_sizes),
       thread_pool_(thread_pool),
       residual_buffer_pool_(residual_buffer_pool),
-      decoder_scratch_buffer_pool_(decoder_scratch_buffer_pool),
+      tile_scratch_buffer_pool_(tile_scratch_buffer_pool),
       pending_tiles_(pending_tiles),
       build_bit_mask_when_parsing_(false),
       initialized_(false) {
@@ -501,7 +501,7 @@ bool Tile::Init() {
 }
 
 bool Tile::DecodeSuperBlockRow(int row4x4,
-                               DecoderScratchBuffer* const scratch_buffer) {
+                               TileScratchBuffer* const scratch_buffer) {
   if (row4x4 < row4x4_start_ || row4x4 >= row4x4_end_) return true;
   if (!initialized_ && !Init()) return false;
   assert(scratch_buffer != nullptr);
@@ -539,8 +539,8 @@ bool Tile::Decode(bool is_main_thread) {
     if (!ThreadedDecode()) return false;
   } else {
     const int block_width4x4 = kNum4x4BlocksWide[SuperBlockSize()];
-    std::unique_ptr<DecoderScratchBuffer> scratch_buffer =
-        decoder_scratch_buffer_pool_->Get();
+    std::unique_ptr<TileScratchBuffer> scratch_buffer =
+        tile_scratch_buffer_pool_->Get();
     if (scratch_buffer == nullptr) {
       pending_tiles_->Decrement(false);
       LIBGAV1_DLOG(ERROR, "Failed to get scratch buffer.");
@@ -553,7 +553,7 @@ bool Tile::Decode(bool is_main_thread) {
         return false;
       }
     }
-    decoder_scratch_buffer_pool_->Release(std::move(scratch_buffer));
+    tile_scratch_buffer_pool_->Release(std::move(scratch_buffer));
   }
   SaveSymbolDecoderContext();
   if (!split_parse_and_decode_) {
@@ -572,8 +572,8 @@ bool Tile::ThreadedDecode() {
   const int block_width4x4 = kNum4x4BlocksWide[SuperBlockSize()];
 
   // Begin parsing.
-  std::unique_ptr<DecoderScratchBuffer> scratch_buffer =
-      decoder_scratch_buffer_pool_->Get();
+  std::unique_ptr<TileScratchBuffer> scratch_buffer =
+      tile_scratch_buffer_pool_->Get();
   if (scratch_buffer == nullptr) {
     pending_tiles_->Decrement(false);
     LIBGAV1_DLOG(ERROR, "Failed to get scratch buffer.");
@@ -608,7 +608,7 @@ bool Tile::ThreadedDecode() {
     std::lock_guard<std::mutex> lock(threading_.mutex);
     if (threading_.abort) break;
   }
-  decoder_scratch_buffer_pool_->Release(std::move(scratch_buffer));
+  tile_scratch_buffer_pool_->Release(std::move(scratch_buffer));
 
   // We are done parsing. We can return here since the calling thread will make
   // sure that it waits for all the superblocks to be decoded.
@@ -666,13 +666,13 @@ void Tile::DecodeSuperBlock(int row_index, int column_index,
                             int block_width4x4) {
   const int row4x4 = row4x4_start_ + (row_index * block_width4x4);
   const int column4x4 = column4x4_start_ + (column_index * block_width4x4);
-  std::unique_ptr<DecoderScratchBuffer> scratch_buffer =
-      decoder_scratch_buffer_pool_->Get();
+  std::unique_ptr<TileScratchBuffer> scratch_buffer =
+      tile_scratch_buffer_pool_->Get();
   bool ok = scratch_buffer != nullptr;
   if (ok) {
     ok = ProcessSuperBlock(row4x4, column4x4, block_width4x4,
                            scratch_buffer.get(), kProcessingModeDecodeOnly);
-    decoder_scratch_buffer_pool_->Release(std::move(scratch_buffer));
+    tile_scratch_buffer_pool_->Release(std::move(scratch_buffer));
   }
   std::unique_lock<std::mutex> lock(threading_.mutex);
   if (ok) {
@@ -1516,7 +1516,7 @@ bool Tile::TransformBlock(const Block& block, Plane plane, int base_x,
              ->block_decoded[plane][(sub_block_row4x4 >> subsampling_y) + 1]
                             [(sub_block_column4x4 >> subsampling_x) + 1];
     SetBlockValues<bool>(step_y, step_x, true, block_decoded,
-                         DecoderScratchBuffer::kBlockDecodedStride);
+                         TileScratchBuffer::kBlockDecodedStride);
   }
   return true;
 }
@@ -1920,7 +1920,7 @@ void Tile::PopulateDeblockFilterLevel(const Block& block) {
 
 bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
                         ParameterTree* const tree,
-                        DecoderScratchBuffer* const scratch_buffer,
+                        TileScratchBuffer* const scratch_buffer,
                         ResidualPtr* residual) {
   // Do not process the block if the starting point is beyond the visible frame.
   // This is equivalent to the has_row/has_column check in the
@@ -1983,7 +1983,7 @@ bool Tile::ProcessBlock(int row4x4, int column4x4, BlockSize block_size,
 }
 
 bool Tile::DecodeBlock(ParameterTree* const tree,
-                       DecoderScratchBuffer* const scratch_buffer,
+                       TileScratchBuffer* const scratch_buffer,
                        ResidualPtr* residual) {
   const int row4x4 = tree->row4x4();
   const int column4x4 = tree->column4x4();
@@ -2004,7 +2004,7 @@ bool Tile::DecodeBlock(ParameterTree* const tree,
 
 bool Tile::ProcessPartition(int row4x4_start, int column4x4_start,
                             ParameterTree* const root,
-                            DecoderScratchBuffer* const scratch_buffer,
+                            TileScratchBuffer* const scratch_buffer,
                             ResidualPtr* residual) {
   Stack<ParameterTree*, kDfsStackSize> stack;
 
@@ -2132,7 +2132,7 @@ void Tile::ResetCdef(const int row4x4, const int column4x4) {
   }
 }
 
-void Tile::ClearBlockDecoded(DecoderScratchBuffer* const scratch_buffer,
+void Tile::ClearBlockDecoded(TileScratchBuffer* const scratch_buffer,
                              int row4x4, int column4x4) {
   // Set everything to false.
   memset(scratch_buffer->block_decoded, 0,
@@ -2168,7 +2168,7 @@ void Tile::ClearBlockDecoded(DecoderScratchBuffer* const scratch_buffer,
 }
 
 bool Tile::ProcessSuperBlock(int row4x4, int column4x4, int block_width4x4,
-                             DecoderScratchBuffer* const scratch_buffer,
+                             TileScratchBuffer* const scratch_buffer,
                              ProcessingMode mode) {
   const bool parsing =
       mode == kProcessingModeParseOnly || mode == kProcessingModeParseAndDecode;
@@ -2232,7 +2232,7 @@ bool Tile::ProcessSuperBlock(int row4x4, int column4x4, int block_width4x4,
 }
 
 bool Tile::DecodeSuperBlock(ParameterTree* const tree,
-                            DecoderScratchBuffer* const scratch_buffer,
+                            TileScratchBuffer* const scratch_buffer,
                             ResidualPtr* residual) {
   Stack<ParameterTree*, kDfsStackSize> stack;
   stack.Push(tree);

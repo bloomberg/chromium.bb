@@ -165,7 +165,7 @@ class DecoderImpl : public Allocable {
   size_t superres_line_buffer_size_ = 0;
   Array2D<TransformSize> inter_transform_sizes_;
   Array2D<int16_t> cdef_index_;
-  DecoderScratchBufferPool decoder_scratch_buffer_pool_;
+  TileScratchBufferPool tile_scratch_buffer_pool_;
   // Buffer used to store the deblocked pixels that are necessary for loop
   // restoration. This buffer will store 4 rows for every 64x64 block (4 rows
   // for every 32x32 for chroma with subsampling). The indices of the rows that

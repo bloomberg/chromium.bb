@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef LIBGAV1_SRC_DECODER_SCRATCH_BUFFER_H_
-#define LIBGAV1_SRC_DECODER_SCRATCH_BUFFER_H_
+#ifndef LIBGAV1_SRC_TILE_SCRATCH_BUFFER_H_
+#define LIBGAV1_SRC_TILE_SCRATCH_BUFFER_H_
 
 #include <cstdint>
 #include <mutex>  // NOLINT (unapproved c++11 header)
@@ -30,7 +30,7 @@
 namespace libgav1 {
 
 // Buffer to facilitate decoding a superblock.
-struct DecoderScratchBuffer : public MaxAlignedAllocable {
+struct TileScratchBuffer : public MaxAlignedAllocable {
   static constexpr int kBlockDecodedStride = 34;
 
   LIBGAV1_MUST_USE_RESULT bool Init(int bitdepth) {
@@ -61,7 +61,7 @@ struct DecoderScratchBuffer : public MaxAlignedAllocable {
   // will be created for the Y plane and will be re-used for the U & V planes.
   alignas(kMaxAlignment) uint8_t weight_mask[kMaxSuperBlockSizeSquareInPixels];
 
-  // For each instance of the DecoderScratchBuffer, only one of the following
+  // For each instance of the TileScratchBuffer, only one of the following
   // buffers will be used at any given time, so it is ok to share them in a
   // union.
   union {
@@ -119,7 +119,7 @@ struct DecoderScratchBuffer : public MaxAlignedAllocable {
   bool block_decoded[kMaxPlanes][kBlockDecodedStride][kBlockDecodedStride];
 };
 
-class DecoderScratchBufferPool {
+class TileScratchBufferPool {
  public:
   void Reset(int bitdepth) {
     if (bitdepth_ == bitdepth) return;
@@ -136,11 +136,11 @@ class DecoderScratchBufferPool {
     bitdepth_ = bitdepth;
   }
 
-  std::unique_ptr<DecoderScratchBuffer> Get() {
+  std::unique_ptr<TileScratchBuffer> Get() {
     std::lock_guard<std::mutex> lock(mutex_);
     if (buffers_.Empty()) {
-      std::unique_ptr<DecoderScratchBuffer> scratch_buffer(
-          new (std::nothrow) DecoderScratchBuffer);
+      std::unique_ptr<TileScratchBuffer> scratch_buffer(new (std::nothrow)
+                                                            TileScratchBuffer);
       if (scratch_buffer == nullptr || !scratch_buffer->Init(bitdepth_)) {
         return nullptr;
       }
@@ -149,7 +149,7 @@ class DecoderScratchBufferPool {
     return buffers_.Pop();
   }
 
-  void Release(std::unique_ptr<DecoderScratchBuffer> scratch_buffer) {
+  void Release(std::unique_ptr<TileScratchBuffer> scratch_buffer) {
     std::lock_guard<std::mutex> lock(mutex_);
     buffers_.Push(std::move(scratch_buffer));
   }
@@ -158,11 +158,11 @@ class DecoderScratchBufferPool {
   std::mutex mutex_;
   // We will never need more than kMaxThreads scratch buffers since that is the
   // maximum amount of work that will be done at any given time.
-  Stack<std::unique_ptr<DecoderScratchBuffer>, kMaxThreads> buffers_
+  Stack<std::unique_ptr<TileScratchBuffer>, kMaxThreads> buffers_
       LIBGAV1_GUARDED_BY(mutex_);
   int bitdepth_ = 0;
 };
 
 }  // namespace libgav1
 
-#endif  // LIBGAV1_SRC_DECODER_SCRATCH_BUFFER_H_
+#endif  // LIBGAV1_SRC_TILE_SCRATCH_BUFFER_H_

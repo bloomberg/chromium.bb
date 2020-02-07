@@ -259,7 +259,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
       }
       state_.sequence_header = sequence_header;
       state_.has_sequence_header = true;
-      decoder_scratch_buffer_pool_.Reset(sequence_header.color_config.bitdepth);
+      tile_scratch_buffer_pool_.Reset(sequence_header.color_config.bitdepth);
     }
     if (!obu->frame_header().show_existing_frame) {
       if (obu->tile_groups().empty()) {
@@ -765,7 +765,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
           prev_segment_ids, &post_filter, &block_parameters_holder,
           &cdef_index_, &inter_transform_sizes_, dsp,
           threading_strategy_.row_thread_pool(tile_index++),
-          residual_buffer_pool_.get(), &decoder_scratch_buffer_pool_,
+          residual_buffer_pool_.get(), &tile_scratch_buffer_pool_,
           &superblock_state_, &pending_tiles));
       if (tile == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate tile.");
@@ -783,14 +783,15 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     bool ok = true;
     // Decode in superblock row order.
     const int block_width4x4 = sequence_header.use_128x128_superblock ? 32 : 16;
-    std::unique_ptr<DecoderScratchBuffer> scratch_buffer =
-        decoder_scratch_buffer_pool_.Get();
-    if (scratch_buffer != nullptr) {
+    std::unique_ptr<TileScratchBuffer> tile_scratch_buffer =
+        tile_scratch_buffer_pool_.Get();
+    if (tile_scratch_buffer != nullptr) {
       int row4x4;
       for (row4x4 = 0; row4x4 < frame_header.rows4x4;
            row4x4 += block_width4x4) {
         for (const auto& tile_ptr : tiles) {
-          if (!tile_ptr->DecodeSuperBlockRow(row4x4, scratch_buffer.get())) {
+          if (!tile_ptr->DecodeSuperBlockRow(row4x4,
+                                             tile_scratch_buffer.get())) {
             ok = false;
             break;
           }
@@ -805,7 +806,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
         post_filter.ApplyFilteringForOneSuperBlockRow(row4x4 - block_width4x4,
                                                       block_width4x4, true);
       }
-      decoder_scratch_buffer_pool_.Release(std::move(scratch_buffer));
+      tile_scratch_buffer_pool_.Release(std::move(tile_scratch_buffer));
     } else {
       ok = false;
     }
