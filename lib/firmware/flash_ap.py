@@ -23,6 +23,7 @@ import sys
 import tempfile
 import time
 
+from chromite.lib import build_target_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -216,37 +217,50 @@ def _flash(dut_ctl, dut_cmd_on, dut_cmd_off, flash_cmd, verbose):
   return success
 
 
-# TODO: Split out to actual arguments rather than an argparse namespace.
-def deploy(opts):
-  module_name = 'chromite.lib.firmware.ap_firmware_config.%s' % opts.board
+def deploy(build_target,
+           image,
+           flashrom=False,
+           fast=False,
+           port=None,
+           verbose=False):
+  """Deploy an AP FW image to a device.
+
+  Args:
+    build_target (build_target_util.BuildTarget): The DUT build target.
+    image (str): The image path.
+    flashrom (bool): Whether to use flashrom or futility.
+    fast (bool): Whether to do a fast (no verification) flash.
+    port (int|None): The servo port.
+    verbose (bool): Whether to use verbose output for flash commands.
+  """
+  module_name = (
+      'chromite.lib.firmware.ap_firmware_config.%s' % build_target.name)
   try:
     module = importlib.import_module(module_name)
   except ImportError:
     raise MissingBuildTargetCommandsError(
         '%s not valid or supported. Please verify the build target name and '
-        'try again.' % opts.board)
+        'try again.' % build_target.name)
 
   ip = os.getenv('IP')
-  flashrom = opts.flashrom
-  fast = opts.fast
   if ip is not None:
     logging.info('Attempting to flash via ssh.')
     # TODO(b/143241417): Can't use flashrom over ssh on wilco.
     if (hasattr(module, 'use_futility_ssh') and module.use_futility_ssh and
-        opts.flashrom):
+        flashrom):
       logging.warning('Flashing with flashrom over ssh on this device fails '
                       'consistently, flashing with futility instead.')
       flashrom = False
-    if _ssh_flash(not flashrom, opts.image, opts.verbose, ip, fast):
+    if _ssh_flash(not flashrom, image, verbose, ip, fast):
       logging.info('ssh flash successful. Exiting flash_ap')
       return 0
     logging.info('ssh failed, attempting to flash via servo connection.')
 
-  dut_ctl = DutControl(opts.port)
+  dut_ctl = DutControl(port)
   servo = servo_lib.get(dut_ctl)
 
   # TODO(b/143240576): Fast mode is sometimes necessary to flash successfully.
-  if not opts.fast and module.is_fast_required(not opts.flashrom, servo):
+  if not fast and module.is_fast_required(not flashrom, servo):
     logging.notice('There is a known error with the board and servo type being '
                    'used, enabling --fast to bypass this problem.')
     fast = True
@@ -257,18 +271,18 @@ def deploy(opts):
 
   dut_on, dut_off, flashrom_cmd, futility_cmd = module.get_commands(servo)
 
-  flashrom_cmd += [opts.image]
-  futility_cmd += [opts.image]
+  flashrom_cmd += [image]
+  futility_cmd += [image]
   futility_cmd += ['--force', '--wp=0']
   if fast:
     futility_cmd += ['--fast']
     flashrom_cmd += ['-n']
-  if opts.verbose:
+  if verbose:
     flashrom_cmd += ['-V']
     futility_cmd += ['-v']
 
   flash_cmd = flashrom_cmd if flashrom else futility_cmd
-  if _flash(dut_ctl, dut_on, dut_off, flash_cmd, opts.verbose):
+  if _flash(dut_ctl, dut_on, dut_off, flash_cmd, verbose):
     logging.info('SUCCESS. Exiting flash_ap.')
   else:
     logging.error('Unable to complete flash, verify servo connection '
@@ -334,7 +348,14 @@ def main(argv):
   opts = parse_args(argv)
   try:
     # TODO: Finish converting return codes to errors and dump the return.
-    return deploy(opts)
+    return deploy(
+        build_target_util.BuildTarget(opts.board),
+        opts.image,
+        flashrom=opts.flashrom,
+        fast=opts.fast,
+        port=opts.port,
+        verbose=opts.verbose,
+    )
   except Error as e:
     logging.error(e)
     return 1
