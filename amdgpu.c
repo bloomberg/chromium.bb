@@ -205,6 +205,8 @@ static int amdgpu_create_bo(struct bo *bo, uint32_t width, uint32_t height, uint
 	for (plane = 0; plane < bo->meta.num_planes; plane++)
 		bo->handles[plane].u32 = gem_create.out.handle;
 
+	bo->meta.format_modifiers[0] = DRM_FORMAT_MOD_LINEAR;
+
 	return 0;
 }
 

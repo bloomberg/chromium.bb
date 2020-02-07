@@ -191,6 +191,7 @@ int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t forma
 {
 	unsigned int dri_use;
 	int ret, dri_format, stride, offset;
+	int modifier_upper, modifier_lower;
 	struct dri_driver *dri = bo->drv->priv;
 
 	assert(bo->meta.num_planes == 1);
@@ -224,6 +225,16 @@ int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t forma
 	if (!dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_OFFSET, &offset)) {
 		ret = -errno;
 		goto close_handle;
+	}
+
+	if (dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_MODIFIER_UPPER,
+					     &modifier_upper) &&
+	    dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_MODIFIER_LOWER,
+					     &modifier_lower)) {
+		bo->meta.format_modifiers[0] =
+		    ((uint64_t)modifier_upper << 32) | (uint32_t)modifier_lower;
+	} else {
+		bo->meta.format_modifiers[0] = DRM_FORMAT_MOD_INVALID;
 	}
 
 	bo->meta.strides[0] = stride;
