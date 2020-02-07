@@ -864,9 +864,13 @@ typedef struct REAL_TIME_SPEED_FEATURES {
   // Perform coarse ME before calculating variance in variance-based partition
   int estimate_motion_for_var_based_partition;
 
-  // For nonrd_use_partition: perform extra check of leaf partition split and
-  // merge
-  int nonrd_check_partition_merge;
+  // For nonrd_use_partition: mode of extra check of leaf partition
+  // 0 - don't check merge
+  // 1 - always check merge
+  // 2 - check merge and prune checking final split
+  int nonrd_check_partition_merge_mode;
+
+  // For nonrd_use_partition: check of leaf partition extra split
   int nonrd_check_partition_split;
 
   // Implements various heuristics to skip searching modes

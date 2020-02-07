@@ -257,6 +257,9 @@ static void set_rt_speed_feature_framesize_dependent(const AV1_COMP *const cpi,
     }
   }
   if (!is_480p_or_larger) {
+    if (speed == 7) {
+      sf->rt_sf.nonrd_check_partition_merge_mode = 2;
+    }
     if (speed >= 8) {
       sf->mv_sf.subpel_search_method = SUBPEL_TREE;
 
@@ -835,7 +838,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.use_comp_ref_nonrd = 0;
     sf->rt_sf.use_nonrd_altref_frame = 1;
     sf->rt_sf.use_nonrd_pick_mode = 1;
-    sf->rt_sf.nonrd_check_partition_merge = 1;
+    sf->rt_sf.nonrd_check_partition_merge_mode = 1;
     sf->rt_sf.nonrd_check_partition_split = 0;
     sf->rt_sf.hybrid_intra_pickmode = 1;
   }
@@ -847,7 +850,7 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->rt_sf.nonrd_use_blockyrd_interp_filter = 0;
     sf->rt_sf.use_nonrd_altref_frame = 0;
     sf->rt_sf.nonrd_reduce_golden_mode_search = 1;
-    sf->rt_sf.nonrd_check_partition_merge = 0;
+    sf->rt_sf.nonrd_check_partition_merge_mode = 0;
     sf->rt_sf.nonrd_check_partition_split = 0;
 
 // TODO(kyslov) Enable when better model is available
@@ -1086,7 +1089,7 @@ static AOM_INLINE void init_rt_sf(REAL_TIME_SPEED_FEATURES *rt_sf) {
   rt_sf->force_tx_search_off = 0;
   rt_sf->num_inter_modes_for_tx_search = INT_MAX;
   rt_sf->use_simple_rd_model = 0;
-  rt_sf->nonrd_check_partition_merge = 0;
+  rt_sf->nonrd_check_partition_merge_mode = 0;
   rt_sf->nonrd_check_partition_split = 0;
 }
 

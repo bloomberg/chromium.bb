@@ -2316,12 +2316,12 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
       }
       break;
     case PARTITION_SPLIT:
-      if (cpi->sf.rt_sf.nonrd_check_partition_merge &&
+      if (cpi->sf.rt_sf.nonrd_check_partition_merge_mode &&
           is_leaf_split_partition(cm, mi_row, mi_col, bsize) &&
           !frame_is_intra_only(cm)) {
         RD_SEARCH_MACROBLOCK_CONTEXT x_ctx;
         RD_STATS split_rdc, none_rdc;
-        av1_init_rd_stats(&split_rdc);
+        av1_invalid_rd_stats(&split_rdc);
         av1_invalid_rd_stats(&none_rdc);
         save_context(x, &x_ctx, mi_row, mi_col, bsize, 3);
         xd->above_txfm_context =
@@ -2335,32 +2335,36 @@ static AOM_INLINE void nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
         none_rdc.rate += x->partition_cost[pl][PARTITION_NONE];
         none_rdc.rdcost = RDCOST(x->rdmult, none_rdc.rate, none_rdc.dist);
         restore_context(x, &x_ctx, mi_row, mi_col, bsize, 3);
+        if (cpi->sf.rt_sf.nonrd_check_partition_merge_mode != 2 ||
+            none_rdc.skip != 1 || pc_tree->none.mic.mode == NEWMV) {
+          av1_init_rd_stats(&split_rdc);
+          for (int i = 0; i < 4; i++) {
+            RD_STATS block_rdc;
+            av1_invalid_rd_stats(&block_rdc);
+            int x_idx = (i & 1) * hbs;
+            int y_idx = (i >> 1) * hbs;
+            if ((mi_row + y_idx >= cm->mi_rows) ||
+                (mi_col + x_idx >= cm->mi_cols))
+              continue;
+            xd->above_txfm_context =
+                cm->above_txfm_context[tile_info->tile_row] + mi_col + x_idx;
+            xd->left_txfm_context = xd->left_txfm_context_buffer +
+                                    ((mi_row + y_idx) & MAX_MIB_MASK);
+            pc_tree->split[i]->partitioning = PARTITION_NONE;
+            pick_sb_modes(cpi, tile_data, x, mi_row + y_idx, mi_col + x_idx,
+                          &block_rdc, PARTITION_NONE, subsize,
+                          &pc_tree->split[i]->none, invalid_rd,
+                          PICK_MODE_NONRD);
+            split_rdc.rate += block_rdc.rate;
+            split_rdc.dist += block_rdc.dist;
 
-        for (int i = 0; i < 4; i++) {
-          RD_STATS block_rdc;
-          av1_invalid_rd_stats(&block_rdc);
-          int x_idx = (i & 1) * hbs;
-          int y_idx = (i >> 1) * hbs;
-          if ((mi_row + y_idx >= cm->mi_rows) ||
-              (mi_col + x_idx >= cm->mi_cols))
-            continue;
-          xd->above_txfm_context =
-              cm->above_txfm_context[tile_info->tile_row] + mi_col + x_idx;
-          xd->left_txfm_context =
-              xd->left_txfm_context_buffer + ((mi_row + y_idx) & MAX_MIB_MASK);
-          pc_tree->split[i]->partitioning = PARTITION_NONE;
-          pick_sb_modes(cpi, tile_data, x, mi_row + y_idx, mi_col + x_idx,
-                        &block_rdc, PARTITION_NONE, subsize,
-                        &pc_tree->split[i]->none, invalid_rd, PICK_MODE_NONRD);
-          split_rdc.rate += block_rdc.rate;
-          split_rdc.dist += block_rdc.dist;
-
-          encode_b(cpi, tile_data, td, tp, mi_row + y_idx, mi_col + x_idx, 1,
-                   subsize, PARTITION_NONE, &pc_tree->split[i]->none, NULL);
+            encode_b(cpi, tile_data, td, tp, mi_row + y_idx, mi_col + x_idx, 1,
+                     subsize, PARTITION_NONE, &pc_tree->split[i]->none, NULL);
+          }
+          restore_context(x, &x_ctx, mi_row, mi_col, bsize, 3);
+          split_rdc.rate += x->partition_cost[pl][PARTITION_SPLIT];
+          split_rdc.rdcost = RDCOST(x->rdmult, split_rdc.rate, split_rdc.dist);
         }
-        restore_context(x, &x_ctx, mi_row, mi_col, bsize, 3);
-        split_rdc.rate += x->partition_cost[pl][PARTITION_SPLIT];
-        split_rdc.rdcost = RDCOST(x->rdmult, split_rdc.rate, split_rdc.dist);
         if (none_rdc.rdcost < split_rdc.rdcost) {
           mib[0]->sb_type = bsize;
           pc_tree->partitioning = PARTITION_NONE;
