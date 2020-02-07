@@ -502,7 +502,7 @@ def UserActPrivate(opts, cl, private_str):
     raise RuntimeError('Unknown "boolean" value: %s' % private_str)
 
   helper, cl = GetGerrit(opts, cl)
-  helper.SetPrivate(cl, private)
+  helper.SetPrivate(cl, private, dryrun=opts.dryrun)
 UserActPrivate.usage = '<CL> <private str>'
 
 
