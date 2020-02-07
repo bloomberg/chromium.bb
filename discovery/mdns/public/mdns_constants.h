@@ -16,6 +16,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <array>
 #include <chrono>
 
 #include "platform/api/time.h"
@@ -305,6 +306,10 @@ enum class DnsType : uint16_t {
   kNSEC = 47,
   kANY = 255,  // Only allowed for QTYPE
 };
+
+constexpr std::array<DnsType, 7> kSupportedDnsTypes = {
+    DnsType::kA,   DnsType::kPTR,  DnsType::kTXT, DnsType::kAAAA,
+    DnsType::kSRV, DnsType::kNSEC, DnsType::kANY};
 
 enum class DnsClass : uint16_t {
   kIN = 1,

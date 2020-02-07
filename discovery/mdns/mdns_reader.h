@@ -30,6 +30,7 @@ class MdnsReader : public BigEndianReader {
   bool Read(AAAARecordRdata* out);
   bool Read(PtrRecordRdata* out);
   bool Read(TxtRecordRdata* out);
+  bool Read(NsecRecordRdata* out);
   // Reads a DNS resource record with its RDATA.
   // The correct type of RDATA to be read is determined by the type
   // specified in the record.
@@ -40,9 +41,17 @@ class MdnsReader : public BigEndianReader {
   bool Read(MdnsMessage* out);
 
  private:
+  struct NsecBitMapField {
+    uint8_t window_block;
+    uint8_t bitmap_length;
+    uint8_t bitmap[32];
+  };
+
   bool Read(IPAddress::Version version, IPAddress* out);
   bool Read(DnsType type, Rdata* out);
   bool Read(Header* out);
+  bool Read(std::vector<DnsType>* types, int remaining_length);
+  bool Read(NsecBitMapField* out);
 
   template <class ItemType>
   bool Read(uint16_t count, std::vector<ItemType>* out) {

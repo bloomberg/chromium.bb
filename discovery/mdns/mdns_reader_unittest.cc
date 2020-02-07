@@ -344,25 +344,64 @@ TEST(MdnsReaderTest, ReadTxtRecordRdata_EmptyEntries) {
                         MakeTxtRecord({"foo=1", "bar=2"}));
 }
 
-TEST(MdnsReaderTest, ReadTxtRecordRdata_TooShort) {
+TEST(MdnsReaderTest, ReadNsecRecordRdata) {
   // clang-format off
-  constexpr uint8_t kTxtRecordRdata[] = {
-      0x00, 0x0C,  // RDLENGTH = 12
-      0x05, 'f', 'o', 'o', '=', '1',
+  constexpr uint8_t kExpectedRdata[] = {
+    0x00, 0x20,  // RDLENGTH = 32
+    0x08, 'm', 'y', 'd', 'e', 'v', 'i', 'c', 'e',
+    0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+    0x05, 'l', 'o', 'c', 'a',  'l',
+    0x00,
+    // It takes 8 bytes to encode the kA and kSRV records because:
+    // - Both record types have value less than 256, so they are both in window
+    //   block 1.
+    // - The bitmap length for this block is always a single byte
+    // - DnsTypes have the following values:
+    //   - kA = 1 (encoded in byte 1)
+    //     kTXT = 16 (encoded in byte 3)
+    //   - kSRV = 33 (encoded in byte 5)
+    //   - kNSEC = 47 (encoded in 6 bytes)
+    // - The largest of these is 47, so 6 bytes are needed to encode this data.
+    // So the full encoded version is:
+    //   00000000 00000110 01000000 00000000 10000000 00000000 0100000  00000001
+    //   |window| | size | | 0-7  | | 8-15 | |16-23 | |24-31 | |32-39 | |40-47 |
+          0x00,    0x06,    0x40,    0x00,    0x80,    0x00,    0x40,    0x01
   };
   // clang-format on
-  TestReadEntryFails<TxtRecordRdata>(kTxtRecordRdata, sizeof(kTxtRecordRdata));
+  TestReadEntrySucceeds(
+      kExpectedRdata, sizeof(kExpectedRdata),
+      NsecRecordRdata(DomainName{"mydevice", "testing", "local"}, DnsType::kA,
+                      DnsType::kTXT, DnsType::kSRV, DnsType::kNSEC));
 }
 
-TEST(MdnsReaderTest, ReadTxtRecordRdata_WrongLength) {
+TEST(MdnsReaderTest, ReadNsecRecordRdata_TooShort) {
   // clang-format off
-  constexpr uint8_t kTxtRecordRdata[] = {
-      0x00, 0x0F,  // Wrong length specified
-      0x05, 'f', 'o', 'o', '=', '1',
-      0x05, 'b', 'a', 'r', '=', '2',
+  constexpr uint8_t kNsecRecordRdata[] = {
+    0x00, 0x20,  // RDLENGTH = 32
+    0x08, 'm', 'y', 'd', 'e', 'v', 'i', 'c', 'e',
+    0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+    0x05, 'l', 'o', 'c', 'a',  'l',
+    0x00,
+    0x00, 0x06, 0x40, 0x00
   };
   // clang-format on
-  TestReadEntryFails<TxtRecordRdata>(kTxtRecordRdata, sizeof(kTxtRecordRdata));
+  TestReadEntryFails<NsecRecordRdata>(kNsecRecordRdata,
+                                      sizeof(kNsecRecordRdata));
+}
+
+TEST(MdnsReaderTest, ReadNsecRecordRdata_WrongLength) {
+  // clang-format off
+  constexpr uint8_t kNsecRecordRdata[] = {
+    0x00, 0x21,  // RDLENGTH = 33
+    0x08, 'm', 'y', 'd', 'e', 'v', 'i', 'c', 'e',
+    0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
+    0x05, 'l', 'o', 'c', 'a',  'l',
+    0x00,
+    0x00, 0x06, 0x40, 0x00, 0x80, 0x00, 0x40, 0x01
+  };
+  // clang-format on
+  TestReadEntryFails<NsecRecordRdata>(kNsecRecordRdata,
+                                      sizeof(kNsecRecordRdata));
 }
 
 TEST(MdnsReaderTest, ReadMdnsRecord_ARecordRdata) {

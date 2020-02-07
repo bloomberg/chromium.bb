@@ -261,7 +261,7 @@ TEST(MdnsWriterTest, WriteNSECRecordRdata) {
 
   // clang-format off
   constexpr uint8_t kExpectedRdata[] = {
-    0x00, 0x18,  // RDLENGTH = 24
+    0x00, 0x20,  // RDLENGTH = 32
     0x08, 'm', 'y', 'd', 'e', 'v', 'i', 'c', 'e',
     0x07, 't', 'e', 's', 't', 'i', 'n', 'g',
     0x05, 'l', 'o', 'c', 'a',  'l',

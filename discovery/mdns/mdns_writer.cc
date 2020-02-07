@@ -204,8 +204,8 @@ bool MdnsWriter::Write(const TxtRecordRdata& rdata) {
 bool MdnsWriter::Write(const NsecRecordRdata& rdata) {
   Cursor cursor(this);
   if (Skip(sizeof(uint16_t)) && Write(rdata.next_domain_name()) &&
-      UpdateRecordLength(current(), cursor.origin()) &&
-      Write(rdata.encoded_types())) {
+      Write(rdata.encoded_types()) &&
+      UpdateRecordLength(current(), cursor.origin())) {
     cursor.Commit();
     return true;
   }
