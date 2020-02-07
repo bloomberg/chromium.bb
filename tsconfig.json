@@ -8,15 +8,11 @@
     "noEmit": true,
 
     /* Strict type-checking options */
-    "alwaysStrict": true,
     "allowJs": false,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
     "noUnusedLocals": true,
-    "strictBindCallApply": true,
-    "strictFunctionTypes": true,
-    "strictNullChecks": true,
-    "strictPropertyInitialization": true,
 
     /* Module Options */
     "moduleResolution": "node",
