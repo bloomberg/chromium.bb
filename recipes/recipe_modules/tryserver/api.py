@@ -181,16 +181,6 @@ class TryserverApi(recipe_api.RecipeApi):
     step_result.presentation.step_text = failure_type
     step_result.presentation.status = 'FAILURE'
 
-  def set_do_not_retry_build(self):
-    """A flag to indicate the build should not be retried by the CQ.
-
-    This mechanism is used to reduce CQ duration when retrying will likely
-    return an identical result.
-    """
-    # TODO(iannucci): add API to set properties regardless of the current step.
-    step_result = self.m.step('TRYJOB DO NOT RETRY', cmd=None)
-    step_result.presentation.properties['do_not_retry'] = True
-
   def set_patch_failure_tryjob_result(self):
     """Mark the tryjob result as failure to apply the patch."""
     self._set_failure_type('PATCH_FAILURE')

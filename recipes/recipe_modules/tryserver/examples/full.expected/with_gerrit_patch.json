@@ -138,13 +138,6 @@
   },
   {
     "cmd": [],
-    "name": "TRYJOB DO NOT RETRY",
-    "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@do_not_retry@true@@@"
-    ]
-  },
-  {
-    "cmd": [],
     "name": "TRYJOB FAILURE (2)",
     "~followup_annotations": [
       "@@@STEP_TEXT@COMPILE_FAILURE@@@",
