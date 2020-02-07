@@ -433,7 +433,7 @@ class ChromiumOSUpdater(BaseUpdater):
     """Clear any pending stateful update request."""
     logging.debug('Resetting stateful partition...')
     try:
-      self.device.RunCommand(['sh', self.stateful_update_bin,
+      self.device.RunCommand(['bash', self.stateful_update_bin,
                               '--stateful_change=reset'],
                              **self._cmd_kwargs)
     except cros_build_lib.RunCommandError as e:
@@ -447,7 +447,7 @@ class ChromiumOSUpdater(BaseUpdater):
         if self.CheckRestoreStateful():
           logging.info('Stateful files and nebraska code now back on '
                        'the device. Trying to reset stateful again.')
-          self.device.RunCommand(['sh', self.stateful_update_bin,
+          self.device.RunCommand(['bash', self.stateful_update_bin,
                                   '--stateful_change=reset'],
                                  **self._cmd_kwargs)
 
@@ -579,7 +579,7 @@ class ChromiumOSUpdater(BaseUpdater):
       payload_dir = self.device_restore_dir
     else:
       payload_dir = self.device.work_dir
-    cmd = ['sh',
+    cmd = ['bash',
            self.stateful_update_bin,
            os.path.join(payload_dir, auto_updater_transfer.STATEFUL_FILENAME)]
 
