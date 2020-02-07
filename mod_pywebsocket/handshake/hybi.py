@@ -77,7 +77,17 @@ def compute_accept(key):
     accept_binary = sha1(key + common.WEBSOCKET_ACCEPT_UUID).digest()
     accept = base64.b64encode(accept_binary)
 
-    return (accept, accept_binary)
+    return accept
+
+
+def compute_accept_from_unicode(unicode_key):
+    """A wrapper function for compute_accept which takes a unicode string as an
+    argument, and encodes it to byte string. It then passes it on to
+    compute_accept.
+    """
+
+    key = unicode_key.encode('UTF-8')
+    return compute_accept(key)
 
 
 class Handshaker(object):
@@ -144,10 +154,10 @@ class Handshaker(object):
             # Key validation, response generation.
 
             key = self._get_key()
-            (accept, accept_binary) = compute_accept(key)
+            accept = compute_accept(key)
             self._logger.debug('%s: %r (%s)',
                                common.SEC_WEBSOCKET_ACCEPT_HEADER, accept,
-                               util.hexify(accept_binary))
+                               util.hexify(base64.b64decode(accept)))
 
             self._logger.debug('Protocol version is RFC 6455')
 
