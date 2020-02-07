@@ -45,7 +45,8 @@ static void set_multi_layer_params(const TWO_PASS *twopass,
       gf_group->arf_src_offset[*frame_ind] = 0;
       gf_group->frame_disp_idx[*frame_ind] = start;
       gf_group->layer_depth[*frame_ind] = MAX_ARF_LAYERS;
-      gf_group->arf_boost[*frame_ind] = NORMAL_BOOST;
+      gf_group->arf_boost[*frame_ind] =
+          av1_calc_arf_boost(twopass, rc, frame_info, start, end - start, 0);
       gf_group->max_layer_depth =
           AOMMAX(gf_group->max_layer_depth, layer_depth);
       ++(*frame_ind);

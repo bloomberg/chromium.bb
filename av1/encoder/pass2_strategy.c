@@ -462,7 +462,7 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
                        FRAME_INFO *frame_info, int offset, int f_frames,
                        int b_frames) {
   int i;
-  double boost_score = 0.0;
+  double boost_score = (double)NORMAL_BOOST;
   double mv_ratio_accumulator = 0.0;
   double decay_accumulator = 1.0;
   double this_frame_mv_in_out = 0.0;
@@ -540,7 +540,6 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
 
   if (arf_boost < ((b_frames + f_frames) * 50))
     arf_boost = ((b_frames + f_frames) * 50);
-  arf_boost = AOMMAX(arf_boost, MIN_ARF_GF_BOOST);
 
   return arf_boost;
 }
@@ -600,7 +599,9 @@ static int calculate_boost_bits(int frame_count, int boost,
   int allocation_chunks;
 
   // return 0 for invalid inputs (could arise e.g. through rounding errors)
-  if (!boost || (total_group_bits <= 0) || (frame_count <= 0)) return 0;
+  if (!boost || (total_group_bits <= 0)) return 0;
+
+  if (frame_count <= 0) return (int)(AOMMIN(total_group_bits, INT_MAX));
 
   allocation_chunks = (frame_count * 100) + boost;
 
@@ -711,52 +712,44 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
   int arf_depth_bits[MAX_ARF_LAYERS + 1] = { 0 };
   int arf_depth_count[MAX_ARF_LAYERS + 1] = { 0 };
   int arf_depth_boost[MAX_ARF_LAYERS + 1] = { 0 };
-  int total_arfs = use_arf;
+  int total_arfs = 0;
+  int total_overlays = rc->source_alt_ref_active;
 
   for (int idx = 0; idx < gf_group_size; ++idx) {
     if (gf_group->update_type[idx] == ARF_UPDATE ||
-        gf_group->update_type[idx] == INTNL_ARF_UPDATE) {
+        gf_group->update_type[idx] == INTNL_ARF_UPDATE ||
+        gf_group->update_type[idx] == LF_UPDATE) {
       arf_depth_boost[gf_group->layer_depth[idx]] += gf_group->arf_boost[idx];
       ++arf_depth_count[gf_group->layer_depth[idx]];
     }
   }
 
-  for (int idx = 2; idx < MAX_ARF_LAYERS; ++idx) {
-    if (arf_depth_boost[idx] == 0) break;
-    arf_depth_bits[idx] = calculate_boost_bits(
-        rc->baseline_gf_interval - total_arfs - arf_depth_count[idx],
-        arf_depth_boost[idx], total_group_bits);
+  for (int idx = 2; idx <= MAX_ARF_LAYERS; ++idx) {
+    arf_depth_bits[idx] =
+        calculate_boost_bits(rc->baseline_gf_interval - total_arfs -
+                                 total_overlays - arf_depth_count[idx],
+                             arf_depth_boost[idx], total_group_bits);
 
     total_group_bits -= arf_depth_bits[idx];
     total_arfs += arf_depth_count[idx];
   }
 
-  int normal_frames = rc->baseline_gf_interval - total_arfs;
-  int normal_frame_bits;
-
-  if (normal_frames > 1)
-    normal_frame_bits = (int)(total_group_bits / normal_frames);
-  else
-    normal_frame_bits = (int)total_group_bits;
-
-  // TODO(jingning): Currently assume even budget distribution for all the
-  // regular frames. Can this be improved?
-  int target_frame_size = normal_frame_bits;
-  target_frame_size =
-      clamp(target_frame_size, 0, AOMMIN(max_bits, (int)total_group_bits));
-
   for (int idx = frame_index; idx < gf_group_size; ++idx) {
     switch (gf_group->update_type[idx]) {
       case ARF_UPDATE:
       case INTNL_ARF_UPDATE:
+      case LF_UPDATE:
         gf_group->bit_allocation[idx] =
             (int)(((int64_t)arf_depth_bits[gf_group->layer_depth[idx]] *
                    gf_group->arf_boost[idx]) /
                   arf_depth_boost[gf_group->layer_depth[idx]]);
+        gf_group->bit_allocation[idx] =
+            clamp(gf_group->bit_allocation[idx], 0,
+                  AOMMIN(max_bits, (int)total_group_bits));
         break;
       case INTNL_OVERLAY_UPDATE:
-      case OVERLAY_UPDATE: gf_group->bit_allocation[idx] = 0; break;
-      default: gf_group->bit_allocation[idx] = target_frame_size; break;
+      case OVERLAY_UPDATE:
+      default: gf_group->bit_allocation[idx] = 0; break;
     }
   }
 
