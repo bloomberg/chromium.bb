@@ -18,6 +18,7 @@ from chromite.lib import build_target_util
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import goma_lib
+from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import sysroot
@@ -69,6 +70,26 @@ def CreateSimpleChromeSysroot(input_proto, output_proto, _config):
   output_proto.sysroot_archive.path = sysroot_tar_path
 
   return controller.RETURN_CODE_SUCCESS
+
+
+@faux.all_empty
+@validate.require('build_target.name', 'packages')
+@validate.validation_complete
+def GenerateArchive(input_proto, output_proto, _config):
+  """Generate a sysroot. Typically used by informational builders."""
+  build_target_name = input_proto.build_target.name
+  pkg_list = []
+  for package in input_proto.packages:
+    pkg_list.append('%s/%s' % (package.category, package.package_name))
+
+  with osutils.TempDir(delete=False) as temp_output_dir:
+    sysroot_tar_path = sysroot.GenerateArchive(temp_output_dir,
+                                               build_target_name,
+                                               pkg_list)
+
+  # By assigning this Path variable to the tar path, the tar file will be
+  # copied out to the input_proto's ResultPath location.
+  output_proto.sysroot_archive.path = sysroot_tar_path
 
 
 def _MockFailedPackagesResponse(_input_proto, output_proto, _config):

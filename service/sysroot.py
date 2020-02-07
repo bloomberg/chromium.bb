@@ -286,6 +286,25 @@ def Create(target, run_configs, accept_licenses):
   return sysroot
 
 
+def GenerateArchive(output_dir, build_target_name, pkg_list):
+  """Generate a sysroot tarball for informational builders.
+
+  Args:
+    output_dir (string): Directory to contain the created the sysroot.
+    build_target_name (string): The build target for the sysroot being created.
+    pkg_list (list[string]|None): List of 'category/package' package strings.
+
+  Returns:
+    Path to the sysroot tar file.
+  """
+  cmd = ['cros_generate_sysroot',
+         '--out-file', constants.TARGET_SYSROOT_TAR,
+         '--out-dir', output_dir,
+         '--board', build_target_name,
+         '--package', ' '.join(pkg_list)]
+  cros_build_lib.run(cmd, cwd=constants.SOURCE_ROOT)
+  return os.path.join(output_dir, constants.TARGET_SYSROOT_TAR)
+
 def CreateSimpleChromeSysroot(target, use_flags):
   """Create a sysroot for SimpleChrome to use.
 
@@ -293,7 +312,6 @@ def CreateSimpleChromeSysroot(target, use_flags):
     target (build_target.BuildTarget): The build target being installed for the
       sysroot being created.
     use_flags (list[string]|None): Additional USE flags for building chrome.
-    output_directory (string): Where to put output files.
 
   Returns:
     Path to the sysroot tar file.

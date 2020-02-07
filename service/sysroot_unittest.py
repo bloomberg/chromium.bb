@@ -186,6 +186,27 @@ class CreateSimpleChromeSysrootTest(cros_test_lib.MockTempDirTestCase):
     )
 
 
+class GenerateArchiveTest(cros_test_lib.MockTempDirTestCase):
+  """Tests for GenerateArchive."""
+
+  def setUp(self):
+    self.run_mock = self.PatchObject(cros_build_lib, 'run', return_value=True)
+    self.chroot_path = os.path.join(self.tempdir, 'chroot_dir')
+
+  def testCreateSimpleChromeSysroot(self):
+    # A board for which we will create a simple chrome sysroot.
+    target = 'board'
+    pkg_list = ['virtual/target-fuzzers']
+
+    # Call service, verify arguments passed to run.
+    sysroot.GenerateArchive(self.chroot_path, target, pkg_list)
+    self.run_mock.assert_called_with(
+        ['cros_generate_sysroot', '--out-file', constants.TARGET_SYSROOT_TAR,
+         '--out-dir', mock.ANY, '--board', target,
+         '--package', 'virtual/target-fuzzers'],
+        cwd=constants.SOURCE_ROOT
+    )
+
 
 class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
   """Tests for InstallToolchain."""
