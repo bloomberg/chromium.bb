@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 #define INVALID_MV 0x80008000
-#define GET_MV_RAWPEL(x) ((x) >> 3)
+#define GET_MV_RAWPEL(x) (((x) + 3 + ((x) >= 0)) >> 3)
 #define GET_MV_SUBPEL(x) ((x)*8)
 
 // The motion vector in units of full pixel
