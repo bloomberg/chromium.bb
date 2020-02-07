@@ -81,6 +81,8 @@ template("openscreen_fuzzer_test") {
 
         deps = [ "//testing/libfuzzer:seed_corpus" ] + seed_corpus_deps
       }
+
+      test_deps += [ ":" + target_name + "_seed_corpus" ]
     }
 
     if (defined(invoker.dict) || defined(invoker.libfuzzer_options) ||
