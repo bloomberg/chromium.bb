@@ -141,7 +141,7 @@ Examples:
         help='Install to the USB device using the base disk layout.')
 
   def Run(self):
-    """Perfrom the cros flash command."""
+    """Perform the cros flash command."""
     self.options.Freeze()
 
     try:
