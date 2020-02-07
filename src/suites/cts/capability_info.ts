@@ -93,7 +93,7 @@ export const kBindingTypeInfo: {
 } = /* prettier-ignore */ {
   'uniform-buffer':          { type: 'buffer',  validStages: kStagesAll, perStageLimitType: 'uniform-buffer',  maxDynamicCount: 8 },
   'storage-buffer':          { type: 'buffer',  validStages: kStagesNonVertex, perStageLimitType: 'storage-buffer',  maxDynamicCount: 4 },
-  'readonly-storage-buffer': { type: 'buffer',  validStages: kStagesNonVertex, perStageLimitType: 'storage-buffer',  maxDynamicCount: 4 },
+  'readonly-storage-buffer': { type: 'buffer',  validStages: kStagesAll, perStageLimitType: 'storage-buffer',  maxDynamicCount: 4 },
   'sampler':                 { type: 'sampler', validStages: kStagesAll, perStageLimitType: 'sampler',         maxDynamicCount: 0 },
   'sampled-texture':         { type: 'texture', validStages: kStagesAll, perStageLimitType: 'sampled-texture', maxDynamicCount: 0 },
   'storage-texture':         { type: 'texture', validStages: kStagesAll, perStageLimitType: 'storage-texture', maxDynamicCount: 0 },
