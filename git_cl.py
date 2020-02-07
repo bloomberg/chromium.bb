@@ -407,8 +407,7 @@ def _get_bucket_map(changelist, options, option_parser):
   # If no bots are listed, we try to get a set of builders and tests based
   # on GetPreferredTryMasters functions in PRESUBMIT.py files.
   if not options.bot:
-    change = changelist.GetChange(
-        changelist.GetCommonAncestorWithUpstream(), None)
+    change = changelist.GetChange(changelist.GetCommonAncestorWithUpstream())
     # Get try masters from PRESUBMIT.py files.
     masters = presubmit_support.DoGetTryMasters(
         change=change,
