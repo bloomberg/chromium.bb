@@ -80,8 +80,12 @@ class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     request = self._GetRequest(no_replace=False, bootstrap=False,
                                no_use_image=False)
     sdk_controller.Create(request, self.response, self.api_config)
-    args_patch.assert_called_with(replace=True, bootstrap=False,
-                                  use_image=True, paths=mock.ANY)
+    args_patch.assert_called_with(
+        replace=True,
+        bootstrap=False,
+        use_image=True,
+        chroot_path=mock.ANY,
+        cache_dir=mock.ANY)
 
   def testTrueArguments(self):
     """Test True arguments handling."""
@@ -93,21 +97,12 @@ class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
     request = self._GetRequest(no_replace=True, bootstrap=True,
                                no_use_image=True)
     sdk_controller.Create(request, self.response, self.api_config)
-    args_patch.assert_called_with(replace=False, bootstrap=True,
-                                  use_image=False, paths=mock.ANY)
-
-  def testPathArguments(self):
-    """Test the path arguments handling."""
-    # Create the patches.
-    self.PatchObject(sdk_service, 'Create', return_value=1)
-    paths_patch = self.PatchObject(sdk_service, 'ChrootPaths')
-
-    # Test the path arguments get passed through.
-    cache_dir = '/cache/dir'
-    chroot_path = '/chroot/path'
-    request = self._GetRequest(cache_path=cache_dir, chroot_path=chroot_path)
-    sdk_controller.Create(request, self.response, self.api_config)
-    paths_patch.assert_called_with(cache_dir=cache_dir, chroot_path=chroot_path)
+    args_patch.assert_called_with(
+        replace=False,
+        bootstrap=True,
+        use_image=False,
+        chroot_path=mock.ANY,
+        cache_dir=mock.ANY)
 
 
 class SdkUpdateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
