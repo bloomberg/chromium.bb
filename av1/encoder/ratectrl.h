@@ -45,7 +45,7 @@ extern "C" {
 #define MAX_PYRAMID_LVL 4
 
 #define MIN_GF_INTERVAL 4
-#define MAX_GF_INTERVAL 16
+#define MAX_GF_INTERVAL 32
 #define FIXED_GF_INTERVAL 8  // Used in some testing modes only
 
 #define NUM_GF_INTERVALS 150
