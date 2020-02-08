@@ -84,6 +84,16 @@ namespace libgav1 {
 
 // Declare type aliases for C++.
 using StatusCode = Libgav1StatusCode;
+constexpr StatusCode kStatusOk = kLibgav1StatusOk;
+constexpr StatusCode kStatusUnknownError = kLibgav1StatusUnknownError;
+constexpr StatusCode kStatusInvalidArgument = kLibgav1StatusInvalidArgument;
+constexpr StatusCode kStatusOutOfMemory = kLibgav1StatusOutOfMemory;
+constexpr StatusCode kStatusResourceExhausted = kLibgav1StatusResourceExhausted;
+constexpr StatusCode kStatusNotInitialized = kLibgav1StatusNotInitialized;
+constexpr StatusCode kStatusAlready = kLibgav1StatusAlready;
+constexpr StatusCode kStatusUnimplemented = kLibgav1StatusUnimplemented;
+constexpr StatusCode kStatusInternalError = kLibgav1StatusInternalError;
+constexpr StatusCode kStatusBitstreamError = kLibgav1StatusBitstreamError;
 
 // Returns a human readable error string in en-US for the status code |status|.
 // Always returns a valid (non-NULL) string.

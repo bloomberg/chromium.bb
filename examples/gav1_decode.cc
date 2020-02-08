@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
   settings.callback_private_data = cv_pixel_buffers.get();
 #endif
   libgav1::StatusCode status = decoder.Init(&settings);
-  if (status != kLibgav1StatusOk) {
+  if (status != libgav1::kStatusOk) {
     fprintf(stderr, "Error initializing decoder: %s\n",
             libgav1::GetErrorString(status));
     return EXIT_FAILURE;
@@ -221,7 +221,7 @@ int main(int argc, char* argv[]) {
     if (temporal_unit.empty()) continue;
     status = decoder.EnqueueFrame(temporal_unit.data(), temporal_unit.size(),
                                   /*user_private_data=*/0);
-    if (status != kLibgav1StatusOk) {
+    if (status != libgav1::kStatusOk) {
       fprintf(stderr, "Unable to enqueue frame: %s\n",
               libgav1::GetErrorString(status));
       return EXIT_FAILURE;
@@ -231,7 +231,7 @@ int main(int argc, char* argv[]) {
     const libgav1::DecoderBuffer* buffer;
     status = decoder.DequeueFrame(&buffer);
     timing.dequeue += absl::Now() - dequeue_start;
-    if (status != kLibgav1StatusOk) {
+    if (status != libgav1::kStatusOk) {
       fprintf(stderr, "Unable to dequeue frame: %s\n",
               libgav1::GetErrorString(status));
       return EXIT_FAILURE;

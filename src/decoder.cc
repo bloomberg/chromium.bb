@@ -87,24 +87,24 @@ Decoder::Decoder() = default;
 Decoder::~Decoder() = default;
 
 StatusCode Decoder::Init(const DecoderSettings* const settings) {
-  if (impl_ != nullptr) return kLibgav1StatusAlready;
+  if (impl_ != nullptr) return kStatusAlready;
   if (settings != nullptr) settings_ = *settings;
   return DecoderImpl::Create(&settings_, &impl_);
 }
 
 StatusCode Decoder::EnqueueFrame(const uint8_t* data, const size_t size,
                                  int64_t user_private_data) {
-  if (impl_ == nullptr) return kLibgav1StatusNotInitialized;
+  if (impl_ == nullptr) return kStatusNotInitialized;
   return impl_->EnqueueFrame(data, size, user_private_data);
 }
 
 StatusCode Decoder::DequeueFrame(const DecoderBuffer** out_ptr) {
-  if (impl_ == nullptr) return kLibgav1StatusNotInitialized;
+  if (impl_ == nullptr) return kStatusNotInitialized;
   return impl_->DequeueFrame(out_ptr);
 }
 
 StatusCode Decoder::SignalEOS() {
-  if (impl_ == nullptr) return kLibgav1StatusNotInitialized;
+  if (impl_ == nullptr) return kStatusNotInitialized;
   // In non-frame-parallel mode, we have to release all the references. This
   // simply means replacing the |impl_| with a new instance so that all the
   // existing references are released and the state is cleared.

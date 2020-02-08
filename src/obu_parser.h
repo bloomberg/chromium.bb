@@ -451,8 +451,8 @@ class ObuParser : public Allocable {
   //   * A kFrameHeader with show_existing_frame = true is seen.
   //
   // If the parsing is successful, relevant fields will be populated. The fields
-  // are valid only if the return value is kLibgav1StatusOk. Returns
-  // kLibgav1StatusOk on success, an error status otherwise.
+  // are valid only if the return value is kStatusOk. Returns kStatusOk on
+  // success, an error status otherwise.
   StatusCode ParseOneFrame();
 
   // Getters. Only valid if ParseOneFrame() completes successfully.

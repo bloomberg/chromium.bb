@@ -2546,7 +2546,7 @@ bool ObuParser::InitBitReader(const uint8_t* const data, size_t size) {
 bool ObuParser::HasData() const { return size_ > 0; }
 
 StatusCode ObuParser::ParseOneFrame() {
-  if (data_ == nullptr || size_ == 0) return kLibgav1StatusInvalidArgument;
+  if (data_ == nullptr || size_ == 0) return kStatusInvalidArgument;
   const uint8_t* data = data_;
   size_t size = size_;
 
@@ -2564,30 +2564,30 @@ StatusCode ObuParser::ParseOneFrame() {
   while (size > 0 && !parsed_one_full_frame) {
     if (!InitBitReader(data, size)) {
       LIBGAV1_DLOG(ERROR, "Failed to initialize bit reader.");
-      return kLibgav1StatusOutOfMemory;
+      return kStatusOutOfMemory;
     }
     if (!ParseHeader()) {
       LIBGAV1_DLOG(ERROR, "Failed to parse OBU Header.");
-      return kLibgav1StatusBitstreamError;
+      return kStatusBitstreamError;
     }
     const ObuHeader& obu_header = obu_headers_.back();
     if (!obu_header.has_size_field) {
       LIBGAV1_DLOG(
           ERROR,
           "has_size_field is zero. libgav1 does not support such streams.");
-      return kLibgav1StatusUnimplemented;
+      return kStatusUnimplemented;
     }
     const size_t obu_header_size = bit_reader_->byte_offset();
     size_t obu_size;
     if (!bit_reader_->ReadUnsignedLeb128(&obu_size)) {
       LIBGAV1_DLOG(ERROR, "Could not read OBU size.");
-      return kLibgav1StatusBitstreamError;
+      return kStatusBitstreamError;
     }
     const size_t obu_length_size = bit_reader_->byte_offset() - obu_header_size;
     if (size - bit_reader_->byte_offset() < obu_size) {
       LIBGAV1_DLOG(ERROR, "Not enough bits left to parse OBU %zu vs %zu.",
                    size - bit_reader_->bit_offset(), obu_size);
-      return kLibgav1StatusBitstreamError;
+      return kStatusBitstreamError;
     }
 
     const ObuType obu_type = obu_header.type;
@@ -2618,25 +2618,25 @@ StatusCode ObuParser::ParseOneFrame() {
       case kObuSequenceHeader:
         if (!ParseSequenceHeader(seen_frame_header)) {
           LIBGAV1_DLOG(ERROR, "Failed to parse SequenceHeader OBU.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         if (sequence_header_.color_config.bitdepth > LIBGAV1_MAX_BITDEPTH) {
           LIBGAV1_DLOG(
               ERROR,
               "Bitdepth %d is not supported. The maximum bitdepth is %d.",
               sequence_header_.color_config.bitdepth, LIBGAV1_MAX_BITDEPTH);
-          return kLibgav1StatusUnimplemented;
+          return kStatusUnimplemented;
         }
         break;
       case kObuFrameHeader:
         if (seen_frame_header) {
           LIBGAV1_DLOG(ERROR,
                        "Frame header found but frame header was already seen.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         if (!ParseFrameHeader()) {
           LIBGAV1_DLOG(ERROR, "Failed to parse FrameHeader OBU.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         frame_header = &data[obu_start_position >> 3];
         frame_header_size_in_bits =
@@ -2649,7 +2649,7 @@ StatusCode ObuParser::ParseOneFrame() {
           LIBGAV1_DLOG(ERROR,
                        "Redundant frame header found but frame header was not "
                        "yet seen.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         const size_t fh_size = (frame_header_size_in_bits + 7) >> 3;
         if (obu_size < fh_size ||
@@ -2657,7 +2657,7 @@ StatusCode ObuParser::ParseOneFrame() {
                 0) {
           LIBGAV1_DLOG(ERROR,
                        "Redundant frame header differs from frame header.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         bit_reader_->SkipBits(frame_header_size_in_bits);
         break;
@@ -2667,33 +2667,33 @@ StatusCode ObuParser::ParseOneFrame() {
         if (seen_frame_header) {
           LIBGAV1_DLOG(ERROR,
                        "Frame header found but frame header was already seen.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         if (!ParseFrameHeader()) {
           LIBGAV1_DLOG(ERROR, "Failed to parse FrameHeader in Frame OBU.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         // Section 6.8.2: If obu_type is equal to OBU_FRAME, it is a
         // requirement of bitstream conformance that show_existing_frame is
         // equal to 0.
         if (frame_header_.show_existing_frame) {
           LIBGAV1_DLOG(ERROR, "Frame OBU cannot set show_existing_frame to 1.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         if (!bit_reader_->AlignToNextByte()) {
           LIBGAV1_DLOG(ERROR, "Byte alignment has non zero bits.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         const size_t fh_size = bit_reader_->byte_offset() - fh_start_offset;
         if (fh_size >= obu_size) {
           LIBGAV1_DLOG(ERROR, "Frame header size (%zu) >= obu_size (%zu).",
                        fh_size, obu_size);
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         if (!ParseTileGroup(obu_size - fh_size,
                             size_ - size + bit_reader_->byte_offset())) {
           LIBGAV1_DLOG(ERROR, "Failed to parse TileGroup in Frame OBU.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         bit_reader_->SkipBytes(tile_groups_.back().data_size);
         parsed_one_full_frame = true;
@@ -2703,7 +2703,7 @@ StatusCode ObuParser::ParseOneFrame() {
         if (!ParseTileGroup(obu_size,
                             size_ - size + bit_reader_->byte_offset())) {
           LIBGAV1_DLOG(ERROR, "Failed to parse TileGroup OBU.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         bit_reader_->SkipBytes(tile_groups_.back().data_size);
         parsed_one_full_frame =
@@ -2711,17 +2711,17 @@ StatusCode ObuParser::ParseOneFrame() {
         break;
       case kObuTileList:
         LIBGAV1_DLOG(ERROR, "Decoding of tile list OBUs is not supported.");
-        return kLibgav1StatusUnimplemented;
+        return kStatusUnimplemented;
       case kObuPadding:
         if (!ParsePadding(&data[obu_start_position >> 3], obu_size)) {
           LIBGAV1_DLOG(ERROR, "Failed to parse Padding OBU.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         break;
       case kObuMetadata:
         if (!ParseMetadata(&data[obu_start_position >> 3], obu_size)) {
           LIBGAV1_DLOG(ERROR, "Failed to parse Metadata OBU.");
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         break;
       default:
@@ -2741,14 +2741,14 @@ StatusCode ObuParser::ParseOneFrame() {
             "Parsed OBU size (%zu bits) is greater than expected OBU size "
             "(%zu bytes) obu_type: %d.",
             parsed_obu_size_in_bits, obu_size, obu_type);
-        return kLibgav1StatusBitstreamError;
+        return kStatusBitstreamError;
       }
       if (!bit_reader_->VerifyAndSkipTrailingBits(obu_size * 8 -
                                                   parsed_obu_size_in_bits)) {
         LIBGAV1_DLOG(ERROR,
                      "Error when verifying trailing bits for obu type: %d",
                      obu_type);
-        return kLibgav1StatusBitstreamError;
+        return kStatusBitstreamError;
       }
     }
     const size_t bytes_consumed = bit_reader_->byte_offset();
@@ -2759,18 +2759,18 @@ StatusCode ObuParser::ParseOneFrame() {
                    "OBU size (%zu) and consumed size (%zu) does not match for "
                    "obu_type: %d.",
                    obu_size, consumed_obu_size, obu_type);
-      return kLibgav1StatusBitstreamError;
+      return kStatusBitstreamError;
     }
     data += bytes_consumed;
     size -= bytes_consumed;
   }
   if (!parsed_one_full_frame && seen_frame_header) {
     LIBGAV1_DLOG(ERROR, "The last tile group in the frame was not received.");
-    return kLibgav1StatusBitstreamError;
+    return kStatusBitstreamError;
   }
   data_ = data;
   size_ = size;
-  return kLibgav1StatusOk;
+  return kStatusOk;
 }
 
 }  // namespace libgav1

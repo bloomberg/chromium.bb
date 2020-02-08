@@ -103,7 +103,7 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
                                std::unique_ptr<DecoderImpl>* output) {
   if (settings->threads <= 0) {
     LIBGAV1_DLOG(ERROR, "Invalid settings->threads: %d.", settings->threads);
-    return kLibgav1StatusInvalidArgument;
+    return kStatusInvalidArgument;
   }
   if (settings->frame_parallel) {
     LIBGAV1_DLOG(ERROR,
@@ -114,17 +114,17 @@ StatusCode DecoderImpl::Create(const DecoderSettings* settings,
     LIBGAV1_DLOG(
         ERROR,
         "Version 1 and version 2 frame buffer callbacks cannot both be used.");
-    return kLibgav1StatusInvalidArgument;
+    return kStatusInvalidArgument;
   }
   std::unique_ptr<DecoderImpl> impl(new (std::nothrow) DecoderImpl(settings));
   if (impl == nullptr) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate DecoderImpl.");
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
   const StatusCode status = impl->Init();
-  if (status != kLibgav1StatusOk) return status;
+  if (status != kStatusOk) return status;
   *output = std::move(impl);
-  return kLibgav1StatusOk;
+  return kStatusOk;
 }
 
 DecoderImpl::DecoderImpl(const DecoderSettings* settings)
@@ -159,23 +159,23 @@ StatusCode DecoderImpl::Init() {
   assert(max_allowed_frames > 0);
   if (!encoded_frames_.Init(max_allowed_frames)) {
     LIBGAV1_DLOG(ERROR, "encoded_frames_.Init() failed.");
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
   if (!GenerateWedgeMask(&wedge_masks_)) {
     LIBGAV1_DLOG(ERROR, "GenerateWedgeMask() failed.");
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
-  return kLibgav1StatusOk;
+  return kStatusOk;
 }
 
 StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
                                      int64_t user_private_data) {
-  if (data == nullptr || size == 0) return kLibgav1StatusInvalidArgument;
+  if (data == nullptr || size == 0) return kStatusInvalidArgument;
   if (encoded_frames_.Full()) {
-    return kLibgav1StatusResourceExhausted;
+    return kStatusResourceExhausted;
   }
   encoded_frames_.Push(EncodedFrame(data, size, user_private_data));
-  return kLibgav1StatusOk;
+  return kStatusOk;
 }
 
 // DequeueFrame() follows the following policy to avoid holding unnecessary
@@ -188,7 +188,7 @@ StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
 StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   if (out_ptr == nullptr) {
     LIBGAV1_DLOG(ERROR, "Invalid argument: out_ptr == nullptr.");
-    return kLibgav1StatusInvalidArgument;
+    return kStatusInvalidArgument;
   }
   assert(state_.current_frame == nullptr);
   // We assume a call to DequeueFrame() indicates that the caller is no longer
@@ -197,14 +197,14 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   if (encoded_frames_.Empty()) {
     // No encoded frame to decode. Not an error.
     *out_ptr = nullptr;
-    return kLibgav1StatusOk;
+    return kStatusOk;
   }
   const EncodedFrame encoded_frame = encoded_frames_.Pop();
   std::unique_ptr<ObuParser> obu(new (std::nothrow) ObuParser(
       encoded_frame.data, encoded_frame.size, &state_));
   if (obu == nullptr) {
     LIBGAV1_DLOG(ERROR, "Failed to initialize OBU parser.");
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
   if (state_.has_sequence_header) {
     obu->set_sequence_header(state_.sequence_header);
@@ -216,11 +216,11 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
     state_.current_frame = buffer_pool_.GetFreeBuffer();
     if (state_.current_frame == nullptr) {
       LIBGAV1_DLOG(ERROR, "Could not get current_frame from the buffer pool.");
-      return kLibgav1StatusResourceExhausted;
+      return kStatusResourceExhausted;
     }
 
     status = obu->ParseOneFrame();
-    if (status != kLibgav1StatusOk) {
+    if (status != kStatusOk) {
       LIBGAV1_DLOG(ERROR, "Failed to parse OBU.");
       return status;
     }
@@ -254,7 +254,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
                 sequence_header.max_frame_height, kBorderPixels, kBorderPixels,
                 kBorderPixels, max_bottom_border)) {
           LIBGAV1_DLOG(ERROR, "buffer_pool_.OnFrameBufferSizeChanged failed.");
-          return kLibgav1StatusUnknownError;
+          return kStatusUnknownError;
         }
       }
       state_.sequence_header = sequence_header;
@@ -270,7 +270,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
         continue;
       }
       status = DecodeTiles(obu.get());
-      if (status != kLibgav1StatusOk) {
+      if (status != kStatusOk) {
         return status;
       }
     }
@@ -309,7 +309,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
           if (film_grain_frame == nullptr) {
             LIBGAV1_DLOG(
                 ERROR, "Could not get film_grain_frame from the buffer pool.");
-            return kLibgav1StatusResourceExhausted;
+            return kStatusResourceExhausted;
           }
           if (!film_grain_frame->Realloc(
                   displayable_frame->buffer()->bitdepth(),
@@ -321,7 +321,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
                   kBorderPixelsFilmGrain, kBorderPixelsFilmGrain,
                   kBorderPixelsFilmGrain, kBorderPixelsFilmGrain)) {
             LIBGAV1_DLOG(ERROR, "film_grain_frame->Realloc() failed.");
-            return kLibgav1StatusOutOfMemory;
+            return kStatusOutOfMemory;
           }
           film_grain_frame->set_chroma_sample_position(
               displayable_frame->chroma_sample_position());
@@ -380,7 +380,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
         if (!film_grain_success) {
           LIBGAV1_DLOG(ERROR, "film_grain.AddNoise() failed.");
-          return kLibgav1StatusOutOfMemory;
+          return kStatusOutOfMemory;
         }
         displayable_frame = std::move(film_grain_frame);
       }
@@ -389,15 +389,15 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   if (displayable_frame == nullptr) {
     // No displayable frame in the encoded frame. Not an error.
     *out_ptr = nullptr;
-    return kLibgav1StatusOk;
+    return kStatusOk;
   }
   status = CopyFrameToOutputBuffer(displayable_frame);
-  if (status != kLibgav1StatusOk) {
+  if (status != kStatusOk) {
     return status;
   }
   buffer_.user_private_data = encoded_frame.user_private_data;
   *out_ptr = &buffer_;
-  return kLibgav1StatusOk;
+  return kStatusOk;
 }
 
 bool DecoderImpl::AllocateCurrentFrame(const ObuFrameHeader& frame_header,
@@ -434,7 +434,7 @@ StatusCode DecoderImpl::CopyFrameToOutputBuffer(
       LIBGAV1_DLOG(ERROR,
                    "Invalid chroma subsampling values: cannot determine buffer "
                    "image format.");
-      return kLibgav1StatusInvalidArgument;
+      return kStatusInvalidArgument;
     }
   }
   buffer_.color_range = state_.sequence_header.color_config.color_range;
@@ -462,7 +462,7 @@ StatusCode DecoderImpl::CopyFrameToOutputBuffer(
   }
   buffer_.buffer_private_data = frame->buffer_private_data();
   output_frame_ = frame;
-  return kLibgav1StatusOk;
+  return kStatusOk;
 }
 
 void DecoderImpl::ReleaseOutputFrame() {
@@ -479,7 +479,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     if (kDeblockFilterBitMask &&
         !loop_filter_mask_.Reset(frame_header.width, frame_header.height)) {
       LIBGAV1_DLOG(ERROR, "Failed to allocate memory for loop filter masks.");
-      return kLibgav1StatusOutOfMemory;
+      return kStatusOutOfMemory;
     }
   }
   LoopRestorationInfo loop_restoration_info(
@@ -490,7 +490,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   if (!loop_restoration_info.Allocate()) {
     LIBGAV1_DLOG(ERROR,
                  "Failed to allocate memory for loop restoration info units.");
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
   const bool do_cdef =
       PostFilter::DoCdef(frame_header, settings_.post_filter_mask);
@@ -505,7 +505,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   if (!AllocateCurrentFrame(frame_header, kBorderPixels, kBorderPixels,
                             kBorderPixels, bottom_border)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
   if (sequence_header.enable_cdef) {
     if (!cdef_index_.Reset(
@@ -513,14 +513,14 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
             DivideBy16(frame_header.columns4x4 + kMaxBlockWidth4x4),
             /*zero_initialize=*/false)) {
       LIBGAV1_DLOG(ERROR, "Failed to allocate memory for cdef index.");
-      return kLibgav1StatusOutOfMemory;
+      return kStatusOutOfMemory;
     }
   }
   if (!inter_transform_sizes_.Reset(frame_header.rows4x4 + kMaxBlockHeight4x4,
                                     frame_header.columns4x4 + kMaxBlockWidth4x4,
                                     /*zero_initialize=*/false)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for inter_transform_sizes.");
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
   if (frame_header.use_ref_frame_mvs) {
     if (!state_.motion_field.mv.Reset(DivideBy2(frame_header.rows4x4),
@@ -531,7 +531,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
             /*zero_initialize=*/false)) {
       LIBGAV1_DLOG(ERROR,
                    "Failed to allocate memory for temporal motion vectors.");
-      return kLibgav1StatusOutOfMemory;
+      return kStatusOutOfMemory;
     }
 
     // For each motion vector, only mv[0] needs to be initialized to
@@ -556,14 +556,14 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
       frame_header.columns4x4 + kMaxBlockWidth4x4,
       sequence_header.use_128x128_superblock);
   if (!block_parameters_holder.Init()) {
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
   const dsp::Dsp* const dsp =
       dsp::GetDspTable(sequence_header.color_config.bitdepth);
   if (dsp == nullptr) {
     LIBGAV1_DLOG(ERROR, "Failed to get the dsp table for bitdepth %d.",
                  sequence_header.color_config.bitdepth);
-    return kLibgav1StatusInternalError;
+    return kStatusInternalError;
   }
   // If prev_segment_ids is a null pointer, it is treated as if it pointed to
   // a segmentation map containing all 0s.
@@ -589,10 +589,10 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
   Vector<std::unique_ptr<Tile>> tiles;
   if (!tiles.reserve(tile_count)) {
     LIBGAV1_DLOG(ERROR, "tiles.reserve(%d) failed.\n", tile_count);
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
   if (!threading_strategy_.Reset(frame_header, settings_.threads)) {
-    return kLibgav1StatusOutOfMemory;
+    return kStatusOutOfMemory;
   }
 
   if (threading_strategy_.row_thread_pool(0) != nullptr) {
@@ -608,7 +608,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
         block_width4x4_log2;
     if (!superblock_state_.Reset(superblock_rows, superblock_columns)) {
       LIBGAV1_DLOG(ERROR, "Failed to allocate super_block_state.\n");
-      return kLibgav1StatusOutOfMemory;
+      return kStatusOutOfMemory;
     }
     if (residual_buffer_pool_ == nullptr) {
       residual_buffer_pool_.reset(new (std::nothrow) ResidualBufferPool(
@@ -619,7 +619,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
                                                      : sizeof(int32_t)));
       if (residual_buffer_pool_ == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate residual buffer.\n");
-        return kLibgav1StatusOutOfMemory;
+        return kStatusOutOfMemory;
       }
     } else {
       residual_buffer_pool_->Reset(sequence_header.use_128x128_superblock,
@@ -673,7 +673,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
         LIBGAV1_DLOG(ERROR,
                      "Failed to allocate threaded loop restoration buffer.\n");
         threaded_window_buffer_size_ = 0;
-        return kLibgav1StatusOutOfMemory;
+        return kStatusOutOfMemory;
       }
       threaded_window_buffer_size_ = threaded_window_buffer_size;
     }
@@ -693,7 +693,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
                                  /*subsampling_y=*/0, kBorderPixels,
                                  kBorderPixels, kBorderPixels, kBorderPixels,
                                  nullptr, nullptr, nullptr)) {
-      return kLibgav1StatusOutOfMemory;
+      return kStatusOutOfMemory;
     }
   }
 
@@ -714,7 +714,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
       if (superres_line_buffer_ == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate superres line buffer.\n");
         superres_line_buffer_size_ = 0;
-        return kLibgav1StatusOutOfMemory;
+        return kStatusOutOfMemory;
       }
       superres_line_buffer_size_ = superres_line_buffer_size;
     }
@@ -742,7 +742,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
         if (!bit_reader.ReadLittleEndian(tile_size_bytes, &tile_size)) {
           LIBGAV1_DLOG(ERROR, "Could not read tile size for tile #%d",
                        tile_number);
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
         ++tile_size;
         byte_offset += tile_size_bytes;
@@ -750,7 +750,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
         if (tile_size > bytes_left) {
           LIBGAV1_DLOG(ERROR, "Invalid tile size %zu for tile #%d", tile_size,
                        tile_number);
-          return kLibgav1StatusBitstreamError;
+          return kStatusBitstreamError;
         }
       } else {
         tile_size = bytes_left;
@@ -769,7 +769,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
           &superblock_state_, &pending_tiles));
       if (tile == nullptr) {
         LIBGAV1_DLOG(ERROR, "Failed to allocate tile.");
-        return kLibgav1StatusOutOfMemory;
+        return kStatusOutOfMemory;
       }
       tiles.push_back_unchecked(std::move(tile));
 
@@ -863,7 +863,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
 
   // At this point, all the tiles have been parsed and decoded and the
   // threadpool will be empty.
-  if (tile_decoding_failed) return kLibgav1StatusUnknownError;
+  if (tile_decoding_failed) return kStatusUnknownError;
 
   if (frame_header.enable_frame_end_update_cdf) {
     symbol_decoder_context_ = saved_symbol_decoder_context;
@@ -879,7 +879,7 @@ StatusCode DecoderImpl::DecodeTiles(const ObuParser* obu) {
     post_filter.ApplyFilteringThreaded();
   }
   SetCurrentFrameSegmentationMap(frame_header, prev_segment_ids);
-  return kLibgav1StatusOk;
+  return kStatusOk;
 }
 
 void DecoderImpl::SetCurrentFrameSegmentationMap(

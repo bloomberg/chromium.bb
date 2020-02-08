@@ -77,15 +77,14 @@ class LIBGAV1_PUBLIC Decoder {
 
   // Init must be called exactly once per instance. Subsequent calls will do
   // nothing. If |settings| is nullptr, the decoder will be initialized with
-  // default settings. Returns kLibgav1StatusOk on success, an error status
-  // otherwise.
+  // default settings. Returns kStatusOk on success, an error status otherwise.
   StatusCode Init(const DecoderSettings* settings);
 
   // Enqueues a compressed frame to be decoded. Applications can continue
   // enqueue'ing up to |GetMaxAllowedFrames()|. The decoder can be thought of as
-  // a queue of size |GetMaxAllowedFrames()|. Returns kLibgav1StatusOk on
-  // success and an error status otherwise. Returning an error status here isn't
-  // a fatal error and the decoder can continue decoding further frames.
+  // a queue of size |GetMaxAllowedFrames()|. Returns kStatusOk on success and
+  // an error status otherwise. Returning an error status here isn't a fatal
+  // error and the decoder can continue decoding further frames.
   //
   // |user_private_data| may be used to associate application specific private
   // data with the compressed frame. It will be copied to the user_private_data
