@@ -8,12 +8,17 @@
 from __future__ import print_function
 
 import datetime
+import sys
+
 import mock
 
 from chromite.contrib import uprev_frequency
 from chromite.lib import cros_test_lib
 from chromite.lib import git
 from chromite.scripts import cros_mark_as_stable
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class GetDirectoryCommitsTest(cros_test_lib.MockTestCase):
