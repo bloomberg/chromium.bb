@@ -2474,6 +2474,17 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     if (var > exhuastive_thr) run_mesh_search = 1;
   }
 
+  // TODO(yunqing): the following is used to reduce mesh search in temporal
+  // filtering. Can extend it to intrabc.
+  if (!use_intrabc_mesh_pattern && sf->mv_sf.prune_mesh_search) {
+    const int full_pel_mv_diff =
+        AOMMAX(abs(mvp_full->row - x->best_mv.as_mv.row),
+               abs(mvp_full->col - x->best_mv.as_mv.col));
+    if (full_pel_mv_diff <= 4) {
+      run_mesh_search = 0;
+    }
+  }
+
   if (run_mesh_search) {
     int var_ex;
     MV tmp_mv_ex;

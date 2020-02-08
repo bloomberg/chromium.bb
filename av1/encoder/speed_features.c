@@ -562,6 +562,7 @@ static void set_good_speed_features_framesize_independent(
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_FULL_IMAGE_NON_DUAL;
     sf->lpf_sf.disable_lr_filter = 1;
 
+    sf->mv_sf.prune_mesh_search = 1;
     sf->mv_sf.reduce_search_range = 1;
   }
 }
@@ -927,6 +928,7 @@ static AOM_INLINE void init_mv_sf(MV_SPEED_FEATURES *mv_sf) {
   mv_sf->use_accurate_subpel_search = USE_8_TAPS;
   mv_sf->disable_hash_me = 0;
   mv_sf->reduce_search_range = 0;
+  mv_sf->prune_mesh_search = 0;
 }
 
 static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {
