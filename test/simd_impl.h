@@ -358,8 +358,8 @@ MY_TEST_P(ARCH_POSTFIX(V64_V256), TestIntrinsics) {
 #define SIMD_TUPLE(name, mask, maskwidth) \
   ::testing::make_tuple(mask, maskwidth, static_cast<const char *>(#name))
 
-INSTANTIATE(ARCH, ARCH_POSTFIX(U32_V64V64),
-            (SIMD_TUPLE(v64_sad_u8, 0U, 0U), SIMD_TUPLE(v64_ssd_u8, 0U, 0U)));
+INSTANTIATE(ARCH, ARCH_POSTFIX(U32_V64V64), SIMD_TUPLE(v64_sad_u8, 0U, 0U),
+            SIMD_TUPLE(v64_ssd_u8, 0U, 0U));
 
 INSTANTIATE(
     ARCH, ARCH_POSTFIX(V64_V64V64), SIMD_TUPLE(v64_add_8, 0U, 0U),
