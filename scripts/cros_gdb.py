@@ -31,6 +31,10 @@ from chromite.lib import remote_access
 from chromite.lib import retry_util
 from chromite.lib import toolchain
 
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 class GdbException(Exception):
   """Base exception for this module."""
 

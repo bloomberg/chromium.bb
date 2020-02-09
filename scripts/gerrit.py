@@ -31,6 +31,9 @@ from chromite.lib import uri_lib
 from chromite.utils import memoize
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 # Locate actions that are exposed to the user.  All functions that start
 # with "UserAct" are fair game.
 ACTION_PREFIX = 'UserAct'
