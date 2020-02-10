@@ -423,6 +423,7 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 3) {
+    sf->hl_sf.high_precision_mv_usage = CURRENT_Q;
     sf->hl_sf.recode_loop = ALLOW_RECODE_KFARFGF;
 
     sf->gm_sf.gm_search_type = GM_DISABLE_SEARCH;
@@ -488,8 +489,6 @@ static void set_good_speed_features_framesize_independent(
   }
 
   if (speed >= 4) {
-    sf->hl_sf.high_precision_mv_usage = CURRENT_Q;
-
     sf->mv_sf.subpel_search_method = SUBPEL_TREE_PRUNED_MORE;
 
     sf->part_sf.simple_motion_search_prune_agg = 2;
