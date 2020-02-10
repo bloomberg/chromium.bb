@@ -467,12 +467,6 @@ typedef struct MV_SPEED_FEATURES {
   // Threshold for allowing exhaustive motion search.
   int exhaustive_searches_thresh;
 
-  // Maximum number of exhaustive searches for a frame (except for intraBC ME).
-  int max_exhaustive_pct;
-
-  // Maximum number of exhaustive searches in a frame for intraBC ME.
-  int intrabc_max_exhaustive_pct;
-
   // Pattern to be used for any exhaustive mesh searches (except intraBC ME).
   MESH_PATTERN mesh_patterns[MAX_MESH_STEP];
 

@@ -2068,9 +2068,6 @@ static int full_pixel_exhaustive(
 
   *best_mv = *start_mv;
 
-  // Keep track of number of exhaustive calls (this frame in this thread).
-  if (x->ex_search_count_ptr != NULL) ++(*x->ex_search_count_ptr);
-
   // Trap illegal values for interval and range for this function.
   if ((range < MIN_RANGE) || (range > MAX_RANGE) || (interval < MIN_INTERVAL) ||
       (interval > range))
@@ -2199,21 +2196,6 @@ int av1_refining_search_8p_c(MACROBLOCK *x, int error_per_bit, int search_range,
     }
   }
   return best_sad;
-}
-
-#define MIN_EX_SEARCH_LIMIT 128
-static int is_exhaustive_allowed(const AV1_COMP *const cpi, MACROBLOCK *x,
-                                 int max_exhaustive_pct) {
-  const SPEED_FEATURES *const sf = &cpi->sf;
-  int is_allowed = (sf->mv_sf.exhaustive_searches_thresh < INT_MAX) &&
-                   !cpi->rc.is_src_frame_alt_ref;
-  if (x->m_search_count_ptr != NULL && x->ex_search_count_ptr != NULL) {
-    const int max_ex =
-        AOMMAX(MIN_EX_SEARCH_LIMIT,
-               (*x->m_search_count_ptr * max_exhaustive_pct) / 100);
-    is_allowed = *x->ex_search_count_ptr <= max_ex && is_allowed;
-  }
-  return is_allowed;
 }
 
 static int vector_match(int16_t *ref, int16_t *src, int bwl) {
@@ -2445,9 +2427,6 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
     cost_list[4] = INT_MAX;
   }
 
-  // Keep track of number of searches (this frame in this thread).
-  if (x->m_search_count_ptr != NULL) ++(*x->m_search_count_ptr);
-
   switch (method) {
     case FAST_DIAMOND:
       var = fast_dia_search(x, start_mv, step_param, error_per_bit, 0,
@@ -2479,13 +2458,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   }
 
   // Should we allow a follow on exhaustive search?
-  // Pick the threshold for decision on the evaluation of exhaustive search
-  // based on the toolset (intraBC or non-intraBC)
-  const int max_exhaustive_pct = use_intrabc_mesh_pattern
-                                     ? sf->mv_sf.intrabc_max_exhaustive_pct
-                                     : sf->mv_sf.max_exhaustive_pct;
-  if (!run_mesh_search && method == NSTEP && use_var &&
-      is_exhaustive_allowed(cpi, x, max_exhaustive_pct)) {
+  if (!run_mesh_search && method == NSTEP && use_var) {
     int exhuastive_thr = sf->mv_sf.exhaustive_searches_thresh;
     exhuastive_thr >>=
         10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);

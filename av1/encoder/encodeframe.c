@@ -176,8 +176,6 @@ typedef struct SB_FIRST_PASS_STATS {
   FRAME_COUNTS fc;
   InterModeRdModel inter_mode_rd_models[BLOCK_SIZES_ALL];
   int thresh_freq_fact[BLOCK_SIZES_ALL][MAX_MODES];
-  int m_search_count;
-  int ex_search_count;
   int current_qindex;
 
 #if CONFIG_INTERNAL_STATS
@@ -4330,9 +4328,6 @@ static INLINE void backup_sb_state(SB_FIRST_PASS_STATS *sb_fp_stats,
   memcpy(sb_fp_stats->thresh_freq_fact, x->thresh_freq_fact,
          sizeof(sb_fp_stats->thresh_freq_fact));
 
-  sb_fp_stats->m_search_count = *x->m_search_count_ptr;
-  sb_fp_stats->ex_search_count = *x->ex_search_count_ptr;
-
   const int alloc_mi_idx = get_alloc_mi_idx(cm, mi_row, mi_col);
   sb_fp_stats->current_qindex = cm->mi[alloc_mi_idx].current_qindex;
 
@@ -4363,9 +4358,6 @@ static INLINE void restore_sb_state(const SB_FIRST_PASS_STATS *sb_fp_stats,
          sizeof(sb_fp_stats->inter_mode_rd_models));
   memcpy(x->thresh_freq_fact, sb_fp_stats->thresh_freq_fact,
          sizeof(sb_fp_stats->thresh_freq_fact));
-
-  *x->m_search_count_ptr = sb_fp_stats->m_search_count;
-  *x->ex_search_count_ptr = sb_fp_stats->ex_search_count;
 
   const int alloc_mi_idx = get_alloc_mi_idx(cm, mi_row, mi_col);
   cm->mi[alloc_mi_idx].current_qindex = sb_fp_stats->current_qindex;
@@ -4793,12 +4785,6 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
   av1_zero_above_context(cm, &td->mb.e_mbd, tile_info->mi_col_start,
                          tile_info->mi_col_end, tile_row);
   av1_init_above_context(cm, &td->mb.e_mbd, tile_row);
-
-  // Set up pointers to per thread motion search counters.
-  this_tile->m_search_count = 0;   // Count of motion search hits.
-  this_tile->ex_search_count = 0;  // Exhaustive mesh search hits.
-  td->mb.m_search_count_ptr = &this_tile->m_search_count;
-  td->mb.ex_search_count_ptr = &this_tile->ex_search_count;
 
   if (cpi->oxcf.enable_cfl_intra) cfl_init(&td->mb.e_mbd.cfl, &cm->seq_params);
 

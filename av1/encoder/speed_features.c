@@ -31,9 +31,6 @@ static MESH_PATTERN
       { { 64, 16 }, { 24, 8 }, { 12, 4 }, { 7, 1 } },
       { { 64, 16 }, { 24, 8 }, { 12, 4 }, { 7, 1 } },
     };
-static unsigned char good_quality_max_mesh_pct[MAX_MESH_SPEED + 1] = { 50, 50,
-                                                                       25, 15,
-                                                                       5,  1 };
 
 // TODO(huisu@google.com): These settings are pretty relaxed, tune them for
 // each speed setting
@@ -45,8 +42,6 @@ static MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
   { { 64, 4 }, { 16, 1 }, { 0, 0 }, { 0, 0 } },
   { { 64, 4 }, { 16, 1 }, { 0, 0 }, { 0, 0 } },
 };
-static uint8_t intrabc_max_mesh_pct[MAX_MESH_SPEED + 1] = { 100, 100, 100,
-                                                            25,  25,  10 };
 
 // Threshold values to be used for pruning the txfm_domain_distortion
 // based on block MSE
@@ -1156,7 +1151,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     sf->mv_sf.exhaustive_searches_thresh = (1 << 24);
   else
     sf->mv_sf.exhaustive_searches_thresh = (1 << 25);
-  sf->mv_sf.max_exhaustive_pct = good_quality_max_mesh_pct[mesh_speed];
   if (mesh_speed > 0)
     sf->mv_sf.exhaustive_searches_thresh = sf->mv_sf.exhaustive_searches_thresh
                                            << 1;
@@ -1177,7 +1171,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
     sf->mv_sf.intrabc_mesh_patterns[i].interval =
         intrabc_mesh_patterns[mesh_speed][i].interval;
   }
-  sf->mv_sf.intrabc_max_exhaustive_pct = intrabc_max_mesh_pct[mesh_speed];
 
   // Slow quant, dct and trellis not worthwhile for first pass
   // so make sure they are always turned off.

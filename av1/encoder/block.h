@@ -266,8 +266,6 @@ struct macroblock {
   int rdmult;
   int mb_energy;
   int sb_energy_level;
-  int *m_search_count_ptr;
-  int *ex_search_count_ptr;
 
   unsigned int txb_split_count;
 #if CONFIG_SPEED_STATS
