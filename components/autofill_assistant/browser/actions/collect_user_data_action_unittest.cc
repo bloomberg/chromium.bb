@@ -424,7 +424,7 @@ TEST_F(CollectUserDataActionTest, SelectPaymentMethod) {
 
   autofill::CreditCard credit_card(base::GenerateGUID(), kFakeUrl);
   autofill::test::SetCreditCardInfo(&credit_card, "Marion Mitchell",
-                                    "4111 1111 1111 1111", "01", "2020",
+                                    "4111 1111 1111 1111", "01", "2050",
                                     billing_profile.guid());
 
   ON_CALL(mock_action_delegate_, CollectUserData(_))
@@ -557,7 +557,7 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
   user_data.card =
       std::make_unique<autofill::CreditCard>(base::GenerateGUID(), kFakeUrl);
   autofill::test::SetCreditCardInfo(user_data.card.get(), "Marion Mitchell",
-                                    "4111 1111 1111 1111", "01", "2020",
+                                    "4111 1111 1111 1111", "01", "2050",
                                     /* billing_address_id = */ "");
   EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
 
@@ -901,7 +901,7 @@ TEST_F(CollectUserDataActionTest, AllowedBasicCardNetworks) {
                 base::GenerateGUID(), kFakeUrl);
             autofill::test::SetCreditCardInfo(
                 user_data_.card.get(), "Marion Mitchell", "4111 1111 1111 1111",
-                "01", "2020", user_data_.billing_address->guid());
+                "01", "2050", user_data_.billing_address->guid());
 
             std::move(collect_user_data_options->confirm_callback)
                 .Run(&user_data_);
