@@ -140,6 +140,13 @@ class DecoderImpl : public Allocable {
   // is handled in Tile::DecodeBlock().
   void SetCurrentFrameSegmentationMap(const ObuFrameHeader& frame_header,
                                       const SegmentationMap* prev_segment_ids);
+  // Applies film grain synthesis to the |displayable_frame_ptr| and returns the
+  // film grain applied frame. |status| is the output status of this function
+  // call. If |status| is not kStatusOk, then the return value will be nullptr.
+  RefCountedBufferPtr ApplyFilmGrain(
+      const ObuSequenceHeader& sequence_header,
+      const ObuFrameHeader& frame_header,
+      RefCountedBufferPtr* const displayable_frame_ptr, StatusCode* status);
 
   Queue<EncodedFrame> encoded_frames_;
   DecoderState state_;
