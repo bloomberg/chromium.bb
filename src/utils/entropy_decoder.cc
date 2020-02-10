@@ -18,6 +18,7 @@
 #include <cstring>
 
 #include "src/utils/common.h"
+#include "src/utils/compiler_attributes.h"
 #include "src/utils/constants.h"
 
 #if defined(__ARM_NEON__) || defined(__aarch64__) || \
@@ -337,7 +338,9 @@ void UpdateCdf16(uint16_t* const cdf, const int symbol) {
 
 }  // namespace
 
+#if !LIBGAV1_CXX17
 constexpr uint32_t DaalaBitReader::kWindowSize;  // static.
+#endif
 
 DaalaBitReader::DaalaBitReader(const uint8_t* data, size_t size,
                                bool allow_update_cdf)

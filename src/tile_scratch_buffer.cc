@@ -14,9 +14,13 @@
 
 #include "src/tile_scratch_buffer.h"
 
+#include "src/utils/compiler_attributes.h"
+
 namespace libgav1 {
 
+#if !LIBGAV1_CXX17
 // static
 constexpr int TileScratchBuffer::kBlockDecodedStride;
+#endif
 
 }  // namespace libgav1

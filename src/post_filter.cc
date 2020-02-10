@@ -249,8 +249,10 @@ PostFilter::PostFilter(
   }
 }
 
+#if !LIBGAV1_CXX17
 // Static data member definitions.
 constexpr int PostFilter::kCdefLargeValue;
+#endif
 
 void PostFilter::ApplyFilteringForOneSuperBlockRow(int row4x4, int sb4x4,
                                                    bool is_last_row) {

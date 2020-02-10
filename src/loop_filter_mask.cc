@@ -21,11 +21,14 @@
 #include <new>
 
 #include "src/utils/array_2d.h"
+#include "src/utils/compiler_attributes.h"
 
 namespace libgav1 {
 
+#if !LIBGAV1_CXX17
 // static.
 constexpr BitMaskSet LoopFilterMask::kPredictionModeDeltasMask;
+#endif
 
 bool LoopFilterMask::Reset(int width, int height) {
   num_64x64_blocks_per_row_ = DivideBy64(width + 63);
