@@ -1152,8 +1152,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
         2 * (MAX_SB_SIZE_LOG2 - 6);
   }
 
-  sf->mv_sf.allow_exhaustive_searches = 1;
-
   const int mesh_speed = AOMMIN(speed, MAX_MESH_SPEED);
   if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
     sf->mv_sf.exhaustive_searches_thresh = (1 << 24);

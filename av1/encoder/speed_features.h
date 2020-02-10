@@ -464,10 +464,7 @@ typedef struct MV_SPEED_FEATURES {
   // point for this motion search and limits the search range around it.
   int adaptive_motion_search;
 
-  // Flag for allowing some use of exhaustive searches;
-  int allow_exhaustive_searches;
-
-  // Threshold for allowing exhaistive motion search.
+  // Threshold for allowing exhaustive motion search.
   int exhaustive_searches_thresh;
 
   // Maximum number of exhaustive searches for a frame (except for intraBC ME).
