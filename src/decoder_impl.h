@@ -25,6 +25,7 @@
 #include "src/buffer_pool.h"
 #include "src/dsp/constants.h"
 #include "src/frame_buffer_callback_adaptor.h"
+#include "src/frame_scratch_buffer.h"
 #include "src/gav1/decoder_buffer.h"
 #include "src/gav1/decoder_settings.h"
 #include "src/gav1/status_code.h"
@@ -100,7 +101,6 @@ struct DecoderState {
   std::array<bool, kNumReferenceFrameTypes> reference_frame_sign_bias = {};
   std::array<RefCountedBufferPtr, kNumReferenceFrameTypes> reference_frame;
   RefCountedBufferPtr current_frame;
-  TemporalMotionField motion_field;
 };
 
 class DecoderImpl : public Allocable {
@@ -134,7 +134,8 @@ class DecoderImpl : public Allocable {
   // Populates buffer_ with values from |frame|. Adds a reference to |frame|
   // in output_frame_.
   StatusCode CopyFrameToOutputBuffer(const RefCountedBufferPtr& frame);
-  StatusCode DecodeTiles(const ObuParser* obu);
+  StatusCode DecodeTiles(const ObuParser* obu,
+                         FrameScratchBuffer* frame_scratch_buffer);
   // Sets the current frame's segmentation map for two cases. The third case
   // is handled in Tile::DecodeBlock().
   void SetCurrentFrameSegmentationMap(const ObuFrameHeader& frame_header,
@@ -143,7 +144,6 @@ class DecoderImpl : public Allocable {
   Queue<EncodedFrame> encoded_frames_;
   DecoderState state_;
   ThreadingStrategy threading_strategy_;
-  SymbolDecoderContext symbol_decoder_context_;
 
   // TODO(vigneshv): Only support one buffer for now. Eventually this has to be
   // a vector or an array.
@@ -156,27 +156,10 @@ class DecoderImpl : public Allocable {
   V1FrameBufferCallbacks v1_callbacks_;
 
   BufferPool buffer_pool_;
-  std::unique_ptr<ResidualBufferPool> residual_buffer_pool_;
-  Array2D<SuperBlockState> superblock_state_;
-  AlignedUniquePtr<uint8_t> threaded_window_buffer_;
-  size_t threaded_window_buffer_size_ = 0;
-  // Buffer used to temporarily store the input row for applying SuperRes.
-  AlignedUniquePtr<uint8_t> superres_line_buffer_;
-  size_t superres_line_buffer_size_ = 0;
-  Array2D<TransformSize> inter_transform_sizes_;
-  Array2D<int16_t> cdef_index_;
+  // TODO(b/142583029): This may have to be moved inside FrameScratchBuffer.
   TileScratchBufferPool tile_scratch_buffer_pool_;
-  // Buffer used to store the deblocked pixels that are necessary for loop
-  // restoration. This buffer will store 4 rows for every 64x64 block (4 rows
-  // for every 32x32 for chroma with subsampling). The indices of the rows that
-  // are stored are specified in |kDeblockedRowsForLoopRestoration|. First 4
-  // rows of this buffer are never populated and never used.
-  // TODO(vigneshv): The first 4 unused rows can probably be removed by
-  // adjusting the offsets.
-  YuvBuffer deblock_buffer_;
   WedgeMaskArray wedge_masks_;
-
-  LoopFilterMask loop_filter_mask_;
+  FrameScratchBufferPool frame_scratch_buffer_pool_;
 
   const DecoderSettings& settings_;
 };
