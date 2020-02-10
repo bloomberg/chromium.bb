@@ -38,8 +38,11 @@ MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
   // callback depends is initialized.
   if (config.interface.HasIpV4Address()) {
     ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
-        task_runner, this, {kDefaultMulticastGroupIPv4, kDefaultMulticastPort});
+        task_runner, this, kDefaultMulticastGroupIPv4Endpoint);
     OSP_DCHECK(!socket.is_error());
+    OSP_DCHECK(socket.value().get());
+    OSP_DCHECK(socket.value()->IsIPv4());
+
     socket_v4_ = std::move(socket.value());
     socket_v4_->SetMulticastOutboundInterface(config.interface.index);
     socket_v4_->JoinMulticastGroup(kDefaultMulticastGroupIPv4,
@@ -50,8 +53,11 @@ MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
 
   if (config.interface.HasIpV6Address()) {
     ErrorOr<std::unique_ptr<UdpSocket>> socket = UdpSocket::Create(
-        task_runner, this, {kDefaultMulticastGroupIPv6, kDefaultMulticastPort});
+        task_runner, this, kDefaultMulticastGroupIPv6Endpoint);
     OSP_DCHECK(!socket.is_error());
+    OSP_DCHECK(socket.value().get());
+    OSP_DCHECK(socket.value()->IsIPv6());
+
     socket_v6_ = std::move(socket.value());
     socket_v6_->SetMulticastOutboundInterface(config.interface.index);
     socket_v6_->JoinMulticastGroup(kDefaultMulticastGroupIPv6,

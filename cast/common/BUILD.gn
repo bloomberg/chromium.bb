@@ -66,13 +66,26 @@ source_set("discovery") {
     "discovery/service_info.h",
   ]
 
-  deps = []
-
-  public_deps = [
+  deps = [
     "../../discovery:dnssd",
     "../../discovery:public",
     "../../platform",
     "../../third_party/abseil",
+  ]
+}
+
+source_set("discovery_e2e_test") {
+  testonly = true
+
+  sources = [
+    "discovery/e2e_test/main.cc",
+  ]
+
+  deps = [
+    ":discovery",
+    "../../discovery:dnssd",
+    "../../discovery:public",
+    "../../third_party/googletest:gtest",
   ]
 }
 

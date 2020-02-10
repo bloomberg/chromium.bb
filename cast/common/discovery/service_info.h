@@ -61,7 +61,7 @@ struct ServiceInfo {
   const std::string& GetInstanceId() const;
 
   // Returns whether all fields of this ServiceInfo are valid.
-  bool IsValid();
+  bool IsValid() const;
 
   // Endpoints for the service. Present if an endpoint of this address type
   // exists and empty otherwise.

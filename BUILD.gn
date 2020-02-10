@@ -102,11 +102,28 @@ source_set("openscreen_unittests_all") {
   }
 }
 
+source_set("e2e_tests_all") {
+  testonly = true
+  public_deps = [
+    "cast/common:discovery_e2e_test",
+    "third_party/googletest:gtest_main",
+  ]
+}
+
 if (!build_with_chromium) {
   executable("openscreen_unittests") {
     testonly = true
     deps = [
       ":openscreen_unittests_all",
+    ]
+  }
+}
+
+if (!build_with_chromium && is_posix) {
+  executable("e2e_tests") {
+    testonly = true
+    deps = [
+      ":e2e_tests_all",
     ]
   }
 }

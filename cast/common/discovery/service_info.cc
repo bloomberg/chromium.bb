@@ -140,7 +140,7 @@ const std::string& ServiceInfo::GetInstanceId() const {
   return instance_id_;
 }
 
-bool ServiceInfo::IsValid() {
+bool ServiceInfo::IsValid() const {
   std::string instance_id = GetInstanceId();
   if (!discovery::IsInstanceValid(instance_id)) {
     return false;

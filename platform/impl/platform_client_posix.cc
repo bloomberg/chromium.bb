@@ -83,9 +83,7 @@ PlatformClientPosix::PlatformClientPosix(
       networking_loop_thread_(&OperationLoop::RunUntilStopped,
                               &networking_loop_),
       task_runner_thread_(
-          std::thread(&TaskRunnerImpl::RunUntilStopped, task_runner_.get())) {
-  SetInstance(this);
-}
+          std::thread(&TaskRunnerImpl::RunUntilStopped, task_runner_.get())) {}
 
 PlatformClientPosix::PlatformClientPosix(
     Clock::duration networking_operation_timeout,
@@ -96,9 +94,7 @@ PlatformClientPosix::PlatformClientPosix(
                        networking_loop_interval),
       task_runner_(std::move(task_runner)),
       networking_loop_thread_(&OperationLoop::RunUntilStopped,
-                              &networking_loop_) {
-  SetInstance(this);
-}
+                              &networking_loop_) {}
 
 SocketHandleWaiterPosix* PlatformClientPosix::socket_handle_waiter() {
   std::call_once(waiter_initialization_, [this]() {
