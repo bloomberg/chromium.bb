@@ -500,6 +500,8 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.adaptive_mode_search = 1;
     sf->inter_sf.alt_ref_search_fp = 1;
     sf->inter_sf.prune_ref_mv_idx_search = 1;
+    sf->inter_sf.txfm_rd_gate_level =
+        (boosted || cm->allow_screen_content_tools) ? 0 : 1;
 
     sf->inter_sf.disable_smooth_interintra = 1;
 
@@ -561,6 +563,8 @@ static void set_good_speed_features_framesize_independent(
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;
+    sf->inter_sf.txfm_rd_gate_level =
+        (boosted || cm->allow_screen_content_tools) ? 0 : 2;
 
     sf->lpf_sf.lpf_pick = LPF_PICK_FROM_FULL_IMAGE_NON_DUAL;
     sf->lpf_sf.cdef_pick_method = cm->allow_screen_content_tools
@@ -982,6 +986,7 @@ static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {
   inter_sf->prune_ref_mv_idx_search = 0;
   inter_sf->prune_warped_prob_thresh = 0;
   inter_sf->reuse_compound_type_decision = 0;
+  inter_sf->txfm_rd_gate_level = 0;
 }
 
 static AOM_INLINE void init_interp_sf(INTERP_FILTER_SPEED_FEATURES *interp_sf) {
