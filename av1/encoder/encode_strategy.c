@@ -814,6 +814,10 @@ int av1_get_refresh_frame_flags(const AV1_COMP *const cpi,
           refresh_mask =
               1 << ref_buffer_stack
                        ->lst_stack[ref_buffer_stack->lst_stack_size - 1];
+        else if (ref_buffer_stack->gld_stack_size >= 2)
+          refresh_mask =
+              1 << ref_buffer_stack
+                       ->gld_stack[ref_buffer_stack->gld_stack_size - 1];
         else
           assert(0 && "No ref map index found");
       }

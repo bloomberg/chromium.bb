@@ -1574,7 +1574,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
     rc->gfu_boost = av1_calc_arf_boost(twopass, rc, frame_info, alt_offset,
                                        forward_frames, (i - 1));
     rc->source_alt_ref_pending = 1;
-    gf_group->max_layer_depth_allowed = cpi->oxcf.gf_max_pyr_height;
+    gf_group->max_layer_depth_allowed = MAX_ARF_LAYERS - 1;
   } else {
     reset_fpf_position(twopass, start_pos);
     rc->gfu_boost = AOMMIN(
