@@ -331,6 +331,23 @@ message RemoveKeyReply {
   CryptohomeErrorCode error = 1;
 }
 
+// Input parameters to MassRemoveKeys()
+message MassRemoveKeysRequest {
+  // The owner of the key to remove
+  cryptohome.AccountIdentifier account_id = 1;
+  // Authorization from the user
+  cryptohome.AuthorizationRequest authorization_request = 2;
+
+  // Remove all keys whose labels are NOT included in exempt_key_data.
+  repeated cryptohome.KeyData exempt_key_data = 3;
+}
+
+// Output parameters for MassRemoveKeys()
+message MassRemoveKeysReply {
+  // Indicates an error if error is not empty.
+  CryptohomeErrorCode error = 1;
+}
+
 // Input parameters to MigrateKey()
 message MigrateKeyRequest {
   // The owner whose key are going to migrate
