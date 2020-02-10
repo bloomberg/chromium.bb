@@ -1479,34 +1479,26 @@ bool Tile::TransformBlock(const Block& block, Plane plane, int base_x,
   if (!bp.skip) {
     const int sb_row_index = SuperBlockRowIndex(block.row4x4);
     const int sb_column_index = SuperBlockColumnIndex(block.column4x4);
-    switch (mode) {
-      case kProcessingModeParseAndDecode: {
-        TransformType tx_type;
-        const int non_zero_coeff_count = ReadTransformCoefficients(
-            block, plane, start_x, start_y, tx_size, &tx_type);
-        if (non_zero_coeff_count < 0) return false;
+    if (mode == kProcessingModeDecodeOnly) {
+      TransformParameterQueue& tx_params =
+          *residual_buffer_threaded_[sb_row_index][sb_column_index]
+               ->transform_parameters();
+      ReconstructBlock(block, plane, start_x, start_y, tx_size,
+                       tx_params.Type(), tx_params.NonZeroCoeffCount());
+      tx_params.Pop();
+    } else {
+      TransformType tx_type;
+      const int non_zero_coeff_count = ReadTransformCoefficients(
+          block, plane, start_x, start_y, tx_size, &tx_type);
+      if (non_zero_coeff_count < 0) return false;
+      if (mode == kProcessingModeParseAndDecode) {
         ReconstructBlock(block, plane, start_x, start_y, tx_size, tx_type,
                          non_zero_coeff_count);
-        break;
-      }
-      case kProcessingModeParseOnly: {
-        TransformType tx_type;
-        const int non_zero_coeff_count = ReadTransformCoefficients(
-            block, plane, start_x, start_y, tx_size, &tx_type);
-        if (non_zero_coeff_count < 0) return false;
+      } else {
+        assert(mode == kProcessingModeParseOnly);
         residual_buffer_threaded_[sb_row_index][sb_column_index]
             ->transform_parameters()
             ->Push(non_zero_coeff_count, tx_type);
-        break;
-      }
-      case kProcessingModeDecodeOnly: {
-        TransformParameterQueue& tx_params =
-            *residual_buffer_threaded_[sb_row_index][sb_column_index]
-                 ->transform_parameters();
-        ReconstructBlock(block, plane, start_x, start_y, tx_size,
-                         tx_params.Type(), tx_params.NonZeroCoeffCount());
-        tx_params.Pop();
-        break;
       }
     }
   }
