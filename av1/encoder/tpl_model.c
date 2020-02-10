@@ -541,10 +541,10 @@ static AOM_INLINE void tpl_model_update_b(AV1_COMP *cpi, TplDepFrame *tpl_frame,
       &tpl_frame[tpl_frame[frame_idx].ref_map_index[ref_frame_index]];
   TplDepStats *ref_stats_ptr = ref_tpl_frame->tpl_stats_ptr;
 
-  const int ref_pos_row =
-      mi_row * MI_SIZE + (tpl_stats_ptr->mv[ref_frame_index].as_mv.row >> 3);
-  const int ref_pos_col =
-      mi_col * MI_SIZE + (tpl_stats_ptr->mv[ref_frame_index].as_mv.col >> 3);
+  const FULLPEL_MV full_mv =
+      get_fullmv_from_mv(&tpl_stats_ptr->mv[ref_frame_index].as_mv);
+  const int ref_pos_row = mi_row * MI_SIZE + full_mv.row;
+  const int ref_pos_col = mi_col * MI_SIZE + full_mv.col;
 
   const int bw = 4 << mi_size_wide_log2[bsize];
   const int bh = 4 << mi_size_high_log2[bsize];

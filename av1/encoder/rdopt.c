@@ -699,10 +699,10 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
 }
 
 static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
-  return (mv->row >> 3) < mv_limits->row_min ||
-         (mv->row >> 3) > mv_limits->row_max ||
-         (mv->col >> 3) < mv_limits->col_min ||
-         (mv->col >> 3) > mv_limits->col_max;
+  return GET_MV_RAWPEL(mv->row) < mv_limits->row_min ||
+         GET_MV_RAWPEL(mv->row) > mv_limits->row_max ||
+         GET_MV_RAWPEL(mv->col) < mv_limits->col_min ||
+         GET_MV_RAWPEL(mv->col) > mv_limits->col_max;
 }
 
 static INLINE PREDICTION_MODE get_single_mode(PREDICTION_MODE this_mode,
