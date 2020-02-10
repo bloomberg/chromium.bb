@@ -57,6 +57,10 @@ typedef enum {
   // requirement.
   kLibgav1StatusBitstreamError = -9,
 
+  // The operation is not allowed at the moment. This is not a fatal error. Try
+  // again later.
+  kLibgav1StatusTryAgain = -10,
+
   // An extra enumerator to prevent people from writing code that fails to
   // compile when a new status code is added.
   //
@@ -94,6 +98,7 @@ constexpr StatusCode kStatusAlready = kLibgav1StatusAlready;
 constexpr StatusCode kStatusUnimplemented = kLibgav1StatusUnimplemented;
 constexpr StatusCode kStatusInternalError = kLibgav1StatusInternalError;
 constexpr StatusCode kStatusBitstreamError = kLibgav1StatusBitstreamError;
+constexpr StatusCode kStatusTryAgain = kLibgav1StatusTryAgain;
 
 // Returns a human readable error string in en-US for the status code |status|.
 // Always returns a valid (non-NULL) string.

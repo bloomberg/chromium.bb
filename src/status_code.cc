@@ -40,9 +40,12 @@ const char* Libgav1GetErrorString(Libgav1StatusCode status) {
     case kLibgav1StatusBitstreamError:
       return "The bitstream is not encoded correctly or violates a bitstream "
              "conformance requirement.";
-    // This switch statement does not have a default case. This way the
-    // compiler will warn if we neglect to update this function after adding a
-    // new value to the Libgav1StatusCode enum type.
+    case kLibgav1StatusTryAgain:
+      return "The operation is not allowed at the moment. This is not a fatal "
+             "error. Try again later.";
+    // This switch statement does not have a default case. This way the compiler
+    // will warn if we neglect to update this function after adding a new value
+    // to the Libgav1StatusCode enum type.
     case kLibgav1StatusReservedForFutureExpansionUseDefaultInSwitchInstead_:
       break;
   }
