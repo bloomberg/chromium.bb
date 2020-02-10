@@ -321,6 +321,11 @@ static void set_good_speed_features_framesize_independent(
   sf->rt_sf.use_nonrd_pick_mode = 0;
   sf->rt_sf.use_real_time_ref_set = 0;
 
+  if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
+    sf->mv_sf.exhaustive_searches_thresh = (1 << 24);
+  else
+    sf->mv_sf.exhaustive_searches_thresh = (1 << 25);
+
   if (speed >= 1) {
     sf->gm_sf.disable_adaptive_warp_error_thresh = 0;
     sf->gm_sf.gm_search_type = GM_REDUCED_REF_SEARCH_SKIP_L2_L3_ARF2;
@@ -335,6 +340,7 @@ static void set_good_speed_features_framesize_independent(
         cm->allow_screen_content_tools ? 1 : 2;
 
     sf->mv_sf.use_accurate_subpel_search = USE_4_TAPS;
+    sf->mv_sf.exhaustive_searches_thresh <<= 1;
 
     sf->inter_sf.disable_interinter_wedge_newmv_search = boosted ? 0 : 1;
     sf->inter_sf.obmc_full_pixel_search_level = 1;
@@ -600,6 +606,8 @@ static void set_rt_speed_features_framesize_independent(AV1_COMP *cpi,
 
   sf->intra_sf.intra_pruning_with_hog = 1;
   sf->intra_sf.intra_pruning_with_hog_thresh = -1.2f;
+
+  sf->mv_sf.exhaustive_searches_thresh = INT_MAX;
 
   sf->rt_sf.check_intra_pred_nonrd = 1;
   sf->rt_sf.estimate_motion_for_var_based_partition = 1;
@@ -923,6 +931,7 @@ static AOM_INLINE void init_mv_sf(MV_SPEED_FEATURES *mv_sf) {
   mv_sf->disable_hash_me = 0;
   mv_sf->reduce_search_range = 0;
   mv_sf->prune_mesh_search = 0;
+  mv_sf->exhaustive_searches_thresh = 0;
 }
 
 static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {
@@ -1147,14 +1156,6 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi, int speed) {
   }
 
   const int mesh_speed = AOMMIN(speed, MAX_MESH_SPEED);
-  if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
-    sf->mv_sf.exhaustive_searches_thresh = (1 << 24);
-  else
-    sf->mv_sf.exhaustive_searches_thresh = (1 << 25);
-  if (mesh_speed > 0)
-    sf->mv_sf.exhaustive_searches_thresh = sf->mv_sf.exhaustive_searches_thresh
-                                           << 1;
-
   for (i = 0; i < MAX_MESH_STEP; ++i) {
     sf->mv_sf.mesh_patterns[i].range =
         good_quality_mesh_patterns[mesh_speed][i].range;
