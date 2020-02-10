@@ -209,13 +209,10 @@ int GetPixelPositionFromHighScale(int start, int step, int offset) {
   return (start + step * offset) >> kScaleSubPixelBits;
 }
 
-dsp::MaskBlendFunc GetMaskBlendFunc(const dsp::Dsp& dsp,
-                                    InterIntraMode inter_intra_mode,
+dsp::MaskBlendFunc GetMaskBlendFunc(const dsp::Dsp& dsp, bool is_inter_intra,
                                     bool is_wedge_inter_intra,
                                     int subsampling_x, int subsampling_y) {
-  const int is_inter_intra =
-      static_cast<int>(inter_intra_mode != kNumInterIntraModes);
-  return (is_inter_intra == 1 && !is_wedge_inter_intra)
+  return (is_inter_intra && !is_wedge_inter_intra)
              ? dsp.mask_blend[0][is_inter_intra]
              : dsp.mask_blend[subsampling_x + subsampling_y][is_inter_intra];
 }
@@ -559,7 +556,7 @@ void Tile::InterIntraPrediction(
   // The second buffer is from intra prediction.
 #if LIBGAV1_MAX_BITDEPTH >= 10
   if (sequence_header_.color_config.bitdepth > 8) {
-    GetMaskBlendFunc(dsp_, prediction_parameters.inter_intra_mode,
+    GetMaskBlendFunc(dsp_, /*is_inter_intra=*/true,
                      prediction_parameters.is_wedge_inter_intra, subsampling_x,
                      subsampling_y)(
         prediction_0, prediction_stride, reinterpret_cast<uint16_t*>(dest),
@@ -595,7 +592,7 @@ void Tile::CompoundInterPrediction(
   switch (prediction_parameters.compound_prediction_type) {
     case kCompoundPredictionTypeWedge:
     case kCompoundPredictionTypeDiffWeighted:
-      GetMaskBlendFunc(dsp_, prediction_parameters.inter_intra_mode,
+      GetMaskBlendFunc(dsp_, /*is_inter_intra=*/false,
                        prediction_parameters.is_wedge_inter_intra,
                        subsampling_x, subsampling_y)(
           prediction[0], prediction_stride, prediction[1], prediction_stride,
