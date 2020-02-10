@@ -5,12 +5,7 @@
 #ifndef UTIL_STRINGPRINTF_H_
 #define UTIL_STRINGPRINTF_H_
 
-#include <stdint.h>
-
 #include <ostream>
-#include <string>
-
-#include "absl/types/span.h"
 
 namespace openscreen {
 
@@ -40,9 +35,6 @@ void PrettyPrintAsciiHex(std::ostream& os, It first, It last) {
     }
   }
 }
-
-// Returns a hex string representation of the given |bytes|.
-std::string HexEncode(absl::Span<const uint8_t> bytes);
 
 }  // namespace openscreen
 
