@@ -280,6 +280,23 @@ message AddKeyReply {
   CryptohomeErrorCode error = 1;
 }
 
+// Input parameters to AddDataRestoreKey()
+message AddDataRestoreKeyRequest {
+  // The owner the account.
+  cryptohome.AccountIdentifier account_id = 1;
+  // The authentication data of the account.
+  cryptohome.AuthorizationRequest authorization_request = 2;
+}
+
+// Output parameters for AddDataRestoreKey()
+message AddDataRestoreKeyReply {
+  // Indicates an error if error is not empty.
+  CryptohomeErrorCode error = 1;
+
+  // 256 bits data restore key in raw bytes
+  bytes data_restore_key = 2;
+}
+
 // Input parameters to UpdateKey()
 message UpdateKeyRequest {
   // Whose key to update?
