@@ -12,7 +12,8 @@ import sys
 from chromite.lib import constants
 
 
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+# TODO(b/149182563): Move this back up to 3.6.
+assert sys.version_info >= (3, 5), 'This module requires Python 3.5+'
 
 
 def main(_argv):

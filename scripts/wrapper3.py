@@ -20,10 +20,15 @@ import sys
 
 # Assert some minimum Python versions as we don't test or support any others.
 # We only support Python 3.6+.
-if sys.version_info < (3, 6):
-  print('%s: chromite: error: Python-3.6+ is required' % (sys.argv[0],),
+if sys.version_info < (3, 5):
+  print('%s: chromite: error: Python-3.6+ is required, but found "%s"' %
+        (sys.argv[0], sys.version.replace('\n', ' ')),
         file=sys.stderr)
   sys.exit(1)
+# TODO(b/149182563): Start with warning people.  Drop this by 2020Q3.
+if sys.version_info < (3, 6):
+  print('%s: chromite: warning: Your Python 3 version is too old; '
+        'you must upgrade to Python 3.6+' % (sys.argv[0],), file=sys.stderr)
 
 
 CHROMITE_PATH = None
