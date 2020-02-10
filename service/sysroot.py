@@ -140,7 +140,6 @@ class BuildPackagesRunConfig(object):
 
     if not self.usepkg:
       args.append('--nousepkg')
-      args.append('--reuse_pkgs_from_local_boards')
 
     if self.install_debug_symbols:
       args.append('--withdebugsymbols')

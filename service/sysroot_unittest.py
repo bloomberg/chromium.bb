@@ -280,9 +280,10 @@ class BuildPackagesRunConfigTest(cros_test_lib.TestCase):
     self.assertNotIn('--eventfile', args)
     # Debug symbols not included.
     self.assertNotIn('--withdebugsymbols', args)
-    # Local build used.
+    # Source used.
     self.assertIn('--nousepkg', args)
-    self.assertIn('--reuse_pkgs_from_local_boards', args)
+    # Flag removed due to broken logic.  See crbug/1048419.
+    self.assertNotIn('--reuse_pkgs_from_local_boards', args)
 
   def testGetBuildPackagesArgs(self):
     """Test the build_packages args building for non-empty values."""
