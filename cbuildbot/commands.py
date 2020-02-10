@@ -63,7 +63,7 @@ _FACTORY_SHIM = 'factory_shim'
 _AUTOTEST_RPC_CLIENT = ('/b/build_internal/scripts/slave-internal/autotest_rpc/'
                         'autotest_rpc_client.py')
 _AUTOTEST_RPC_HOSTNAME = 'master2'
-LOCAL_BUILD_FLAGS = ['--nousepkg', '--reuse_pkgs_from_local_boards']
+LOCAL_BUILD_FLAGS = ['--nousepkg']
 UPLOADED_LIST_FILENAME = 'UPLOADED'
 STATEFUL_FILE = 'stateful.tgz'
 # For swarming proxy
