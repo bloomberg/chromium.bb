@@ -288,6 +288,7 @@
     elm-release
     endeavour-release
     enguarde-release
+    eve-arc-r-release
     eve-arcnext-release
     eve-arcvm-mesa-virgl-next-release
     eve-arcvm-release
@@ -781,6 +782,11 @@
   enguarde-payloads-tryjob
   enguarde-release-tryjob
   enguarde-unittest-stress
+  eve-arc-r-full-tryjob
+  eve-arc-r-llvm-next-toolchain-tryjob
+  eve-arc-r-llvm-toolchain-tryjob
+  eve-arc-r-release-tryjob
+  eve-arc-r-unittest-stress
   eve-arcnext-full-tryjob
   eve-arcnext-llvm-next-toolchain-tryjob
   eve-arcnext-llvm-toolchain-tryjob
@@ -1432,6 +1438,7 @@
     elm-release-tryjob
     endeavour-release-tryjob
     enguarde-release-tryjob
+    eve-arc-r-release-tryjob
     eve-arcnext-release-tryjob
     eve-arcvm-mesa-virgl-next-release-tryjob
     eve-arcvm-release-tryjob
