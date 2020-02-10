@@ -98,7 +98,6 @@ source_set("dnssd") {
 source_set("public") {
   sources = [
     "public/dns_sd_service_watcher.h",
-    "public/temp.cc",
   ]
 
   public_deps = [

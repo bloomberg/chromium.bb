@@ -15,6 +15,8 @@
 #include "discovery/mdns/testing/mdns_test_util.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "platform/test/fake_clock.h"
+#include "platform/test/fake_task_runner.h"
 #include "util/logging.h"
 
 namespace openscreen {
@@ -124,7 +126,10 @@ class DnsDataAccessor {
 
 class QuerierImplTesting : public QuerierImpl {
  public:
-  QuerierImplTesting() : QuerierImpl(&mock_service_) {}
+  QuerierImplTesting()
+      : QuerierImpl(&mock_service_, &task_runner_),
+        clock_(Clock::now()),
+        task_runner_(&clock_) {}
 
   MockMdnsService* service() { return &mock_service_; }
 
@@ -148,6 +153,8 @@ class QuerierImplTesting : public QuerierImpl {
   }
 
  private:
+  FakeClock clock_;
+  FakeTaskRunner task_runner_;
   StrictMock<MockMdnsService> mock_service_;
 };
 

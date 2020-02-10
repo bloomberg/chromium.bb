@@ -25,6 +25,10 @@ namespace discovery {
 // service instance.
 // TODO(rwkeane): Include reporting client as ctor parameter once parallel CLs
 // are in.
+// NOTE: This class is not thread-safe and calls will be made to DnsSdService in
+// the same sequence and on the same threads from which these methods are
+// called. This is to avoid forcing design decisions on embedders who write
+// their own implementations of the DNS-SD layer.
 template <typename T>
 class DnsSdServiceWatcher : public DnsSdQuerier::Callback {
  public:

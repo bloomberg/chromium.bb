@@ -13,6 +13,7 @@
 #include "discovery/dnssd/impl/conversion_layer.h"
 #include "discovery/dnssd/impl/instance_key.h"
 #include "discovery/mdns/public/mdns_constants.h"
+#include "platform/api/task_runner.h"
 #include "platform/base/error.h"
 
 namespace openscreen {
@@ -63,16 +64,21 @@ int EraseRecordsWithServiceId(std::map<DnsSdInstanceRecord, T>* records,
 }  // namespace
 
 PublisherImpl::PublisherImpl(MdnsService* publisher,
-                             ReportingClient* reporting_client)
-    : mdns_publisher_(publisher), reporting_client_(reporting_client) {
+                             ReportingClient* reporting_client,
+                             TaskRunner* task_runner)
+    : mdns_publisher_(publisher),
+      reporting_client_(reporting_client),
+      task_runner_(task_runner) {
   OSP_DCHECK(mdns_publisher_);
   OSP_DCHECK(reporting_client_);
+  OSP_DCHECK(task_runner_);
 }
 
 PublisherImpl::~PublisherImpl() = default;
 
 Error PublisherImpl::Register(const DnsSdInstanceRecord& record,
                               Client* client) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(client != nullptr);
 
   if (published_records_.find(record) != published_records_.end()) {
@@ -90,6 +96,8 @@ Error PublisherImpl::Register(const DnsSdInstanceRecord& record,
 }
 
 Error PublisherImpl::UpdateRegistration(const DnsSdInstanceRecord& record) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   // Check if the record is still pending publication.
   auto it = FindKey(&pending_records_, InstanceKey(record));
 
@@ -110,6 +118,8 @@ Error PublisherImpl::UpdateRegistration(const DnsSdInstanceRecord& record) {
 
 Error PublisherImpl::UpdatePublishedRegistration(
     const DnsSdInstanceRecord& record) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   auto published_record_it = FindKey(&published_records_, InstanceKey(record));
 
   // Check preconditions called out in header. Specifically, the updated record
@@ -174,6 +184,8 @@ Error PublisherImpl::UpdatePublishedRegistration(
 }
 
 int PublisherImpl::DeregisterAll(const std::string& service) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   int removed_count = 0;
 
   for (auto it = published_records_.begin(); it != published_records_.end();) {
@@ -195,6 +207,8 @@ int PublisherImpl::DeregisterAll(const std::string& service) {
 
 void PublisherImpl::OnDomainFound(const DomainName& requested_name,
                                   const DomainName& confirmed_name) {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
+
   auto it = FindKey(&pending_records_, InstanceKey(requested_name));
 
   if (it == pending_records_.end()) {

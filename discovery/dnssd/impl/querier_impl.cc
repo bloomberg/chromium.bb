@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "platform/api/task_runner.h"
 #include "util/logging.h"
 
 namespace openscreen {
@@ -17,15 +18,17 @@ static constexpr char kLocalDomain[] = "local";
 
 }  // namespace
 
-QuerierImpl::QuerierImpl(MdnsService* mdns_querier)
-    : mdns_querier_(mdns_querier) {
+QuerierImpl::QuerierImpl(MdnsService* mdns_querier, TaskRunner* task_runner)
+    : mdns_querier_(mdns_querier), task_runner_(task_runner) {
   OSP_DCHECK(mdns_querier_);
+  OSP_DCHECK(task_runner_);
 }
 
 QuerierImpl::~QuerierImpl() = default;
 
 void QuerierImpl::StartQuery(const std::string& service, Callback* callback) {
   OSP_DCHECK(callback);
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   ServiceKey key(service, kLocalDomain);
   DnsQueryInfo query = GetPtrQueryInfo(key);
@@ -50,11 +53,13 @@ void QuerierImpl::StartQuery(const std::string& service, Callback* callback) {
 }
 
 bool QuerierImpl::IsQueryRunning(const std::string& service) const {
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   return IsQueryRunning(ServiceKey(service, kLocalDomain));
 }
 
 void QuerierImpl::StopQuery(const std::string& service, Callback* callback) {
   OSP_DCHECK(callback);
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   ServiceKey key(service, kLocalDomain);
   DnsQueryInfo query = GetPtrQueryInfo(key);
@@ -76,8 +81,9 @@ void QuerierImpl::StopQuery(const std::string& service, Callback* callback) {
 }
 
 void QuerierImpl::ReinitializeQueries(const std::string& service) {
-  const ServiceKey key(service, kLocalDomain);
+  OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
+  const ServiceKey key(service, kLocalDomain);
   mdns_querier_->ReinitializeQueries(GetPtrQueryInfo(key).name);
 
   // Restart instance-specific queries and erase all instance data received so

@@ -27,8 +27,9 @@ namespace discovery {
 
 class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
  public:
-  // |querier| must outlive the QuerierImpl instance constructed.
-  explicit QuerierImpl(MdnsService* querier);
+  // |querier| and |task_runner| must outlive the QuerierImpl instance
+  // constructed.
+  QuerierImpl(MdnsService* querier, TaskRunner* task_runner);
   ~QuerierImpl() override;
 
   bool IsQueryRunning(const std::string& service) const;
@@ -86,6 +87,7 @@ class QuerierImpl : public DnsSdQuerier, public MdnsRecordChangedCallback {
   std::map<ServiceKey, std::vector<Callback*>> callback_map_;
 
   MdnsService* const mdns_querier_;
+  TaskRunner* const task_runner_;
 
   friend class QuerierImplTesting;
 };

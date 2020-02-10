@@ -9,6 +9,8 @@
 #include "discovery/common/testing/mock_reporting_client.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "platform/test/fake_clock.h"
+#include "platform/test/fake_task_runner.h"
 
 namespace openscreen {
 namespace discovery {
@@ -51,13 +53,20 @@ class MockMdnsService : public MdnsService {
 
 class PublisherTesting : public PublisherImpl {
  public:
-  PublisherTesting() : PublisherImpl(&mock_service_, &reporting_client_) {}
+  PublisherTesting()
+      : PublisherImpl(&mock_service_, &reporting_client_, &task_runner_),
+        clock_(Clock::now()),
+        task_runner_(&clock_) {}
 
   MockMdnsService& mdns_service() { return mock_service_; }
+
+  TaskRunner& task_runner() { return task_runner_; }
 
   using PublisherImpl::OnDomainFound;
 
  private:
+  FakeClock clock_;
+  FakeTaskRunner task_runner_;
   StrictMock<MockMdnsService> mock_service_;
   StrictMock<MockReportingClient> reporting_client_;
 };

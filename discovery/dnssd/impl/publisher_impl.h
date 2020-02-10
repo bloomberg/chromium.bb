@@ -20,7 +20,9 @@ class ReportingClient;
 class PublisherImpl : public DnsSdPublisher,
                       public MdnsDomainConfirmedProvider {
  public:
-  PublisherImpl(MdnsService* publisher, ReportingClient* reporting_client);
+  PublisherImpl(MdnsService* publisher,
+                ReportingClient* reporting_client,
+                TaskRunner* task_runner);
   ~PublisherImpl() override;
 
   // DnsSdPublisher overrides.
@@ -46,6 +48,7 @@ class PublisherImpl : public DnsSdPublisher,
 
   MdnsService* const mdns_publisher_;
   ReportingClient* const reporting_client_;
+  TaskRunner* const task_runner_;
 
   friend class PublisherTesting;
 };

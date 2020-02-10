@@ -55,6 +55,8 @@ class FakeTaskRunner : public TaskRunner {
   void PostPackagedTaskWithDelay(Task task, Clock::duration delay) override;
   bool IsRunningOnTaskRunner() override;
 
+  size_t ready_task_count() const { return ready_to_run_tasks_.size(); }
+
   FakeClock* const clock_;
 
   std::vector<Task> ready_to_run_tasks_;

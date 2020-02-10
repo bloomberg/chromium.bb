@@ -11,6 +11,7 @@
 #include "platform/base/error.h"
 #include "platform/base/interface_info.h"
 #include "platform/base/ip_address.h"
+#include "util/serial_delete_ptr.h"
 
 namespace openscreen {
 
@@ -32,7 +33,7 @@ class DnsSdService {
 
   // Creates a new DnsSdService instance, to be owned by the caller. On failure,
   // return nullptr.
-  static std::unique_ptr<DnsSdService> Create(TaskRunner* task_runner,
+  static SerialDeletePtr<DnsSdService> Create(TaskRunner* task_runner,
                                               ReportingClient* reporting_client,
                                               const Config& config);
 
