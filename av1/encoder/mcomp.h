@@ -76,6 +76,8 @@ int av1_mv_bit_cost(const MV *mv, const MV *ref_mv, const int *mvjcost,
                     int *mvcost[2], int weight);
 
 // Utility to compute variance + MV rate cost for a given MV
+int av1_get_mvpred_sse(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
+                       const MV *ref_mv, const aom_variance_fn_ptr_t *vfp);
 int av1_get_mvpred_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
                        const MV *ref_mv, const aom_variance_fn_ptr_t *vfp,
                        int use_var);

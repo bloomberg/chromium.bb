@@ -1535,6 +1535,23 @@ static int pattern_search(
   return bestsad;
 }
 
+int av1_get_mvpred_sse(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
+                       const MV *ref_mv, const aom_variance_fn_ptr_t *vfp) {
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  const struct buf_2d *const what = &x->plane[0].src;
+  const struct buf_2d *const in_what = &xd->plane[0].pre[0];
+  const MV mv = get_mv_from_fullmv(best_mv);
+  const MV_COST_TYPE mv_cost_type = x->mv_cost_type;
+  unsigned int sse, var;
+
+  var = vfp->vf(what->buf, what->stride, get_buf_from_mv(in_what, best_mv),
+                in_what->stride, &sse);
+  (void)var;
+
+  return sse + mv_err_cost(&mv, ref_mv, x->nmv_vec_cost, x->mv_cost_stack,
+                           x->errorperbit, mv_cost_type);
+}
+
 int av1_get_mvpred_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
                        const MV *ref_mv, const aom_variance_fn_ptr_t *vfp,
                        int use_var) {
