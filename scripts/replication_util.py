@@ -7,12 +7,17 @@
 
 from __future__ import print_function
 
+import sys
+
 from google.protobuf import json_format
 
 from chromite.api.gen.config import replication_config_pb2
 from chromite.lib import commandline
 from chromite.lib import osutils
 from chromite.lib import replication_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetParser():
