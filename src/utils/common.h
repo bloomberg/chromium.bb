@@ -32,6 +32,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <type_traits>
 
 #include "src/utils/bit_mask_set.h"
 #include "src/utils/constants.h"
@@ -441,7 +442,9 @@ inline int TransformSizeToSquareTransformIndex(TransformSize tx_size) {
 
   // The values of the square transform sizes happen to be in the right
   // ranges, so we can just divide them by 4 to get the indexes.
-  static_assert(0 <= kTransformSize4x4 && kTransformSize4x4 < 4, "");
+  static_assert(
+      std::is_unsigned<std::underlying_type<TransformSize>::type>::value, "");
+  static_assert(kTransformSize4x4 < 4, "");
   static_assert(4 <= kTransformSize8x8 && kTransformSize8x8 < 8, "");
   static_assert(8 <= kTransformSize16x16 && kTransformSize16x16 < 12, "");
   static_assert(12 <= kTransformSize32x32 && kTransformSize32x32 < 16, "");
