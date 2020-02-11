@@ -15,11 +15,41 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import cros_sdk_lib
 
 
+class ChrootPaths(object):
+  """Value object to hold common cros_sdk path arguments."""
+
+  def __init__(self, cache_dir=None, chroot_path=None):
+    """Chroot paths init.
+
+    Args:
+      cache_dir (str): Override the default cache directory.
+      chroot_path (str): Set the path the chroot resides (or will be created).
+    """
+    self.cache_dir = cache_dir
+    self.chroot_path = chroot_path
+
+  def GetArgList(self):
+    """Get the list of the corresponding commandline arguments.
+
+    Returns:
+      list - The list of the corresponding command line arguments.
+    """
+    args = []
+
+    if self.cache_dir:
+      args.extend(['--cache-dir', self.cache_dir])
+
+    if self.chroot_path:
+      args.extend(['--chroot', self.chroot_path])
+
+    return args
+
+
 class CreateArguments(object):
   """Value object to handle the chroot creation arguments."""
 
   def __init__(self, replace=False, bootstrap=False, use_image=True,
-               chroot_path=None, cache_dir=None):
+               paths=None):
     """Create arguments init.
 
     Args:
@@ -27,14 +57,12 @@ class CreateArguments(object):
       bootstrap (bool): Whether to build the SDK from source.
       use_image (bool): Whether to mount the chroot on a loopback image or
         create it directly in a directory.
-      chroot_path: Path to where the chroot should be reside.
-      cache_dir: Alternative directory to use as a cache for the chroot.
+      paths (ChrootPaths): Path arguments.
     """
     self.replace = replace
     self.bootstrap = bootstrap
     self.use_image = use_image
-    self.chroot_path = chroot_path
-    self.cache_dir = cache_dir
+    self.paths = paths or ChrootPaths()
 
   def GetArgList(self):
     """Get the list of the corresponding command line arguments.
@@ -55,13 +83,13 @@ class CreateArguments(object):
     if not self.use_image:
       args.append('--nouse-image')
 
-    if self.cache_dir:
-      args.extend(['--cache-dir', self.cache_dir])
-
-    if self.chroot_path:
-      args.extend(['--chroot', self.chroot_path])
+    args.extend(self.paths.GetArgList())
 
     return args
+
+  @property
+  def chroot_path(self):
+    return self.paths.chroot_path
 
 
 class UpdateArguments(object):

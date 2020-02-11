@@ -15,6 +15,26 @@ from chromite.lib import cros_test_lib
 from chromite.service import sdk
 
 
+class ChrootPathsTest(cros_test_lib.TestCase):
+  """ChrootPaths tests."""
+
+  def testGetArgsList(self):
+    """Test the GetArgsList method."""
+    # No values passed.
+    empty = sdk.ChrootPaths()
+    self.assertListEqual([], empty.GetArgList())
+
+    # Cache dir provided.
+    cache_dir = '/cache/dir'
+    obj = sdk.ChrootPaths(cache_dir=cache_dir)
+    self.assertListEqual(['--cache-dir', cache_dir], obj.GetArgList())
+
+    # Chroot path provided.
+    chroot_path = '/chroot/path'
+    obj = sdk.ChrootPaths(chroot_path=chroot_path)
+    self.assertListEqual(['--chroot', chroot_path], obj.GetArgList())
+
+
 class CreateArgumentsTest(cros_test_lib.MockTestCase):
   """CreateArguments tests."""
 
@@ -30,13 +50,21 @@ class CreateArgumentsTest(cros_test_lib.MockTestCase):
     self.assertIn('--create', self._GetArgsList(replace=False))
 
     # Check the other flags get added when the correct argument passed.
-    self.assertListEqual(['--create'],
-                         self._GetArgsList(
-                             replace=False, bootstrap=False, use_image=True))
+    self.assertListEqual(
+        ['--create'],
+        self._GetArgsList(replace=False, bootstrap=False, use_image=True))
 
-    self.assertListEqual(['--create', '--bootstrap', '--nouse-image'],
-                         self._GetArgsList(
-                             replace=False, bootstrap=True, use_image=False))
+    self.assertListEqual(
+        ['--create', '--bootstrap', '--nouse-image'],
+        self._GetArgsList(replace=False, bootstrap=True, use_image=False))
+
+    # Make sure the path arguments get added.
+    paths = sdk.ChrootPaths()
+    path_args = ['--path-arg', '/path']
+    self.PatchObject(paths, 'GetArgList', return_value=path_args)
+    result = self._GetArgsList(paths=paths)
+    for arg in path_args:
+      self.assertIn(arg, result)
 
 
 class UpdateArgumentsTest(cros_test_lib.TestCase):

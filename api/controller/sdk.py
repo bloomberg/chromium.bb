@@ -45,12 +45,9 @@ def Create(input_proto, output_proto, config):
   if config.validate_only:
     return controller.RETURN_CODE_VALID_INPUT
 
-  args = sdk.CreateArguments(
-      replace=replace,
-      bootstrap=bootstrap,
-      use_image=use_image,
-      cache_dir=cache_dir,
-      chroot_path=chroot_path)
+  paths = sdk.ChrootPaths(cache_dir=cache_dir, chroot_path=chroot_path)
+  args = sdk.CreateArguments(replace=replace, bootstrap=bootstrap,
+                             use_image=use_image, paths=paths)
 
   version = sdk.Create(args)
 
