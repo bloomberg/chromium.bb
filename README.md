@@ -288,6 +288,7 @@ After your patch has received one or more LGTM commit it by clicking the
 your patch through the builders again before committing to the main openscreen
 repository.
 
+<!-- TODO(mfoltz): split up README.md into more manageable files. -->
 ## Working with ARM/ARM64/the Raspberry PI
 
 openscreen supports cross compilation for both arm32 and arm64 platforms, by
@@ -310,8 +311,7 @@ To install the last known good version of the libavcodec and libsdl packages
 on a Raspberry Pi, you can run the following command:
 
 ```bash
-sudo apt-get install libavcodec58=7:4.1.4* libavcodec-dev=7:4.1.4*
-                     libsdl2-2.0-0=2.0.9* libsdl2-dev=2.0.9*
+sudo ./cast/standalone_receiver/install_demo_deps_raspian.sh
 ```
 
 NOTE: until [Issue 106](http://crbug.com/openscreen/106) is resolved, you may

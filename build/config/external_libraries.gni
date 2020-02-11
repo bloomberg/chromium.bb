@@ -4,13 +4,9 @@
 
 declare_args() {
   # FFMPEG: If installed on the system, set have_ffmpeg to true. This also
-  # requires the FFMPEG headers be installed. For example, on Debian-like
-  # systems, the following should install everything needed:
-  #
-  #   sudo apt-get install libavcodec libavcodec-dev \
-  #                        libavformat libavformat-dev \
-  #                        libavutil libavutil-dev \
-  #                        libswresample libswresample-dev
+  # requires the FFMPEG headers be installed. On Debian-like systems, this can
+  # be done by running `cast/standalone_receiver/install_demo_deps_debian.sh`
+  # to install both FFMPEG and libSDL.
   have_ffmpeg = false
   ffmpeg_libs = [
     "avcodec",
@@ -22,10 +18,9 @@ declare_args() {
   ffmpeg_lib_dirs = []  # Add only if libraries are at non-standard locations.
 
   # libsdl2: If installed on the system, set have_libsdl2 to true. This also
-  # requires the libSDL2 headers be installed. For example, on Debian-like
-  # systems, the following should install everything needed:
-  #
-  #   sudo apt-get install libsdl2-2.0 libsdl2-dev
+  # requires the libSDL2 headers be installed. On Debian-like systems, this can
+  # be done by running `cast/standalone_receiver/install_demo_deps_debian.sh`
+  # to install both FFMPEG and libSDL.
   have_libsdl2 = false
   libsdl2_libs = [ "SDL2" ]
   libsdl2_include_dirs = []  # Add only if headers are at non-standard locations.
