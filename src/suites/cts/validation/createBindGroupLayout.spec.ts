@@ -40,25 +40,6 @@ g.test('some binding index was specified more than once', async t => {
   });
 });
 
-g.test('negative binding index', async t => {
-  const goodDescriptor = {
-    bindings: [
-      { binding: 0, visibility: GPUShaderStage.COMPUTE, type: C.BindingType.StorageBuffer },
-    ],
-  };
-
-  // Control case
-  t.device.createBindGroupLayout(goodDescriptor);
-
-  // Negative binding index can't be specified.
-  const badDescriptor = clone(goodDescriptor);
-  badDescriptor.bindings[0].binding = -1;
-
-  t.expectValidationError(() => {
-    t.device.createBindGroupLayout(badDescriptor);
-  });
-});
-
 g.test('Visibility of bindings can be 0', async t => {
   t.device.createBindGroupLayout({
     bindings: [{ binding: 0, visibility: 0, type: 'storage-buffer' }],

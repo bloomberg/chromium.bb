@@ -291,5 +291,4 @@ g.test('buffer offset and size for bind groups match', async t => {
   { offset: 256 * 5, size: 0, _success: false }, // offset is OOB
   { offset: 0, size: 256 * 5, _success: false }, // size is OOB
   { offset: 1024, size: 1, _success: false }, // offset+size is OOB
-  { offset: 256, size: -256, _success: false }, // offset+size overflows to be 0
 ]);
