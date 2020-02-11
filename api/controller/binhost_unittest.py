@@ -8,6 +8,8 @@
 from __future__ import print_function
 
 import os
+import sys
+
 import mock
 
 from chromite.api import api_config
@@ -17,6 +19,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.service import binhost as binhost_service
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class GetBinhostsTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):

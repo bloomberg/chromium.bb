@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 import mock
 
 from chromite.api import api_config
@@ -15,6 +17,9 @@ from chromite.api.gen.chromite.api import sdk_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.service import sdk as sdk_service
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class SdkCreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):

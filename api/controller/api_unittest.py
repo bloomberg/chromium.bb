@@ -7,11 +7,16 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api import api_config
 from chromite.api import router
 from chromite.api.controller import api as api_controller
 from chromite.api.gen.chromite.api import api_pb2
 from chromite.lib import cros_test_lib
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class GetMethodsTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):

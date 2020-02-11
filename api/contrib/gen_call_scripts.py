@@ -19,11 +19,16 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 
 from chromite.api import router as router_lib
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _SCRIPT_TEMPLATE_FILE = os.path.join(
     os.path.dirname(__file__), 'call_templates', 'script_template')

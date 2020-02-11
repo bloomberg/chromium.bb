@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 import shutil
+import sys
 
 from six.moves import urllib
 
@@ -23,6 +24,10 @@ from chromite.lib import cros_build_lib
 from chromite.lib import gs
 from chromite.lib import sysroot_lib
 from chromite.service import binhost
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _OVERLAY_TYPE_TO_NAME = {
     binhost_pb2.OVERLAYTYPE_PUBLIC: constants.PUBLIC_OVERLAYS,

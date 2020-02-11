@@ -6,6 +6,8 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api import api_config
 from chromite.api.controller import controller_util
 from chromite.api.controller import dependency
@@ -13,6 +15,9 @@ from chromite.api.gen.chromite.api import depgraph_pb2
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_test_lib
 from chromite.service import dependency as dependency_service
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class BoardBuildDependencyTest(cros_test_lib.MockTestCase,

@@ -13,6 +13,7 @@ from __future__ import print_function
 
 import importlib
 import os
+import sys
 
 from google.protobuf import json_format
 from google.protobuf import symbol_database
@@ -35,6 +36,9 @@ from chromite.api.gen.chromite.api import toolchain_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class Error(Exception):

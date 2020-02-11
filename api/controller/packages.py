@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api import faux
 from chromite.api import validate
 from chromite.api.controller import controller_util
@@ -18,6 +20,9 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib.uprev_lib import GitRef
 from chromite.service import packages
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _OVERLAY_TYPE_TO_NAME = {
