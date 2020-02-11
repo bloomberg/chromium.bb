@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <getopt.h>
+
 #include <array>
 #include <chrono>  // NOLINT
 #include <thread>  // NOLINT
@@ -98,11 +100,12 @@ constexpr int kCastStreamingPort = 2344;
 // End of Receiver Configuration.
 ////////////////////////////////////////////////////////////////////////////////
 
-void RunStandaloneReceiver(TaskRunnerImpl* task_runner) {
+void RunStandaloneReceiver(TaskRunnerImpl* task_runner,
+                           const IPAddress& address) {
   // Create the Environment that holds the required injected dependencies
   // (clock, task runner) used throughout the system, and owns the UDP socket
   // over which all communication occurs with the Sender.
-  const IPEndpoint receive_endpoint{IPAddress(), kCastStreamingPort};
+  const IPEndpoint receive_endpoint{address, kCastStreamingPort};
 
   auto env =
       std::make_unique<Environment>(&Clock::now, task_runner, receive_endpoint);
@@ -142,13 +145,36 @@ void RunStandaloneReceiver(TaskRunnerImpl* task_runner) {
 }  // namespace cast
 }  // namespace openscreen
 
-int main(int argc, const char* argv[]) {
+int main(int argc, char* argv[]) {
   using openscreen::Clock;
   using openscreen::PlatformClientPosix;
   using openscreen::TaskRunner;
   using openscreen::TaskRunnerImpl;
 
+  struct option argument_options[] = {
+      {"address", required_argument, nullptr, 'a'}};
+
+  struct Arguments {
+    openscreen::IPAddress address;
+  };
+
+  Arguments arguments;
+  int ch = -1;
+  while ((ch = getopt_long(argc, argv, "a:", argument_options, nullptr)) !=
+         -1) {
+    switch (ch) {
+      case 'a': {
+        auto error_or_address = openscreen::IPAddress::Parse(optarg);
+        if (error_or_address.is_error()) {
+          OSP_LOG_ERROR << "Invalid IP address given, exiting...";
+          return -1;
+        }
+        arguments.address = std::move(error_or_address.value());
+      } break;
+    }
+  }
   openscreen::TextTraceLoggingPlatform platform;
+
   openscreen::SetLogLevel(openscreen::LogLevel::kInfo);
   auto* const task_runner = new TaskRunnerImpl(&Clock::now);
   PlatformClientPosix::Create(Clock::duration{50}, Clock::duration{50},
@@ -156,8 +182,7 @@ int main(int argc, const char* argv[]) {
 
   // Runs until the process is interrupted.  Safe to pass |task_runner| as it
   // will not be destroyed by ShutDown() until this exits.
-  openscreen::cast::RunStandaloneReceiver(task_runner);
-
+  openscreen::cast::RunStandaloneReceiver(task_runner, arguments.address);
   PlatformClientPosix::ShutDown();
   return 0;
 }
