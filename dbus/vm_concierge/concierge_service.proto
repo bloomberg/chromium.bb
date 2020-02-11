@@ -29,6 +29,9 @@ enum DiskImageType {
 
   // Automatically choose a disk image type.
   DISK_IMAGE_AUTO = 2;
+
+  // A plugin VM disk image.
+  DISK_IMAGE_PLUGINVM = 3;
 }
 
 // Describes any additional disk images that should be mounted inside the VM.
@@ -586,6 +589,13 @@ message VmDiskInfo {
 
   // The minimum size the image may be resized to, or 0 if unknown.
   uint64 min_size = 4;
+
+  // The type of the disk image (raw, qcow2, etc.).
+  DiskImageType image_type = 5;
+
+  // True if the user chose the size for this disk.
+  // False if the disk is automatically sized based on free space.
+  bool user_chosen_size = 6;
 }
 
 // Response to ListVmDisks {
