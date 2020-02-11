@@ -312,7 +312,7 @@ void AV1HighbdWarpFilterTest::RunSpeedTest(highbd_warp_affine_func test_impl) {
   const int is_beta_zero = GET_PARAM(2);
   const int is_gamma_zero = GET_PARAM(3);
   const int is_delta_zero = GET_PARAM(4);
-  const int out_w = std::get<0>(param), out_h = ::testing::get<1>(param);
+  const int out_w = std::get<0>(param), out_h = std::get<1>(param);
   const int bd = std::get<3>(param);
   const int mask = (1 << bd) - 1;
   int sub_x, sub_y;
@@ -375,7 +375,7 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
   const int is_beta_zero = GET_PARAM(2);
   const int is_gamma_zero = GET_PARAM(3);
   const int is_delta_zero = GET_PARAM(4);
-  const int out_w = std::get<0>(param), out_h = ::testing::get<1>(param);
+  const int out_w = std::get<0>(param), out_h = std::get<1>(param);
   const int bd = std::get<3>(param);
   const int num_iters = std::get<2>(param);
   const int mask = (1 << bd) - 1;

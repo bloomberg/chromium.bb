@@ -12,6 +12,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <tuple>
 
 #include "aom_dsp/aom_dsp_common.h"
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
@@ -40,8 +41,8 @@ using FhtFunc = void (*)(const int16_t *in, OutputType *out, int stride,
                          TxfmParam *txfm_param);
 
 template <typename OutputType>
-using Fdct4x4Param = ::testing::tuple<FdctFunc<OutputType>, FhtFunc<OutputType>,
-                                      aom_bit_depth_t, int>;
+using Fdct4x4Param =
+    std::tuple<FdctFunc<OutputType>, FhtFunc<OutputType>, aom_bit_depth_t, int>;
 
 #if HAVE_NEON || HAVE_SSE2
 void fdct4x4_ref(const int16_t *in, tran_low_t *out, int stride,
@@ -63,13 +64,13 @@ class Trans4x4FDCT : public libaom_test::TransformTestBase<OutputType>,
 
   using TxfmBaseOutType = libaom_test::TransformTestBase<OutputType>;
   virtual void SetUp() {
-    fwd_txfm_ = ::testing::get<0>(this->GetParam());
+    fwd_txfm_ = std::get<0>(this->GetParam());
     TxfmBaseOutType::pitch_ = 4;
     TxfmBaseOutType::height_ = 4;
-    TxfmBaseOutType::fwd_txfm_ref = ::testing::get<1>(this->GetParam());
-    TxfmBaseOutType::bit_depth_ = ::testing::get<2>(this->GetParam());
+    TxfmBaseOutType::fwd_txfm_ref = std::get<1>(this->GetParam());
+    TxfmBaseOutType::bit_depth_ = std::get<2>(this->GetParam());
     TxfmBaseOutType::mask_ = (1 << TxfmBaseOutType::bit_depth_) - 1;
-    TxfmBaseOutType::num_coeffs_ = ::testing::get<3>(this->GetParam());
+    TxfmBaseOutType::num_coeffs_ = std::get<3>(this->GetParam());
   }
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
@@ -95,7 +96,7 @@ using Trans4x4FDCTInt16 = Trans4x4FDCT<int16_t>;
 TEST_P(Trans4x4FDCTInt16, CoeffCheck) { RunCoeffCheck(); }
 TEST_P(Trans4x4FDCTInt16, MemCheck) { RunMemCheck(); }
 
-using ::testing::make_tuple;
+using std::make_tuple;
 
 #if HAVE_NEON
 INSTANTIATE_TEST_CASE_P(NEON, Trans4x4FDCTTranLow,
