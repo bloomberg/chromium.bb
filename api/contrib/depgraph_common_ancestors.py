@@ -29,10 +29,14 @@ from __future__ import print_function
 import copy
 import json
 import os
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetParser():

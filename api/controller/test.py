@@ -11,6 +11,7 @@ Handles all testing related functionality, it is not itself a test.
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.api import controller
 from chromite.api import faux
@@ -30,6 +31,9 @@ from chromite.scripts import cros_set_lsb_release
 from chromite.service import test
 from chromite.utils import key_value_store
 from chromite.utils import metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 @faux.empty_success

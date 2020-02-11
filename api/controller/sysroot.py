@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.api import controller
 from chromite.api import faux
@@ -23,6 +24,10 @@ from chromite.lib import portage_util
 from chromite.lib import sysroot_lib
 from chromite.service import sysroot
 from chromite.utils import metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _ACCEPTED_LICENSES = '@CHROMEOS'
 

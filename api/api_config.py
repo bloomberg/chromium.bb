@@ -7,7 +7,12 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api.gen.chromite.api import build_api_config_pb2
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class Error(Exception):

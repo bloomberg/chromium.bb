@@ -7,11 +7,16 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api import controller
 from chromite.lib import cros_build_lib
 from chromite.api import faux
 from chromite.api import validate
 from chromite.service import payload
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _VALID_IMAGE_PAIRS = (('src_signed_image', 'tgt_signed_image'),

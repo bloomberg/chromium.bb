@@ -11,12 +11,17 @@ Install proto using CIPD to ensure a consistent protoc version.
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 _API_DIR = os.path.join(constants.CHROMITE_DIR, 'api')
 _CIPD_ROOT = os.path.join(constants.CHROMITE_DIR, '.cipd_bin')

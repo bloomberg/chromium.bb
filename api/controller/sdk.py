@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.api import controller
 from chromite.api import faux
@@ -15,6 +16,9 @@ from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.lib import cros_build_lib
 from chromite.service import sdk
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def _ChrootVersionResponse(_input_proto, output_proto, _config):

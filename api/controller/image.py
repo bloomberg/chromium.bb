@@ -11,6 +11,7 @@ The image related API endpoints should generally be found here.
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.api import controller
 from chromite.api import faux
@@ -22,6 +23,10 @@ from chromite.lib import constants
 from chromite.lib import image_lib
 from chromite.service import image
 from chromite.utils import metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # The image.proto ImageType enum ids.
 _BASE_ID = common_pb2.BASE

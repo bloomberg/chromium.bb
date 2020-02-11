@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.api import field_handler
 from chromite.api.gen.chromite.api import build_api_test_pb2
@@ -15,6 +16,9 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import chroot_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class ChrootHandlerTest(cros_test_lib.TestCase):

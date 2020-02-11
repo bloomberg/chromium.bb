@@ -7,6 +7,8 @@
 
 from __future__ import print_function
 
+import sys
+
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import build_api_test_pb2
 from chromite.api.gen.chromiumos import common_pb2
@@ -14,6 +16,9 @@ from chromite.lib import cros_test_lib
 from chromite.lib import portage_util
 from chromite.lib.build_target_util import BuildTarget
 from chromite.lib.chroot_lib import Chroot
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class ParseChrootTest(cros_test_lib.MockTestCase):
