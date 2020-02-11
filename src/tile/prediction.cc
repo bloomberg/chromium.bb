@@ -936,7 +936,7 @@ void Tile::BuildConvolveBlock(
           ? current_frame_.buffer()
           : reference_frames_[reference_frame_index]->buffer();
   Array2DView<const Pixel> reference_block(
-      reference_buffer->aligned_height(plane),
+      reference_buffer->displayed_height(plane),
       reference_buffer->stride(plane) / sizeof(Pixel),
       reinterpret_cast<const Pixel*>(reference_buffer->data(plane)));
   auto* const block_head = reinterpret_cast<Pixel*>(block_buffer);
