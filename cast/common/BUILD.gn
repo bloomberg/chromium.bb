@@ -74,19 +74,21 @@ source_set("discovery") {
   ]
 }
 
-source_set("discovery_e2e_test") {
-  testonly = true
+if (!build_with_chromium) {
+  source_set("discovery_e2e_test") {
+    testonly = true
 
-  sources = [
-    "discovery/e2e_test/main.cc",
-  ]
+    sources = [
+      "discovery/e2e_test/main.cc",
+    ]
 
-  deps = [
-    ":discovery",
-    "../../discovery:dnssd",
-    "../../discovery:public",
-    "../../third_party/googletest:gtest",
-  ]
+    deps = [
+      ":discovery",
+      "../../discovery:dnssd",
+      "../../discovery:public",
+      "../../third_party/googletest:gtest",
+    ]
+  }
 }
 
 source_set("test_helpers") {
