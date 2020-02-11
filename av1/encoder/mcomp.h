@@ -79,19 +79,16 @@ int av1_mv_bit_cost(const MV *mv, const MV *ref_mv, const int *mvjcost,
 int av1_get_mvpred_sse(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
                        const MV *ref_mv, const aom_variance_fn_ptr_t *vfp);
 int av1_get_mvpred_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
-                       const MV *ref_mv, const aom_variance_fn_ptr_t *vfp,
-                       int use_var);
+                       const MV *ref_mv, const aom_variance_fn_ptr_t *vfp);
 int av1_get_mvpred_av_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
                           const MV *ref_mv, const uint8_t *second_pred,
                           const aom_variance_fn_ptr_t *vfp,
-                          const struct buf_2d *src, const struct buf_2d *pre,
-                          int use_mvcost);
+                          const struct buf_2d *src, const struct buf_2d *pre);
 int av1_get_mvpred_mask_var(const MACROBLOCK *x, const FULLPEL_MV *best_mv,
                             const MV *ref_mv, const uint8_t *second_pred,
                             const uint8_t *mask, int mask_stride,
                             int invert_mask, const aom_variance_fn_ptr_t *vfp,
-                            const struct buf_2d *src, const struct buf_2d *pre,
-                            int use_mvcost);
+                            const struct buf_2d *src, const struct buf_2d *pre);
 
 struct AV1_COMP;
 struct SPEED_FEATURES;
@@ -106,8 +103,7 @@ unsigned int av1_int_pro_motion_estimation(const struct AV1_COMP *cpi,
 // Runs sequence of diamond searches in smaller steps for RD.
 int av1_hex_search(MACROBLOCK *x, FULLPEL_MV *start_mv, int search_param,
                    int sad_per_bit, int do_init_search, int *cost_list,
-                   const aom_variance_fn_ptr_t *vfp, int use_mvcost,
-                   const MV *ref_mv);
+                   const aom_variance_fn_ptr_t *vfp, const MV *ref_mv);
 
 typedef int(fractional_mv_step_fp)(
     MACROBLOCK *x, const AV1_COMMON *const cm, int mi_row, int mi_col,
@@ -143,10 +139,9 @@ int av1_diamond_search_sad_c(MACROBLOCK *x, const search_site_config *cfg,
 
 int av1_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                           BLOCK_SIZE bsize, FULLPEL_MV *start_mv,
-                          int step_param, int use_var, int method,
-                          int run_mesh_search, int error_per_bit,
-                          int *cost_list, const MV *ref_mv, int var_max, int rd,
-                          int x_pos, int y_pos, int intra,
+                          int step_param, int method, int run_mesh_search,
+                          int error_per_bit, int *cost_list, const MV *ref_mv,
+                          int var_max, int rd, int x_pos, int y_pos, int intra,
                           const search_site_config *cfg,
                           int use_intrabc_mesh_pattern);
 

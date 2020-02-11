@@ -120,7 +120,7 @@ static int tf_motion_search(AV1_COMP *cpi,
   // searched result will be stored in `mb->best_mv`.
   int block_error = INT_MAX;
   mb->mv_cost_type = mv_cost_type;
-  av1_full_pixel_search(cpi, mb, block_size, &start_mv, step_param, 1,
+  av1_full_pixel_search(cpi, mb, block_size, &start_mv, step_param,
                         full_search_method, 1, sadperbit16,
                         cond_cost_list(cpi, cost_list), &baseline_mv, 0, 0,
                         mb_x, mb_y, 0, &ss_cfg, 0);
@@ -159,7 +159,7 @@ static int tf_motion_search(AV1_COMP *cpi,
         mbd->plane[0].pre[0].buf = ref_frame->y_buffer + y_offset + offset;
         av1_set_mv_search_range(&mb->mv_limits, &baseline_mv);
         mb->mv_cost_type = mv_cost_type;
-        av1_full_pixel_search(cpi, mb, subblock_size, &start_mv, step_param, 1,
+        av1_full_pixel_search(cpi, mb, subblock_size, &start_mv, step_param,
                               full_search_method, 1, sadperbit16,
                               cond_cost_list(cpi, cost_list), &baseline_mv, 0,
                               0, mb_x, mb_y, 0, &ss_cfg, 0);

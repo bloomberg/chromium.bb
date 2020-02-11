@@ -125,8 +125,8 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   switch (mbmi->motion_mode) {
     case SIMPLE_TRANSLATION:
       bestsme = av1_full_pixel_search(
-          cpi, x, bsize, &start_mv, step_param, 1, cpi->sf.mv_sf.search_method,
-          0, sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
+          cpi, x, bsize, &start_mv, step_param, cpi->sf.mv_sf.search_method, 0,
+          sadpb, cond_cost_list(cpi, cost_list), &ref_mv, INT_MAX, 1,
           (MI_SIZE * mi_col), (MI_SIZE * mi_row), 0, &cpi->ss_cfg[SS_CFG_SRC],
           0);
       break;
@@ -350,11 +350,11 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
         bestsme = av1_get_mvpred_mask_var(x, &best_int_mv->as_fullmv,
                                           &ref_mv[id].as_mv, second_pred, mask,
                                           mask_stride, id, &cpi->fn_ptr[bsize],
-                                          &x->plane[0].src, &ref_yv12[id], 1);
+                                          &x->plane[0].src, &ref_yv12[id]);
       else
         bestsme = av1_get_mvpred_av_var(
             x, &best_int_mv->as_fullmv, &ref_mv[id].as_mv, second_pred,
-            &cpi->fn_ptr[bsize], &x->plane[0].src, &ref_yv12[id], 1);
+            &cpi->fn_ptr[bsize], &x->plane[0].src, &ref_yv12[id]);
     }
 
     x->mv_limits = tmp_mv_limits;
@@ -478,11 +478,11 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
       bestsme = av1_get_mvpred_mask_var(
           x, &best_int_mv->as_fullmv, &ref_mv.as_mv, second_pred, mask,
           mask_stride, ref_idx, &cpi->fn_ptr[bsize], &x->plane[0].src,
-          &ref_yv12, 1);
+          &ref_yv12);
     else
       bestsme = av1_get_mvpred_av_var(x, &best_int_mv->as_fullmv, &ref_mv.as_mv,
                                       second_pred, &cpi->fn_ptr[bsize],
-                                      &x->plane[0].src, &ref_yv12, 1);
+                                      &x->plane[0].src, &ref_yv12);
   }
 
   x->mv_limits = tmp_mv_limits;

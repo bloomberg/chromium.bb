@@ -2496,7 +2496,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     const int sadpb = x->sadperbit16;
     int cost_list[5];
     const int bestsme = av1_full_pixel_search(
-        cpi, x, bsize, &start_mv, step_param, 1, cpi->sf.mv_sf.search_method, 0,
+        cpi, x, bsize, &start_mv, step_param, cpi->sf.mv_sf.search_method, 0,
         sadpb, cond_cost_list(cpi, cost_list), &dv_ref.as_mv, INT_MAX, 1,
         (MI_SIZE * mi_col), (MI_SIZE * mi_row), 1,
         &cpi->ss_cfg[SS_CFG_LOOKAHEAD], 1);
