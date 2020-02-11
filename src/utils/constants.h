@@ -140,17 +140,7 @@ enum {
   kDivisorLookupPrecisionBits = 14,
   // Number of phases used in warped filtering.
   kWarpedPixelPrecisionShifts = 1 << 6,
-  kQuantizedCoefficientBufferPadding2D = 2,
-  kQuantizedCoefficientBufferPaddingHorizontal = 1,
-  kQuantizedCoefficientBufferPaddingVertical = 4,
-  kQuantizedCoefficientBufferPaddingMax = 4,
-  // Maximum number of quantized coefficients that can be read from the
-  // bitstream. This comes from the definition of segEob in section 5.11.39.
-  // Size of the quantized coefficients buffer. This comes from the definition
-  // of segEob in section 5.11.39 (with up to 4 rows padded in the end to avoid
-  // bottom boundary checks).
-  kQuantizedCoefficientBufferSize =
-      32 * (32 + kQuantizedCoefficientBufferPaddingMax),
+  kResidualPaddingVertical = 4,
   kWedgeMaskMasterSize = 64,
   kMaxFrameDistance = 31,
   kReferenceFrameScalePrecision = 14,

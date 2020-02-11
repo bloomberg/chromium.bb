@@ -76,25 +76,13 @@ struct TileScratchBuffer : public MaxAlignedAllocable {
     alignas(kMaxAlignment) uint16_t
         prediction_buffer[2][kMaxSuperBlockSizeSquareInPixels];
 
-    struct {
-      // Union usage note: This is used only by functions in the "intra"
-      // prediction path.
-      //
-      // Buffer used for storing subsampled luma samples needed for CFL
-      // prediction. This buffer is used to avoid repetition of the subsampling
-      // for the V plane when it is already done for the U plane.
-      int16_t cfl_luma_buffer[kCflLumaBufferStride][kCflLumaBufferStride];
-
-      // Union usage note: This is used only by the
-      // Tile::ReadTransformCoefficients() function (and the helper functions
-      // that it calls). This cannot be shared with |cfl_luma_buffer| since
-      // |cfl_luma_buffer| has to live across the 3 plane loop in
-      // Tile::TransformBlock.
-      //
-      // Buffer used by Tile::ReadTransformCoefficients() to store the quantized
-      // coefficients until the dequantization process is performed.
-      int32_t quantized_buffer[kQuantizedCoefficientBufferSize];
-    };
+    // Union usage note: This is used only by functions in the "intra"
+    // prediction path.
+    //
+    // Buffer used for storing subsampled luma samples needed for CFL
+    // prediction. This buffer is used to avoid repetition of the subsampling
+    // for the V plane when it is already done for the U plane.
+    int16_t cfl_luma_buffer[kCflLumaBufferStride][kCflLumaBufferStride];
   };
 
   // Buffer used for convolve. The maximum size required for this buffer is:

@@ -475,9 +475,14 @@ inline size_t GetResidualBufferSize(const int rows, const int columns,
   //   Both x and y are not subsampled: 3 / 1 (which is equivalent to 6 / 2).
   // So we compute the final subsampling multiplier as follows:
   //   multiplier = (2 + (4 >> subsampling_x >> subsampling_y)) / 2.
+  // Add 32 * |kResidualPaddingVertical| padding to avoid bottom boundary checks
+  // when parsing quantized coefficients.
   const int subsampling_multiplier_num =
       2 + (4 >> subsampling_x >> subsampling_y);
-  return (residual_size * rows * columns * subsampling_multiplier_num) >> 1;
+  const int number_elements =
+      (rows * columns * subsampling_multiplier_num) >> 1;
+  const int tx_padding = 32 * kResidualPaddingVertical;
+  return residual_size * (number_elements + tx_padding);
 }
 
 // This function is equivalent to:

@@ -325,6 +325,35 @@ void StoreMotionFieldMvs(ReferenceFrameType reference_frame_to_store,
   } while (--rows != 0);
 }
 
+// Inverse transform process assumes that the quantized coefficients are stored
+// as a virtual 2d array of size |tx_width| x tx_height. If transform width is
+// 64, then this assumption is broken because the scan order used for populating
+// the coefficients for such transforms is the same as the one used for
+// corresponding transform with width 32 (e.g. the scan order used for 64x16 is
+// the same as the one used for 32x16). So we must restore the coefficients to
+// their correct positions and clean the positions they occupied.
+template <typename ResidualType>
+void MoveCoefficientsForTxWidth64(int clamped_tx_height, int tx_width,
+                                  ResidualType* residual) {
+  if (tx_width != 64) return;
+  const int rows = clamped_tx_height - 2;
+  auto* src = residual + 32 * rows;
+  residual += 64 * rows;
+  // Process 2 rows in each loop in reverse order to avoid overwrite.
+  int x = rows >> 1;
+  do {
+    // The 2 rows can be processed in order.
+    memcpy(residual, src, 32 * sizeof(src[0]));
+    memcpy(residual + 64, src + 32, 32 * sizeof(src[0]));
+    memset(src + 32, 0, 32 * sizeof(src[0]));
+    src -= 64;
+    residual -= 128;
+  } while (--x);
+  // Process the second row. The first row is already correct.
+  memcpy(residual + 64, src + 32, 32 * sizeof(src[0]));
+  memset(src + 32, 0, 32 * sizeof(src[0]));
+}
+
 }  // namespace
 
 Tile::Tile(
@@ -477,7 +506,10 @@ bool Tile::Init() {
       return false;
     }
   } else {
-    residual_buffer_ = MakeAlignedUniquePtr<uint8_t>(32, 4096 * residual_size_);
+    // Add 32 * |kResidualPaddingVertical| padding to avoid bottom boundary
+    // checks when parsing quantized coefficients.
+    residual_buffer_ = MakeAlignedUniquePtr<uint8_t>(
+        32, (4096 + 32 * kResidualPaddingVertical) * residual_size_);
     if (residual_buffer_ == nullptr) {
       LIBGAV1_DLOG(ERROR, "Allocation of residual_buffer_ failed.");
       return false;
@@ -892,29 +924,32 @@ int Tile::GetCoeffBaseRangeContextEob(int adjusted_tx_width_log2, int pos,
 // boundary for them, because the out of boundary neighbors project to positions
 // above the diagonal line which goes through the current coefficient and these
 // positions are still all 0s according to the diagonal scan order.
+template <typename ResidualType>
 void Tile::ReadCoeffBase2D(
     const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
     int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
     uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-    int32_t* const quantized_buffer) {
+    ResidualType* const quantized_buffer) {
   const int tx_width = 1 << adjusted_tx_width_log2;
   int i = eob - 2;
   do {
+    constexpr auto threshold = static_cast<ResidualType>(3);
     const uint16_t pos = scan[i];
     const int row = pos >> adjusted_tx_width_log2;
     const int column = pos & (tx_width - 1);
-    int32_t* const quantized = &quantized_buffer[pos];
+    auto* const quantized = &quantized_buffer[pos];
     int context;
     if (pos == 0) {
       context = 0;
     } else {
       context = std::min(
-          4, DivideBy2(1 + (std::min(quantized[1], 3) +             // {0, 1}
-                            std::min(quantized[tx_width], 3) +      // {1, 0}
-                            std::min(quantized[tx_width + 1], 3) +  // {1, 1}
-                            std::min(quantized[2], 3) +             // {0, 2}
-                            std::min(quantized[MultiplyBy2(tx_width)],
-                                     3))));  // {2, 0}
+          4, DivideBy2(
+                 1 + (std::min(quantized[1], threshold) +             // {0, 1}
+                      std::min(quantized[tx_width], threshold) +      // {1, 0}
+                      std::min(quantized[tx_width + 1], threshold) +  // {1, 1}
+                      std::min(quantized[2], threshold) +             // {0, 2}
+                      std::min(quantized[MultiplyBy2(tx_width)],
+                               threshold))));  // {2, 0}
       context += kCoeffBaseContextOffset[tx_size][std::min(row, 4)]
                                         [std::min(column, 4)];
     }
@@ -948,25 +983,29 @@ void Tile::ReadCoeffBase2D(
 // the under position on the same column, which could be nonzero. Therefore, we
 // must skip the fourth right neighbor. To make it simple, for any coefficient,
 // we always do the boundary check for its fourth right neighbor.
+template <typename ResidualType>
 void Tile::ReadCoeffBaseHorizontal(
     const uint16_t* scan, PlaneType plane_type, TransformSize /*tx_size*/,
     int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
     uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-    int32_t* const quantized_buffer) {
+    ResidualType* const quantized_buffer) {
   const int tx_width = 1 << adjusted_tx_width_log2;
   int i = eob - 2;
   do {
+    constexpr auto threshold = static_cast<ResidualType>(3);
     const uint16_t pos = scan[i];
     const int column = pos & (tx_width - 1);
-    int32_t* const quantized = &quantized_buffer[pos];
+    auto* const quantized = &quantized_buffer[pos];
     int context = std::min(
         4,
-        DivideBy2(1 + (std::min(quantized[1], 3) +         // {0, 1}
-                       std::min(quantized[tx_width], 3) +  // {1, 0}
-                       std::min(quantized[2], 3) +         // {0, 2}
-                       std::min(quantized[3], 3) +         // {0, 3}
-                       std::min(quantized[4],
-                                (column + 4 < tx_width) ? 3 : 0))));  // {0, 4}
+        DivideBy2(1 +
+                  (std::min(quantized[1], threshold) +         // {0, 1}
+                   std::min(quantized[tx_width], threshold) +  // {1, 0}
+                   std::min(quantized[2], threshold) +         // {0, 2}
+                   std::min(quantized[3], threshold) +         // {0, 3}
+                   std::min(quantized[4],
+                            static_cast<ResidualType>(
+                                (column + 4 < tx_width) ? 3 : 0)))));  // {0, 4}
     context += kCoeffBasePositionContextOffset[column];
     int level =
         reader_.ReadSymbol<kCoeffBaseSymbolCount>(coeff_base_cdf[context]);
@@ -989,27 +1028,31 @@ void Tile::ReadCoeffBaseHorizontal(
 // Section 8.3.2 in the spec, under coeff_base and coeff_br.
 // Bottom boundary checks are avoided by the padded rows.
 // Right boundary check is performed explicitly.
+template <typename ResidualType>
 void Tile::ReadCoeffBaseVertical(
     const uint16_t* scan, PlaneType plane_type, TransformSize /*tx_size*/,
     int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
     uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-    int32_t* const quantized_buffer) {
+    ResidualType* const quantized_buffer) {
   const int tx_width = 1 << adjusted_tx_width_log2;
   int i = eob - 2;
   do {
+    constexpr auto threshold = static_cast<ResidualType>(3);
     const uint16_t pos = scan[i];
     const int row = pos >> adjusted_tx_width_log2;
     const int column = pos & (tx_width - 1);
-    int32_t* const quantized = &quantized_buffer[pos];
+    auto* const quantized = &quantized_buffer[pos];
     const int quantized_column1 = (column + 1 < tx_width) ? quantized[1] : 0;
-    int context = std::min(
-        4, DivideBy2(1 + (std::min(quantized_column1, 3) +    // {0, 1}
-                          std::min(quantized[tx_width], 3) +  // {1, 0}
-                          std::min(quantized[MultiplyBy2(tx_width)],
-                                   3) +                           // {2, 0}
-                          std::min(quantized[tx_width * 3], 3) +  // {3, 0}
-                          std::min(quantized[MultiplyBy4(tx_width)],
-                                   3))));  // {4, 0}
+    int context =
+        std::min(4, DivideBy2(1 + (std::min(quantized_column1, 3) +  // {0, 1}
+                                   std::min(quantized[tx_width],
+                                            threshold) +  // {1, 0}
+                                   std::min(quantized[MultiplyBy2(tx_width)],
+                                            threshold) +  // {2, 0}
+                                   std::min(quantized[tx_width * 3],
+                                            threshold) +  // {3, 0}
+                                   std::min(quantized[MultiplyBy4(tx_width)],
+                                            threshold))));  // {4, 0}
     context += kCoeffBasePositionContextOffset[row];
     int level =
         reader_.ReadSymbol<kCoeffBaseSymbolCount>(coeff_base_cdf[context]);
@@ -1128,22 +1171,21 @@ void Tile::ScaleMotionVector(const MotionVector& mv, const Plane plane,
   }
 }
 
-template <bool is_dc_coefficient>
+template <typename ResidualType, bool is_dc_coefficient>
 bool Tile::ReadSignAndApplyDequantization(
-    const Block& block, int32_t* const quantized_buffer,
-    const uint16_t* const scan, int i, int tx_width, int q_value,
+    const uint16_t* const scan, int i, int q_value,
     const uint8_t* const quantizer_matrix, int shift, int max_value,
     uint16_t* const dc_sign_cdf, int8_t* const dc_category,
-    int* const coefficient_level) {
-  int pos = is_dc_coefficient ? 0 : scan[i];
-  // If quantized_buffer[pos] is zero, then the rest of the function has no
+    int* const coefficient_level, ResidualType* residual_buffer) {
+  const int pos = is_dc_coefficient ? 0 : scan[i];
+  // If residual_buffer[pos] is zero, then the rest of the function has no
   // effect.
-  if (quantized_buffer[pos] == 0) return true;
+  int level = residual_buffer[pos];
+  if (level == 0) return true;
   const int sign = is_dc_coefficient
                        ? static_cast<int>(reader_.ReadSymbol(dc_sign_cdf))
                        : reader_.ReadBit();
-  if (quantized_buffer[pos] >
-      kNumQuantizerBaseLevels + kQuantizerCoefficientBaseRange) {
+  if (level > kNumQuantizerBaseLevels + kQuantizerCoefficientBaseRange) {
     int length = 0;
     bool golomb_length_bit = false;
     do {
@@ -1158,13 +1200,13 @@ bool Tile::ReadSignAndApplyDequantization(
     for (int i = length - 2; i >= 0; --i) {
       x = (x << 1) | reader_.ReadBit();
     }
-    quantized_buffer[pos] += x - 1;
+    level += x - 1;
   }
-  if (is_dc_coefficient && quantized_buffer[0] > 0) {
+  if (is_dc_coefficient) {
     *dc_category = (sign != 0) ? -1 : 1;
   }
-  quantized_buffer[pos] &= 0xfffff;
-  *coefficient_level += quantized_buffer[pos];
+  level &= 0xfffff;
+  *coefficient_level += level;
   // Apply dequantization. Step 1 of section 7.12.3 in the spec.
   int q = q_value;
   if (quantizer_matrix != nullptr) {
@@ -1172,8 +1214,7 @@ bool Tile::ReadSignAndApplyDequantization(
   }
   // The intermediate multiplication can exceed 32 bits, so it has to be
   // performed by promoting one of the values to int64_t.
-  int32_t dequantized_value =
-      (static_cast<int64_t>(q) * quantized_buffer[pos]) & 0xffffff;
+  int32_t dequantized_value = (static_cast<int64_t>(q) * level) & 0xffffff;
   dequantized_value >>= shift;
   // At this point:
   //   * |dequantized_value| is always non-negative.
@@ -1187,27 +1228,6 @@ bool Tile::ReadSignAndApplyDequantization(
   //
   // Now, The above two lines can be done with a std::min and xor as follows:
   dequantized_value = std::min(dequantized_value - sign, max_value) ^ -sign;
-  // Inverse transform process assumes that the quantized coefficients are
-  // stored as a virtual 2d array of size |tx_width| x |tx_height|. If
-  // transform width is 64, then this assumption is broken because the scan
-  // order used for populating the coefficients for such transforms is the
-  // same as the one used for corresponding transform with width 32 (e.g. the
-  // scan order used for 64x16 is the same as the one used for 32x16). So we
-  // have to recompute the value of pos so that it reflects the index of the
-  // 2d array of size 64 x |tx_height|.
-  if (!is_dc_coefficient && tx_width == 64) {
-    const int row_index = DivideBy32(pos);
-    const int column_index = Mod32(pos);
-    pos = MultiplyBy64(row_index) + column_index;
-  }
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  if (sequence_header_.color_config.bitdepth > 8) {
-    auto* const residual_buffer = reinterpret_cast<int32_t*>(*block.residual);
-    residual_buffer[pos] = dequantized_value;
-    return true;
-  }
-#endif
-  auto* const residual_buffer = reinterpret_cast<int16_t*>(*block.residual);
   residual_buffer[pos] = dequantized_value;
   return true;
 }
@@ -1225,6 +1245,7 @@ int Tile::ReadCoeffBaseRange(int clamped_tx_size_context, int cdf_context,
   return level;
 }
 
+template <typename ResidualType>
 int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
                                     int start_x, int start_y,
                                     TransformSize tx_size,
@@ -1250,8 +1271,14 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
   }
   const int tx_width = kTransformWidth[tx_size];
   const int tx_height = kTransformHeight[tx_size];
-  memset(*block.residual, 0, tx_width * tx_height * residual_size_);
-  const int clamped_tx_width = std::min(tx_width, 32);
+  const TransformSize adjusted_tx_size = kAdjustedTransformSize[tx_size];
+  const int adjusted_tx_width_log2 = kTransformWidthLog2[adjusted_tx_size];
+  const int tx_padding =
+      (1 << adjusted_tx_width_log2) * kResidualPaddingVertical;
+  auto* residual = reinterpret_cast<ResidualType*>(*block.residual);
+  // Clear padding to avoid bottom boundary checks when parsing quantized
+  // coefficients.
+  memset(residual, 0, (tx_width * tx_height + tx_padding) * residual_size_);
   const int clamped_tx_height = std::min(tx_height, 32);
   if (plane == kPlaneY) {
     ReadTransformType(block, x4, y4, tx_size);
@@ -1304,26 +1331,7 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
       }
     }
   }
-  int32_t* const quantized = block.scratch_buffer->quantized_buffer;
-  // Only the first |clamped_tx_width| * |padded_tx_height| values of
-  // |quantized| will be used by this function and the functions to which it is
-  // passed into. So we simply need to zero out those values before it is being
-  // used. If |eob| == 1, then only the first index will be populated and used.
-  // So there is no need to initialize this array in that case.
-  if (eob > 1) {
-    static const uint8_t
-        kQuantizedCoefficientBufferPadding[kNumTransformClasses] = {
-            kQuantizedCoefficientBufferPadding2D,
-            kQuantizedCoefficientBufferPaddingHorizontal,
-            kQuantizedCoefficientBufferPaddingVertical};
-    const int padded_tx_height =
-        clamped_tx_height + kQuantizedCoefficientBufferPadding[tx_class];
-    memset(quantized, 0,
-           clamped_tx_width * padded_tx_height * sizeof(quantized[0]));
-  }
   const uint16_t* scan = kScan[tx_class][tx_size];
-  const TransformSize adjusted_tx_size = kAdjustedTransformSize[tx_size];
-  const int adjusted_tx_width_log2 = kTransformWidthLog2[adjusted_tx_size];
   const int clamped_tx_size_context = std::min(tx_size_context, 3);
   // Read the last coefficient.
   {
@@ -1340,7 +1348,7 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
           GetCoeffBaseRangeContextEob(adjusted_tx_width_log2, pos, tx_class),
           plane_type);
     }
-    quantized[pos] = level;
+    residual[pos] = level;
   }
   if (eob > 1) {
     // Read all the other coefficients.
@@ -1350,14 +1358,15 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
         const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
         int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
         uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-        int32_t* quantized_buffer) = {&Tile::ReadCoeffBase2D,
-                                      &Tile::ReadCoeffBaseHorizontal,
-                                      &Tile::ReadCoeffBaseVertical};
+        ResidualType* quantized_buffer) = {
+        &Tile::ReadCoeffBase2D<ResidualType>,
+        &Tile::ReadCoeffBaseHorizontal<ResidualType>,
+        &Tile::ReadCoeffBaseVertical<ResidualType>};
     (this->*kGetCoeffBaseFunc[tx_class])(
         scan, plane_type, tx_size, clamped_tx_size_context,
         adjusted_tx_width_log2, eob,
         symbol_decoder_context_.coeff_base_cdf[tx_size_context][plane_type],
-        quantized);
+        residual);
   }
   const int max_value = (1 << (7 + sequence_header_.color_config.bitdepth)) - 1;
   const int current_quantizer_index = GetQIndex(
@@ -1376,22 +1385,27 @@ int Tile::ReadTransformCoefficients(const Block& block, Plane plane,
   int coefficient_level = 0;
   int8_t dc_category = 0;
   uint16_t* const dc_sign_cdf =
-      (quantized[0] != 0)
+      (residual[0] != 0)
           ? symbol_decoder_context_.dc_sign_cdf[plane_type][GetDcSignContext(
                 x4, y4, w4, h4, plane)]
           : nullptr;
   assert(scan[0] == 0);
-  if (!ReadSignAndApplyDequantization</*is_dc_coefficient=*/true>(
-          block, quantized, scan, 0, tx_width, dc_q_value, quantizer_matrix,
-          shift, max_value, dc_sign_cdf, &dc_category, &coefficient_level)) {
+  if (!ReadSignAndApplyDequantization<ResidualType, /*is_dc_coefficient=*/true>(
+          scan, 0, dc_q_value, quantizer_matrix, shift, max_value, dc_sign_cdf,
+          &dc_category, &coefficient_level, residual)) {
     return -1;
   }
-  for (int i = 1; i < eob; ++i) {
-    if (!ReadSignAndApplyDequantization</*is_dc_coefficient=*/false>(
-            block, quantized, scan, i, tx_width, ac_q_value, quantizer_matrix,
-            shift, max_value, nullptr, nullptr, &coefficient_level)) {
-      return -1;
-    }
+  if (eob > 1) {
+    int i = 1;
+    do {
+      if (!ReadSignAndApplyDequantization<ResidualType,
+                                          /*is_dc_coefficient=*/false>(
+              scan, i, ac_q_value, quantizer_matrix, shift, max_value, nullptr,
+              nullptr, &coefficient_level, residual)) {
+        return -1;
+      }
+    } while (++i < eob);
+    MoveCoefficientsForTxWidth64(clamped_tx_height, tx_width, residual);
   }
   SetEntropyContexts(x4, y4, w4, h4, plane, std::min(4, coefficient_level),
                      dc_category);
@@ -1488,8 +1502,17 @@ bool Tile::TransformBlock(const Block& block, Plane plane, int base_x,
       tx_params.Pop();
     } else {
       TransformType tx_type;
-      const int non_zero_coeff_count = ReadTransformCoefficients(
-          block, plane, start_x, start_y, tx_size, &tx_type);
+      int non_zero_coeff_count;
+#if LIBGAV1_MAX_BITDEPTH >= 10
+      if (sequence_header_.color_config.bitdepth > 8) {
+        non_zero_coeff_count = ReadTransformCoefficients<int32_t>(
+            block, plane, start_x, start_y, tx_size, &tx_type);
+      } else  // NOLINT
+#endif
+      {
+        non_zero_coeff_count = ReadTransformCoefficients<int16_t>(
+            block, plane, start_x, start_y, tx_size, &tx_type);
+      }
       if (non_zero_coeff_count < 0) return false;
       if (mode == kProcessingModeParseAndDecode) {
         ReconstructBlock(block, plane, start_x, start_y, tx_size, tx_type,

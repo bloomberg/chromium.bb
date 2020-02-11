@@ -351,21 +351,24 @@ class Tile : public Allocable {
   int GetCoeffBaseContextEob(TransformSize tx_size, int index);
   int GetCoeffBaseRangeContextEob(int adjusted_tx_width_log2, int pos,
                                   TransformClass tx_class);
+  template <typename ResidualType>
   void ReadCoeffBase2D(
       const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
       int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
       uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-      int32_t* quantized_buffer);
+      ResidualType* quantized_buffer);
+  template <typename ResidualType>
   void ReadCoeffBaseHorizontal(
       const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
       int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
       uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-      int32_t* quantized_buffer);
+      ResidualType* quantized_buffer);
+  template <typename ResidualType>
   void ReadCoeffBaseVertical(
       const uint16_t* scan, PlaneType plane_type, TransformSize tx_size,
       int clamped_tx_size_context, int adjusted_tx_width_log2, int eob,
       uint16_t coeff_base_cdf[kCoeffBaseContexts][kCoeffBaseSymbolCount + 1],
-      int32_t* quantized_buffer);
+      ResidualType* quantized_buffer);
   int GetDcSignContext(int x4, int y4, int w4, int h4, Plane plane);
   void SetEntropyContexts(int x4, int y4, int w4, int h4, Plane plane,
                           uint8_t coefficient_level, int8_t dc_category);
@@ -451,17 +454,18 @@ class Tile : public Allocable {
   // parameter that is populated when |is_dc_coefficient| is true.
   // |coefficient_level| is an output parameter which accumulates the
   // coefficient level.
-  template <bool is_dc_coefficient>
+  template <typename ResidualType, bool is_dc_coefficient>
   LIBGAV1_ALWAYS_INLINE bool ReadSignAndApplyDequantization(
-      const Block& block, int32_t* quantized_buffer, const uint16_t* scan,
-      int i, int tx_width, int q_value, const uint8_t* quantizer_matrix,
+      const uint16_t* scan, int i, int q_value, const uint8_t* quantizer_matrix,
       int shift, int max_value, uint16_t* dc_sign_cdf, int8_t* dc_category,
-      int* coefficient_level);  // Part of 5.11.39.
+      int* coefficient_level,
+      ResidualType* residual_buffer);  // Part of 5.11.39.
   int ReadCoeffBaseRange(int clamped_tx_size_context, int cdf_context,
                          int plane_type);  // Part of 5.11.39.
   // Returns the number of non-zero coefficients that were read. |tx_type| is an
   // output parameter that stores the computed transform type for the plane
   // whose coefficients were read. Returns -1 on failure.
+  template <typename ResidualType>
   int ReadTransformCoefficients(const Block& block, Plane plane, int start_x,
                                 int start_y, TransformSize tx_size,
                                 TransformType* tx_type);  // 5.11.39.
@@ -622,9 +626,11 @@ class Tile : public Allocable {
   //   2) In Reconstruct(), this buffer is used as the input to the row
   //   transform process.
   // The size of this buffer would be:
-  //    For |residual_buffer_|: 4096 * |residual_size_|. Where 4096 =
-  //        64x64 which is the maximum transform size. This memory is allocated
-  //        and owned by the Tile class.
+  //    For |residual_buffer_|: (4096 + 32 * |kResidualPaddingVertical|) *
+  //        |residual_size_|. Where 4096 = 64x64 which is the maximum transform
+  //        size, and 32 * |kResidualPaddingVertical| is the padding to avoid
+  //        bottom boundary checks when parsing quantized coefficients. This
+  //        memory is allocated and owned by the Tile class.
   //    For |residual_buffer_threaded_|: See the comment below. This memory is
   //        not allocated or owned by the Tile class.
   AlignedUniquePtr<uint8_t> residual_buffer_;
