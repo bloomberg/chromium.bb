@@ -412,7 +412,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif
 // TODO(b/141858830,b/141859709): neon is currently disabled due to use of
 // uninitialized memory.
-#if 0  // HAVE_NEON
+#if HAVE_NEON
 const int highbd_params_neon[] = { 8, 10, 12 };
 INSTANTIATE_TEST_CASE_P(
     NEON, AV1HighbdSelfguidedFilterTest,

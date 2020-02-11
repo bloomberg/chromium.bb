@@ -376,6 +376,21 @@ static INLINE void boxsum2(int16_t *src, const int src_stride, int16_t *dst16,
       w -= 8;
       count++;
     } while (w > 0);
+
+    // memset needed for row pixels as 2nd stage of boxsum filter uses
+    // first 2 rows of dst16, dst2 buffer which is not filled in first stage.
+    for (int x = 0; x < 2; x++) {
+      memset(dst16 + x * dst_stride, 0, (width + 4) * sizeof(*dst16));
+      memset(dst2 + x * dst_stride, 0, (width + 4) * sizeof(*dst2));
+    }
+
+    // memset needed for extra columns as 2nd stage of boxsum filter uses
+    // last 2 columns of dst16, dst2 buffer which is not filled in first stage.
+    for (int x = 2; x < height + 2; x++) {
+      int dst_offset = x * dst_stride + width + 2;
+      memset(dst16 + dst_offset, 0, 3 * sizeof(*dst16));
+      memset(dst2 + dst_offset, 0, 3 * sizeof(*dst2));
+    }
   }
 
   {
@@ -792,6 +807,21 @@ static INLINE void boxsum1(int16_t *src, const int src_stride, uint16_t *dst1,
       w -= 8;
       count++;
     } while (w > 0);
+
+    // memset needed for row pixels as 2nd stage of boxsum filter uses
+    // first 2 rows of dst1, dst2 buffer which is not filled in first stage.
+    for (int x = 0; x < 2; x++) {
+      memset(dst1 + x * dst_stride, 0, (width + 4) * sizeof(*dst1));
+      memset(dst2 + x * dst_stride, 0, (width + 4) * sizeof(*dst2));
+    }
+
+    // memset needed for extra columns as 2nd stage of boxsum filter uses
+    // last 2 columns of dst1, dst2 buffer which is not filled in first stage.
+    for (int x = 2; x < height + 2; x++) {
+      int dst_offset = x * dst_stride + width + 2;
+      memset(dst1 + dst_offset, 0, 3 * sizeof(*dst1));
+      memset(dst2 + dst_offset, 0, 3 * sizeof(*dst2));
+    }
   }
 
   {
@@ -1319,6 +1349,11 @@ static INLINE void src_convert_u8_to_u16(const uint8_t *src,
       dst_ptr[y + x * dst_stride] = src_ptr[y + x * src_stride];
     }
   }
+
+  // memeset for unintialized rows of src buffer as it needed for
+  // boxsum filter calculation.
+  for (int x = height; x < height + 5; x++)
+    memset(dst + x * dst_stride, 0, (width + 2) * sizeof(*dst));
 }
 
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -1360,6 +1395,10 @@ static INLINE void src_convert_hbd_copy(const uint16_t *src, int src_stride,
     memcpy((dst_ptr + x * dst_stride), (src_ptr + x * src_stride),
            sizeof(uint16_t) * width);
   }
+  // memeset for unintialized rows of src buffer as it needed for
+  // boxsum filter calculation.
+  for (int x = height; x < height + 5; x++)
+    memset(dst + x * dst_stride, 0, (width + 2) * sizeof(*dst));
 }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
