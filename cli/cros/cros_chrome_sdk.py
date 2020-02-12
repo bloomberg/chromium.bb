@@ -1100,12 +1100,6 @@ class ChromeSDKCommand(command.CliCommand):
       gn_args['use_goma'] = False
     elif goma_dir:
       gn_args['use_goma'] = True
-
-      # Disable automatic gomacc handling in gn since we handle it ourselves.
-      gn_args['has_gomacc_path'] = True
-      env['GOMACC_PATH'] = os.path.join(goma_dir, 'gomacc')
-
-      # This is used to invoke host compiler via gomacc (e.g. v8_snapshot).
       gn_args['goma_dir'] = goma_dir
 
     gn_args.pop('internal_khronos_glcts_tests', None)  # crbug.com/588080
