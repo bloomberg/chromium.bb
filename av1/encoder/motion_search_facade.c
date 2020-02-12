@@ -24,7 +24,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   struct buf_2d backup_yv12[MAX_MB_PLANE] = { { 0, 0, 0, 0, 0 } };
   int bestsme = INT_MAX;
   const int ref = mbmi->ref_frame[ref_idx];
-  MvLimits tmp_mv_limits = x->mv_limits;
+  FullMvLimits tmp_mv_limits = x->mv_limits;
   const YV12_BUFFER_CONFIG *scaled_ref_frame =
       av1_get_scaled_ref_frame(cpi, ref);
   const int mi_row = xd->mi_row;
@@ -172,21 +172,15 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
               cpi->sf.mv_sf.use_accurate_subpel_search, 1);
 
           if (try_second) {
-            const int minc = AOMMAX(GET_MV_SUBPEL(x->mv_limits.col_min),
-                                    ref_mv.col - MV_MAX);
-            const int maxc = AOMMIN(GET_MV_SUBPEL(x->mv_limits.col_max),
-                                    ref_mv.col + MV_MAX);
-            const int minr = AOMMAX(GET_MV_SUBPEL(x->mv_limits.row_min),
-                                    ref_mv.row - MV_MAX);
-            const int maxr = AOMMIN(GET_MV_SUBPEL(x->mv_limits.row_max),
-                                    ref_mv.row + MV_MAX);
+            SubpelMvLimits subpel_limits;
+            av1_set_subpel_mv_search_range(&subpel_limits, &x->mv_limits,
+                                           &ref_mv);
             MV best_mv = x->best_mv.as_mv;
 
             x->best_mv = x->second_best_mv;
-            if (GET_MV_SUBPEL(x->best_mv.as_mv.row) <= maxr &&
-                GET_MV_SUBPEL(x->best_mv.as_mv.row) >= minr &&
-                GET_MV_SUBPEL(x->best_mv.as_mv.col) <= maxc &&
-                GET_MV_SUBPEL(x->best_mv.as_mv.col) >= minc) {
+            if (av1_is_subpelmv_in_range(
+                    &subpel_limits,
+                    get_mv_from_fullmv(&x->best_mv.as_fullmv))) {
               const int this_var = cpi->find_fractional_mv_step(
                   x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
                   x->errorperbit, &cpi->fn_ptr[bsize],
@@ -275,7 +269,7 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   for (ite = 0; ite < 4; ite++) {
     struct buf_2d ref_yv12[2];
     int bestsme = INT_MAX;
-    MvLimits tmp_mv_limits = x->mv_limits;
+    FullMvLimits tmp_mv_limits = x->mv_limits;
     int id = ite % 2;  // Even iterations search in the first reference frame,
                        // odd iterations search in the second. The predictor
                        // found for the 'other' reference frame is factored in.
@@ -460,7 +454,7 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   int_mv *best_int_mv = &x->best_mv;
   int search_range = SEARCH_RANGE_8P;
 
-  MvLimits tmp_mv_limits = x->mv_limits;
+  FullMvLimits tmp_mv_limits = x->mv_limits;
 
   // Do compound motion search on the current reference frame.
   av1_set_mv_search_range(&x->mv_limits, &ref_mv.as_mv);

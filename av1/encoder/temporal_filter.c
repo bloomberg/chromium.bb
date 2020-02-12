@@ -80,7 +80,7 @@ static int tf_motion_search(AV1_COMP *cpi,
   MACROBLOCKD *const mbd = &mb->e_mbd;
   const struct buf_2d ori_src_buf = mb->plane[0].src;
   const struct buf_2d ori_pre_buf = mbd->plane[0].pre[0];
-  const MvLimits ori_mv_limits = mb->mv_limits;
+  const FullMvLimits ori_mv_limits = mb->mv_limits;
   const MV_COST_TYPE ori_mv_cost_type = mb->mv_cost_type;
 
   // Parameters used for motion search.

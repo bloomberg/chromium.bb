@@ -50,6 +50,22 @@ typedef struct mv32 {
   int32_t col;
 } MV32;
 
+// The mv limit for fullpel mvs
+typedef struct {
+  int col_min;
+  int col_max;
+  int row_min;
+  int row_max;
+} FullMvLimits;
+
+// The mv limit for subpel mvs
+typedef struct {
+  int col_min;
+  int col_max;
+  int row_min;
+  int row_max;
+} SubpelMvLimits;
+
 static AOM_INLINE FULLPEL_MV get_fullmv_from_mv(const MV *subpel_mv) {
   const FULLPEL_MV full_mv = { (int16_t)GET_MV_RAWPEL(subpel_mv->row),
                                (int16_t)GET_MV_RAWPEL(subpel_mv->col) };
@@ -314,16 +330,14 @@ static INLINE int is_equal_mv(const MV *a, const MV *b) {
   return *((const uint32_t *)a) == *((const uint32_t *)b);
 }
 
-static INLINE void clamp_mv(MV *mv, int min_col, int max_col, int min_row,
-                            int max_row) {
-  mv->col = clamp(mv->col, min_col, max_col);
-  mv->row = clamp(mv->row, min_row, max_row);
+static INLINE void clamp_mv(MV *mv, const SubpelMvLimits *mv_limits) {
+  mv->col = clamp(mv->col, mv_limits->col_min, mv_limits->col_max);
+  mv->row = clamp(mv->row, mv_limits->row_min, mv_limits->row_max);
 }
 
-static INLINE void clamp_fullmv(FULLPEL_MV *mv, int min_col, int max_col,
-                                int min_row, int max_row) {
-  mv->col = clamp(mv->col, min_col, max_col);
-  mv->row = clamp(mv->row, min_row, max_row);
+static INLINE void clamp_fullmv(FULLPEL_MV *mv, const FullMvLimits *mv_limits) {
+  mv->col = clamp(mv->col, mv_limits->col_min, mv_limits->col_max);
+  mv->row = clamp(mv->row, mv_limits->row_min, mv_limits->row_max);
 }
 
 #ifdef __cplusplus

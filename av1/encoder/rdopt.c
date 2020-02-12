@@ -698,13 +698,6 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
   }
 }
 
-static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
-  return GET_MV_RAWPEL(mv->row) < mv_limits->row_min ||
-         GET_MV_RAWPEL(mv->row) > mv_limits->row_max ||
-         GET_MV_RAWPEL(mv->col) < mv_limits->col_min ||
-         GET_MV_RAWPEL(mv->col) > mv_limits->col_max;
-}
-
 static INLINE PREDICTION_MODE get_single_mode(PREDICTION_MODE this_mode,
                                               int ref_idx, int is_comp_pred) {
   PREDICTION_MODE single_mode;
@@ -940,10 +933,12 @@ static AOM_INLINE void setup_buffer_ref_mvs_inter(
 
 // TODO(jingning): this mv clamping function should be block size dependent.
 static INLINE void clamp_mv2(MV *mv, const MACROBLOCKD *xd) {
-  clamp_mv(mv, xd->mb_to_left_edge - LEFT_TOP_MARGIN,
-           xd->mb_to_right_edge + RIGHT_BOTTOM_MARGIN,
-           xd->mb_to_top_edge - LEFT_TOP_MARGIN,
-           xd->mb_to_bottom_edge + RIGHT_BOTTOM_MARGIN);
+  const SubpelMvLimits mv_limits = { xd->mb_to_left_edge - LEFT_TOP_MARGIN,
+                                     xd->mb_to_right_edge + RIGHT_BOTTOM_MARGIN,
+                                     xd->mb_to_top_edge - LEFT_TOP_MARGIN,
+                                     xd->mb_to_bottom_edge +
+                                         RIGHT_BOTTOM_MARGIN };
+  clamp_mv(mv, &mv_limits);
 }
 
 /* If the current mode shares the same mv with other modes with higher cost,
@@ -1011,7 +1006,8 @@ static INLINE int clamp_and_check_mv(int_mv *out_mv, int_mv in_mv,
   lower_mv_precision(&out_mv->as_mv, cm->allow_high_precision_mv,
                      cm->cur_frame_force_integer_mv);
   clamp_mv2(&out_mv->as_mv, xd);
-  return !mv_check_bounds(&x->mv_limits, &out_mv->as_mv);
+  return av1_is_fullmv_in_range(&x->mv_limits,
+                                get_fullmv_from_mv(&out_mv->as_mv));
 }
 
 // To use single newmv directly for compound modes, need to clamp the mv to the
@@ -1020,10 +1016,10 @@ static INLINE int clamp_and_check_mv(int_mv *out_mv, int_mv in_mv,
 static INLINE void clamp_mv_in_range(MACROBLOCK *const x, int_mv *mv,
                                      int ref_idx) {
   const int_mv ref_mv = av1_get_ref_mv(x, ref_idx);
-  int minc, maxc, minr, maxr;
-  set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr,
-                             &ref_mv.as_mv);
-  clamp_mv(&mv->as_mv, minc, maxc, minr, maxr);
+  SubpelMvLimits mv_limits;
+
+  av1_set_subpel_mv_search_range(&mv_limits, &x->mv_limits, &ref_mv.as_mv);
+  clamp_mv(&mv->as_mv, &mv_limits);
 }
 
 static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
@@ -2457,7 +2453,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   for (enum IntrabcMotionDirection dir = IBC_MOTION_ABOVE;
        dir < IBC_MOTION_DIRECTIONS; ++dir) {
-    const MvLimits tmp_mv_limits = x->mv_limits;
+    const FullMvLimits tmp_mv_limits = x->mv_limits;
     switch (dir) {
       case IBC_MOTION_ABOVE:
         x->mv_limits.col_min = (tile->mi_col_start - mi_col) * MI_SIZE;
@@ -2504,7 +2500,8 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     x->mv_limits = tmp_mv_limits;
     if (bestsme == INT_MAX) continue;
     const MV dv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
-    if (mv_check_bounds(&x->mv_limits, &dv)) continue;
+    if (!av1_is_fullmv_in_range(&x->mv_limits, get_fullmv_from_mv(&dv)))
+      continue;
     if (!av1_is_dv_valid(dv, cm, xd, mi_row, mi_col, bsize,
                          cm->seq_params.mib_size_log2))
       continue;

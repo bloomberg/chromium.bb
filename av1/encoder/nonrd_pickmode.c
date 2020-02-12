@@ -126,7 +126,7 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   const MV ref_mv = av1_get_ref_mv(x, mi->ref_mv_idx).as_mv;
   MV center_mv;
   int dis;
-  const MvLimits tmp_mv_limits = x->mv_limits;
+  const FullMvLimits tmp_mv_limits = x->mv_limits;
   int rv = 0;
   int cost_list[5];
   int search_subpel = 1;

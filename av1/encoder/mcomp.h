@@ -12,6 +12,7 @@
 #ifndef AOM_AV1_ENCODER_MCOMP_H_
 #define AOM_AV1_ENCODER_MCOMP_H_
 
+#include "av1/common/mv.h"
 #include "av1/encoder/block.h"
 
 #include "aom_dsp/variance.h"
@@ -70,7 +71,7 @@ void av1_init_dsmotion_compensation(search_site_config *cfg, int stride);
 void av1_init_motion_fpf(search_site_config *cfg, int stride);
 void av1_init3smotion_compensation(search_site_config *cfg, int stride);
 
-void av1_set_mv_search_range(MvLimits *mv_limits, const MV *mv);
+void av1_set_mv_search_range(FullMvLimits *mv_limits, const MV *mv);
 
 int av1_mv_bit_cost(const MV *mv, const MV *ref_mv, const int *mvjcost,
                     int *mvcost[2], int weight);
@@ -186,10 +187,9 @@ static INLINE void av1_set_fractional_mv(int_mv *fractional_best_mv) {
   }
 }
 
-static INLINE void set_subpel_mv_search_range(const MvLimits *mv_limits,
-                                              int *col_min, int *col_max,
-                                              int *row_min, int *row_max,
-                                              const MV *ref_mv) {
+static INLINE void av1_set_subpel_mv_search_range(SubpelMvLimits *subpel_limits,
+                                                  const FullMvLimits *mv_limits,
+                                                  const MV *ref_mv) {
   const int max_mv = GET_MV_SUBPEL(MAX_FULL_PEL_VAL);
   const int minc =
       AOMMAX(GET_MV_SUBPEL(mv_limits->col_min), ref_mv->col - max_mv);
@@ -200,10 +200,22 @@ static INLINE void set_subpel_mv_search_range(const MvLimits *mv_limits,
   const int maxr =
       AOMMIN(GET_MV_SUBPEL(mv_limits->row_max), ref_mv->row + max_mv);
 
-  *col_min = AOMMAX(MV_LOW + 1, minc);
-  *col_max = AOMMIN(MV_UPP - 1, maxc);
-  *row_min = AOMMAX(MV_LOW + 1, minr);
-  *row_max = AOMMIN(MV_UPP - 1, maxr);
+  subpel_limits->col_min = AOMMAX(MV_LOW + 1, minc);
+  subpel_limits->col_max = AOMMIN(MV_UPP - 1, maxc);
+  subpel_limits->row_min = AOMMAX(MV_LOW + 1, minr);
+  subpel_limits->row_max = AOMMIN(MV_UPP - 1, maxr);
+}
+
+static INLINE int av1_is_fullmv_in_range(const FullMvLimits *mv_limits,
+                                         FULLPEL_MV mv) {
+  return (mv.col >= mv_limits->col_min) && (mv.col <= mv_limits->col_max) &&
+         (mv.row >= mv_limits->row_min) && (mv.row <= mv_limits->row_max);
+}
+
+static INLINE int av1_is_subpelmv_in_range(const SubpelMvLimits *mv_limits,
+                                           MV mv) {
+  return (mv.col >= mv_limits->col_min) && (mv.col <= mv_limits->col_max) &&
+         (mv.row >= mv_limits->row_min) && (mv.row <= mv_limits->row_max);
 }
 
 #ifdef __cplusplus

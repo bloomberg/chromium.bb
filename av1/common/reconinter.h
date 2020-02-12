@@ -261,11 +261,14 @@ static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,
                     (int16_t)(src_mv->col * (1 << (1 - ss_x))) };
   assert(ss_x <= 1);
   assert(ss_y <= 1);
+  const SubpelMvLimits mv_limits = {
+    xd->mb_to_left_edge * (1 << (1 - ss_x)) - spel_left,
+    xd->mb_to_right_edge * (1 << (1 - ss_x)) + spel_right,
+    xd->mb_to_top_edge * (1 << (1 - ss_y)) - spel_top,
+    xd->mb_to_bottom_edge * (1 << (1 - ss_y)) + spel_bottom
+  };
 
-  clamp_mv(&clamped_mv, xd->mb_to_left_edge * (1 << (1 - ss_x)) - spel_left,
-           xd->mb_to_right_edge * (1 << (1 - ss_x)) + spel_right,
-           xd->mb_to_top_edge * (1 << (1 - ss_y)) - spel_top,
-           xd->mb_to_bottom_edge * (1 << (1 - ss_y)) + spel_bottom);
+  clamp_mv(&clamped_mv, &mv_limits);
 
   return clamped_mv;
 }

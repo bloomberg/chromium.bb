@@ -50,10 +50,13 @@ static INLINE int get_relative_dist(const OrderHintInfo *oh, int a, int b) {
 }
 
 static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
-  clamp_mv(mv, xd->mb_to_left_edge - GET_MV_SUBPEL(bw) - MV_BORDER,
-           xd->mb_to_right_edge + GET_MV_SUBPEL(bw) + MV_BORDER,
-           xd->mb_to_top_edge - GET_MV_SUBPEL(bh) - MV_BORDER,
-           xd->mb_to_bottom_edge + GET_MV_SUBPEL(bh) + MV_BORDER);
+  const SubpelMvLimits mv_limits = {
+    xd->mb_to_left_edge - GET_MV_SUBPEL(bw) - MV_BORDER,
+    xd->mb_to_right_edge + GET_MV_SUBPEL(bw) + MV_BORDER,
+    xd->mb_to_top_edge - GET_MV_SUBPEL(bh) - MV_BORDER,
+    xd->mb_to_bottom_edge + GET_MV_SUBPEL(bh) + MV_BORDER
+  };
+  clamp_mv(mv, &mv_limits);
 }
 
 // This function returns either the appropriate sub block or block's mv
