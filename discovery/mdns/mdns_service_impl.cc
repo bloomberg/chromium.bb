@@ -70,9 +70,9 @@ MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
   UdpSocket* socket_ptr =
       socket_v4_.get() ? socket_v4_.get() : socket_v6_.get();
   sender_ = std::make_unique<MdnsSender>(socket_ptr);
-  querier_ = std::make_unique<MdnsQuerier>(sender_.get(), &receiver_,
-                                           task_runner_, now_function_,
-                                           &random_delay_, reporting_client_);
+  querier_ = std::make_unique<MdnsQuerier>(
+      sender_.get(), &receiver_, task_runner_, now_function_, &random_delay_,
+      reporting_client_, config);
   probe_manager_ = std::make_unique<MdnsProbeManagerImpl>(
       sender_.get(), &receiver_, &random_delay_, task_runner_, now_function_);
   publisher_ = std::make_unique<MdnsPublisher>(
@@ -94,6 +94,8 @@ MdnsServiceImpl::MdnsServiceImpl(TaskRunner* task_runner,
     socket_v6_->Bind();
   }
 }
+
+MdnsServiceImpl::~MdnsServiceImpl() = default;
 
 void MdnsServiceImpl::StartQuery(const DomainName& name,
                                  DnsType dns_type,

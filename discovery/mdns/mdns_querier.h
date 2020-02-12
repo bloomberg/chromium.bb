@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_receiver.h"
 #include "discovery/mdns/mdns_record_changed_callback.h"
 #include "discovery/mdns/mdns_records.h"
@@ -28,7 +29,8 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
               TaskRunner* task_runner,
               ClockNowFunctionPtr now_function,
               MdnsRandom* random_delay,
-              ReportingClient* reporting_client);
+              ReportingClient* reporting_client,
+              Config config);
   MdnsQuerier(const MdnsQuerier& other) = delete;
   MdnsQuerier(MdnsQuerier&& other) noexcept = delete;
   MdnsQuerier& operator=(const MdnsQuerier& other) = delete;
@@ -90,6 +92,7 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
   const ClockNowFunctionPtr now_function_;
   MdnsRandom* const random_delay_;
   ReportingClient* reporting_client_;
+  Config config_;
 
   // A collection of active question trackers, each is uniquely identified by
   // domain name, DNS record type, and DNS record class. Multimap key is domain

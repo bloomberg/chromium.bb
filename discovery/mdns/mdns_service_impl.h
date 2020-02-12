@@ -38,6 +38,7 @@ class MdnsServiceImpl : public MdnsService, public UdpSocket::Client {
                   ClockNowFunctionPtr now_function,
                   ReportingClient* reporting_client,
                   const Config& config);
+  ~MdnsServiceImpl() override;
 
   // MdnsService Overrides.
   void StartQuery(const DomainName& name,

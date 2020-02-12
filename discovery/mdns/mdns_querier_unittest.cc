@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "discovery/common/config.h"
 #include "discovery/common/testing/mock_reporting_client.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_receiver.h"
@@ -108,7 +109,7 @@ class MdnsQuerierTest : public testing::Test {
   std::unique_ptr<MdnsQuerier> CreateQuerier() {
     return std::make_unique<MdnsQuerier>(&sender_, &receiver_, &task_runner_,
                                          &FakeClock::now, &random_,
-                                         &reporting_client_);
+                                         &reporting_client_, config_);
   }
 
  protected:
@@ -135,6 +136,7 @@ class MdnsQuerierTest : public testing::Test {
     return querier->GetKnownAnswers(name, type, clazz);
   }
 
+  Config config_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;
   testing::NiceMock<MockUdpSocket> socket_;

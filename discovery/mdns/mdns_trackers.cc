@@ -6,6 +6,7 @@
 
 #include <array>
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_record_changed_callback.h"
 #include "discovery/mdns/mdns_sender.h"
@@ -238,6 +239,7 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsQuestion question,
                                          TaskRunner* task_runner,
                                          ClockNowFunctionPtr now_function,
                                          MdnsRandom* random_delay,
+                                         const Config& config,
                                          QueryType query_type)
     : MdnsTracker(sender, task_runner, now_function, random_delay),
       question_(std::move(question)),
@@ -249,16 +251,18 @@ MdnsQuestionTracker::MdnsQuestionTracker(MdnsQuestion question,
 
   // The initial query has to be sent after a random delay of 20-120
   // milliseconds.
-  if (query_type_ == QueryType::kOneShot) {
-    task_runner_->PostTask([this] { MdnsQuestionTracker::SendQuery(); });
-  } else {
-    OSP_DCHECK(query_type_ == QueryType::kContinuous);
-    send_alarm_.ScheduleFromNow(
-        [this]() {
-          MdnsQuestionTracker::SendQuery();
-          ScheduleFollowUpQuery();
-        },
-        random_delay_->GetInitialQueryDelay());
+  if (config.should_announce_new_queries_) {
+    if (query_type_ == QueryType::kOneShot) {
+      task_runner_->PostTask([this] { MdnsQuestionTracker::SendQuery(); });
+    } else {
+      OSP_DCHECK(query_type_ == QueryType::kContinuous);
+      send_alarm_.ScheduleFromNow(
+          [this]() {
+            MdnsQuestionTracker::SendQuery();
+            ScheduleFollowUpQuery();
+          },
+          random_delay_->GetInitialQueryDelay());
+    }
   }
 }
 

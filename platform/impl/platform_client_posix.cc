@@ -59,12 +59,13 @@ TaskRunner* PlatformClientPosix::GetTaskRunner() {
 }
 
 PlatformClientPosix::~PlatformClientPosix() {
-  networking_loop_.RequestStopSoon();
-  networking_loop_thread_.join();
   task_runner_->RequestStopSoon();
   if (task_runner_thread_ && task_runner_thread_->joinable()) {
     task_runner_thread_->join();
   }
+
+  networking_loop_.RequestStopSoon();
+  networking_loop_thread_.join();
 }
 
 // static

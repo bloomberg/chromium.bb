@@ -19,6 +19,9 @@ struct Config {
   // 8.3 for further details. Per RFC, this value is expected to be in the range
   // of 2 to 8.
   int new_record_announcement_count = 8;
+
+  // Determines whether new mDNS Queries should be sent out over the network.
+  bool should_announce_new_queries_ = true;
 };
 
 }  // namespace discovery

@@ -4,6 +4,7 @@
 
 #include "discovery/mdns/mdns_querier.h"
 
+#include "discovery/common/config.h"
 #include "discovery/common/reporting_client.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_receiver.h"
@@ -40,13 +41,15 @@ MdnsQuerier::MdnsQuerier(MdnsSender* sender,
                          TaskRunner* task_runner,
                          ClockNowFunctionPtr now_function,
                          MdnsRandom* random_delay,
-                         ReportingClient* reporting_client)
+                         ReportingClient* reporting_client,
+                         Config config)
     : sender_(sender),
       receiver_(receiver),
       task_runner_(task_runner),
       now_function_(now_function),
       random_delay_(random_delay),
-      reporting_client_(reporting_client) {
+      reporting_client_(reporting_client),
+      config_(std::move(config)) {
   OSP_DCHECK(sender_);
   OSP_DCHECK(receiver_);
   OSP_DCHECK(task_runner_);
@@ -386,7 +389,8 @@ void MdnsQuerier::ProcessCallbacks(const MdnsRecord& record,
 
 void MdnsQuerier::AddQuestion(const MdnsQuestion& question) {
   auto tracker = std::make_unique<MdnsQuestionTracker>(
-      std::move(question), sender_, task_runner_, now_function_, random_delay_);
+      std::move(question), sender_, task_runner_, now_function_, random_delay_,
+      config_);
   MdnsQuestionTracker* ptr = tracker.get();
   questions_.emplace(question.name(), std::move(tracker));
 

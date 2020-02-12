@@ -4,6 +4,7 @@
 
 #include "discovery/mdns/mdns_trackers.h"
 
+#include "discovery/common/config.h"
 #include "discovery/mdns/mdns_random.h"
 #include "discovery/mdns/mdns_record_changed_callback.h"
 #include "discovery/mdns/mdns_sender.h"
@@ -103,7 +104,7 @@ class MdnsTrackerTest : public testing::Test {
           MdnsQuestionTracker::QueryType::kContinuous) {
     return std::make_unique<MdnsQuestionTracker>(question, &sender_,
                                                  &task_runner_, &FakeClock::now,
-                                                 &random_, query_type);
+                                                 &random_, config_, query_type);
   }
 
  protected:
@@ -151,6 +152,7 @@ class MdnsTrackerTest : public testing::Test {
   };
 
   // clang-format on
+  Config config_;
   std::unique_ptr<FakeUdpSocket> socket_;
   FakeClock clock_;
   FakeTaskRunner task_runner_;

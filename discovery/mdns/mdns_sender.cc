@@ -16,6 +16,8 @@ MdnsSender::MdnsSender(UdpSocket* socket) : socket_(socket) {
   OSP_DCHECK(socket_ != nullptr);
 }
 
+MdnsSender::~MdnsSender() = default;
+
 Error MdnsSender::SendMulticast(const MdnsMessage& message) {
   const IPEndpoint& endpoint = socket_->IsIPv6()
                                    ? kDefaultMulticastGroupIPv6Endpoint

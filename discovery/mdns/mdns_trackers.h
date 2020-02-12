@@ -17,6 +17,7 @@
 namespace openscreen {
 namespace discovery {
 
+struct Config;
 class MdnsRandom;
 class MdnsRecord;
 class MdnsRecordChangedCallback;
@@ -147,6 +148,7 @@ class MdnsQuestionTracker : public MdnsTracker {
                       TaskRunner* task_runner,
                       ClockNowFunctionPtr now_function,
                       MdnsRandom* random_delay,
+                      const Config& config,
                       QueryType query_type = QueryType::kContinuous);
 
   ~MdnsQuestionTracker() override;

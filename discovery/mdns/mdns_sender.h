@@ -21,9 +21,10 @@ class MdnsSender {
   explicit MdnsSender(UdpSocket* socket);
   MdnsSender(const MdnsSender& other) = delete;
   MdnsSender(MdnsSender&& other) noexcept = delete;
+  virtual ~MdnsSender();
+
   MdnsSender& operator=(const MdnsSender& other) = delete;
   MdnsSender& operator=(MdnsSender&& other) noexcept = delete;
-  virtual ~MdnsSender() = default;
 
   virtual Error SendMulticast(const MdnsMessage& message);
   virtual Error SendMessage(const MdnsMessage& message,
