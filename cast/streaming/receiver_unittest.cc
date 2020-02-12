@@ -15,6 +15,7 @@
 #include "cast/streaming/constants.h"
 #include "cast/streaming/encoded_frame.h"
 #include "cast/streaming/frame_crypto.h"
+#include "cast/streaming/mock_environment.h"
 #include "cast/streaming/receiver_packet_router.h"
 #include "cast/streaming/rtcp_common.h"
 #include "cast/streaming/rtcp_session.h"
@@ -249,19 +250,6 @@ class MockSender : public CompoundRtcpParser::Client {
   FrameId max_feedback_frame_id_ = FrameId::first() + kMaxUnackedFrames;
 
   EncryptedFrame frame_being_sent_;
-};
-
-// An Environment that can intercept all packet sends. ReceiverTest will connect
-// the SendPacket() method calls to the MockSender.
-class MockEnvironment : public Environment {
- public:
-  MockEnvironment(ClockNowFunctionPtr now_function, TaskRunner* task_runner)
-      : Environment(now_function, task_runner) {}
-
-  ~MockEnvironment() override = default;
-
-  // Used for intercepting packet sends from the implementation under test.
-  MOCK_METHOD1(SendPacket, void(absl::Span<const uint8_t> packet));
 };
 
 class MockConsumer : public Receiver::Consumer {

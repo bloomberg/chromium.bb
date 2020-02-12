@@ -111,6 +111,8 @@ source_set("unittests") {
     "frame_collector_unittest.cc",
     "frame_crypto_unittest.cc",
     "mock_compound_rtcp_parser_client.h",
+    "mock_environment.cc",
+    "mock_environment.h",
     "ntp_time_unittest.cc",
     "offer_messages_unittest.cc",
     "packet_receive_stats_tracker_unittest.cc",

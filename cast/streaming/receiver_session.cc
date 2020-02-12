@@ -10,9 +10,11 @@
 
 #include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
+#include "cast/streaming/environment.h"
 #include "cast/streaming/message_port.h"
 #include "cast/streaming/message_util.h"
 #include "cast/streaming/offer_messages.h"
+#include "cast/streaming/receiver.h"
 #include "util/logging.h"
 
 namespace openscreen {

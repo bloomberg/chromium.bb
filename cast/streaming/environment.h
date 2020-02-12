@@ -47,7 +47,10 @@ class Environment : public UdpSocket::Client {
 
   // Returns the local endpoint the socket is bound to, or the zero IPEndpoint
   // if socket creation/binding failed.
-  IPEndpoint GetBoundLocalEndpoint() const;
+  //
+  // Note: This method is virtual to allow unit tests to fake that there really
+  // is a bound socket.
+  virtual IPEndpoint GetBoundLocalEndpoint() const;
 
   // Set a handler function to run whenever non-recoverable socket errors occur.
   // If never set, the default is to emit log messages at error priority.

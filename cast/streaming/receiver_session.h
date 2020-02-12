@@ -10,10 +10,8 @@
 #include <vector>
 
 #include "cast/streaming/answer_messages.h"
-#include "cast/streaming/environment.h"
 #include "cast/streaming/message_port.h"
 #include "cast/streaming/offer_messages.h"
-#include "cast/streaming/receiver.h"
 #include "cast/streaming/receiver_packet_router.h"
 #include "cast/streaming/session_config.h"
 #include "util/json/json_serialization.h"
@@ -22,6 +20,8 @@ namespace openscreen {
 namespace cast {
 
 class CastSocket;
+class Environment;
+class Receiver;
 class VirtualConnectionRouter;
 class VirtualConnection;
 
