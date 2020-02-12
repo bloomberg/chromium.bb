@@ -29,7 +29,14 @@ inline bool IsBigEndianArchitecture() {
 // Returns the bytes of |x| in reverse order. This is only defined for 16-, 32-,
 // and 64-bit unsigned integers.
 template <typename Integer>
-Integer ByteSwap(Integer x);
+inline Integer ByteSwap(Integer x) {
+  static_assert(sizeof(Integer) != sizeof(Integer),
+                "ByteSwap() specialization missing in " __FILE__
+                ". "
+                "Did you try to use a signed integer by accident? "
+                "Unsigned long long might be more than 64 bits?");
+  return x;
+}
 
 template <>
 inline uint8_t ByteSwap(uint8_t x) {
