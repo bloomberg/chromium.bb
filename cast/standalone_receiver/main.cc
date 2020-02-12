@@ -152,15 +152,17 @@ int main(int argc, char* argv[]) {
   using openscreen::TaskRunnerImpl;
 
   struct option argument_options[] = {
-      {"address", required_argument, nullptr, 'a'}};
+      {"address", required_argument, nullptr, 'a'},
+      {"tracing", no_argument, nullptr, 't'}};
 
   struct Arguments {
     openscreen::IPAddress address;
+    bool is_tracing_enabled = false;
   };
 
   Arguments arguments;
   int ch = -1;
-  while ((ch = getopt_long(argc, argv, "a:", argument_options, nullptr)) !=
+  while ((ch = getopt_long(argc, argv, "a:t", argument_options, nullptr)) !=
          -1) {
     switch (ch) {
       case 'a': {
@@ -171,9 +173,15 @@ int main(int argc, char* argv[]) {
         }
         arguments.address = std::move(error_or_address.value());
       } break;
+      case 't':
+        arguments.is_tracing_enabled = true;
     }
   }
-  openscreen::TextTraceLoggingPlatform platform;
+
+  std::unique_ptr<openscreen::TextTraceLoggingPlatform> platform;
+  if (arguments.is_tracing_enabled) {
+    platform = std::make_unique<openscreen::TextTraceLoggingPlatform>();
+  }
 
   openscreen::SetLogLevel(openscreen::LogLevel::kInfo);
   auto* const task_runner = new TaskRunnerImpl(&Clock::now);
