@@ -175,6 +175,10 @@ typedef struct {
 
   // Total number of stats used only for kf_boost calculation.
   int num_stats_used_for_kf_boost;
+  // Total number of stats used only for gfu_boost calculation.
+  int num_stats_used_for_gfu_boost;
+  // Total number of stats required by gfu_boost calculation.
+  int num_stats_required_for_gfu_boost;
 } RATE_CONTROL;
 
 struct AV1_COMP;

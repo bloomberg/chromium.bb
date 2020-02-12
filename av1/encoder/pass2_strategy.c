@@ -461,7 +461,7 @@ static double calc_kf_frame_boost(const RATE_CONTROL *rc,
 #define MIN_DECAY_FACTOR 0.01
 int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
                        FRAME_INFO *frame_info, int offset, int f_frames,
-                       int b_frames) {
+                       int b_frames, int *num_fpstats_used) {
   int i;
   double boost_score = (double)NORMAL_BOOST;
   double mv_ratio_accumulator = 0.0;
@@ -471,6 +471,7 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
   double abs_mv_in_out_accumulator = 0.0;
   int arf_boost;
   int flash_detected = 0;
+  if (num_fpstats_used) *num_fpstats_used = 0;
 
   // Search forward from the proposed arf/next gf position.
   for (i = 0; i < f_frames; ++i) {
@@ -498,6 +499,7 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
     boost_score += decay_accumulator *
                    calc_frame_boost(rc, frame_info, this_frame,
                                     this_frame_mv_in_out, GF_MAX_BOOST);
+    if (num_fpstats_used) (*num_fpstats_used)++;
   }
 
   arf_boost = (int)boost_score;
@@ -536,6 +538,7 @@ int av1_calc_arf_boost(const TWO_PASS *twopass, const RATE_CONTROL *rc,
     boost_score += decay_accumulator *
                    calc_frame_boost(rc, frame_info, this_frame,
                                     this_frame_mv_in_out, GF_MAX_BOOST);
+    if (num_fpstats_used) (*num_fpstats_used)++;
   }
   arf_boost += (int)boost_score;
 
@@ -1582,15 +1585,19 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
                                    : AOMMAX(0, rc->frames_to_key - i);
 
     // Calculate the boost for alt ref.
-    rc->gfu_boost = av1_calc_arf_boost(twopass, rc, frame_info, alt_offset,
-                                       forward_frames, (i - 1));
+    rc->gfu_boost =
+        av1_calc_arf_boost(twopass, rc, frame_info, alt_offset, forward_frames,
+                           (i - 1), &rc->num_stats_used_for_gfu_boost);
+    rc->num_stats_required_for_gfu_boost = (forward_frames + i - 1);
     rc->source_alt_ref_pending = 1;
     gf_group->max_layer_depth_allowed = cpi->oxcf.gf_max_pyr_height;
   } else {
     reset_fpf_position(twopass, start_pos);
-    rc->gfu_boost = AOMMIN(
-        MAX_GF_BOOST,
-        av1_calc_arf_boost(twopass, rc, frame_info, alt_offset, (i - 1), 0));
+    rc->gfu_boost =
+        AOMMIN(MAX_GF_BOOST,
+               av1_calc_arf_boost(twopass, rc, frame_info, alt_offset, (i - 1),
+                                  0, &rc->num_stats_used_for_gfu_boost));
+    rc->num_stats_required_for_gfu_boost = (i - 1);
     rc->source_alt_ref_pending = 0;
     gf_group->max_layer_depth_allowed = 0;
   }
