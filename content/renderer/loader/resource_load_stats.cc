@@ -43,22 +43,19 @@ void UpdateUserGestureCarryoverInfo(int render_frame_id) {
 
 void ResourceResponseReceived(int render_frame_id,
                               int request_id,
-                              const GURL& final_response_url,
+                              const GURL& response_url,
                               network::mojom::URLResponseHeadPtr response_head,
                               content::ResourceType resource_type,
                               PreviewsState previews_state) {
   RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(render_frame_id);
   if (!frame)
     return;
-  url::Origin origin_of_final_response_url =
-      url::Origin::Create(final_response_url);
   if (!IsResourceTypeFrame(resource_type)) {
     frame->GetFrameHost()->SubresourceResponseStarted(
-        origin_of_final_response_url, response_head->cert_status);
+        response_url, response_head->cert_status);
   }
-  frame->DidStartResponse(origin_of_final_response_url, request_id,
-                          std::move(response_head), resource_type,
-                          previews_state);
+  frame->DidStartResponse(response_url, request_id, std::move(response_head),
+                          resource_type, previews_state);
 }
 
 void ResourceTransferSizeUpdated(int render_frame_id,
