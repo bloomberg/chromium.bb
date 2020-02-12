@@ -31,6 +31,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
   def setUp(self):
     """Common set up method for all tests."""
     opts = vm.VM.GetParser().parse_args([])
+    opts.enable_kvm = True
     self._vm = vm.VM(opts)
     self._vm.board = 'amd64-generic'
     self._vm.cache_dir = self.tempdir
@@ -240,6 +241,7 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
   def testRmVMDir(self):
     """Verify that the vm directory is removed after calling RmVMDir."""
     self.assertExists(self._vm.vm_dir)
+    self._vm.use_sudo = False
     self._vm.Stop()
     self.assertNotExists(self._vm.vm_dir)
 

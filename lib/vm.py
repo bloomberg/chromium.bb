@@ -163,7 +163,12 @@ class VM(device.Device):
     self.qemu_hostfwd = opts.qemu_hostfwd
     self.qemu_args = opts.qemu_args
 
-    self.enable_kvm = opts.enable_kvm
+    if opts.enable_kvm is None:
+      self.enable_kvm = os.path.exists('/dev/kvm')
+      if not self.enable_kvm:
+        logging.warning('KVM is not supported; Chrome VM will be slow')
+    else:
+      self.enable_kvm = opts.enable_kvm
     self.copy_on_write = opts.copy_on_write
     # We don't need sudo access for software emulation or if /dev/kvm is
     # writeable.
@@ -585,7 +590,7 @@ class VM(device.Device):
                         help='Path to qemu-img binary used to create temporary '
                              'copy-on-write images.')
     parser.add_argument('--disable-kvm', dest='enable_kvm',
-                        action='store_false', default=True,
+                        action='store_false', default=None,
                         help='Disable KVM, use software emulation.')
     parser.add_argument('--no-display', dest='display',
                         action='store_false', default=True,
