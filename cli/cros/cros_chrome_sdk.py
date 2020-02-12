@@ -702,6 +702,7 @@ class ChromeSDKCommand(command.CliCommand):
 
   _CHROME_CLANG_DIR = 'third_party/llvm-build/Release+Asserts/bin'
   _HOST_BINUTILS_DIR = 'third_party/binutils/Linux_x64/Release/bin/'
+  _BUILD_ARGS_DIR = 'build/args/chromeos/'
 
   EBUILD_ENV_PATHS = (
       # Compiler tools.
@@ -790,6 +791,13 @@ class ChromeSDKCommand(command.CliCommand):
         '--toolchain-path', type='local_or_gs_path',
         help='Provides a path, whether a local directory or a gs:// path, to '
              'pull toolchain components from.')
+    parser.add_argument(
+        '--no-shell', action='store_false', default=True, dest='use_shell',
+        help='Skips the interactive shell. When this arg is passed, the needed '
+             'toolchain will still be downloaded. However, no //out* dir will '
+             'automatically be created. The args.gn file will instead be '
+             'downloaded at a shareable location in //%s, and the SDK will '
+             'simply exit after that.' % cls._BUILD_ARGS_DIR)
     parser.add_argument(
         '--gn-extra-args',
         help='Provides extra args to "gn gen". Uses the same format as '
@@ -900,6 +908,12 @@ class ChromeSDKCommand(command.CliCommand):
 
   def _UpdateGnArgsIfStale(self, out_dir, build_label, gn_args, board):
     """Runs 'gn gen' if gn args are stale or logs a warning."""
+    if not self.options.use_shell:
+      gn_args_file_path = os.path.join(
+          self.options.chrome_src, self._BUILD_ARGS_DIR, board + '.gni')
+      osutils.WriteFile(gn_args_file_path, gn_helpers.ToGNString(gn_args))
+      return
+
     gn_args_file_path = os.path.join(
         self.options.chrome_src, out_dir, build_label, 'args.gn')
 
@@ -1102,6 +1116,7 @@ class ChromeSDKCommand(command.CliCommand):
       # If --nogoma option is explicitly set, disable goma, even if it is
       # used in the original GN_ARGS.
       gn_args['use_goma'] = False
+      gn_args.pop('goma_dir', None)
     elif goma_dir:
       gn_args['use_goma'] = True
       gn_args['goma_dir'] = goma_dir
@@ -1365,7 +1380,8 @@ class ChromeSDKCommand(command.CliCommand):
                           toolchain_url=self.options.toolchain_url) as ctx:
       env = self._SetupEnvironment(self.options.board, ctx, self.options,
                                    goma_dir=goma_dir, goma_port=goma_port)
-
+      if not self.options.use_shell:
+        return 0
       with self._GetRCFile(env, self.options.bashrc) as rcfile:
         bash_cmd = ['/bin/bash']
 
