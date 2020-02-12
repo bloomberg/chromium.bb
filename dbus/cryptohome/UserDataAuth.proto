@@ -792,3 +792,11 @@ message GetRsuDeviceIdReply {
 
 // Output parameters for GetRsuDeviceId()
 message GetRsuDeviceIdRequest {}
+
+// Input parameters to CheckHealth()
+message CheckHealthRequest {}
+
+// Output parameters for CheckHealth()
+message CheckHealthReply {
+  bool requires_powerwash = 2;
+}
