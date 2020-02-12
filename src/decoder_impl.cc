@@ -202,7 +202,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   }
   const EncodedFrame encoded_frame = encoded_frames_.Pop();
   std::unique_ptr<ObuParser> obu(new (std::nothrow) ObuParser(
-      encoded_frame.data, encoded_frame.size, &state_));
+      encoded_frame.data, encoded_frame.size, &buffer_pool_, &state_));
   if (obu == nullptr) {
     LIBGAV1_DLOG(ERROR, "Failed to initialize OBU parser.");
     return kStatusOutOfMemory;
@@ -214,17 +214,13 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   RefCountedBufferPtr displayable_frame;
   StatusCode status;
   while (obu->HasData()) {
-    state_.current_frame = buffer_pool_.GetFreeBuffer();
-    if (state_.current_frame == nullptr) {
-      LIBGAV1_DLOG(ERROR, "Could not get current_frame from the buffer pool.");
-      return kStatusResourceExhausted;
-    }
-
-    status = obu->ParseOneFrame();
+    RefCountedBufferPtr current_frame;
+    status = obu->ParseOneFrame(&current_frame);
     if (status != kStatusOk) {
       LIBGAV1_DLOG(ERROR, "Failed to parse OBU.");
       return status;
     }
+    state_.current_frame = std::move(current_frame);
     if (std::find_if(obu->obu_headers().begin(), obu->obu_headers().end(),
                      [](const ObuHeader& obu_header) {
                        return obu_header.type == kObuSequenceHeader;

@@ -85,6 +85,24 @@ int GetLastNonzeroByteIndex(const uint8_t* data, size_t size) {
   return i;
 }
 
+// A cleanup helper class that releases the frame buffer reference held in
+// |frame| in the destructor.
+class RefCountedBufferPtrCleanup {
+ public:
+  explicit RefCountedBufferPtrCleanup(RefCountedBufferPtr* frame)
+      : frame_(*frame) {}
+
+  // Not copyable or movable.
+  RefCountedBufferPtrCleanup(const RefCountedBufferPtrCleanup&) = delete;
+  RefCountedBufferPtrCleanup& operator=(const RefCountedBufferPtrCleanup&) =
+      delete;
+
+  ~RefCountedBufferPtrCleanup() { frame_ = nullptr; }
+
+ private:
+  RefCountedBufferPtr& frame_;
+};
+
 }  // namespace
 
 bool ObuSequenceHeader::ParametersChanged(const ObuSequenceHeader& old) const {
@@ -1717,6 +1735,11 @@ bool ObuParser::ParseFrameParameters() {
   int64_t scratch;
   if (sequence_header_.reduced_still_picture_header) {
     frame_header_.show_frame = true;
+    current_frame_ = buffer_pool_->GetFreeBuffer();
+    if (current_frame_ == nullptr) {
+      LIBGAV1_DLOG(ERROR, "Could not get current_frame from the buffer pool.");
+      return false;
+    }
   } else {
     OBU_READ_BIT_OR_FAIL;
     frame_header_.show_existing_frame = static_cast<bool>(scratch);
@@ -1748,9 +1771,9 @@ bool ObuParser::ParseFrameParameters() {
       }
       // Section 7.18.2. Note: This is also needed for Section 7.21 if
       // frame_type is kFrameKey.
-      decoder_state_.current_frame =
+      current_frame_ =
           decoder_state_.reference_frame[frame_header_.frame_to_show];
-      if (decoder_state_.current_frame == nullptr) {
+      if (current_frame_ == nullptr) {
         LIBGAV1_DLOG(ERROR, "Buffer %d does not contain a decoded frame",
                      frame_header_.frame_to_show);
         return false;
@@ -1758,19 +1781,19 @@ bool ObuParser::ParseFrameParameters() {
       // Section 6.8.2: It is a requirement of bitstream conformance that
       // when show_existing_frame is used to show a previous frame, that the
       // value of showable_frame for the previous frame was equal to 1.
-      if (!decoder_state_.current_frame->showable_frame()) {
+      if (!current_frame_->showable_frame()) {
         LIBGAV1_DLOG(ERROR, "Buffer %d does not contain a showable frame",
                      frame_header_.frame_to_show);
         return false;
       }
-      if (decoder_state_.current_frame->frame_type() == kFrameKey) {
+      if (current_frame_->frame_type() == kFrameKey) {
         frame_header_.refresh_frame_flags = 0xff;
         // Section 6.8.2: It is a requirement of bitstream conformance that
         // when show_existing_frame is used to show a previous frame with
         // RefFrameType[ frame_to_show_map_idx ] equal to KEY_FRAME, that
         // the frame is output via the show_existing_frame mechanism at most
         // once.
-        decoder_state_.current_frame->set_showable_frame(false);
+        current_frame_->set_showable_frame(false);
 
         // Section 7.21. Note: decoder_state_.current_frame_id must be set
         // only when frame_type is kFrameKey per the spec. Among all the
@@ -1784,9 +1807,14 @@ bool ObuParser::ParseFrameParameters() {
       }
       return true;
     }
+    current_frame_ = buffer_pool_->GetFreeBuffer();
+    if (current_frame_ == nullptr) {
+      LIBGAV1_DLOG(ERROR, "Could not get current_frame from the buffer pool.");
+      return false;
+    }
     OBU_READ_LITERAL_OR_FAIL(2);
     frame_header_.frame_type = static_cast<FrameType>(scratch);
-    decoder_state_.current_frame->set_frame_type(frame_header_.frame_type);
+    current_frame_->set_frame_type(frame_header_.frame_type);
     OBU_READ_BIT_OR_FAIL;
     frame_header_.show_frame = static_cast<bool>(scratch);
     if (frame_header_.show_frame &&
@@ -1802,8 +1830,7 @@ bool ObuParser::ParseFrameParameters() {
       OBU_READ_BIT_OR_FAIL;
       frame_header_.showable_frame = static_cast<bool>(scratch);
     }
-    decoder_state_.current_frame->set_showable_frame(
-        frame_header_.showable_frame);
+    current_frame_->set_showable_frame(frame_header_.showable_frame);
     if (frame_header_.frame_type == kFrameSwitch ||
         (frame_header_.frame_type == kFrameKey && frame_header_.show_frame)) {
       frame_header_.error_resilient_mode = true;
@@ -1815,7 +1842,7 @@ bool ObuParser::ParseFrameParameters() {
   if (frame_header_.frame_type == kFrameKey && frame_header_.show_frame) {
     decoder_state_.reference_valid.fill(false);
     decoder_state_.reference_order_hint.fill(0);
-    decoder_state_.current_frame->ClearOrderHints();
+    current_frame_->ClearOrderHints();
   }
   OBU_READ_BIT_OR_FAIL;
   frame_header_.enable_cdf_update = !static_cast<bool>(scratch);
@@ -2060,7 +2087,7 @@ bool ObuParser::ParseFrameParameters() {
   // At this point, we have parsed the frame and render sizes and computed
   // the image size, whether it's an intra or inter frame. So we can save
   // the sizes in the current frame now.
-  if (!decoder_state_.current_frame->SetFrameDimensions(frame_header_)) {
+  if (!current_frame_->SetFrameDimensions(frame_header_)) {
     LIBGAV1_DLOG(ERROR, "Setting current frame dimensions failed.");
     return false;
   }
@@ -2071,7 +2098,7 @@ bool ObuParser::ParseFrameParameters() {
       const uint8_t hint =
           decoder_state_
               .reference_order_hint[frame_header_.reference_frame_index[i]];
-      decoder_state_.current_frame->set_order_hint(reference_frame, hint);
+      current_frame_->set_order_hint(reference_frame, hint);
       decoder_state_.reference_frame_sign_bias[reference_frame] =
           GetRelativeDistance(hint, frame_header_.order_hint,
                               sequence_header_.order_hint_shift_bits) > 0;
@@ -2096,15 +2123,14 @@ bool ObuParser::ParseFrameHeader() {
   bool status = ParseTileInfoSyntax() && ParseQuantizerParameters() &&
                 ParseSegmentationParameters();
   if (!status) return false;
-  decoder_state_.current_frame->SetSegmentationParameters(
-      frame_header_.segmentation);
+  current_frame_->SetSegmentationParameters(frame_header_.segmentation);
   status =
       ParseQuantizerIndexDeltaParameters() && ParseLoopFilterDeltaParameters();
   if (!status) return false;
   ComputeSegmentLosslessAndQIndex();
   status = ParseLoopFilterParameters();
   if (!status) return false;
-  decoder_state_.current_frame->SetLoopFilterDeltas(frame_header_.loop_filter);
+  current_frame_->SetLoopFilterDeltas(frame_header_.loop_filter);
   status = ParseCdefParameters() && ParseLoopRestorationParameters() &&
            ParseTxModeSyntax() && ParseFrameReferenceModeSyntax() &&
            ParseSkipModeParameters() && ReadAllowWarpedMotion();
@@ -2114,12 +2140,11 @@ bool ObuParser::ParseFrameHeader() {
   frame_header_.reduced_tx_set = static_cast<bool>(scratch);
   status = ParseGlobalMotionParameters();
   if (!status) return false;
-  decoder_state_.current_frame->SetGlobalMotions(frame_header_.global_motion);
+  current_frame_->SetGlobalMotions(frame_header_.global_motion);
   status = ParseFilmGrainParameters();
   if (!status) return false;
   if (sequence_header_.film_grain_params_present) {
-    decoder_state_.current_frame->set_film_grain_params(
-        frame_header_.film_grain_params);
+    current_frame_->set_film_grain_params(frame_header_.film_grain_params);
   }
   return true;
 }
@@ -2545,8 +2570,13 @@ bool ObuParser::InitBitReader(const uint8_t* const data, size_t size) {
 
 bool ObuParser::HasData() const { return size_ > 0; }
 
-StatusCode ObuParser::ParseOneFrame() {
+StatusCode ObuParser::ParseOneFrame(RefCountedBufferPtr* const current_frame) {
   if (data_ == nullptr || size_ == 0) return kStatusInvalidArgument;
+
+  assert(current_frame_ == nullptr);
+  // This is used to release any references held in case of parsing failure.
+  RefCountedBufferPtrCleanup current_frame_cleanup(&current_frame_);
+
   const uint8_t* data = data_;
   size_t size = size_;
 
@@ -2770,6 +2800,7 @@ StatusCode ObuParser::ParseOneFrame() {
   }
   data_ = data;
   size_ = size;
+  *current_frame = std::move(current_frame_);
   return kStatusOk;
 }
 

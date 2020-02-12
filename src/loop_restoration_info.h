@@ -26,6 +26,7 @@
 #include "src/symbol_decoder_context.h"
 #include "src/utils/constants.h"
 #include "src/utils/entropy_decoder.h"
+#include "src/utils/types.h"
 
 namespace libgav1 {
 

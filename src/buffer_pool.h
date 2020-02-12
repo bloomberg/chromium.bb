@@ -26,7 +26,6 @@
 #include "src/gav1/decoder_buffer.h"
 #include "src/gav1/frame_buffer.h"
 #include "src/internal_frame_buffer_list.h"
-#include "src/obu_parser.h"
 #include "src/symbol_decoder_context.h"
 #include "src/utils/array_2d.h"
 #include "src/utils/compiler_attributes.h"

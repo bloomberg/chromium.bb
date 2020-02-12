@@ -21,24 +21,9 @@
 
 #include "src/utils/constants.h"
 #include "src/utils/segmentation.h"
+#include "src/utils/types.h"
 
 namespace libgav1 {
-
-// Stores the quantization parameters of Section 5.9.12.
-struct QuantizerParameters {
-  // base_index is in the range [0, 255].
-  uint8_t base_index;
-  int8_t delta_dc[kMaxPlanes];
-  // delta_ac[kPlaneY] is always 0.
-  int8_t delta_ac[kMaxPlanes];
-  bool use_matrix;
-  // The |matrix_level| array is used only when |use_matrix| is true.
-  // matrix_level[plane] specifies the level in the quantizer matrix that
-  // should be used for decoding |plane|. The quantizer matrix has 15 levels,
-  // from 0 to 14. The range of matrix_level[plane] is [0, 15]. If
-  // matrix_level[plane] is 15, the quantizer matrix is not used.
-  int8_t matrix_level[kMaxPlanes];
-};
 
 // Implements the dequantization functions of Section 7.12.2.
 class Quantizer {

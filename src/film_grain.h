@@ -27,6 +27,7 @@
 #include "src/utils/array_2d.h"
 #include "src/utils/constants.h"
 #include "src/utils/cpu.h"
+#include "src/utils/types.h"
 
 namespace libgav1 {
 

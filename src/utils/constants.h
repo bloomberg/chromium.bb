@@ -147,6 +147,11 @@ enum {
   kNumWienerCoefficients = 3,
   // Maximum number of threads that the library will ever use at any given time.
   kMaxThreads = 32,
+  kLoopFilterMaxModeDeltas = 2,
+  kMaxCdefStrengths = 8,
+  kMaxTileColumns = 64,
+  kMaxTileRows = 64,
+  kMaxOperatingPoints = 32,
 };  // anonymous enum
 
 enum FrameType : uint8_t {

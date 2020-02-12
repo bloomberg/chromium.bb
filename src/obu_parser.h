@@ -23,6 +23,7 @@
 #include <memory>
 #include <type_traits>
 
+#include "src/buffer_pool.h"
 #include "src/dsp/common.h"
 #include "src/gav1/decoder_buffer.h"
 #include "src/gav1/status_code.h"
@@ -42,11 +43,8 @@ struct DecoderState;
 
 enum {
   kMinimumMajorBitstreamLevel = 2,
-  kMaxOperatingPoints = 32,
   kSelectScreenContentTools = 2,
   kSelectIntegerMv = 2,
-  kLoopFilterMaxModeDeltas = 2,
-  kMaxCdefStrengths = 8,
   kLoopRestorationTileSizeMax = 256,
   kGlobalMotionAlphaBits = 12,
   kGlobalMotionTranslationBits = 12,
@@ -56,8 +54,6 @@ enum {
   kGlobalMotionTranslationOnlyPrecisionBits = 3,
   kMaxTileWidth = 4096,
   kMaxTileArea = 4096 * 2304,
-  kMaxTileColumns = 64,
-  kMaxTileRows = 64,
   kPrimaryReferenceNone = 7,
   // A special value of the scalability_mode_idc syntax element that indicates
   // the picture prediction structure is specified in scalability_structure().
@@ -209,185 +205,6 @@ static_assert(sizeof(ObuSequenceHeader) ==
                       sizeof(OperatingParameters),
               "");
 
-// Loop filter parameters:
-//
-// If level[0] and level[1] are both equal to 0, the loop filter process is
-// not invoked.
-//
-// |sharpness| and |delta_enabled| are only used by the loop filter process.
-//
-// The |ref_deltas| and |mode_deltas| arrays are used not only by the loop
-// filter process but also by the reference frame update and loading
-// processes. The loop filter process uses |ref_deltas| and |mode_deltas| only
-// when |delta_enabled| is true.
-struct LoopFilter {
-  // Contains loop filter strength values in the range of [0, 63].
-  std::array<int8_t, kFrameLfCount> level;
-  // Indicates the sharpness level in the range of [0, 7].
-  int8_t sharpness;
-  // Whether the filter level depends on the mode and reference frame used to
-  // predict a block.
-  bool delta_enabled;
-  // Contains the adjustment needed for the filter level based on the chosen
-  // reference frame, in the range of [-64, 63].
-  std::array<int8_t, kNumReferenceFrameTypes> ref_deltas;
-  // Contains the adjustment needed for the filter level based on the chosen
-  // mode, in the range of [-64, 63].
-  std::array<int8_t, kLoopFilterMaxModeDeltas> mode_deltas;
-};
-
-struct Delta {
-  bool present;
-  uint8_t scale;
-  bool multi;
-};
-
-struct Cdef {
-  uint8_t damping;
-  uint8_t bits;
-  uint8_t y_primary_strength[kMaxCdefStrengths];
-  uint8_t y_secondary_strength[kMaxCdefStrengths];
-  uint8_t uv_primary_strength[kMaxCdefStrengths];
-  uint8_t uv_secondary_strength[kMaxCdefStrengths];
-};
-
-enum GlobalMotionTransformationType : uint8_t {
-  kGlobalMotionTransformationTypeIdentity,
-  kGlobalMotionTransformationTypeTranslation,
-  kGlobalMotionTransformationTypeRotZoom,
-  kGlobalMotionTransformationTypeAffine,
-  kNumGlobalMotionTransformationTypes
-};
-
-// Global motion and warped motion parameters. See the paper for more info:
-// S. Parker, Y. Chen, D. Barker, P. de Rivaz, D. Mukherjee, "Global and locally
-// adaptive warped motion compensation in video compression", Proc. IEEE
-// International Conference on Image Processing (ICIP), pp. 275-279, Sep. 2017.
-struct GlobalMotion {
-  GlobalMotionTransformationType type;
-  int32_t params[6];
-
-  // Represent two shearing operations. Computed from |params| by SetupShear().
-  //
-  // The least significant six (= kWarpParamRoundingBits) bits are all zeros.
-  // (This means alpha, beta, gamma, and delta could be represented by a 10-bit
-  // signed integer.) The minimum value is INT16_MIN (= -32768) and the maximum
-  // value is 32704 = 0x7fc0, the largest int16_t value whose least significant
-  // six bits are all zeros.
-  //
-  // Valid warp parameters (as validated by SetupShear()) have smaller ranges.
-  // Their absolute values are less than 2^14 (= 16384). (This follows from
-  // the warpValid check at the end of Section 7.11.3.6.)
-  //
-  // NOTE: Section 7.11.3.6 of the spec allows a maximum value of 32768, which
-  // is outside the range of int16_t. When cast to int16_t, 32768 becomes
-  // -32768. This potential int16_t overflow does not matter because either
-  // 32768 or -32768 causes SetupShear() to return false,
-  int16_t alpha;
-  int16_t beta;
-  int16_t gamma;
-  int16_t delta;
-};
-
-struct TileInfo {
-  bool uniform_spacing;
-  int sb_rows;
-  int sb_columns;
-  int tile_count;
-  int tile_columns_log2;
-  int tile_columns;
-  int tile_column_start[kMaxTileColumns + 1];
-  int tile_rows_log2;
-  int tile_rows;
-  int tile_row_start[kMaxTileRows + 1];
-  int16_t context_update_id;
-  uint8_t tile_size_bytes;
-};
-
-struct ObuFrameHeader {
-  uint16_t display_frame_id;
-  uint16_t current_frame_id;
-  int64_t frame_offset;
-  uint16_t expected_frame_id[kNumInterReferenceFrameTypes];
-  int32_t width;
-  int32_t height;
-  int32_t columns4x4;
-  int32_t rows4x4;
-  // The render size (render_width and render_height) is a hint to the
-  // application about the desired display size. It has no effect on the
-  // decoding process.
-  int32_t render_width;
-  int32_t render_height;
-  int32_t upscaled_width;
-  LoopRestoration loop_restoration;
-  uint32_t buffer_removal_time[kMaxOperatingPoints];
-  uint32_t frame_presentation_time;
-  // Note: global_motion[0] (for kReferenceFrameIntra) is not used.
-  std::array<GlobalMotion, kNumReferenceFrameTypes> global_motion;
-  TileInfo tile_info;
-  QuantizerParameters quantizer;
-  Segmentation segmentation;
-  bool show_existing_frame;
-  // frame_to_show is in the range [0, 7]. Only used if show_existing_frame is
-  // true.
-  int8_t frame_to_show;
-  FrameType frame_type;
-  bool show_frame;
-  bool showable_frame;
-  bool error_resilient_mode;
-  bool enable_cdf_update;
-  bool frame_size_override_flag;
-  // The order_hint syntax element in the uncompressed header. If
-  // show_existing_frame is false, the OrderHint variable in the spec is equal
-  // to this field, and so this field can be used in place of OrderHint when
-  // show_existing_frame is known to be false, such as during tile decoding.
-  uint8_t order_hint;
-  int8_t primary_reference_frame;
-  bool render_and_frame_size_different;
-  uint8_t superres_scale_denominator;
-  bool allow_screen_content_tools;
-  bool allow_intrabc;
-  bool frame_refs_short_signaling;
-  // A bitmask that specifies which reference frame slots will be updated with
-  // the current frame after it is decoded.
-  uint8_t refresh_frame_flags;
-  static_assert(sizeof(ObuFrameHeader::refresh_frame_flags) * 8 ==
-                    kNumReferenceFrameTypes,
-                "");
-  bool found_reference;
-  int8_t force_integer_mv;
-  bool allow_high_precision_mv;
-  InterpolationFilter interpolation_filter;
-  bool is_motion_mode_switchable;
-  bool use_ref_frame_mvs;
-  bool enable_frame_end_update_cdf;
-  // True if all segments are losslessly encoded at the coded resolution.
-  bool coded_lossless;
-  // True if all segments are losslessly encoded at the upscaled resolution.
-  bool upscaled_lossless;
-  TxMode tx_mode;
-  // True means that the mode info for inter blocks contains the syntax
-  // element comp_mode that indicates whether to use single or compound
-  // prediction. False means that all inter blocks will use single prediction.
-  bool reference_mode_select;
-  // The frames to use for compound prediction when skip_mode is true.
-  ReferenceFrameType skip_mode_frame[2];
-  bool skip_mode_present;
-  bool reduced_tx_set;
-  bool allow_warped_motion;
-  Delta delta_q;
-  Delta delta_lf;
-  // A valid value of reference_frame_index[i] is in the range [0, 7]. -1
-  // indicates an invalid value.
-  int8_t reference_frame_index[kNumInterReferenceFrameTypes];
-  // The ref_order_hint[ i ] syntax element in the uncompressed header.
-  // Specifies the expected output order hint for each reference frame.
-  uint8_t reference_order_hint[kNumReferenceFrameTypes];
-  LoopFilter loop_filter;
-  Cdef cdef;
-  FilmGrainParams film_grain_params;
-};
-
 enum MetadataType : uint8_t {
   // 0 is reserved for AOM use.
   kMetadataTypeHdrContentLightLevel = 1,
@@ -433,8 +250,11 @@ struct ObuTileGroup {
 class ObuParser : public Allocable {
  public:
   ObuParser(const uint8_t* const data, size_t size,
-            DecoderState* const decoder_state)
-      : data_(data), size_(size), decoder_state_(*decoder_state) {}
+            BufferPool* const buffer_pool, DecoderState* const decoder_state)
+      : data_(data),
+        size_(size),
+        buffer_pool_(buffer_pool),
+        decoder_state_(*decoder_state) {}
 
   // Not copyable or movable.
   ObuParser(const ObuParser& rhs) = delete;
@@ -452,8 +272,9 @@ class ObuParser : public Allocable {
   //
   // If the parsing is successful, relevant fields will be populated. The fields
   // are valid only if the return value is kStatusOk. Returns kStatusOk on
-  // success, an error status otherwise.
-  StatusCode ParseOneFrame();
+  // success, an error status otherwise. On success, |current_frame| will be
+  // populated with a valid frame buffer.
+  StatusCode ParseOneFrame(RefCountedBufferPtr* current_frame);
 
   // Getters. Only valid if ParseOneFrame() completes successfully.
   const Vector<ObuHeader>& obu_headers() const { return obu_headers_; }
@@ -569,7 +390,14 @@ class ObuParser : public Allocable {
   // 0. Set to true when parsing a sequence header if OperatingPointIdc is 0.
   bool extension_disallowed_ = false;
 
+  BufferPool* const buffer_pool_;
   DecoderState& decoder_state_;
+  // Used by ParseOneFrame() to populate the current frame that is being
+  // decoded. The invariant maintained is that this variable will be nullptr at
+  // the beginning and at the end of each call to ParseOneFrame(). This ensures
+  // that the ObuParser is not holding on to any references to the current
+  // frame once the ParseOneFrame() call is complete.
+  RefCountedBufferPtr current_frame_;
 
   // For unit testing private functions.
   friend class ObuParserTest;
