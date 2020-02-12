@@ -60,8 +60,9 @@ struct EncodedFrame : public Allocable {
 
 struct DecoderState {
   // Section 7.20. Updates frames in the reference_frame array with
-  // current_frame, based on the refresh_frame_flags bitmask.
-  void UpdateReferenceFrames(int refresh_frame_flags);
+  // |current_frame|, based on the |refresh_frame_flags| bitmask.
+  void UpdateReferenceFrames(const RefCountedBufferPtr& current_frame,
+                             int refresh_frame_flags);
 
   // Clears all the reference frames.
   void ClearReferenceFrames();
@@ -100,7 +101,6 @@ struct DecoderState {
   // Note: reference_frame_sign_bias[0] (for kReferenceFrameIntra) is not used.
   std::array<bool, kNumReferenceFrameTypes> reference_frame_sign_bias = {};
   std::array<RefCountedBufferPtr, kNumReferenceFrameTypes> reference_frame;
-  RefCountedBufferPtr current_frame;
 };
 
 class DecoderImpl : public Allocable {
@@ -127,7 +127,8 @@ class DecoderImpl : public Allocable {
  private:
   explicit DecoderImpl(const DecoderSettings* settings);
   StatusCode Init();
-  bool AllocateCurrentFrame(const ObuFrameHeader& frame_header, int left_border,
+  bool AllocateCurrentFrame(RefCountedBufferPtr* current_frame,
+                            const ObuFrameHeader& frame_header, int left_border,
                             int right_border, int top_border,
                             int bottom_border);
   void ReleaseOutputFrame();
@@ -135,10 +136,12 @@ class DecoderImpl : public Allocable {
   // in output_frame_.
   StatusCode CopyFrameToOutputBuffer(const RefCountedBufferPtr& frame);
   StatusCode DecodeTiles(const ObuParser* obu,
-                         FrameScratchBuffer* frame_scratch_buffer);
+                         FrameScratchBuffer* frame_scratch_buffer,
+                         RefCountedBufferPtr* current_frame_ptr);
   // Sets the current frame's segmentation map for two cases. The third case
   // is handled in Tile::DecodeBlock().
-  void SetCurrentFrameSegmentationMap(const ObuFrameHeader& frame_header,
+  void SetCurrentFrameSegmentationMap(RefCountedBufferPtr* current_frame,
+                                      const ObuFrameHeader& frame_header,
                                       const SegmentationMap* prev_segment_ids);
   // Applies film grain synthesis to the |displayable_frame_ptr| and returns the
   // film grain applied frame. |status| is the output status of this function

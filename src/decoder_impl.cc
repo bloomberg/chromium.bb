@@ -48,24 +48,6 @@ namespace {
 constexpr int kMaxBlockWidth4x4 = 32;
 constexpr int kMaxBlockHeight4x4 = 32;
 
-// A cleanup helper class that releases the frame buffer reference held in
-// |frame| in the destructor.
-class RefCountedBufferPtrCleanup {
- public:
-  explicit RefCountedBufferPtrCleanup(RefCountedBufferPtr* frame)
-      : frame_(*frame) {}
-
-  // Not copyable or movable.
-  RefCountedBufferPtrCleanup(const RefCountedBufferPtrCleanup&) = delete;
-  RefCountedBufferPtrCleanup& operator=(const RefCountedBufferPtrCleanup&) =
-      delete;
-
-  ~RefCountedBufferPtrCleanup() { frame_ = nullptr; }
-
- private:
-  RefCountedBufferPtr& frame_;
-};
-
 // Computes the bottom border size in pixels. If CDEF or loop restoration is
 // enabled, adds extra border pixels to compensate for the buffer shift in the
 // PostFilter constructor.
@@ -78,7 +60,8 @@ int GetBottomBorderPixels(const bool do_cdef, const bool do_restoration) {
 
 }  // namespace
 
-void DecoderState::UpdateReferenceFrames(int refresh_frame_flags) {
+void DecoderState::UpdateReferenceFrames(
+    const RefCountedBufferPtr& current_frame, int refresh_frame_flags) {
   for (int ref_index = 0, mask = refresh_frame_flags; mask != 0;
        ++ref_index, mask >>= 1) {
     if ((mask & 1) != 0) {
@@ -149,7 +132,6 @@ DecoderImpl::~DecoderImpl() {
   // The frame buffer references need to be released before |buffer_pool_| is
   // destroyed.
   ReleaseOutputFrame();
-  assert(state_.current_frame == nullptr);
   for (auto& reference_frame : state_.reference_frame) {
     reference_frame = nullptr;
   }
@@ -180,18 +162,13 @@ StatusCode DecoderImpl::EnqueueFrame(const uint8_t* data, size_t size,
 }
 
 // DequeueFrame() follows the following policy to avoid holding unnecessary
-// frame buffer references in state_.current_frame and output_frame_.
-//
-// 1. state_.current_frame must be null when DequeueFrame() returns (success
-// or failure).
-//
-// 2. output_frame_ must be null when DequeueFrame() returns false.
+// frame buffer references in output_frame_: output_frame_ must be null when
+// DequeueFrame() returns false.
 StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   if (out_ptr == nullptr) {
     LIBGAV1_DLOG(ERROR, "Invalid argument: out_ptr == nullptr.");
     return kStatusInvalidArgument;
   }
-  assert(state_.current_frame == nullptr);
   // We assume a call to DequeueFrame() indicates that the caller is no longer
   // using the previous output frame, so we can release it.
   ReleaseOutputFrame();
@@ -210,17 +187,15 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   if (state_.has_sequence_header) {
     obu->set_sequence_header(state_.sequence_header);
   }
-  RefCountedBufferPtrCleanup current_frame_cleanup(&state_.current_frame);
+  RefCountedBufferPtr current_frame;
   RefCountedBufferPtr displayable_frame;
   StatusCode status;
   while (obu->HasData()) {
-    RefCountedBufferPtr current_frame;
     status = obu->ParseOneFrame(&current_frame);
     if (status != kStatusOk) {
       LIBGAV1_DLOG(ERROR, "Failed to parse OBU.");
       return status;
     }
-    state_.current_frame = std::move(current_frame);
     if (std::find_if(obu->obu_headers().begin(), obu->obu_headers().end(),
                      [](const ObuHeader& obu_header) {
                        return obu_header.type == kObuSequenceHeader;
@@ -272,13 +247,15 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
         LIBGAV1_DLOG(ERROR, "Error when getting FrameScratchBuffer.");
         return kStatusOutOfMemory;
       }
-      status = DecodeTiles(obu.get(), frame_scratch_buffer.get());
+      status =
+          DecodeTiles(obu.get(), frame_scratch_buffer.get(), &current_frame);
       frame_scratch_buffer_pool_.Release(std::move(frame_scratch_buffer));
       if (status != kStatusOk) {
         return status;
       }
     }
-    state_.UpdateReferenceFrames(obu->frame_header().refresh_frame_flags);
+    state_.UpdateReferenceFrames(current_frame,
+                                 obu->frame_header().refresh_frame_flags);
     if (obu->frame_header().show_frame ||
         obu->frame_header().show_existing_frame) {
       if (displayable_frame != nullptr) {
@@ -291,7 +268,7 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
             WARNING,
             "More than one displayable frame found. Using the last one.");
       }
-      displayable_frame = std::move(state_.current_frame);
+      displayable_frame = std::move(current_frame);
       RefCountedBufferPtr film_grain_frame =
           ApplyFilmGrain(obu->sequence_header(), obu->frame_header(),
                          &displayable_frame, &status);
@@ -313,17 +290,18 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   return kStatusOk;
 }
 
-bool DecoderImpl::AllocateCurrentFrame(const ObuFrameHeader& frame_header,
+bool DecoderImpl::AllocateCurrentFrame(RefCountedBufferPtr* const current_frame,
+                                       const ObuFrameHeader& frame_header,
                                        int left_border, int right_border,
                                        int top_border, int bottom_border) {
   const ColorConfig& color_config = state_.sequence_header.color_config;
-  state_.current_frame->set_chroma_sample_position(
-      color_config.chroma_sample_position);
-  return state_.current_frame->Realloc(
-      color_config.bitdepth, color_config.is_monochrome,
-      frame_header.upscaled_width, frame_header.height,
-      color_config.subsampling_x, color_config.subsampling_y, left_border,
-      right_border, top_border, bottom_border);
+  (*current_frame)
+      ->set_chroma_sample_position(color_config.chroma_sample_position);
+  return (*current_frame)
+      ->Realloc(color_config.bitdepth, color_config.is_monochrome,
+                frame_header.upscaled_width, frame_header.height,
+                color_config.subsampling_x, color_config.subsampling_y,
+                left_border, right_border, top_border, bottom_border);
 }
 
 StatusCode DecoderImpl::CopyFrameToOutputBuffer(
@@ -386,7 +364,9 @@ void DecoderImpl::ReleaseOutputFrame() {
 }
 
 StatusCode DecoderImpl::DecodeTiles(
-    const ObuParser* obu, FrameScratchBuffer* const frame_scratch_buffer) {
+    const ObuParser* obu, FrameScratchBuffer* const frame_scratch_buffer,
+    RefCountedBufferPtr* const current_frame_ptr) {
+  RefCountedBufferPtr& current_frame = *current_frame_ptr;
   const ObuSequenceHeader& sequence_header = obu->sequence_header();
   const ObuFrameHeader& frame_header = obu->frame_header();
   if (PostFilter::DoDeblock(frame_header, settings_.post_filter_mask)) {
@@ -416,8 +396,8 @@ StatusCode DecoderImpl::DecodeTiles(
   // Use kBorderPixels for the left, right, and top borders. Only the bottom
   // border may need to be bigger.
   const int bottom_border = GetBottomBorderPixels(do_cdef, do_restoration);
-  if (!AllocateCurrentFrame(frame_header, kBorderPixels, kBorderPixels,
-                            kBorderPixels, bottom_border)) {
+  if (!AllocateCurrentFrame(&current_frame, frame_header, kBorderPixels,
+                            kBorderPixels, kBorderPixels, bottom_border)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");
     return kStatusOutOfMemory;
   }
@@ -649,7 +629,7 @@ StatusCode DecoderImpl::DecodeTiles(
       frame_header, sequence_header, &frame_scratch_buffer->loop_filter_mask,
       frame_scratch_buffer->cdef_index,
       frame_scratch_buffer->inter_transform_sizes, &loop_restoration_info,
-      &block_parameters_holder, state_.current_frame->buffer(),
+      &block_parameters_holder, current_frame->buffer(),
       &frame_scratch_buffer->deblock_buffer, dsp,
       threading_strategy_.post_filter_thread_pool(),
       frame_scratch_buffer->threaded_window_buffer.get(),
@@ -686,7 +666,7 @@ StatusCode DecoderImpl::DecodeTiles(
 
       std::unique_ptr<Tile> tile(new (std::nothrow) Tile(
           tile_number, tile_group.data + byte_offset, tile_size,
-          sequence_header, frame_header, state_.current_frame.get(),
+          sequence_header, frame_header, current_frame.get(),
           state_.reference_frame_sign_bias, state_.reference_frame,
           &frame_scratch_buffer->motion_field, state_.reference_order_hint,
           wedge_masks_, frame_scratch_buffer->symbol_decoder_context,
@@ -798,8 +778,7 @@ StatusCode DecoderImpl::DecodeTiles(
   if (frame_header.enable_frame_end_update_cdf) {
     frame_scratch_buffer->symbol_decoder_context = saved_symbol_decoder_context;
   }
-  state_.current_frame->SetFrameContext(
-      frame_scratch_buffer->symbol_decoder_context);
+  current_frame->SetFrameContext(frame_scratch_buffer->symbol_decoder_context);
   if (post_filter.DoDeblock() && kDeblockFilterBitMask) {
     frame_scratch_buffer->loop_filter_mask.Build(
         sequence_header, frame_header, obu->tile_groups().front().start,
@@ -809,24 +788,26 @@ StatusCode DecoderImpl::DecodeTiles(
   if (threading_strategy_.post_filter_thread_pool() != nullptr) {
     post_filter.ApplyFilteringThreaded();
   }
-  SetCurrentFrameSegmentationMap(frame_header, prev_segment_ids);
+  SetCurrentFrameSegmentationMap(&current_frame, frame_header,
+                                 prev_segment_ids);
   return kStatusOk;
 }
 
 void DecoderImpl::SetCurrentFrameSegmentationMap(
+    RefCountedBufferPtr* const current_frame,
     const ObuFrameHeader& frame_header,
     const SegmentationMap* prev_segment_ids) {
   if (!frame_header.segmentation.enabled) {
     // All segment_id's are 0.
-    state_.current_frame->segmentation_map()->Clear();
+    (*current_frame)->segmentation_map()->Clear();
   } else if (!frame_header.segmentation.update_map) {
     // Copy from prev_segment_ids.
     if (prev_segment_ids == nullptr) {
       // Treat a null prev_segment_ids pointer as if it pointed to a
       // segmentation map containing all 0s.
-      state_.current_frame->segmentation_map()->Clear();
+      (*current_frame)->segmentation_map()->Clear();
     } else {
-      state_.current_frame->segmentation_map()->CopyFrom(*prev_segment_ids);
+      (*current_frame)->segmentation_map()->CopyFrom(*prev_segment_ids);
     }
   }
 }
