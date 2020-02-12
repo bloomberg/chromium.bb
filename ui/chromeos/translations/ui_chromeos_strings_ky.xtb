@@ -330,7 +330,7 @@
 <translation id="497244430928947428">Малаям баскычтобу (Фонетикалык)</translation>
 <translation id="4973523518332075481">Аталышы <ph name="MAX_LENGTH" /> же андан аз символдон турушу керек</translation>
 <translation id="4973970068702235170">Кысылбай калды, күтүүсүз ката кетти: <ph name="ERROR_MESSAGE" /></translation>
-<translation id="4988205478593450158">"<ph name="FILE_NAME" />" файлын чын эле жок кыласызбы?</translation>
+<translation id="4988205478593450158">"<ph name="FILE_NAME" />" файлын чын эле өчүрөсүзбү?</translation>
 <translation id="498902553138568924">Кызыл көпөлөк</translation>
 <translation id="4992066212339426712">Үнүн чыгаруу</translation>
 <translation id="5004584466530475658"><ph name="FILE_COUNT" /> жаңы сүрөт</translation>
@@ -403,7 +403,7 @@
 <translation id="5678784840044122290">Linux колдонмосу Терминалыңызда жеткиликтүү болуп, Жүргүзгүчтө анын сүрөтчөсү көрүнүшү мүмкүн.</translation>
 <translation id="5686799162999241776"><ph name="BEGIN_BOLD" />Архивден же виртуалдуу дисктен ажыратуу мүмкүн эмес<ph name="END_BOLD" />
    <ph name="LINE_BREAKS" />
-   Архивдеги же виртуалдуу дисктеги бардык файлдарды жаап, кайра аракет кылыңыз.</translation>
+   Архивдеги же виртуалдуу дисктеги бардык файлдарды жаап, кайталап көрүңүз.</translation>
 <translation id="5691596662111998220">Оой, <ph name="FILE_NAME" /> эми жок.</translation>
 <translation id="5700087501958648444">Аудио файл тууралуу маалымат</translation>
 <translation id="5731409020711461763">1 жаңы сүрөт</translation>

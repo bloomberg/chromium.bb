@@ -4554,7 +4554,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8217516105848565518">Dit beleid is beëindigd. Gebruik in plaats daarvan RemoteAccessHostDomainList.</translation>
 <translation id="8236323460664833038">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop blokkeerbare (actieve) gecombineerde content (zoals HTTP-content op een HTTPS-site) mag worden weergegeven en waarvoor optioneel blokkeerbare gecombineerde content wordt uitgeschakeld.
 
-          Als dit beleid niet is ingesteld, wordt blokkeerbare gecombineerde content geblokkeerd en wordt optioneel blokkeerbare gecombineerde content geüpgraded en kunnen gebruikers uitzonderingen instellen om dergelijke content toe te staan voor specifieke sites.</translation>
+          Als dit beleid niet is ingesteld, wordt blokkeerbare gecombineerde content geblokkeerd en wordt optioneel blokkeerbare gecombineerde content geüpgraded. Bovendien kunnen gebruikers uitzonderingen instellen om dergelijke content toe te staan voor specifieke sites.</translation>
 <translation id="8244171102276095471">RC4-coderingssuites in TLS inschakelen</translation>
 <translation id="8244525275280476362">Maximum vertraging voor ophalen na ongeldigverklaring voor beleid</translation>
 <translation id="8256688113167012935">Hiermee wordt de weergave van de accountnaam in <ph name="PRODUCT_OS_NAME" /> op het aanmeldscherm beheerd voor het bijbehorende lokale account van het apparaat.

@@ -225,7 +225,7 @@
 <translation id="2587052924345400782">يتوفر إصدار أحدث</translation>
 <translation id="2593272815202181319">أحادي المسافة</translation>
 <translation id="2612676031748830579">رقم البطاقة</translation>
-<translation id="2621115761605608342">السماح لموقع ويب معيّن بتشغيل جافا سكريبت</translation>
+<translation id="2621115761605608342">‏السماح لموقع ويب معيّن بتشغيل JavaScript</translation>
 <translation id="2625189173221582860">تم نسخ كلمة المرور</translation>
 <translation id="2631006050119455616">تم توفيرها</translation>
 <translation id="2647434099613338025">إضافة لغة</translation>
@@ -234,7 +234,7 @@
 <translation id="2653659639078652383">إرسال</translation>
 <translation id="2677748264148917807">الخروج</translation>
 <translation id="2704606927547763573">تم النسخ</translation>
-<translation id="2707726405694321444">تحديث الصفحة</translation>
+<translation id="2707726405694321444">إعادة تحميل الصفحة</translation>
 <translation id="2709516037105925701">الملء التلقائي</translation>
 <translation id="2717722538473713889">عنوان البريد الإلكتروني</translation>
 <translation id="2728754400939377704">الترتيب حسب الموقع</translation>
@@ -376,7 +376,7 @@
 <translation id="3810838688059735925">الفيديوهات</translation>
 <translation id="3810973564298564668">إدارة محرّكات البحث</translation>
 <translation id="381841723434055211">أرقام الهواتف</translation>
-<translation id="3819178904835489326">تم إلغاء <ph name="NUMBER_OF_DOWNLOADS" /> من التنزيلات</translation>
+<translation id="3819178904835489326">تم إلغاء <ph name="NUMBER_OF_DOWNLOADS" /> من عمليات التنزيل</translation>
 <translation id="3822502789641063741">هل تريد محو مساحة تخزين المواقع؟</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
 <translation id="3859306556332390985">الانتقال للأمام</translation>
@@ -579,7 +579,7 @@
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5324858694974489420">الإعدادات الأبوية</translation>
 <translation id="5327248766486351172">الاسم</translation>
-<translation id="5335288049665977812">السماح لمواقع الويب بتشغيل جافا سكريبت (موصى به)</translation>
+<translation id="5335288049665977812">‏السماح لمواقع الويب بتشغيل JavaScript (موصى به)</translation>
 <translation id="5342314432463739672">طلبات الإذن</translation>
 <translation id="534295439873310000">‏أجهزة NFC</translation>
 <translation id="5357811892247919462">تم تلقي علامة تبويب</translation>
@@ -625,12 +625,12 @@
 <translation id="5595485650161345191">تعديل العنوان</translation>
 <translation id="5596627076506792578">خيارات إضافية</translation>
 <translation id="5599455543593328020">وضع "التصفّح المتخفي"</translation>
-<translation id="5620928963363755975">العثور على الملفات والصفحات في التنزيلات من الزر "مزيد من الخيارات"</translation>
+<translation id="5620928963363755975">العثور على الملفات والصفحات في "المحتوى الذي تم تنزيله" من الزر "مزيد من الخيارات"</translation>
 <translation id="5626134646977739690">الاسم:</translation>
 <translation id="5639724618331995626">السماح بجميع المواقع</translation>
 <translation id="5648166631817621825">آخر 7 أيام</translation>
-<translation id="5649053991847567735">التنزيلات التلقائية</translation>
-<translation id="5655963694829536461">البحث في التنزيلات</translation>
+<translation id="5649053991847567735">عمليات التنزيل التلقائية</translation>
+<translation id="5655963694829536461">البحث في صفحة عمليات التنزيل</translation>
 <translation id="5659593005791499971">البريد الإلكتروني</translation>
 <translation id="5665379678064389456">إنشاء حدث في <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">تجاوز طلب موقع الويب لمنع التكبير</translation>
@@ -675,7 +675,7 @@
 <translation id="5942872142862698679">‏استخدام محرك Google للبحث</translation>
 <translation id="5952764234151283551">‏يُرسِل عنوان URL لصفحة تحاول الوصول إليها إلى Google.</translation>
 <translation id="5956665950594638604">‏فتح مركز مساعدة Chrome في علامة تبويب جديدة</translation>
-<translation id="5958275228015807058">العثور على الملفات والصفحات في التنزيلات</translation>
+<translation id="5958275228015807058">العثور على الملفات والصفحات في مجلد "المحتوى الذي تم تنزيله"</translation>
 <translation id="5962718611393537961">النقر للتصغير</translation>
 <translation id="6000066717592683814">‏الاستمرار في استخدام محرك Google</translation>
 <translation id="6005538289190791541">كلمة المرور المُقترحَة</translation>
@@ -690,7 +690,7 @@
 <translation id="60923314841986378">عدد الساعات المتبقية: <ph name="HOURS" /></translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6111020039983847643">حجم البيانات المستخدَمة</translation>
-<translation id="6112702117600201073">يتم الآن تحديث الصفحة</translation>
+<translation id="6112702117600201073">يتم الآن إعادة تحميل الصفحة</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
 <translation id="6140912465461743537">الدولة/الإقليم</translation>
 <translation id="614940544461990577">يمكنك محاولة:</translation>
@@ -889,7 +889,7 @@
 <translation id="7498271377022651285">يُرجى الانتظار...</translation>
 <translation id="7514365320538308">تنزيل</translation>
 <translation id="751961395872307827">يتعذّر الاتصال بالموقع</translation>
-<translation id="7521387064766892559">جافا سكريبت</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="7542481630195938534">يتعذر الحصول على الاقتراحات</translation>
 <translation id="7559975015014302720">تم إيقاف الوضع البسيط</translation>
 <translation id="7562080006725997899">جارٍ محو بيانات التصفح</translation>
@@ -994,7 +994,7 @@
 <translation id="8260126382462817229">محاولة تسجيل الدخول مرة أخرى</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8266862848225348053">موقع التنزيل</translation>
-<translation id="8274165955039650276">الاطِّلاع على التنزيلات</translation>
+<translation id="8274165955039650276">الاطِّلاع على المحتوى الذي تم تنزيله</translation>
 <translation id="8284326494547611709">الترجمة والشرح</translation>
 <translation id="8300705686683892304">تتم الإدارة من خلال التطبيق</translation>
 <translation id="8310344678080805313">علامات التبويب القياسية</translation>
@@ -1061,7 +1061,7 @@
 <translation id="8758557275681689734">الاطّلاع على جميع علامات التبويب المفتوحة</translation>
 <translation id="8788265440806329501">يتم إغلاق سجلّ التنقُّل.</translation>
 <translation id="8788968922598763114">إعادة فتح آخر علامة تبويب تم إغلاقها</translation>
-<translation id="8801436777607969138">حظر جافا سكريبت لموقع ويب مُعيَّن.</translation>
+<translation id="8801436777607969138">‏حظر JavaScript لموقع ويب مُعيَّن.</translation>
 <translation id="8812260976093120287">يمكنك على مواقع ويب معيّنة الدفع باستخدام تطبيقات الدفع المتوافقة أعلاه على جهازك.</translation>
 <translation id="8816026460808729765">يمكنك حظر مواقع الويب من الوصول إلى أجهزة الاستشعار.</translation>
 <translation id="8816439037877937734">‏سيتم فتح <ph name="APP_NAME" /> في Chrome. بالمتابعة، أنت توافق على <ph name="BEGIN_LINK1" />بنود الخدمة<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />إشعار الخصوصية<ph name="END_LINK2" /> في Chrome، و<ph name="BEGIN_LINK3" />إشعار الخصوصية لحسابات Google المُدارة من خلال Family Link<ph name="END_LINK3" />.</translation>

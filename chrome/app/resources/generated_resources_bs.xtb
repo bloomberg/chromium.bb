@@ -2035,7 +2035,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3850914401008572843"><ph name="ORIGIN" /> ne može otvoriti ovaj folder jer on sadrži sistemske fajlove</translation>
 <translation id="3851428669031642514">Učitaj nesigurne skripte</translation>
 <translation id="3854599674806204102">Izaberite opciju</translation>
-<translation id="3854976556788175030">Držač za izlaz papira je pun</translation>
+<translation id="3854976556788175030">Ladica za izlaz papira je puna</translation>
 <translation id="3855441664322950881">Zapakiraj ekstenziju</translation>
 <translation id="3855676282923585394">Uvezite oznake i postavke…</translation>
 <translation id="3856800405688283469">Izbor vremenske zone</translation>
@@ -4113,7 +4113,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6923132443355966645">Kliznite/kliknite</translation>
 <translation id="6923633482430812883">Greška prilikom aktiviranja dijeljenja. Provjerite podržava li server fajlova na koji se povezujete SMBv2 ili noviju verziju.</translation>
 <translation id="6930036377490597025">Vanjski sigurnosni ključ ili ugrađeni senzor</translation>
-<translation id="6935286146439255109">Nedostaje držač papira</translation>
+<translation id="6935286146439255109">Nedostaje ladica za papir</translation>
 <translation id="693807610556624488">Operacija zapisivanja premašuje maksimalnu duljinu atributa za uređaj: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="6938386202199793006">Imate 1 sačuvani štampač.</translation>
 <translation id="6941937518557314510">Prijavite se na <ph name="TOKEN_NAME" /> da autentificirate host računar <ph name="HOST_NAME" /> pomoću svoje potvrde.</translation>
