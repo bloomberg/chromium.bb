@@ -1,15 +1,17 @@
 # WebGPU CTS
 
-The WebGPU CTS is written in TypeScript, and builds into two directories:
-
-- `out/`: Built framework and test files, needed to run standalone or command line.
-- `out-wpt/`: Build directory for export into WPT. Contains WPT runner and a copy of just the needed files from `out/`.
+## >>> [**Contribution Guidelines**](https://github.com/gpuweb/gpuweb/wiki/WebGPU-CTS-guidelines) <<<
 
 ## Docs
 
 - [Terminology used in the test framework](docs/terms.md)
 
 ## Developing
+
+The WebGPU CTS is written in TypeScript, and builds into two directories:
+
+- `out/`: Built framework and test files, needed to run standalone or command line.
+- `out-wpt/`: Build directory for export into WPT. Contains WPT runner and a copy of just the needed files from `out/`.
 
 ### Setup
 
