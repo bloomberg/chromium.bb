@@ -824,12 +824,245 @@ static INLINE int detect_gf_cut(AV1_COMP *cpi, int frame_index, int cur_start,
   return 0;
 }
 
+#define MAX_PAD_GF_CHECK 6  // padding length to check for gf length
+#define AVG_SI_THRES 0.6    // thres for average silouette
+#define GF_SHRINK_OUTPUT 0  // print output for gf length decision
+int determine_high_err_gf(double *errs, int *is_high, double *si, int len,
+                          double *ratio, int gf_start, int gf_end,
+                          int before_pad) {
+  (void)gf_start;
+  (void)gf_end;
+  (void)before_pad;
+  // alpha and beta controls the threshold placement
+  // e.g. a smaller alpha makes the lower group more rigid
+  const double alpha = 0.5;
+  const double beta = 1 - alpha;
+  double mean = 0;
+  double mean_low = 0;
+  double mean_high = 0;
+  double prev_mean_low = 0;
+  double prev_mean_high = 0;
+  int count_low = 0;
+  int count_high = 0;
+  // calculate mean of errs
+  for (int i = 0; i < len; i++) {
+    mean += errs[i];
+  }
+  mean /= len;
+  // separate into two initial groups with greater / lower than mean
+  for (int i = 0; i < len; i++) {
+    if (errs[i] <= mean) {
+      is_high[i] = 0;
+      count_low++;
+      prev_mean_low += errs[i];
+    } else {
+      is_high[i] = 1;
+      count_high++;
+      prev_mean_high += errs[i];
+    }
+  }
+  prev_mean_low /= count_low;
+  prev_mean_high /= count_high;
+  // kmeans to refine
+  int count = 0;
+  while (count < 10) {
+    // re-group
+    mean_low = 0;
+    mean_high = 0;
+    count_low = 0;
+    count_high = 0;
+    double thres = prev_mean_low * alpha + prev_mean_high * beta;
+    for (int i = 0; i < len; i++) {
+      if (errs[i] <= thres) {
+        is_high[i] = 0;
+        count_low++;
+        mean_low += errs[i];
+      } else {
+        is_high[i] = 1;
+        count_high++;
+        mean_high += errs[i];
+      }
+    }
+    mean_low /= count_low;
+    mean_high /= count_high;
+
+    // break if not changed much
+    if (fabs((mean_low - prev_mean_low) / (prev_mean_low + 0.00001)) <
+            0.00001 &&
+        fabs((mean_high - prev_mean_high) / (prev_mean_high + 0.00001)) <
+            0.00001)
+      break;
+
+    // update means
+    prev_mean_high = mean_high;
+    prev_mean_low = mean_low;
+
+    count++;
+  }
+
+  // count how many jumps of group changes
+  int num_change = 0;
+  for (int i = 0; i < len - 1; i++) {
+    if (is_high[i] != is_high[i + 1]) num_change++;
+  }
+
+  // get silhouette as a measure of the classification quality
+  double avg_si = 0;
+  // ai: avg dist of its own class, bi: avg dist to the other class
+  double ai, bi;
+  if (count_low > 1 && count_high > 1) {
+    for (int i = 0; i < len; i++) {
+      ai = 0;
+      bi = 0;
+      // calculate average distance to everyone in the same group
+      // and in the other group
+      for (int j = 0; j < len; j++) {
+        if (i == j) continue;
+        if (is_high[i] == is_high[j]) {
+          ai += fabs(errs[i] - errs[j]);
+        } else {
+          bi += fabs(errs[i] - errs[j]);
+        }
+      }
+      if (is_high[i] == 0) {
+        ai = ai / (count_low - 1);
+        bi = bi / count_high;
+      } else {
+        ai = ai / (count_high - 1);
+        bi = bi / count_low;
+      }
+      if (ai <= bi) {
+        si[i] = 1 - ai / (bi + 0.00001);
+      } else {
+        si[i] = bi / (ai + 0.00001) - 1;
+      }
+      avg_si += si[i];
+    }
+    avg_si /= len;
+  }
+
+  int reset = 0;
+  *ratio = mean_high / (mean_low + 0.00001);
+  // if the two groups too similar, or
+  // if too many numbers of changes, or
+  // silhouette is too small, not confident
+  // reset everything to 0 later so we fallback to the original decision
+  if (*ratio < 1.3 || num_change > AOMMAX(len / 3, 6) ||
+      avg_si < AVG_SI_THRES) {
+    reset = 1;
+  }
+
+#if GF_SHRINK_OUTPUT
+  printf("\n");
+  for (int i = 0; i < len; i++) {
+    printf("%d: err %.1f, ishigh %d, si %.2f, (i=%d)\n",
+           gf_start + i - before_pad, errs[i], is_high[i], si[i], gf_end);
+  }
+  printf(
+      "count: %d, mean_high: %.1f, mean_low: %.1f, avg_si: %.2f, num_change: "
+      "%d, ratio %.2f, reset: %d\n",
+      count, mean_high, mean_low, avg_si, num_change,
+      mean_high / (mean_low + 0.000001), reset);
+#endif
+
+  if (reset) {
+    memset(is_high, 0, sizeof(is_high[0]) * len);
+    memset(si, 0, sizeof(si[0]) * len);
+  }
+  return reset;
+}
+
 #define GROUP_ADAPTIVE_MAXQ 1
 #if GROUP_ADAPTIVE_MAXQ
 #define RC_FACTOR_MIN 0.75
 #define RC_FACTOR_MAX 1.25
 #endif  // GROUP_ADAPTIVE_MAXQ
 #define MIN_FWD_KF_INTERVAL 8
+#define MIN_SHRINK_LEN 8      // the minimum length of gf if we are shrinking
+#define SI_HIGH AVG_SI_THRES  // high quality classification
+#define SI_LOW 0.3            // very unsure classification
+// this function finds an low error frame previously to the current last frame
+// in the gf group, and set the last frame to it.
+// The resulting last frame is then returned by *cur_last_ptr
+// *cur_start_ptr and cut_pos[n] could also change due to shrinking
+// previous gf groups
+void set_last_prev_low_err(int *cur_start_ptr, int *cur_last_ptr, int *cut_pos,
+                           int count_cuts, int before_pad, double ratio,
+                           int *is_high, double *si, int prev_lows) {
+  int n;
+  int cur_start = *cur_start_ptr;
+  int cur_last = *cur_last_ptr;
+  for (n = cur_last; n >= cur_start + MIN_SHRINK_LEN; n--) {
+    // try to find a point that is very probable to be good
+    if (is_high[n - cur_start + before_pad] == 0 &&
+        si[n - cur_start + before_pad] > SI_HIGH) {
+      *cur_last_ptr = n;
+      return;
+    }
+  }
+  // could not find a low-err point, then let's try find an "unsure"
+  // point at least
+  for (n = cur_last; n >= cur_start + MIN_SHRINK_LEN; n--) {
+    if ((is_high[n - cur_start + before_pad] == 0) ||
+        (is_high[n - cur_start + before_pad] &&
+         si[n - cur_start + before_pad] < SI_LOW)) {
+      *cur_last_ptr = n;
+      return;
+    }
+  }
+  if (prev_lows) {
+    // try with shrinking previous all_zero interval
+    for (n = cur_start + MIN_SHRINK_LEN - 1; n > cur_start; n--) {
+      if (is_high[n - cur_start + before_pad] == 0 &&
+          si[n - cur_start + before_pad] > SI_HIGH) {
+        int tentative_start = n - MIN_SHRINK_LEN;
+        // check if the previous interval can shrink this much
+        int available =
+            tentative_start - cut_pos[count_cuts - 2] > MIN_SHRINK_LEN &&
+            cur_start - tentative_start < prev_lows;
+        // shrinking too agressively may worsen performance
+        // set stricter thres for shorter length
+        double ratio_thres =
+            1.0 * (cur_start - tentative_start) / (double)(MIN_SHRINK_LEN) +
+            1.0;
+
+        if (available && (ratio > ratio_thres)) {
+          cut_pos[count_cuts - 1] = tentative_start;
+          *cur_start_ptr = tentative_start;
+          *cur_last_ptr = n;
+          return;
+        }
+      }
+    }
+  }
+  if (prev_lows) {
+    // try with shrinking previous all_zero interval with unsure points
+    for (n = cur_start + MIN_SHRINK_LEN - 1; n > cur_start; n--) {
+      if ((is_high[n - cur_start + before_pad] == 0) ||
+          (is_high[n - cur_start + before_pad] &&
+           si[n - cur_start + before_pad] < SI_LOW)) {
+        int tentative_start = n - MIN_SHRINK_LEN;
+        // check if the previous interval can shrink this much
+        int available =
+            tentative_start - cut_pos[count_cuts - 2] > MIN_SHRINK_LEN &&
+            cur_start - tentative_start < prev_lows;
+        // shrinking too agressively may worsen performance
+        double ratio_thres =
+            1.0 * (cur_start - tentative_start) / (double)(MIN_SHRINK_LEN) +
+            1.0;
+
+        if (available && (ratio > ratio_thres)) {
+          cut_pos[count_cuts - 1] = tentative_start;
+          *cur_start_ptr = tentative_start;
+          *cur_last_ptr = n;
+          return;
+        }
+      }
+    }
+  }  // prev_lows
+  return;
+}
+
 // This function decides the gf group length of future frames in batch
 // rc->gf_intervals is modified to store the group lengths
 static void calculate_gf_length(AV1_COMP *cpi) {
@@ -875,6 +1108,7 @@ static void calculate_gf_length(AV1_COMP *cpi) {
   int count_cuts = 1;
   int cur_start = 0, cur_last;
   int cut_here;
+  int prev_lows = 0;
   while (count_cuts < max_intervals + 1) {
     ++i;
 
@@ -923,7 +1157,45 @@ static void calculate_gf_length(AV1_COMP *cpi) {
     }
     if (cut_here) {
       cur_last = i - 1;  // the current last frame in the gf group
+      // only try shrinking if interval smaller than active_max_gf_interval
+      if (cur_last - cur_start <= active_max_gf_interval) {
+        // determine in the current decided gop the higher and lower errs
+        int n;
+        double ratio;
 
+        // load neighboring coded errs
+        int is_high[MAX_GF_INTERVAL + 1 + MAX_PAD_GF_CHECK * 2] = { 0 };
+        double errs[MAX_GF_INTERVAL + 1 + MAX_PAD_GF_CHECK * 2] = { 0 };
+        double si[MAX_GF_INTERVAL + 1 + MAX_PAD_GF_CHECK * 2] = { 0 };
+        int before_pad = AOMMIN(MAX_PAD_GF_CHECK, cur_start - (cur_start == 0));
+        int after_pad =
+            AOMMIN(MAX_PAD_GF_CHECK, rc->frames_to_key - cur_last - 1);
+        for (n = cur_start - before_pad; n <= cur_last + after_pad; n++) {
+          errs[n + before_pad - cur_start] = (start_pos + n - 1)->coded_error;
+        }
+        const int len = before_pad + after_pad + cur_last - cur_start + 1;
+        const int reset = determine_high_err_gf(
+            errs, is_high, si, len, &ratio, cur_start, cur_last, before_pad);
+
+        // if the current frame may have high error, try shrinking
+        if (is_high[cur_last - cur_start + before_pad] == 1 ||
+            (!reset && si[cur_last - cur_start + before_pad] < SI_LOW)) {
+          // try not to cut in high err area
+          set_last_prev_low_err(&cur_start, &cur_last, cut_pos, count_cuts,
+                                before_pad, ratio, is_high, si, prev_lows);
+        }  // if current frame high error
+        // count how many trailing lower error frames we have in this decided
+        // gf group
+        prev_lows = 0;
+        for (n = cur_last; n > cur_start; n--) {
+          if (is_high[n - cur_start + before_pad] == 0 &&
+              (si[n - cur_start + before_pad] > SI_HIGH || reset)) {
+            prev_lows++;
+          } else {
+            break;
+          }
+        }
+      }
       cut_pos[count_cuts] = cur_last;
       count_cuts++;
 
@@ -952,6 +1224,19 @@ static void calculate_gf_length(AV1_COMP *cpi) {
   }
   rc->cur_gf_index = 0;
   twopass->stats_in = start_pos;
+
+#if GF_SHRINK_OUTPUT
+  printf("\nf_to_key: %d, count_cut: %d. ", rc->frames_to_key, count_cuts);
+  for (int n = 0; n < count_cuts; n++) {
+    printf("%d ", cut_pos[n]);
+  }
+  printf("\n");
+
+  for (int n = 0; n < rc->intervals_till_gf_calculate_due; n++) {
+    printf("%d ", rc->gf_intervals[n]);
+  }
+  printf("\n\n");
+#endif
 }
 
 static void define_gf_group_pass0(AV1_COMP *cpi,
