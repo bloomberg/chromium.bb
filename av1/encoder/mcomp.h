@@ -150,13 +150,13 @@ int av1_obmc_full_pixel_search(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                int further_steps, int do_refine,
                                const aom_variance_fn_ptr_t *fn_ptr,
                                const MV *ref_mv, FULLPEL_MV *dst_mv,
-                               int is_second, const search_site_config *cfg);
+                               const search_site_config *cfg);
 int av1_find_best_obmc_sub_pixel_tree_up(
     MACROBLOCK *x, const AV1_COMMON *const cm, int mi_row, int mi_col,
-    MV *bestmv, const MV *ref_mv, int allow_hp, int error_per_bit,
+    const MV *ref_mv, int allow_hp, int error_per_bit,
     const aom_variance_fn_ptr_t *vfp, int forced_stop, int iters_per_step,
-    int *mvjcost, int *mvcost[2], int *distortion, unsigned int *sse1,
-    int is_second, int use_accurate_subpel_search);
+    int *mvjcost, int *mvcost[2], int *distortion, unsigned int *sse1, int w,
+    int h, int use_accurate_subpel_search);
 
 unsigned int av1_compute_motion_cost(const struct AV1_COMP *cpi,
                                      MACROBLOCK *const x, BLOCK_SIZE bsize,

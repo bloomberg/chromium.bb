@@ -134,7 +134,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
       bestsme = av1_obmc_full_pixel_search(
           cpi, x, &start_mv, step_param, sadpb,
           MAX_MVSEARCH_STEPS - 1 - step_param, 1, &cpi->fn_ptr[bsize], &ref_mv,
-          &(x->best_mv.as_fullmv), 0, &cpi->ss_cfg[SS_CFG_SRC]);
+          &(x->best_mv.as_fullmv), &cpi->ss_cfg[SS_CFG_SRC]);
       break;
     default: assert(0 && "Invalid motion mode!\n");
   }
@@ -156,13 +156,13 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
       bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;
   if (use_fractional_mv) {
     int dis; /* TODO: use dis in distortion calculation later. */
+    const int pw = block_size_wide[bsize];
+    const int ph = block_size_high[bsize];
     switch (mbmi->motion_mode) {
       case SIMPLE_TRANSLATION:
         if (cpi->sf.mv_sf.use_accurate_subpel_search) {
           const int try_second = x->second_best_mv.as_int != INVALID_MV &&
                                  x->second_best_mv.as_int != x->best_mv.as_int;
-          const int pw = block_size_wide[bsize];
-          const int ph = block_size_high[bsize];
           const int best_mv_var = cpi->find_fractional_mv_step(
               x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
               x->errorperbit, &cpi->fn_ptr[bsize],
@@ -212,11 +212,11 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
         break;
       case OBMC_CAUSAL:
         av1_find_best_obmc_sub_pixel_tree_up(
-            x, cm, mi_row, mi_col, &x->best_mv.as_mv, &ref_mv,
-            cm->allow_high_precision_mv, x->errorperbit, &cpi->fn_ptr[bsize],
+            x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
+            x->errorperbit, &cpi->fn_ptr[bsize],
             cpi->sf.mv_sf.subpel_force_stop,
             cpi->sf.mv_sf.subpel_iters_per_step, x->nmv_vec_cost,
-            x->mv_cost_stack, &dis, &x->pred_sse[ref], 0,
+            x->mv_cost_stack, &dis, &x->pred_sse[ref], pw, ph,
             cpi->sf.mv_sf.use_accurate_subpel_search);
         break;
       default: assert(0 && "Invalid motion mode!\n");
