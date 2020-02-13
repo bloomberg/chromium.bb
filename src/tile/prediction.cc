@@ -230,8 +230,15 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
   const int y_shift = subsampling_y_[plane];
   const int max_x = (MultiplyBy4(frame_header_.columns4x4) >> x_shift) - 1;
   const int max_y = (MultiplyBy4(frame_header_.rows4x4) >> y_shift) - 1;
-  alignas(kMaxAlignment) Pixel top_row_data[160] = {};
-  alignas(kMaxAlignment) Pixel left_column_data[160] = {};
+  // For performance reasons, do not initialize the following two buffers.
+  alignas(kMaxAlignment) Pixel top_row_data[160];
+  alignas(kMaxAlignment) Pixel left_column_data[160];
+#if LIBGAV1_MSAN
+  if (IsDirectionalMode(mode)) {
+    memset(top_row_data, 0, sizeof(top_row_data));
+    memset(left_column_data, 0, sizeof(left_column_data));
+  }
+#endif
   // Some predictors use |top_row_data| and |left_column_data| with a negative
   // offset to access pixels to the top-left of the current block. So have some
   // space before the arrays to allow populating those without having to move
@@ -251,31 +258,38 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
                 prediction_parameters.angle_delta[GetPlaneType(plane)] *
                     kAngleStep
           : 0;
-  const bool needs_top = use_filter_intra || kNeedsLeftAndTop.Contains(mode) ||
-                         (is_directional_mode && prediction_angle < 180) ||
-                         (mode == kPredictionModeDc && has_top);
+  // Directional prediction requires buffers larger than the width or height.
+  const int top_size = is_directional_mode ? top_and_left_size : width;
+  const int left_size = is_directional_mode ? top_and_left_size : height;
+  const int top_right_size =
+      is_directional_mode ? (has_top_right ? 2 : 1) * width : width;
+  const int bottom_left_size =
+      is_directional_mode ? (has_bottom_left ? 2 : 1) * height : height;
+
   Array2DView<Pixel> buffer(buffer_[plane].rows(),
                             buffer_[plane].columns() / sizeof(Pixel),
                             reinterpret_cast<Pixel*>(&buffer_[plane][0][0]));
+  const bool needs_top = use_filter_intra || kNeedsLeftAndTop.Contains(mode) ||
+                         (is_directional_mode && prediction_angle < 180) ||
+                         (mode == kPredictionModeDc && has_top);
   if (needs_top) {
     // Compute top_row.
     top_row[-1] = (has_top || has_left)
                       ? buffer[has_top ? y - 1 : y][has_left ? x - 1 : x]
                       : (1 << (bitdepth - 1));
     if (!has_top && has_left) {
-      Memset(top_row, buffer[y][x - 1], top_and_left_size);
+      Memset(top_row, buffer[y][x - 1], top_size);
     } else if (!has_top && !has_left) {
-      Memset(top_row, (1 << (bitdepth - 1)) - 1, top_and_left_size);
+      Memset(top_row, (1 << (bitdepth - 1)) - 1, top_size);
     } else {
-      const int top_limit =
-          std::min(max_x - x + 1, (has_top_right ? 2 : 1) * width);
+      const int top_limit = std::min(max_x - x + 1, top_right_size);
       memcpy(top_row, &buffer[y - 1][x], top_limit * sizeof(Pixel));
       // Even though it is safe to call Memset with a size of 0, accessing
       // buffer[y - 1][top_limit - x + 1] is not allowed when this condition is
       // false.
-      if (top_and_left_size - top_limit > 0) {
+      if (top_size - top_limit > 0) {
         Memset(top_row + top_limit, buffer[y - 1][top_limit + x - 1],
-               top_and_left_size - top_limit);
+               top_size - top_limit);
       }
     }
   }
@@ -288,21 +302,20 @@ void Tile::IntraPrediction(const Block& block, Plane plane, int x, int y,
                           ? buffer[has_top ? y - 1 : y][has_left ? x - 1 : x]
                           : (1 << (bitdepth - 1));
     if (!has_left && has_top) {
-      Memset(left_column, buffer[y - 1][x], top_and_left_size);
+      Memset(left_column, buffer[y - 1][x], left_size);
     } else if (!has_left && !has_top) {
-      Memset(left_column, (1 << (bitdepth - 1)) + 1, top_and_left_size);
+      Memset(left_column, (1 << (bitdepth - 1)) + 1, left_size);
     } else {
-      const int left_limit =
-          std::min(max_y - y + 1, (has_bottom_left ? 2 : 1) * height);
+      const int left_limit = std::min(max_y - y + 1, bottom_left_size);
       for (int i = 0; i < left_limit; ++i) {
         left_column[i] = buffer[y + i][x - 1];
       }
       // Even though it is safe to call Memset with a size of 0, accessing
       // buffer[left_limit - y + 1][x - 1] is not allowed when this condition is
       // false.
-      if (top_and_left_size - left_limit > 0) {
+      if (left_size - left_limit > 0) {
         Memset(left_column + left_limit, buffer[left_limit + y - 1][x - 1],
-               top_and_left_size - left_limit);
+               left_size - left_limit);
       }
     }
   }
