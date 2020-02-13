@@ -14,9 +14,10 @@
 #include "cast/common/channel/cast_socket.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/sender/channel/cast_auth_util.h"
+#include "platform/api/task_runner.h"
 #include "platform/api/tls_connection_factory.h"
 #include "platform/base/ip_address.h"
-#include "util/logging.h"
+#include "util/serial_delete_ptr.h"
 
 namespace openscreen {
 namespace cast {
@@ -35,19 +36,25 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
   };
 
   enum class DeviceMediaPolicy {
+    kNone = 0,
     kAudioOnly,
     kIncludesVideo,
   };
 
-  // |client| must outlive |this|.
-  explicit SenderSocketFactory(Client* client);
+  // |client| and |task_runner| must outlive |this|.
+  SenderSocketFactory(Client* client, TaskRunner* task_runner);
   ~SenderSocketFactory();
 
-  void set_factory(TlsConnectionFactory* factory) {
-    OSP_DCHECK(factory);
-    factory_ = factory;
-  }
+  // |factory| cannot be nullptr and must outlive |this|.
+  void set_factory(TlsConnectionFactory* factory);
 
+  // Begins connecting to a Cast device at |endpoint|.  If a successful
+  // connection is made, including device authentication, the new CastSocket
+  // will be passed to |client_|'s OnConnected method.  The new CastSocket will
+  // have its client set to |client|.  If any part of the connection process
+  // fails, |client_|'s OnError method is called instead.  This includes if the
+  // device's media policy, as determined by authentication, is audio-only and
+  // |media_policy| is kIncludesVideo.
   void Connect(const IPEndpoint& endpoint,
                DeviceMediaPolicy media_policy,
                CastSocket::Client* client);
@@ -73,7 +80,7 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
   struct PendingAuth {
     IPEndpoint endpoint;
     DeviceMediaPolicy media_policy;
-    std::unique_ptr<CastSocket> socket;
+    SerialDeletePtr<CastSocket> socket;
     CastSocket::Client* client;
     AuthContext auth_context;
     bssl::UniquePtr<X509> peer_cert;
@@ -91,6 +98,7 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
                  ::cast::channel::CastMessage message) override;
 
   Client* const client_;
+  TaskRunner* const task_runner_;
   TlsConnectionFactory* factory_ = nullptr;
   std::vector<PendingConnection> pending_connections_;
   std::vector<std::unique_ptr<PendingAuth>> pending_auth_;

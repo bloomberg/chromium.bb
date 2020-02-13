@@ -50,6 +50,9 @@ class CastSocket : public TlsConnection::Client {
 
   int32_t socket_id() const { return socket_id_; }
 
+  void set_audio_only(bool audio_only) { audio_only_ = audio_only; }
+  bool audio_only() const { return audio_only_; }
+
   // TlsConnection::Client overrides.
   void OnError(TlsConnection* connection, Error error) override;
   void OnRead(TlsConnection* connection, std::vector<uint8_t> block) override;
@@ -63,6 +66,7 @@ class CastSocket : public TlsConnection::Client {
   const std::unique_ptr<TlsConnection> connection_;
   Client* client_;  // May never be null.
   const int32_t socket_id_;
+  bool audio_only_ = false;
   std::vector<uint8_t> read_buffer_;
   State state_ = State::kOpen;
 };

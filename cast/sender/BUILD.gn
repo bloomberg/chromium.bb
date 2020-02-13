@@ -13,7 +13,6 @@ source_set("channel") {
   ]
 
   deps = [
-    "../../util",
     "../common:channel",
     "../common/certificate/proto:certificate_proto",
     "../common/channel/proto:channel_proto",
@@ -22,6 +21,7 @@ source_set("channel") {
   public_deps = [
     "../../platform",
     "../../third_party/boringssl",
+    "../../util",
     "../common:certificate",
     "../common:channel",
   ]
