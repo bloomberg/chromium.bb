@@ -144,16 +144,40 @@ class GIT(object):
     return results
 
   @staticmethod
+  def GetConfig(cwd, key, default=None):
+    try:
+      return GIT.Capture(['config', key], cwd=cwd)
+    except subprocess2.CalledProcessError:
+      return default
+
+  @staticmethod
+  def GetBranchConfig(cwd, branch, key, default=None):
+    assert branch, 'A branch must be given'
+    key = 'branch.%s.%s' % (branch, key)
+    return GIT.GetConfig(cwd, key, default)
+
+  @staticmethod
+  def SetConfig(cwd, key, value=None):
+    if value is None:
+      args = ['config', '--unset', key]
+    else:
+      args = ['config', key, value]
+    GIT.Capture(args, cwd=cwd)
+
+  @staticmethod
+  def SetBranchConfig(cwd, branch, key, value=None):
+    assert branch, 'A branch must be given'
+    key = 'branch.%s.%s' % (branch, key)
+    GIT.SetConfig(cwd, key, value)
+
+  @staticmethod
   def IsWorkTreeDirty(cwd):
     return GIT.Capture(['status', '-s'], cwd=cwd) != ''
 
   @staticmethod
   def GetEmail(cwd):
     """Retrieves the user email address if known."""
-    try:
-      return GIT.Capture(['config', 'user.email'], cwd=cwd)
-    except subprocess2.CalledProcessError:
-      return ''
+    return GIT.GetConfig(cwd, 'user.email', '')
 
   @staticmethod
   def ShortBranchName(branch):
@@ -171,47 +195,35 @@ class GIT(object):
     return GIT.ShortBranchName(GIT.GetBranchRef(cwd))
 
   @staticmethod
-  def FetchUpstreamTuple(cwd):
+  def GetRemoteBranches(cwd):
+    return GIT.Capture(['branch', '-r'], cwd=cwd).split()
+
+  @staticmethod
+  def FetchUpstreamTuple(cwd, branch=None):
     """Returns a tuple containg remote and remote ref,
        e.g. 'origin', 'refs/heads/master'
     """
-    remote = '.'
-    branch = GIT.GetBranch(cwd)
     try:
-      upstream_branch = GIT.Capture(
-          ['config', '--local', 'branch.%s.merge' % branch], cwd=cwd)
+      branch = branch or GIT.GetBranch(cwd)
     except subprocess2.CalledProcessError:
-      upstream_branch = None
-    if upstream_branch:
-      try:
-        remote = GIT.Capture(
-            ['config', '--local', 'branch.%s.remote' % branch], cwd=cwd)
-      except subprocess2.CalledProcessError:
-        pass
-    else:
-      try:
-        upstream_branch = GIT.Capture(
-            ['config', '--local', 'rietveld.upstream-branch'], cwd=cwd)
-      except subprocess2.CalledProcessError:
-        upstream_branch = None
+      pass
+    if branch:
+      upstream_branch = GIT.GetBranchConfig(cwd, branch, 'merge')
       if upstream_branch:
-        try:
-          remote = GIT.Capture(
-              ['config', '--local', 'rietveld.upstream-remote'], cwd=cwd)
-        except subprocess2.CalledProcessError:
-          pass
-      else:
-        # Else, try to guess the origin remote.
-        remote_branches = GIT.Capture(['branch', '-r'], cwd=cwd).split()
-        if 'origin/master' in remote_branches:
-          # Fall back on origin/master if it exits.
-          remote = 'origin'
-          upstream_branch = 'refs/heads/master'
-        else:
-          # Give up.
-          remote = None
-          upstream_branch = None
-    return remote, upstream_branch
+        remote = GIT.GetBranchConfig(cwd, branch, 'remote', '.')
+        return remote, upstream_branch
+
+    upstream_branch = GIT.GetConfig(cwd, 'rietveld.upstream-branch')
+    if upstream_branch:
+      remote = GIT.GetConfig(cwd, 'rietveld.upstream-remote', '.')
+      return remote, upstream_branch
+
+    # Else, try to guess the origin remote.
+    if 'origin/master' in GIT.GetRemoteBranches(cwd):
+      # Fall back on origin/master if it exits.
+      return 'origin', 'refs/heads/master'
+
+    return None, None
 
   @staticmethod
   def RefToRemoteRef(ref, remote):

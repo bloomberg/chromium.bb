@@ -1194,30 +1194,15 @@ class Changelist(object):
     """Returns a tuple containing remote and remote ref,
        e.g. 'origin', 'refs/heads/master'
     """
-    remote = '.'
-    upstream_branch = _git_get_branch_config_value('merge', branch=branch)
-
-    if upstream_branch:
-      remote = _git_get_branch_config_value('remote', branch=branch)
-    else:
-      upstream_branch = RunGit(['config', 'rietveld.upstream-branch'],
-                               error_ok=True).strip()
-      if upstream_branch:
-        remote = RunGit(['config', 'rietveld.upstream-remote']).strip()
-      else:
-        # Else, try to guess the origin remote.
-        remote_branches = RunGit(['branch', '-r']).split()
-        if 'origin/master' in remote_branches:
-          # Fall back on origin/master if it exits.
-          remote = 'origin'
-          upstream_branch = 'refs/heads/master'
-        else:
-          DieWithError(
-             'Unable to determine default branch to diff against.\n'
-             'Either pass complete "git diff"-style arguments, like\n'
-             '  git cl upload origin/master\n'
-             'or verify this branch is set up to track another \n'
-             '(via the --track argument to "git checkout -b ...").')
+    remote, upstream_branch = scm.GIT.FetchUpstreamTuple(
+        settings.GetRoot(), branch)
+    if not remote or not upstream_branch:
+      DieWithError(
+         'Unable to determine default branch to diff against.\n'
+         'Either pass complete "git diff"-style arguments, like\n'
+         '  git cl upload origin/master\n'
+         'or verify this branch is set up to track another \n'
+         '(via the --track argument to "git checkout -b ...").')
 
     return remote, upstream_branch
 
