@@ -44,7 +44,7 @@ class MdnsReader : public BigEndianReader {
   struct NsecBitMapField {
     uint8_t window_block;
     uint8_t bitmap_length;
-    uint8_t bitmap[32];
+    const uint8_t* bitmap;
   };
 
   bool Read(IPAddress::Version version, IPAddress* out);

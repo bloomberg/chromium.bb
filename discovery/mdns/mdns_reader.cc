@@ -401,12 +401,10 @@ bool MdnsReader::Read(NsecBitMapField* out) {
       return false;
     }
 
-    for (int i = 0; i < out->bitmap_length; i++) {
-      if (!Read(&out->bitmap[i])) {
-        return false;
-      }
+    out->bitmap = current();
+    if (!Skip(out->bitmap_length)) {
+      return false;
     }
-
     cursor.Commit();
     return true;
   }
