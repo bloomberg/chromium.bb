@@ -137,7 +137,7 @@ class RemoteNebraskaWrapper(multiprocessing.Process):
       raise NebraskaStartupError('Nebraska is not alive, so not ready!')
 
     url = 'http://%s:%d/%s' % (remote_access.LOCALHOST_IP, self._port,
-                               'check_health')
+                               'health_check')
     # Running curl through SSH because the port on the device is not accessible
     # by default.
     result = self._RemoteCommand(

@@ -62,7 +62,7 @@ class RemoteNebraskaWrapperTest(cros_test_lib.MockTempDirTestCase):
     run_command_mock = self._PatchRemoteCommand()
     self.assertTrue(self._nebraska.IsReady())
     run_command_mock.assert_called_once_with(
-        ['curl', 'http://127.0.0.1:10/check_health', '-o', '/dev/null'],
+        ['curl', 'http://127.0.0.1:10/health_check', '-o', '/dev/null'],
         check=False)
 
   def test_ReadPortNumber(self):
