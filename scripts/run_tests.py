@@ -497,6 +497,33 @@ def FindTests(search_paths=('.',)):
           yield test
 
 
+def CheckStaleSettings():
+  """Check various things to make sure they don't get stale."""
+  die = False
+
+  for test in SPECIAL_TESTS:
+    if not os.path.exists(test):
+      die = True
+      logging.error('SPECIAL_TESTS is stale: delete old %s', test)
+
+  for test in SLOW_TESTS:
+    if not os.path.exists(test):
+      die = True
+      logging.error('SLOW_TESTS is stale: delete old %s', test)
+
+  # Sanity check wrapper scripts.
+  for path in glob.glob('bin/*'):
+    if os.path.islink(path):
+      if os.path.basename(os.readlink(path)) in {'wrapper.py', 'wrapper3.py'}:
+        src = os.path.join('scripts', os.path.basename(path) + '.py')
+        if not os.path.exists(src):
+          die = True
+          logging.error('Stale symlink should be removed: %s', path)
+
+  if die:
+    cros_build_lib.Die('Please fix the above problems first')
+
+
 def ClearPythonCacheFiles():
   """Clear cache files in the chromite repo.
 
@@ -619,12 +646,7 @@ def main(argv):
                        (st.st_uid, st.st_gid))
 
   # Sanity check the settings to avoid bitrot.
-  for test in SPECIAL_TESTS:
-    if not os.path.exists(test):
-      cros_build_lib.Die('SPECIAL_TESTS is stale: delete old %s' % test)
-  for test in SLOW_TESTS:
-    if not os.path.exists(test):
-      cros_build_lib.Die('SLOW_TESTS is stale: delete old %s' % test)
+  CheckStaleSettings()
 
   if opts.quick:
     SPECIAL_TESTS.update(SLOW_TESTS)
