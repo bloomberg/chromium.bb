@@ -1012,7 +1012,7 @@ static int cost_mv_ref(const MACROBLOCK *const x, PREDICTION_MODE mode,
 
 static void newmv_diff_bias(MACROBLOCKD *xd, PREDICTION_MODE this_mode,
                             RD_STATS *this_rdc, BLOCK_SIZE bsize, int mv_row,
-                            int mv_col) {
+                            int mv_col, int speed, uint32_t spatial_variance) {
   // Bias against MVs associated with NEWMV mode that are very different from
   // top/left neighbors.
   if (this_mode == NEWMV) {
@@ -1055,6 +1055,11 @@ static void newmv_diff_bias(MACROBLOCKD *xd, PREDICTION_MODE this_mode,
       else
         this_rdc->rdcost = 5 * this_rdc->rdcost >> 2;
     }
+  } else {
+    // Bias for speed >= 8 for low spatial variance.
+    if (speed >= 8 && spatial_variance < 150 &&
+        (mv_row > 64 || mv_row < -64 || mv_col > 64 || mv_col < -64))
+      this_rdc->rdcost = 5 * this_rdc->rdcost >> 2;
   }
 }
 
@@ -1925,7 +1930,8 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     if (cpi->oxcf.rc_mode == AOM_CBR) {
       newmv_diff_bias(xd, this_mode, &this_rdc, bsize,
                       frame_mv[this_mode][ref_frame].as_mv.row,
-                      frame_mv[this_mode][ref_frame].as_mv.col);
+                      frame_mv[this_mode][ref_frame].as_mv.col, cpi->speed,
+                      x->source_variance);
     }
 
     mode_checked[this_mode][ref_frame] = 1;
@@ -1973,13 +1979,22 @@ void av1_nonrd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   mi->filter_intra_mode_info.use_filter_intra = 0;
 
   uint32_t spatial_var_thresh = 50;
+  int motion_thresh = 32;
+  // Adjust thresholds to make intra mode likely tested if the other
+  // references (golden, alt) are skipped/not checked.
+  if (cpi->sf.rt_sf.use_nonrd_altref_frame == 0 &&
+      cpi->sf.rt_sf.nonrd_reduce_golden_mode_search == 1) {
+    spatial_var_thresh = 150;
+    motion_thresh = 0;
+  }
   int do_early_exit_rdthresh = 1;
   // Some adjustments to checking intra mode based on source variance.
   if (x->source_variance < spatial_var_thresh) {
     // If the best inter mode is large motion or non-LAST ref reduce intra cost
     // penalty, so intra mode is more likely tested.
     if (best_pickmode.best_ref_frame != LAST_FRAME ||
-        abs(mi->mv[0].as_mv.row) > 32 || abs(mi->mv[0].as_mv.col) > 32) {
+        abs(mi->mv[0].as_mv.row) >= motion_thresh ||
+        abs(mi->mv[0].as_mv.col) >= motion_thresh) {
       intra_cost_penalty = intra_cost_penalty >> 2;
       inter_mode_thresh = RDCOST(x->rdmult, intra_cost_penalty, 0);
       do_early_exit_rdthresh = 0;
