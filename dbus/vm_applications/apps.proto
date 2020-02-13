@@ -9,6 +9,7 @@ package vm_tools.apps;
 
 // Corresponds to a .desktop file from the Desktop Entry Spec:
 // https://www.freedesktop.org/wiki/Specifications/desktop-entry-spec/
+// with some additional parameters to support broader compatibility.
 message App {
   // A "localestring". Entries with a locale should set the |locale| field to
   // the value inside the [] and the default entry should leave it empty. The
@@ -48,6 +49,9 @@ message App {
   // If set, the package_id of the installed package that owns this .desktop
   // file. If not set, the .desktop file is not owned by an installed package.
   string package_id = 8;
+
+  // Similar to |mime_types| for applications that do not support mime types.
+  repeated string extensions = 11;
 }
 
 message ApplicationList {
