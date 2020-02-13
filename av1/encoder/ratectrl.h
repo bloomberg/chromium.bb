@@ -48,6 +48,8 @@ extern "C" {
 #define MAX_GF_INTERVAL 16
 #define FIXED_GF_INTERVAL 8  // Used in some testing modes only
 
+#define NUM_GF_INTERVALS 150
+
 typedef struct {
   int resize_width;
   int resize_height;
@@ -95,6 +97,14 @@ typedef struct {
 
   int frames_since_golden;
   int frames_till_gf_update_due;
+
+  // number of determined gf group length left
+  int intervals_till_gf_calculate_due;
+  // stores gf group length intervals
+  int gf_intervals[NUM_GF_INTERVALS];
+  // the current index in gf_intervals
+  int cur_gf_index;
+
   int min_gf_interval;
   int max_gf_interval;
   int static_scene_max_gf_interval;
