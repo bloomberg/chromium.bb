@@ -485,7 +485,10 @@ class Branch(object):
     # from the suffix to keep naming consistent.
     if original:
       suffix = re.sub('^-%s-' % original, '-', suffix)
-
+    else:
+      # If the suffix already has a version in it, trim that.
+      # e.g. -release-R77-12371.B-wpa_supplicant-2.6 --> -wpa_supplicant-2.6
+      suffix = re.sub('^-.*[.]B', '', suffix)
     return branch + suffix
 
   def _ProjectBranches(self, branch, original=None):
