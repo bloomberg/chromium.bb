@@ -175,6 +175,16 @@ static int msm_init(struct driver *drv)
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &LINEAR_METADATA, BO_USE_HW_VIDEO_ENCODER);
 	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA, BO_USE_HW_VIDEO_ENCODER);
 
+	/* The camera stack standardizes on NV12 for YUV buffers. */
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	/*
+	 * R8 format is used for Android's HAL_PIXEL_FORMAT_BLOB and is used for JPEG snapshots
+	 * from camera.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_R8, &LINEAR_METADATA,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+
 	/* Android CTS tests require this. */
 	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
 
