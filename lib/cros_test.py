@@ -35,6 +35,8 @@ class CrOSTest(object):
     self.cache_dir = opts.cache_dir
 
     self.build = opts.build
+    self.flash = opts.flash
+    self.xbuddy = opts.xbuddy
     self.deploy = opts.deploy
     self.nostrip = opts.nostrip
     self.build_dir = opts.build_dir
@@ -86,6 +88,7 @@ class CrOSTest(object):
       self._device.WaitForBoot()
 
     self._Build()
+    self._Flash()
     self._Deploy()
 
     returncode = self._RunTests()
@@ -123,6 +126,16 @@ class CrOSTest(object):
 
     build_target = self.chrome_test_target or 'chromiumos_preflight'
     self._device.run(['autoninja', '-C', self.build_dir, build_target])
+
+  def _Flash(self):
+    """Flash device."""
+    if not self.flash:
+      return
+
+    xbuddy = self.xbuddy
+    if self._device.board:
+      xbuddy = xbuddy.format(board=self._device.board)
+    self._device.run(['cros', 'flash', self._device.device, xbuddy])
 
   def _Deploy(self):
     """Deploy binary files to device."""
@@ -470,11 +483,16 @@ def ParseCommandLine(argv):
                       'collecting runtime deps files.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
-  parser.add_argument('--build-dir', type='path',
-                      help='Directory for building and deploying chrome.')
   parser.add_argument('--build', action='store_true', default=False,
                       help='Before running tests, build chrome using ninja, '
                       '--build-dir must be specified.')
+  parser.add_argument('--build-dir', type='path',
+                      help='Directory for building and deploying chrome.')
+  parser.add_argument('--flash', action='store_true', default=False,
+                      help='Before running tests, flash the device.')
+  parser.add_argument('--xbuddy', default='xbuddy://remote/{board}/latest',
+                      help='xbuddy link to use for flashing the device '
+                      '(default: %(default)s).')
   parser.add_argument('--deploy', action='store_true', default=False,
                       help='Before running tests, deploy chrome, '
                       '--build-dir must be specified.')

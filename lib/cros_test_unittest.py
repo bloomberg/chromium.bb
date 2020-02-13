@@ -59,6 +59,21 @@ class CrOSTester(CrOSTesterBase):
     self.assertCommandContains(
         ['ssh', '-p', '9222', 'root@localhost', '--', 'true'])
 
+  def testFlash(self):
+    """Tests flash command."""
+    # Verify that specifying the board gets the latest canary.
+    self._tester.flash = True
+    self._tester._device.board = 'octopus'
+    self._tester.Run()
+    self.assertCommandContains(['cros', 'flash', 'localhost',
+                                'xbuddy://remote/octopus/latest'])
+
+    # Specify an xbuddy link.
+    self._tester.xbuddy = 'xbuddy://remote/octopus/R82-12901.0.0'
+    self._tester.Run()
+    self.assertCommandContains(['cros', 'flash', 'localhost',
+                                'xbuddy://remote/octopus/R82-12901.0.0'])
+
   def testDeployChrome(self):
     """Tests basic deploy chrome command."""
     self._tester.deploy = True
