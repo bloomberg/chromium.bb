@@ -145,9 +145,6 @@ def FindTarget(target):
       # Convert chromite/bin/foo -> chromite/scripts/foo.
       # Since chromite/bin/ is in $PATH, we want to keep it clean.
       target[1] = 'scripts'
-    elif target[1] == 'bootstrap' and len(target) == 3:
-      # Convert <git_repo>/bootstrap/foo -> <git_repo>/bootstrap/scripts/foo.
-      target.insert(2, 'scripts')
 
     try:
       module = importlib.import_module('.'.join(target))
