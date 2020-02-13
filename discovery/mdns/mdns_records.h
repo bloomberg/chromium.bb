@@ -300,7 +300,7 @@ class NsecRecordRdata {
   NsecRecordRdata(DomainName next_domain_name, Types... types)
       : NsecRecordRdata(std::move(next_domain_name),
                         std::vector<DnsType>{types...}) {}
-  NsecRecordRdata(DomainName next_domain_name_, std::vector<DnsType> types);
+  NsecRecordRdata(DomainName next_domain_name, std::vector<DnsType> types);
   NsecRecordRdata(const NsecRecordRdata& other);
   NsecRecordRdata(NsecRecordRdata&& other);
 

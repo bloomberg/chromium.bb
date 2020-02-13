@@ -370,7 +370,7 @@ bool MdnsReader::Read(std::vector<DnsType>* out, int remaining_size) {
 
     // The ith bit of the bitmap represents DnsType with value i, shifted
     // a multiple of 0x100 according to the window.
-    for (uint8_t i = 0; i < bitmap.bitmap_length * 8; i++) {
+    for (int32_t i = 0; i < bitmap.bitmap_length * 8; i++) {
       int current_byte = i / 8;
       uint8_t bitmask = 0x80 >> i % 8;
 

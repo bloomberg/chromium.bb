@@ -4,6 +4,8 @@
 
 #include "discovery/mdns/mdns_querier.h"
 
+#include <vector>
+
 #include "discovery/common/config.h"
 #include "discovery/common/reporting_client.h"
 #include "discovery/mdns/mdns_random.h"
@@ -14,6 +16,9 @@
 namespace openscreen {
 namespace discovery {
 namespace {
+
+const std::vector<DnsType> kTranslatedNsecAnyQueryTypes = {
+    DnsType::kA, DnsType::kPTR, DnsType::kTXT, DnsType::kAAAA, DnsType::kSRV};
 
 bool IsNegativeResponseFor(const MdnsRecord& record, DnsType type) {
   if (record.dns_type() != DnsType::kNSEC) {
@@ -30,8 +35,11 @@ bool IsNegativeResponseFor(const MdnsRecord& record, DnsType type) {
     return false;
   }
 
-  return std::find(nsec.types().begin(), nsec.types().end(), type) !=
-         nsec.types().end();
+  return std::find_if(nsec.types().begin(), nsec.types().end(),
+                      [type](DnsType stored_type) {
+                        return stored_type == type ||
+                               stored_type == DnsType::kANY;
+                      }) != nsec.types().end();
 }
 
 }  // namespace
@@ -94,10 +102,15 @@ void MdnsQuerier::StartQuery(const DomainName& name,
   // adding a callback, for example to prime the UI.
   auto records_it = records_.equal_range(name);
   for (auto entry = records_it.first; entry != records_it.second; ++entry) {
-    const MdnsRecord& record = entry->second->record();
-    if ((dns_type == DnsType::kANY || dns_type == record.dns_type()) &&
-        (dns_class == DnsClass::kANY || dns_class == record.dns_class())) {
-      callback->OnRecordChanged(record, RecordChangedEvent::kCreated);
+    MdnsRecordTracker* tracker = entry->second.get();
+    if ((dns_type == DnsType::kANY || dns_type == tracker->dns_type()) &&
+        (dns_class == DnsClass::kANY || dns_class == tracker->dns_class()) &&
+        !tracker->is_negative_response()) {
+      MdnsRecord stored_record(name, tracker->dns_type(), tracker->dns_class(),
+                               tracker->record_type(), tracker->ttl(),
+                               tracker->rdata());
+      callback->OnRecordChanged(std::move(stored_record),
+                                RecordChangedEvent::kCreated);
     }
   }
 
@@ -216,21 +229,20 @@ void MdnsQuerier::OnMessageReceived(const MdnsMessage& message) {
   ProcessRecords(message.additional_records());
 }
 
-void MdnsQuerier::OnRecordExpired(const MdnsRecord& record) {
+void MdnsQuerier::OnRecordExpired(MdnsRecordTracker* tracker,
+                                  const MdnsRecord& record) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
-  ProcessCallbacks(record, RecordChangedEvent::kExpired);
+  if (!tracker->is_negative_response()) {
+    ProcessCallbacks(record, RecordChangedEvent::kExpired);
+  }
 
   auto records_it = records_.equal_range(record.name());
-  for (auto entry = records_it.first; entry != records_it.second; ++entry) {
-    MdnsRecordTracker* tracker = entry->second.get();
-    const MdnsRecord& tracked_record = tracker->record();
-    if (record.dns_type() == tracked_record.dns_type() &&
-        record.dns_class() == tracked_record.dns_class() &&
-        record.rdata() == tracked_record.rdata()) {
-      records_.erase(entry);
-      break;
-    }
+  auto delete_it = std::find_if(
+      records_it.first, records_it.second,
+      [tracker](const auto& pair) { return pair.second.get() == tracker; });
+  if (delete_it != records_it.second) {
+    records_.erase(delete_it);
   }
 }
 
@@ -238,35 +250,56 @@ void MdnsQuerier::ProcessRecords(const std::vector<MdnsRecord>& records) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
 
   for (const MdnsRecord& record : records) {
+    // Get the types which the received record is associated with. In most cases
+    // this will only be the type of the provided record, but in the case of
+    // NSEC records this will be all records which the record dictates the
+    // nonexistence of.
+    std::vector<DnsType> types;
+    const std::vector<DnsType>* types_ptr = &types;
     if (record.dns_type() == DnsType::kNSEC) {
-      // TODO(rwkeane): Handle NSEC negative response records.
-      continue;
+      const auto& nsec_rdata = absl::get<NsecRecordRdata>(record.rdata());
+      if (std::find(nsec_rdata.types().begin(), nsec_rdata.types().end(),
+                    DnsType::kANY) != nsec_rdata.types().end()) {
+        types_ptr = &kTranslatedNsecAnyQueryTypes;
+      } else {
+        types_ptr = &nsec_rdata.types();
+      }
+    } else {
+      types.push_back(record.dns_type());
     }
 
-    switch (record.record_type()) {
-      case RecordType::kShared: {
-        ProcessSharedRecord(record);
-        break;
-      }
-      case RecordType::kUnique: {
-        ProcessUniqueRecord(record);
-        break;
+    // Apply the update for each type that the record is associated with.
+    for (DnsType dns_type : *types_ptr) {
+      switch (record.record_type()) {
+        case RecordType::kShared: {
+          ProcessSharedRecord(record, dns_type);
+          break;
+        }
+        case RecordType::kUnique: {
+          ProcessUniqueRecord(record, dns_type);
+          break;
+        }
       }
     }
   }
 }
 
-void MdnsQuerier::ProcessSharedRecord(const MdnsRecord& record) {
+void MdnsQuerier::ProcessSharedRecord(const MdnsRecord& record,
+                                      DnsType dns_type) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(record.record_type() == RecordType::kShared);
+
+  // By design, NSEC records are never shared records.
+  if (record.dns_type() == DnsType::kNSEC) {
+    return;
+  }
 
   auto records_it = records_.equal_range(record.name());
   for (auto entry = records_it.first; entry != records_it.second; ++entry) {
     MdnsRecordTracker* tracker = entry->second.get();
-    const MdnsRecord& tracked_record = tracker->record();
-    if (record.dns_type() == tracked_record.dns_type() &&
-        record.dns_class() == tracked_record.dns_class() &&
-        record.rdata() == tracked_record.rdata()) {
+    if (dns_type == tracker->dns_type() &&
+        record.dns_class() == tracker->dns_class() &&
+        record.rdata() == tracker->rdata()) {
       // Already have this shared record, update the existing one.
       // This is a TTL only update since we've already checked that RDATA
       // matches. No notification is necessary on a TTL only update.
@@ -280,31 +313,46 @@ void MdnsQuerier::ProcessSharedRecord(const MdnsRecord& record) {
     }
   }
   // Have never before seen this shared record, insert a new one.
-  AddRecord(record);
+  AddRecord(record, dns_type);
   ProcessCallbacks(record, RecordChangedEvent::kCreated);
 }
 
-void MdnsQuerier::ProcessUniqueRecord(const MdnsRecord& record) {
+void MdnsQuerier::ProcessUniqueRecord(const MdnsRecord& record,
+                                      DnsType dns_type) {
   OSP_DCHECK(task_runner_->IsRunningOnTaskRunner());
   OSP_DCHECK(record.record_type() == RecordType::kUnique);
 
   int records_for_key = 0;
   auto records_it = records_.equal_range(record.name());
   for (auto entry = records_it.first; entry != records_it.second; ++entry) {
-    const MdnsRecord& tracked_record = entry->second->record();
-    if (record.dns_type() == tracked_record.dns_type() &&
-        record.dns_class() == tracked_record.dns_class()) {
+    MdnsRecordTracker* tracker = entry->second.get();
+    if (dns_type == tracker->dns_type() &&
+        record.dns_class() == tracker->dns_class()) {
       ++records_for_key;
     }
   }
 
+  const bool will_exist = record.dns_type() != DnsType::kNSEC;
   if (records_for_key == 0) {
     // Have not seen any records with this key before.
-    AddRecord(record);
-    ProcessCallbacks(record, RecordChangedEvent::kCreated);
+    AddRecord(record, dns_type);
+    if (will_exist) {
+      ProcessCallbacks(record, RecordChangedEvent::kCreated);
+    }
   } else if (records_for_key == 1) {
     // There's only one record with this key.
     MdnsRecordTracker* tracker = records_it.first->second.get();
+    const bool existed_previously = !tracker->is_negative_response();
+
+    // Calculate the callback to call on record update success while the old
+    // record still exists.
+    MdnsRecord record_for_callback = record;
+    if (existed_previously && !will_exist) {
+      record_for_callback =
+          MdnsRecord(record.name(), tracker->dns_type(), tracker->dns_class(),
+                     tracker->record_type(), tracker->ttl(), tracker->rdata());
+    }
+
     ErrorOr<MdnsRecordTracker::UpdateType> result = tracker->Update(record);
     if (result.is_error()) {
       reporting_client_->OnRecoverableError(
@@ -321,7 +369,13 @@ void MdnsQuerier::ProcessUniqueRecord(const MdnsRecord& record) {
         case MdnsRecordTracker::UpdateType::kRdata:
           // If RDATA on the record is different, notify that the record has
           // been updated.
-          ProcessCallbacks(record, RecordChangedEvent::kUpdated);
+          if (existed_previously && will_exist) {
+            ProcessCallbacks(record_for_callback, RecordChangedEvent::kUpdated);
+          } else if (existed_previously) {
+            ProcessCallbacks(record_for_callback, RecordChangedEvent::kExpired);
+          } else if (will_exist) {
+            ProcessCallbacks(record_for_callback, RecordChangedEvent::kCreated);
+          }
           break;
       }
     }
@@ -332,10 +386,9 @@ void MdnsQuerier::ProcessUniqueRecord(const MdnsRecord& record) {
     bool is_new_record = true;
     for (auto entry = records_it.first; entry != records_it.second; ++entry) {
       MdnsRecordTracker* tracker = entry->second.get();
-      const MdnsRecord& tracked_record = tracker->record();
-      if (record.dns_type() == tracked_record.dns_type() &&
-          record.dns_class() == tracked_record.dns_class()) {
-        if (record.rdata() == tracked_record.rdata()) {
+      if (dns_type == tracker->dns_type() &&
+          record.dns_class() == tracker->dns_class()) {
+        if (record.rdata() == tracker->rdata()) {
           is_new_record = false;
           ErrorOr<MdnsRecordTracker::UpdateType> result =
               tracker->Update(record);
@@ -365,8 +418,10 @@ void MdnsQuerier::ProcessUniqueRecord(const MdnsRecord& record) {
 
     if (is_new_record) {
       // Did not find an existing record to update.
-      AddRecord(record);
-      ProcessCallbacks(record, RecordChangedEvent::kCreated);
+      AddRecord(record, dns_type);
+      if (record.dns_type() != DnsType::kNSEC) {
+        ProcessCallbacks(record, RecordChangedEvent::kCreated);
+      }
     }
   }
 }
@@ -398,11 +453,11 @@ void MdnsQuerier::AddQuestion(const MdnsQuestion& question) {
   // query that can be used for their refresh.
   auto records_it = records_.equal_range(question.name());
   for (auto entry = records_it.first; entry != records_it.second; ++entry) {
-    const MdnsRecord& record = entry->second->record();
+    MdnsRecordTracker* tracker = entry->second.get();
     const bool is_relevant_type = question.dns_type() == DnsType::kANY ||
-                                  question.dns_type() == record.dns_type();
+                                  question.dns_type() == tracker->dns_type();
     const bool is_relevant_class = question.dns_class() == DnsClass::kANY ||
-                                   question.dns_class() == record.dns_class();
+                                   question.dns_class() == tracker->dns_class();
     if (is_relevant_type && is_relevant_class) {
       // NOTE: When the pointed to object is deleted, its dtor removes itself
       // from all associated records.
@@ -411,13 +466,14 @@ void MdnsQuerier::AddQuestion(const MdnsQuestion& question) {
   }
 }
 
-void MdnsQuerier::AddRecord(const MdnsRecord& record) {
-  auto expiration_callback = [this](const MdnsRecord& record) {
-    MdnsQuerier::OnRecordExpired(record);
+void MdnsQuerier::AddRecord(const MdnsRecord& record, DnsType type) {
+  auto expiration_callback = [this](MdnsRecordTracker* tracker,
+                                    const MdnsRecord& record) {
+    MdnsQuerier::OnRecordExpired(tracker, record);
   };
 
   auto tracker = std::make_unique<MdnsRecordTracker>(
-      std::move(record), sender_, task_runner_, now_function_, random_delay_,
+      record, type, sender_, task_runner_, now_function_, random_delay_,
       expiration_callback);
   auto ptr = tracker.get();
   records_.emplace(record.name(), std::move(tracker));
@@ -427,8 +483,8 @@ void MdnsQuerier::AddRecord(const MdnsRecord& record) {
   auto query_it = questions_.equal_range(record.name());
   for (auto entry = query_it.first; entry != query_it.second; ++entry) {
     const MdnsQuestion& query = entry->second->question();
-    const bool is_relevant_type = record.dns_type() == DnsType::kANY ||
-                                  record.dns_type() == query.dns_type();
+    const bool is_relevant_type =
+        type == DnsType::kANY || type == query.dns_type();
     const bool is_relevant_class = record.dns_class() == DnsClass::kANY ||
                                    record.dns_class() == query.dns_class();
     if (is_relevant_type && is_relevant_class) {
@@ -437,24 +493,6 @@ void MdnsQuerier::AddRecord(const MdnsRecord& record) {
       entry->second->AddAssociatedRecord(ptr);
     }
   }
-}
-
-std::vector<MdnsRecord::ConstRef> MdnsQuerier::GetKnownAnswers(
-    const DomainName& name,
-    DnsType type,
-    DnsClass clazz) {
-  std::vector<MdnsRecord::ConstRef> records;
-  auto its = records_.equal_range(name);
-  for (auto it = its.first; it != its.second; it++) {
-    const MdnsRecord& record = it->second->record();
-    if ((type == DnsType::kANY || type == record.dns_type()) &&
-        (clazz == DnsClass::kANY || clazz == record.dns_class()) &&
-        !it->second->IsNearingExpiry()) {
-      records.emplace_back(record);
-    }
-  }
-
-  return records;
 }
 
 }  // namespace discovery

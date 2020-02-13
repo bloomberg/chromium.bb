@@ -72,19 +72,15 @@ class MdnsQuerier : public MdnsReceiver::ResponseClient {
   void OnMessageReceived(const MdnsMessage& message) override;
 
   // Callback passed to owned MdnsRecordTrackers
-  void OnRecordExpired(const MdnsRecord& record);
+  void OnRecordExpired(MdnsRecordTracker* tracker, const MdnsRecord& record);
 
   void ProcessRecords(const std::vector<MdnsRecord>& records);
-  void ProcessSharedRecord(const MdnsRecord& record);
-  void ProcessUniqueRecord(const MdnsRecord& record);
+  void ProcessSharedRecord(const MdnsRecord& record, DnsType type);
+  void ProcessUniqueRecord(const MdnsRecord& record, DnsType type);
   void ProcessCallbacks(const MdnsRecord& record, RecordChangedEvent event);
 
   void AddQuestion(const MdnsQuestion& question);
-  void AddRecord(const MdnsRecord& record);
-
-  std::vector<MdnsRecord::ConstRef> GetKnownAnswers(const DomainName& name,
-                                                    DnsType type,
-                                                    DnsClass clazz);
+  void AddRecord(const MdnsRecord& record, DnsType type);
 
   MdnsSender* const sender_;
   MdnsReceiver* const receiver_;

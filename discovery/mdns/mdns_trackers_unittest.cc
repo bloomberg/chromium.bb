@@ -81,7 +81,14 @@ class MdnsTrackerTest : public testing::Test {
                   DnsClass::kIN,
                   RecordType::kShared,
                   std::chrono::seconds(120),
-                  ARecordRdata(IPAddress{172, 0, 0, 1})) {}
+                  ARecordRdata(IPAddress{172, 0, 0, 1})),
+        nsec_record_(
+            DomainName{"testing", "local"},
+            DnsType::kNSEC,
+            DnsClass::kIN,
+            RecordType::kShared,
+            std::chrono::seconds(120),
+            NsecRecordRdata(DomainName{"testing", "local"}, DnsType::kA)) {}
 
   template <class TrackerType>
   void TrackerNoQueryAfterDestruction(TrackerType tracker) {
@@ -92,10 +99,18 @@ class MdnsTrackerTest : public testing::Test {
   }
 
   std::unique_ptr<MdnsRecordTracker> CreateRecordTracker(
-      const MdnsRecord& record) {
+      const MdnsRecord& record,
+      DnsType type) {
     return std::make_unique<MdnsRecordTracker>(
-        record, &sender_, &task_runner_, &FakeClock::now, &random_,
-        [this](const MdnsRecord& record) { expiration_called_ = true; });
+        record, type, &sender_, &task_runner_, &FakeClock::now, &random_,
+        [this](MdnsRecordTracker* tracker, const MdnsRecord& record) {
+          expiration_called_ = true;
+        });
+  }
+
+  std::unique_ptr<MdnsRecordTracker> CreateRecordTracker(
+      const MdnsRecord& record) {
+    return CreateRecordTracker(record, record.dns_type());
   }
 
   std::unique_ptr<MdnsQuestionTracker> CreateQuestionTracker(
@@ -118,6 +133,10 @@ class MdnsTrackerTest : public testing::Test {
       time_passed = time_till_refresh;
       clock_.Advance(delta);
     }
+  }
+
+  const MdnsRecord& GetRecord(MdnsRecordTracker* tracker) {
+    return tracker->record_;
   }
 
   // clang-format off
@@ -161,6 +180,7 @@ class MdnsTrackerTest : public testing::Test {
 
   MdnsQuestion a_question_;
   MdnsRecord a_record_;
+  MdnsRecord nsec_record_;
 
   bool expiration_called_ = false;
 };
@@ -175,7 +195,7 @@ class MdnsTrackerTest : public testing::Test {
 
 TEST_F(MdnsTrackerTest, RecordTrackerRecordAccessor) {
   std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
-  EXPECT_EQ(tracker->record(), a_record_);
+  EXPECT_EQ(GetRecord(tracker.get()), a_record_);
 }
 
 TEST_F(MdnsTrackerTest, RecordTrackerQueryAfterDelayPerQuestionTracker) {
@@ -272,6 +292,16 @@ TEST_F(MdnsTrackerTest, RecordTrackerForceExpiration) {
   EXPECT_TRUE(expiration_called_);
 }
 
+TEST_F(MdnsTrackerTest, NsecRecordTrackerForceExpiration) {
+  expiration_called_ = false;
+  std::unique_ptr<MdnsRecordTracker> tracker =
+      CreateRecordTracker(nsec_record_, DnsType::kA);
+  tracker->ExpireSoon();
+  // Expire schedules expiration after 1 second.
+  clock_.Advance(std::chrono::seconds(1));
+  EXPECT_TRUE(expiration_called_);
+}
+
 TEST_F(MdnsTrackerTest, RecordTrackerExpirationCallback) {
   expiration_called_ = false;
   std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
@@ -298,7 +328,7 @@ TEST_F(MdnsTrackerTest, RecordTrackerExpirationCallbackAfterGoodbye) {
   EXPECT_TRUE(expiration_called_);
 }
 
-TEST_F(MdnsTrackerTest, RecordTrackerInvalidUpdate) {
+TEST_F(MdnsTrackerTest, RecordTrackerInvalidPositiveRecordUpdate) {
   std::unique_ptr<MdnsRecordTracker> tracker = CreateRecordTracker(a_record_);
 
   MdnsRecord invalid_name(DomainName{"invalid"}, a_record_.dns_type(),
@@ -327,6 +357,71 @@ TEST_F(MdnsTrackerTest, RecordTrackerInvalidUpdate) {
                            ARecordRdata(IPAddress{172, 0, 0, 2}));
   EXPECT_EQ(tracker->Update(invalid_rdata).error(),
             Error::Code::kParameterInvalid);
+}
+
+TEST_F(MdnsTrackerTest, RecordTrackerUpdatePositiveResponseWithNegative) {
+  // Check valid update.
+  std::unique_ptr<MdnsRecordTracker> tracker =
+      CreateRecordTracker(a_record_, DnsType::kA);
+  auto result = tracker->Update(nsec_record_);
+  ASSERT_TRUE(result.is_value());
+  EXPECT_EQ(result.value(), MdnsRecordTracker::UpdateType::kRdata);
+  EXPECT_EQ(GetRecord(tracker.get()), nsec_record_);
+
+  // Check invalid update.
+  MdnsRecord non_a_nsec_record(
+      nsec_record_.name(), nsec_record_.dns_type(), nsec_record_.dns_class(),
+      nsec_record_.record_type(), nsec_record_.ttl(),
+      NsecRecordRdata(DomainName{"testing", "local"}, DnsType::kAAAA));
+  tracker = CreateRecordTracker(a_record_, DnsType::kA);
+  auto response = tracker->Update(non_a_nsec_record);
+  ASSERT_TRUE(response.is_error());
+  EXPECT_EQ(GetRecord(tracker.get()), a_record_);
+}
+
+TEST_F(MdnsTrackerTest, RecordTrackerUpdateNegativeResponseWithNegative) {
+  // Check valid update.
+  std::unique_ptr<MdnsRecordTracker> tracker =
+      CreateRecordTracker(nsec_record_, DnsType::kA);
+  MdnsRecord multiple_nsec_record(
+      nsec_record_.name(), nsec_record_.dns_type(), nsec_record_.dns_class(),
+      nsec_record_.record_type(), nsec_record_.ttl(),
+      NsecRecordRdata(DomainName{"testing", "local"}, DnsType::kA,
+                      DnsType::kAAAA));
+  auto result = tracker->Update(multiple_nsec_record);
+  ASSERT_TRUE(result.is_value());
+  EXPECT_EQ(result.value(), MdnsRecordTracker::UpdateType::kRdata);
+  EXPECT_EQ(GetRecord(tracker.get()), multiple_nsec_record);
+
+  // Check invalid update.
+  tracker = CreateRecordTracker(nsec_record_, DnsType::kA);
+  MdnsRecord non_a_nsec_record(
+      nsec_record_.name(), nsec_record_.dns_type(), nsec_record_.dns_class(),
+      nsec_record_.record_type(), nsec_record_.ttl(),
+      NsecRecordRdata(DomainName{"testing", "local"}, DnsType::kAAAA));
+  auto response = tracker->Update(non_a_nsec_record);
+  EXPECT_TRUE(response.is_error());
+  EXPECT_EQ(GetRecord(tracker.get()), nsec_record_);
+}
+
+TEST_F(MdnsTrackerTest, RecordTrackerUpdateNegativeResponseWithPositive) {
+  // Check valid update.
+  std::unique_ptr<MdnsRecordTracker> tracker =
+      CreateRecordTracker(nsec_record_, DnsType::kA);
+  auto result = tracker->Update(a_record_);
+  ASSERT_TRUE(result.is_value());
+  EXPECT_EQ(result.value(), MdnsRecordTracker::UpdateType::kRdata);
+  EXPECT_EQ(GetRecord(tracker.get()), a_record_);
+
+  // Check invalid update.
+  tracker = CreateRecordTracker(nsec_record_, DnsType::kA);
+  MdnsRecord aaaa_record(a_record_.name(), DnsType::kAAAA,
+                         a_record_.dns_class(), a_record_.record_type(),
+                         std::chrono::seconds{0},
+                         AAAARecordRdata(IPAddress{0, 0, 0, 0, 0, 0, 0, 1}));
+  result = tracker->Update(aaaa_record);
+  EXPECT_TRUE(result.is_error());
+  EXPECT_EQ(GetRecord(tracker.get()), nsec_record_);
 }
 
 TEST_F(MdnsTrackerTest, RecordTrackerNoExpirationCallbackAfterDestruction) {
