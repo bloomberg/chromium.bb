@@ -28,7 +28,9 @@ class CrOSTesterBase(cros_test_lib.RunCommandTempDirTestCase):
     """Common set up method for all tests."""
     opts = cros_test.ParseCommandLine([])
     opts.enable_kvm = True
-    self._tester = cros_test.CrOSTest(opts)
+    # We check if /dev/kvm is writeable to use sudo.
+    with mock.patch.object(os, 'access', return_value=True):
+      self._tester = cros_test.CrOSTest(opts)
     self._tester._device.use_sudo = False
     self._tester._device.board = 'amd64-generic'
     self._tester._device.image_path = self.TempFilePath(

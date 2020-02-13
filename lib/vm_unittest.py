@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import multiprocessing
 import os
 import socket
 import stat
@@ -32,7 +33,9 @@ class VMTester(cros_test_lib.RunCommandTempDirTestCase):
     """Common set up method for all tests."""
     opts = vm.VM.GetParser().parse_args([])
     opts.enable_kvm = True
-    self._vm = vm.VM(opts)
+    with mock.patch.object(multiprocessing, 'cpu_count', return_value=8):
+      self._vm = vm.VM(opts)
+    self._vm.use_sudo = False
     self._vm.board = 'amd64-generic'
     self._vm.cache_dir = self.tempdir
     self._vm.image_path = self.TempFilePath('chromiumos_qemu_image.bin')
