@@ -81,7 +81,7 @@ size_t VirtualConnectionManager::RemoveConnectionsByLocalId(
 }
 
 size_t VirtualConnectionManager::RemoveConnectionsBySocketId(
-    uint32_t socket_id,
+    int32_t socket_id,
     VirtualConnection::CloseReason reason) {
   auto entry = connections_.find(socket_id);
   if (entry == connections_.end()) {

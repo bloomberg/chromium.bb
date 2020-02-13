@@ -16,11 +16,11 @@ namespace openscreen {
 namespace cast {
 
 bool operator<(const std::unique_ptr<SenderSocketFactory::PendingAuth>& a,
-               uint32_t b) {
+               int32_t b) {
   return a && a->socket->socket_id() < b;
 }
 
-bool operator<(uint32_t a,
+bool operator<(int32_t a,
                const std::unique_ptr<SenderSocketFactory::PendingAuth>& b) {
   return b && a < b->socket->socket_id();
 }

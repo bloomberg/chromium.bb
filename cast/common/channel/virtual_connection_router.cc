@@ -37,14 +37,16 @@ bool VirtualConnectionRouter::RemoveHandlerForLocalId(
 
 void VirtualConnectionRouter::TakeSocket(SocketErrorHandler* error_handler,
                                          std::unique_ptr<CastSocket> socket) {
-  uint32_t id = socket->socket_id();
+  int32_t id = socket->socket_id();
   socket->SetClient(this);
   sockets_.emplace(id, SocketWithHandler{std::move(socket), error_handler});
 }
 
-void VirtualConnectionRouter::CloseSocket(uint32_t id) {
+void VirtualConnectionRouter::CloseSocket(int32_t id) {
   auto it = sockets_.find(id);
   if (it != sockets_.end()) {
+    vc_manager_->RemoveConnectionsBySocketId(
+        id, VirtualConnection::kTransportClosed);
     std::unique_ptr<CastSocket> socket = std::move(it->second.socket);
     SocketErrorHandler* error_handler = it->second.error_handler;
     sockets_.erase(it);
@@ -69,9 +71,10 @@ Error VirtualConnectionRouter::SendMessage(VirtualConnection virtual_conn,
 }
 
 void VirtualConnectionRouter::OnError(CastSocket* socket, Error error) {
-  uint32_t id = socket->socket_id();
+  int32_t id = socket->socket_id();
   auto it = sockets_.find(id);
   if (it != sockets_.end()) {
+    vc_manager_->RemoveConnectionsBySocketId(id, VirtualConnection::kUnknown);
     std::unique_ptr<CastSocket> socket_owned = std::move(it->second.socket);
     SocketErrorHandler* error_handler = it->second.error_handler;
     sockets_.erase(it);

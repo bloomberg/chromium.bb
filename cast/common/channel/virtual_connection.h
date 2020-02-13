@@ -99,7 +99,7 @@ struct VirtualConnection {
   //    app on the device.
   std::string local_id;
   std::string peer_id;
-  uint32_t socket_id;
+  int32_t socket_id;
 };
 
 inline bool operator==(const VirtualConnection& a, const VirtualConnection& b) {

@@ -79,8 +79,8 @@ class SenderSocketFactory final : public TlsConnectionFactory::Client,
     bssl::UniquePtr<X509> peer_cert;
   };
 
-  friend bool operator<(const std::unique_ptr<PendingAuth>& a, uint32_t b);
-  friend bool operator<(uint32_t a, const std::unique_ptr<PendingAuth>& b);
+  friend bool operator<(const std::unique_ptr<PendingAuth>& a, int32_t b);
+  friend bool operator<(int32_t a, const std::unique_ptr<PendingAuth>& b);
 
   std::vector<PendingConnection>::iterator FindPendingConnection(
       const IPEndpoint& endpoint);
