@@ -1013,10 +1013,10 @@ void av1_setup_build_prediction_by_left_pred(MACROBLOCKD *xd, int rel_mi_row,
                          ref_scale_factors, num_planes);
   }
 
-  xd->mb_to_top_edge = 8 * MI_SIZE * (-left_mi_row);
+  xd->mb_to_top_edge = GET_MV_SUBPEL(MI_SIZE * (-left_mi_row));
   xd->mb_to_bottom_edge =
       ctxt->mb_to_far_edge +
-      (xd->n4_h - rel_mi_row - left_mi_height) * MI_SIZE * 8;
+      GET_MV_SUBPEL((xd->n4_h - rel_mi_row - left_mi_height) * MI_SIZE);
 }
 
 /* clang-format off */

@@ -2503,8 +2503,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
     x->mv_limits = tmp_mv_limits;
     if (bestsme == INT_MAX) continue;
-    const MV dv = { .row = x->best_mv.as_mv.row * 8,
-                    .col = x->best_mv.as_mv.col * 8 };
+    const MV dv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
     if (mv_check_bounds(&x->mv_limits, &dv)) continue;
     if (!av1_is_dv_valid(dv, cm, xd, mi_row, mi_col, bsize,
                          cm->seq_params.mib_size_log2))

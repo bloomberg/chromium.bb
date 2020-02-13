@@ -62,6 +62,10 @@ static AOM_INLINE MV get_mv_from_fullmv(const FULLPEL_MV *full_mv) {
   return subpel_mv;
 }
 
+static AOM_INLINE void convert_fullmv_to_mv(int_mv *mv) {
+  mv->as_mv = get_mv_from_fullmv(&mv->as_fullmv);
+}
+
 // Bits of precision used for the model
 #define WARPEDMODEL_PREC_BITS 16
 #define WARPEDMODEL_ROW3HOMO_PREC_BITS 16

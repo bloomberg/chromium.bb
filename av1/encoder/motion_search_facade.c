@@ -149,8 +149,7 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   x->mv_limits = tmp_mv_limits;
 
   if (cpi->common.cur_frame_force_integer_mv) {
-    x->best_mv.as_mv.row *= 8;
-    x->best_mv.as_mv.col *= 8;
+    convert_fullmv_to_mv(&x->best_mv);
   }
   const int use_fractional_mv =
       bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;
@@ -173,21 +172,21 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
               cpi->sf.mv_sf.use_accurate_subpel_search, 1);
 
           if (try_second) {
-            const int minc =
-                AOMMAX(x->mv_limits.col_min * 8, ref_mv.col - MV_MAX);
-            const int maxc =
-                AOMMIN(x->mv_limits.col_max * 8, ref_mv.col + MV_MAX);
-            const int minr =
-                AOMMAX(x->mv_limits.row_min * 8, ref_mv.row - MV_MAX);
-            const int maxr =
-                AOMMIN(x->mv_limits.row_max * 8, ref_mv.row + MV_MAX);
+            const int minc = AOMMAX(GET_MV_SUBPEL(x->mv_limits.col_min),
+                                    ref_mv.col - MV_MAX);
+            const int maxc = AOMMIN(GET_MV_SUBPEL(x->mv_limits.col_max),
+                                    ref_mv.col + MV_MAX);
+            const int minr = AOMMAX(GET_MV_SUBPEL(x->mv_limits.row_min),
+                                    ref_mv.row - MV_MAX);
+            const int maxr = AOMMIN(GET_MV_SUBPEL(x->mv_limits.row_max),
+                                    ref_mv.row + MV_MAX);
             MV best_mv = x->best_mv.as_mv;
 
             x->best_mv = x->second_best_mv;
-            if (x->best_mv.as_mv.row * 8 <= maxr &&
-                x->best_mv.as_mv.row * 8 >= minr &&
-                x->best_mv.as_mv.col * 8 <= maxc &&
-                x->best_mv.as_mv.col * 8 >= minc) {
+            if (GET_MV_SUBPEL(x->best_mv.as_mv.row) <= maxr &&
+                GET_MV_SUBPEL(x->best_mv.as_mv.row) >= minr &&
+                GET_MV_SUBPEL(x->best_mv.as_mv.col) <= maxc &&
+                GET_MV_SUBPEL(x->best_mv.as_mv.col) >= minc) {
               const int this_var = cpi->find_fractional_mv_step(
                   x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
                   x->errorperbit, &cpi->fn_ptr[bsize],
@@ -377,7 +376,7 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     if (id) xd->plane[plane].pre[0] = ref_yv12[id];
 
     if (cpi->common.cur_frame_force_integer_mv) {
-      best_int_mv->as_mv = get_mv_from_fullmv(&best_int_mv->as_fullmv);
+      convert_fullmv_to_mv(best_int_mv);
     }
     if (bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0) {
       int dis; /* TODO: use dis in distortion calculation later. */
@@ -495,7 +494,7 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   if (cpi->common.cur_frame_force_integer_mv) {
-    best_int_mv->as_mv = get_mv_from_fullmv(&best_int_mv->as_fullmv);
+    convert_fullmv_to_mv(best_int_mv);
   }
   const int use_fractional_mv =
       bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;

@@ -958,7 +958,7 @@ static AOM_INLINE void dec_build_prediction_by_above_preds(
   // except for 128-wide blocks, where we only use a height of 32.
   int this_height = xd->n4_h * MI_SIZE;
   int pred_height = AOMMIN(this_height / 2, 32);
-  xd->mb_to_bottom_edge += (this_height - pred_height) * 8;
+  xd->mb_to_bottom_edge += GET_MV_SUBPEL(this_height - pred_height);
   struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
                                         tmp_stride, xd->mb_to_right_edge };
@@ -967,9 +967,9 @@ static AOM_INLINE void dec_build_prediction_by_above_preds(
                                 max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                 dec_build_prediction_by_above_pred, &ctxt);
 
-  xd->mb_to_left_edge = -((xd->mi_col * MI_SIZE) * 8);
+  xd->mb_to_left_edge = -GET_MV_SUBPEL(xd->mi_col * MI_SIZE);
   xd->mb_to_right_edge = ctxt.mb_to_far_edge;
-  xd->mb_to_bottom_edge -= (this_height - pred_height) * 8;
+  xd->mb_to_bottom_edge -= GET_MV_SUBPEL(this_height - pred_height);
 }
 
 static INLINE void dec_build_prediction_by_left_pred(
@@ -1012,7 +1012,7 @@ static AOM_INLINE void dec_build_prediction_by_left_preds(
   // except for 128-wide blocks, where we only use a width of 32.
   int this_width = xd->n4_w * MI_SIZE;
   int pred_width = AOMMIN(this_width / 2, 32);
-  xd->mb_to_right_edge += (this_width - pred_width) * 8;
+  xd->mb_to_right_edge += GET_MV_SUBPEL(this_width - pred_width);
 
   struct build_prediction_ctxt ctxt = { cm,         tmp_buf,
                                         tmp_width,  tmp_height,
@@ -1022,8 +1022,8 @@ static AOM_INLINE void dec_build_prediction_by_left_preds(
                                max_neighbor_obmc[mi_size_high_log2[bsize]],
                                dec_build_prediction_by_left_pred, &ctxt);
 
-  xd->mb_to_top_edge = -((xd->mi_row * MI_SIZE) * 8);
-  xd->mb_to_right_edge -= (this_width - pred_width) * 8;
+  xd->mb_to_top_edge = -GET_MV_SUBPEL(xd->mi_row * MI_SIZE);
+  xd->mb_to_right_edge -= GET_MV_SUBPEL(this_width - pred_width);
   xd->mb_to_bottom_edge = ctxt.mb_to_far_edge;
 }
 

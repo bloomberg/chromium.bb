@@ -50,10 +50,10 @@ static INLINE int get_relative_dist(const OrderHintInfo *oh, int a, int b) {
 }
 
 static INLINE void clamp_mv_ref(MV *mv, int bw, int bh, const MACROBLOCKD *xd) {
-  clamp_mv(mv, xd->mb_to_left_edge - bw * 8 - MV_BORDER,
-           xd->mb_to_right_edge + bw * 8 + MV_BORDER,
-           xd->mb_to_top_edge - bh * 8 - MV_BORDER,
-           xd->mb_to_bottom_edge + bh * 8 + MV_BORDER);
+  clamp_mv(mv, xd->mb_to_left_edge - GET_MV_SUBPEL(bw) - MV_BORDER,
+           xd->mb_to_right_edge + GET_MV_SUBPEL(bw) + MV_BORDER,
+           xd->mb_to_top_edge - GET_MV_SUBPEL(bh) - MV_BORDER,
+           xd->mb_to_bottom_edge + GET_MV_SUBPEL(bh) + MV_BORDER);
 }
 
 // This function returns either the appropriate sub block or block's mv
@@ -272,14 +272,13 @@ static INLINE void av1_find_ref_dv(int_mv *ref_dv, const TileInfo *const tile,
                                    int mib_size, int mi_row, int mi_col) {
   (void)mi_col;
   if (mi_row - mib_size < tile->mi_row_start) {
-    ref_dv->as_mv.row = 0;
-    ref_dv->as_mv.col = -MI_SIZE * mib_size - INTRABC_DELAY_PIXELS;
+    ref_dv->as_fullmv.row = 0;
+    ref_dv->as_fullmv.col = -MI_SIZE * mib_size - INTRABC_DELAY_PIXELS;
   } else {
-    ref_dv->as_mv.row = -MI_SIZE * mib_size;
-    ref_dv->as_mv.col = 0;
+    ref_dv->as_fullmv.row = -MI_SIZE * mib_size;
+    ref_dv->as_fullmv.col = 0;
   }
-  ref_dv->as_mv.row *= 8;
-  ref_dv->as_mv.col *= 8;
+  convert_fullmv_to_mv(ref_dv);
 }
 
 static INLINE int av1_is_dv_valid(const MV dv, const AV1_COMMON *cm,

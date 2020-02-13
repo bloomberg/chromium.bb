@@ -752,8 +752,9 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
     x->mv_limits.row_min = -((mi_row * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
     x->mv_limits.row_max = (cm->mi_rows - mi_height - mi_row) * MI_SIZE +
                            (17 - 2 * AOM_INTERP_EXTEND);
-    xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
-    xd->mb_to_bottom_edge = ((cm->mi_rows - mi_height - mi_row) * MI_SIZE) * 8;
+    xd->mb_to_top_edge = -GET_MV_SUBPEL(mi_row * MI_SIZE);
+    xd->mb_to_bottom_edge =
+        GET_MV_SUBPEL((cm->mi_rows - mi_height - mi_row) * MI_SIZE);
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += mi_width) {
       TplDepStats tpl_stats;
 
@@ -762,8 +763,8 @@ static AOM_INLINE void mc_flow_dispenser(AV1_COMP *cpi, int frame_idx,
           -((mi_col * MI_SIZE) + (17 - 2 * AOM_INTERP_EXTEND));
       x->mv_limits.col_max = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) +
                              (17 - 2 * AOM_INTERP_EXTEND);
-      xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
-      xd->mb_to_right_edge = ((cm->mi_cols - mi_width - mi_col) * MI_SIZE) * 8;
+      xd->mb_to_left_edge = -GET_MV_SUBPEL(mi_col * MI_SIZE);
+      xd->mb_to_right_edge = GET_MV_SUBPEL(cm->mi_cols - mi_width - mi_col);
       mode_estimation(cpi, x, xd, &sf, frame_idx, mi_row, mi_col, bsize,
                       tx_size, ref_frame, src_frame, &tpl_stats);
 

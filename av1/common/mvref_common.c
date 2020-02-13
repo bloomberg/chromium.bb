@@ -1058,10 +1058,10 @@ static INLINE void record_samples(const MB_MODE_INFO *mbmi, int *pts,
   int x = col_offset * MI_SIZE + sign_c * AOMMAX(bw, MI_SIZE) / 2 - 1;
   int y = row_offset * MI_SIZE + sign_r * AOMMAX(bh, MI_SIZE) / 2 - 1;
 
-  pts[0] = (x * 8);
-  pts[1] = (y * 8);
-  pts_inref[0] = (x * 8) + mbmi->mv[0].as_mv.col;
-  pts_inref[1] = (y * 8) + mbmi->mv[0].as_mv.row;
+  pts[0] = GET_MV_SUBPEL(x);
+  pts[1] = GET_MV_SUBPEL(y);
+  pts_inref[0] = GET_MV_SUBPEL(x) + mbmi->mv[0].as_mv.col;
+  pts_inref[1] = GET_MV_SUBPEL(y) + mbmi->mv[0].as_mv.row;
 }
 
 // Select samples according to the motion vector difference.

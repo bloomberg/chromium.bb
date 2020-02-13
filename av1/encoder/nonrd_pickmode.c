@@ -159,9 +159,7 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   x->mv_limits = tmp_mv_limits;
   *tmp_mv = x->best_mv;
   // calculate the bit cost on motion vector
-  MV mvp_full;
-  mvp_full.row = tmp_mv->as_mv.row * 8;
-  mvp_full.col = tmp_mv->as_mv.col * 8;
+  MV mvp_full = get_mv_from_fullmv(&tmp_mv->as_fullmv);
 
   *rate_mv = av1_mv_bit_cost(&mvp_full, &ref_mv, x->nmv_vec_cost,
                              x->mv_cost_stack, MV_COST_WEIGHT);

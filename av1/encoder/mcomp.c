@@ -50,9 +50,13 @@
 #define SSE_LAMBDA_HDRES 1  // Used by mv_cost_err_fn
 #define SAD_LAMBDA_HDRES 8  // Used by mvsad_err_cost during full pixel search
 
+static INLINE int get_offset_from_mv(const FULLPEL_MV *mv, int stride) {
+  return mv->row * stride + mv->col;
+}
+
 static INLINE const uint8_t *get_buf_from_mv(const struct buf_2d *buf,
                                              const FULLPEL_MV *mv) {
-  return &buf->buf[mv->row * buf->stride + mv->col];
+  return &buf->buf[get_offset_from_mv(mv, buf->stride)];
 }
 
 void av1_set_mv_search_range(MvLimits *mv_limits, const MV *mv) {
@@ -182,7 +186,7 @@ void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {
     for (i = 0; i <= num_search_pts; ++i) {
       search_site *const ss = &cfg->ss[stage_index][i];
       ss->mv = ss_mvs[i];
-      ss->offset = ss->mv.row * stride + ss->mv.col;
+      ss->offset = get_offset_from_mv(&ss->mv, stride);
     }
     cfg->searches_per_step[stage_index] = num_search_pts;
     cfg->radius[stage_index] = radius;
@@ -226,7 +230,7 @@ void av1_init_motion_fpf(search_site_config *cfg, int stride) {
     for (i = 0; i <= num_search_pts; ++i) {
       search_site *const ss = &cfg->ss[stage_index][i];
       ss->mv = ss_mvs[i];
-      ss->offset = ss->mv.row * stride + ss->mv.col;
+      ss->offset = get_offset_from_mv(&ss->mv, stride);
     }
     cfg->searches_per_step[stage_index] = num_search_pts;
     cfg->radius[stage_index] = radius;
@@ -267,7 +271,7 @@ void av1_init3smotion_compensation(search_site_config *cfg, int stride) {
     for (int i = 0; i <= num_search_pts; ++i) {
       search_site *const ss = &cfg->ss[stage_index][i];
       ss->mv = ss_mvs[i];
-      ss->offset = ss->mv.row * stride + ss->mv.col;
+      ss->offset = get_offset_from_mv(&ss->mv, stride);
     }
     cfg->searches_per_step[stage_index] = num_search_pts;
     cfg->radius[stage_index] = radius;
@@ -418,35 +422,33 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
     }                                              \
   }
 
-#define SETUP_SUBPEL_SEARCH                                             \
-  const uint8_t *const src_address = x->plane[0].src.buf;               \
-  const int src_stride = x->plane[0].src.stride;                        \
-  const MACROBLOCKD *xd = &x->e_mbd;                                    \
-  unsigned int besterr = INT_MAX;                                       \
-  unsigned int sse;                                                     \
-  unsigned int whichdir;                                                \
-  int thismse;                                                          \
-  MV *bestmv = &x->best_mv.as_mv;                                       \
-  const unsigned int halfiters = iters_per_step;                        \
-  const unsigned int quarteriters = iters_per_step;                     \
-  const unsigned int eighthiters = iters_per_step;                      \
-  const int y_stride = xd->plane[0].pre[0].stride;                      \
-  const int offset = bestmv->row * y_stride + bestmv->col;              \
-  const uint8_t *const y = xd->plane[0].pre[0].buf;                     \
-  const MV_COST_TYPE mv_cost_type = x->mv_cost_type;                    \
-                                                                        \
-  int br = bestmv->row * 8;                                             \
-  int bc = bestmv->col * 8;                                             \
-  int hstep = 4;                                                        \
-  int minc, maxc, minr, maxr;                                           \
-  int tr = br;                                                          \
-  int tc = bc;                                                          \
-                                                                        \
-  set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr, \
-                             ref_mv);                                   \
-                                                                        \
-  bestmv->row *= 8;                                                     \
-  bestmv->col *= 8;
+#define SETUP_SUBPEL_SEARCH                                               \
+  const uint8_t *const src_address = x->plane[0].src.buf;                 \
+  const int src_stride = x->plane[0].src.stride;                          \
+  const MACROBLOCKD *xd = &x->e_mbd;                                      \
+  unsigned int besterr = INT_MAX;                                         \
+  unsigned int sse;                                                       \
+  unsigned int whichdir;                                                  \
+  int thismse;                                                            \
+  const unsigned int halfiters = iters_per_step;                          \
+  const unsigned int quarteriters = iters_per_step;                       \
+  const unsigned int eighthiters = iters_per_step;                        \
+  const int y_stride = xd->plane[0].pre[0].stride;                        \
+  const int offset = get_offset_from_mv(&x->best_mv.as_fullmv, y_stride); \
+  const uint8_t *const y = xd->plane[0].pre[0].buf;                       \
+  const MV_COST_TYPE mv_cost_type = x->mv_cost_type;                      \
+                                                                          \
+  convert_fullmv_to_mv(&x->best_mv);                                      \
+  MV *bestmv = &x->best_mv.as_mv;                                         \
+                                                                          \
+  int br = bestmv->row;                                                   \
+  int bc = bestmv->col;                                                   \
+  int hstep = 4;                                                          \
+  int minc, maxc, minr, maxr;                                             \
+  int tr = br;                                                            \
+  int tc = bc;                                                            \
+                                                                          \
+  set_subpel_mv_search_range(&x->mv_limits, &minc, &maxc, &minr, &maxr, ref_mv);
 
 static unsigned int setup_center_error(
     const MACROBLOCKD *xd, const MV *bestmv, const MV *ref_mv,
@@ -893,13 +895,14 @@ int av1_find_best_sub_pixel_tree(
   unsigned int sse;
   unsigned int thismse;
   const int y_stride = xd->plane[0].pre[0].stride;
-  MV *bestmv = &x->best_mv.as_mv;
-  const int offset = bestmv->row * y_stride + bestmv->col;
+  const int offset = get_offset_from_mv(&x->best_mv.as_fullmv, y_stride);
   const uint8_t *const y = xd->plane[0].pre[0].buf;
   const MV_COST_TYPE mv_cost_type = x->mv_cost_type;
+  convert_fullmv_to_mv(&x->best_mv);
+  MV *bestmv = &x->best_mv.as_mv;
 
-  int br = bestmv->row * 8;
-  int bc = bestmv->col * 8;
+  int br = bestmv->row;
+  int bc = bestmv->col;
   int hstep = 4;
   int iter, round = 3 - forced_stop;
   int tr = br;
@@ -914,9 +917,6 @@ int av1_find_best_sub_pixel_tree(
 
   if (!allow_hp)
     if (round == 3) round = 2;
-
-  bestmv->row *= 8;
-  bestmv->col *= 8;
 
   if (use_accurate_subpel_search)
     besterr = upsampled_setup_center_error(
@@ -2394,7 +2394,7 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
     best_sad = tmp_sad;
   }
 
-  best_int_mv->as_mv = get_mv_from_fullmv(&best_int_mv->as_fullmv);
+  convert_fullmv_to_mv(best_int_mv);
 
   set_subpel_mv_search_range(
       &x->mv_limits, &subpel_mv_limits.col_min, &subpel_mv_limits.col_max,
@@ -2697,11 +2697,10 @@ int av1_find_best_obmc_sub_pixel_tree_up(
   unsigned int sse;
   unsigned int thismse;
   const int y_stride = pd->pre[0].stride;
-  const int offset =
-      x->best_mv.as_fullmv.row * y_stride + x->best_mv.as_fullmv.col;
+  const int offset = get_offset_from_mv(&x->best_mv.as_fullmv, y_stride);
   const uint8_t *y = pd->pre[0].buf;
   const MV_COST_TYPE mv_cost_type = x->mv_cost_type;
-  x->best_mv.as_mv = get_mv_from_fullmv(&x->best_mv.as_fullmv);
+  convert_fullmv_to_mv(&x->best_mv);
   MV *bestmv = &x->best_mv.as_mv;
 
   int br = bestmv->row;

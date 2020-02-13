@@ -219,7 +219,8 @@ static int get_search_range(const AV1_COMP *cpi) {
 }
 
 static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
-                                                const MV *ref_mv, MV *best_mv,
+                                                const MV *ref_mv,
+                                                FULLPEL_MV *best_mv,
                                                 int *best_motion_err) {
   MACROBLOCKD *const xd = &x->e_mbd;
   FULLPEL_MV start_mv = get_fullmv_from_mv(ref_mv);
@@ -244,7 +245,7 @@ static AOM_INLINE void first_pass_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
 
   if (tmp_err < *best_motion_err) {
     *best_motion_err = tmp_err;
-    *best_mv = x->best_mv.as_mv;
+    *best_mv = x->best_mv.as_fullmv;
   }
 }
 
@@ -532,7 +533,7 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
       if (!frame_is_intra_only(cm)) {  // Do a motion search
         int tmp_err, motion_error, raw_motion_error;
         // Assume 0,0 motion with no mv overhead.
-        MV mv = kZeroMv, tmp_mv = kZeroMv;
+        FULLPEL_MV mv = kZeroFullMv, tmp_mv = kZeroFullMv;
         struct buf_2d unscaled_last_source_buf_2d;
 
         xd->plane[0].pre[0].buf = lst_yv12->y_buffer + recon_yoffset;
@@ -692,11 +693,10 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                              DOUBLE_DIVIDE_CHECK((double)this_intra_error);
           }
 
-          mv.row *= 8;
-          mv.col *= 8;
+          MV best_mv = get_mv_from_fullmv(&mv);
           this_intra_error = motion_error;
           xd->mi[0]->mode = NEWMV;
-          xd->mi[0]->mv[0].as_mv = mv;
+          xd->mi[0]->mv[0].as_mv = best_mv;
           xd->mi[0]->tx_size = TX_4X4;
           xd->mi[0]->ref_frame[0] = LAST_FRAME;
           xd->mi[0]->ref_frame[1] = NONE_FRAME;
@@ -704,22 +704,22 @@ void av1_first_pass(AV1_COMP *cpi, const int64_t ts_duration) {
                                         mb_col * mb_scale, NULL, bsize,
                                         AOM_PLANE_Y, AOM_PLANE_Y);
           av1_encode_sby_pass1(cm, x, bsize);
-          sum_mvr += mv.row;
-          sum_mvr_abs += abs(mv.row);
-          sum_mvc += mv.col;
-          sum_mvc_abs += abs(mv.col);
-          sum_mvrs += mv.row * mv.row;
-          sum_mvcs += mv.col * mv.col;
+          sum_mvr += best_mv.row;
+          sum_mvr_abs += abs(best_mv.row);
+          sum_mvc += best_mv.col;
+          sum_mvc_abs += abs(best_mv.col);
+          sum_mvrs += best_mv.row * best_mv.row;
+          sum_mvcs += best_mv.col * best_mv.col;
           ++intercount;
 
-          best_ref_mv = mv;
+          best_ref_mv = best_mv;
 
-          if (!is_zero_mv(&mv)) {
+          if (!is_zero_mv(&best_mv)) {
             ++mvcount;
 
             // Non-zero vector, was it different from the last non zero vector?
-            if (!is_equal_mv(&mv, &lastmv)) ++new_mv_count;
-            lastmv = mv;
+            if (!is_equal_mv(&best_mv, &lastmv)) ++new_mv_count;
+            lastmv = best_mv;
 
             // Does the row vector point inwards or outwards?
             if (mb_row < cm->mb_rows / 2) {
