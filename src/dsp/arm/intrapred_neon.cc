@@ -170,11 +170,8 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
         const uint16x4_t sum_1 = vpaddl_u8(val_1);
         return Sum(vadd_u16(sum_0, sum_1));
       } else if (ref_1_size_log2 == 4) {  // 4x16
-        // TODO(johannkoenig): vaddl_u16(sum1, val);
         const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
-        const uint16x8_t sum_0 = vmovl_u8(val);
-        const uint16x8_t sum_1 = vpaddlq_u8(val_1);
-        return Sum(vaddq_u16(sum_0, sum_1));
+        return Sum(vaddw_u8(vpaddlq_u8(val_1), val));
       }
     }
     // 4x1
@@ -195,12 +192,9 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
         return Sum(vadd_u16(sum_0, sum_1));
       } else if (ref_1_size_log2 == 4) {  // 8x16
         const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
-        const uint16x8_t sum_0 = vmovl_u8(val_0);
-        const uint16x8_t sum_1 = vpaddlq_u8(val_1);
-        return Sum(vaddq_u16(sum_0, sum_1));
+        return Sum(vaddw_u8(vpaddlq_u8(val_1), val_0));
       } else if (ref_1_size_log2 == 5) {  // 8x32
-        const uint16x8_t sum_0 = vmovl_u8(val_0);
-        return Sum(vaddq_u16(sum_0, LoadAndAdd32(ref_1_u8)));
+        return Sum(vaddw_u8(LoadAndAdd32(ref_1_u8), val_0));
       }
     }
     // 8x1
@@ -210,14 +204,10 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
     if (use_ref_1) {
       if (ref_1_size_log2 == 2) {  // 16x4
         const uint8x8_t val_1 = Load4(ref_1_u8);
-        const uint16x8_t sum_0 = vmovl_u8(val_1);
-        const uint16x8_t sum_u16 = vpaddlq_u8(val_0);
-        return Sum(vaddq_u16(sum_0, sum_u16));
+        return Sum(vaddw_u8(vpaddlq_u8(val_0), val_1));
       } else if (ref_1_size_log2 == 3) {  // 16x8
         const uint8x8_t val_1 = vld1_u8(ref_1_u8);
-        const uint16x8_t sum_0 = vpaddlq_u8(val_0);
-        const uint16x8_t sum_1 = vmovl_u8(val_1);
-        return Sum(vaddq_u16(sum_0, sum_1));
+        return Sum(vaddw_u8(vpaddlq_u8(val_0), val_1));
       } else if (ref_1_size_log2 == 4) {  // 16x16
         const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
         return Sum(Add(val_0, val_1));
@@ -238,8 +228,7 @@ inline uint32x2_t DcSum_NEON(const void* ref_0, const int ref_0_size_log2,
     if (use_ref_1) {
       if (ref_1_size_log2 == 3) {  // 32x8
         const uint8x8_t val_1 = vld1_u8(ref_1_u8);
-        const uint16x8_t sum_1 = vmovl_u8(val_1);
-        return Sum(vaddq_u16(sum_0, sum_1));
+        return Sum(vaddw_u8(sum_0, val_1));
       } else if (ref_1_size_log2 == 4) {  // 32x16
         const uint8x16_t val_1 = vld1q_u8(ref_1_u8);
         const uint16x8_t sum_1 = vpaddlq_u8(val_1);
@@ -386,6 +375,8 @@ inline void Paeth4Or8xN_NEON(void* const dest, ptrdiff_t stride,
 inline uint8x16_t XLeTopLeft(const uint8x16_t x_dist,
                              const uint16x8_t top_left_dist_low,
                              const uint16x8_t top_left_dist_high) {
+  // TODO(johannkoenig): cle() should work with vmovn(top_left_dist) instead of
+  // using movl(x_dist).
   const uint8x8_t x_le_top_left_low =
       vmovn_u16(vcleq_u16(vmovl_u8(vget_low_u8(x_dist)), top_left_dist_low));
   const uint8x8_t x_le_top_left_high =
