@@ -138,7 +138,10 @@ def _source_handler_file(handler_definition):
 
     global_dic = {}
     try:
-        exec(handler_definition, global_dic)
+        # This statement is gramatically different in python 2 and 3.
+        # Hence, yapf will complain about this. To overcome this, we disable
+        # yapf for this line.
+        exec(handler_definition, global_dic) # yapf: disable
     except Exception:
         raise DispatchException('Error in sourcing handler:' +
                                 traceback.format_exc())

@@ -32,7 +32,7 @@
 
 from __future__ import absolute_import
 import unittest
-import six
+import sys
 
 from mod_pywebsocket import http_header_util
 
@@ -79,7 +79,7 @@ class UnitTest(unittest.TestCase):
 
         host, port, resource = http_header_util.parse_uri(
             'ws://localhost:-1/ws')
-        if six.PY3:
+        if sys.version >= '3.6':
             self.assertEqual(None, resource)
         else:
             self.assertEqual('localhost', host)

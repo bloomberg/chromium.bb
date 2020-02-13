@@ -28,17 +28,13 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
 """Set up script for mod_pywebsocket.
 """
-
 
 from __future__ import absolute_import
 from __future__ import print_function
 from setuptools import setup, Extension
 import sys
-
 
 _PACKAGE_NAME = 'mod_pywebsocket'
 
@@ -53,27 +49,26 @@ if sys.version < '2.7':
 
 if _USE_FAST_MASKING:
     setup(ext_modules=[
-                  Extension(
-                          'mod_pywebsocket/_fast_masking',
-                          ['mod_pywebsocket/fast_masking.i'],
-                          swig_opts=['-c++'])])
+        Extension('mod_pywebsocket/_fast_masking',
+                  ['mod_pywebsocket/fast_masking.i'],
+                  swig_opts=['-c++'])
+    ])
 
-setup(author='Yuzo Fujishima',
-      author_email='yuzo@chromium.org',
-      description='Standalone WebSocket Server for testing purposes.',
-      long_description=(
-              'mod_pywebsocket is a standalone server for '
-              'the WebSocket Protocol (RFC 6455). '
-              'See mod_pywebsocket/__init__.py for more detail.'),
-      license='See LICENSE',
-      name=_PACKAGE_NAME,
-      packages=[_PACKAGE_NAME, _PACKAGE_NAME + '.handshake'],
-      python_requires='>=2.7',
-      install_requires=['six'],
-      #TODO(suzukikeita): Update this to new Github URL
-      url='http://code.google.com/p/pywebsocket/',
-      version='3.0.0',
-      )
-
+setup(
+    author='Yuzo Fujishima',
+    author_email='yuzo@chromium.org',
+    description='Standalone WebSocket Server for testing purposes.',
+    long_description=('mod_pywebsocket is a standalone server for '
+                      'the WebSocket Protocol (RFC 6455). '
+                      'See mod_pywebsocket/__init__.py for more detail.'),
+    license='See LICENSE',
+    name=_PACKAGE_NAME,
+    packages=[_PACKAGE_NAME, _PACKAGE_NAME + '.handshake'],
+    python_requires='>=2.7',
+    install_requires=['six'],
+    #TODO(suzukikeita): Update this to new Github URL
+    url='http://code.google.com/p/pywebsocket/',
+    version='3.0.0',
+)
 
 # vi:sts=4 sw=4 et
