@@ -463,9 +463,13 @@ def _SudoCommand():
   """Get the 'sudo' command, along with all needed environment variables."""
 
   # Pass in the ENVIRONMENT_WHITELIST and ENV_PASSTHRU variables so that
-  # scripts in the chroot know what variables to pass through.
+  # scripts in the chroot know what variables to pass through.  We keep PATH
+  # not for the chroot but for the re-exec & for programs we might run before
+  # we chroot into the SDK.  The process that enters the SDK itself will take
+  # care of initializing PATH to the right value then.
   cmd = ['sudo']
-  for key in constants.CHROOT_ENVIRONMENT_WHITELIST + constants.ENV_PASSTHRU:
+  for key in (constants.CHROOT_ENVIRONMENT_WHITELIST + constants.ENV_PASSTHRU +
+              ('PATH',)):
     value = os.environ.get(key)
     if value is not None:
       cmd += ['%s=%s' % (key, value)]
