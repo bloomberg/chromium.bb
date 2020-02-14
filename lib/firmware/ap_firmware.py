@@ -13,6 +13,7 @@ import importlib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import workon_helper
+from chromite.lib.firmware import flash_ap
 
 _BUILD_TARGET_CONFIG_MODULE = 'chromite.lib.firmware.ap_firmware_config.%s'
 _CONFIG_BUILD_WORKON_PACKAGES = 'BUILD_WORKON_PACKAGES'
@@ -33,6 +34,10 @@ class BuildError(Error):
 
 class BuildTargetNotConfiguredError(Error):
   """Thrown when a config module does not exist for the build target."""
+
+
+class DeployError(Error):
+  """Failure in the deploy command."""
 
 
 class InvalidConfigError(Error):
@@ -78,6 +83,39 @@ def build(build_target):
     # Now raise the emerge failure since we're done cleaning up.
     raise BuildError(
         'The emerge command failed. See the logs above for details.')
+
+
+def deploy(build_target,
+           image,
+           device,
+           flashrom=False,
+           fast=False,
+           verbose=False,
+           dryrun=False):
+  """Deploy a firmware image to a device.
+
+  Args:
+    build_target (build_target_util.BuildTarget): The build target.
+    image (str): The path to the image to flash.
+    device (commandline.Device): The DUT being flashed.
+    flashrom (bool): Whether to use flashrom or futility.
+    fast (bool): Perform a faster flash that isn't validated.
+    verbose (bool): Whether to enable verbose output of the flash commands.
+    dryrun (bool): Whether to actually execute the deployment or just print the
+      operations that would have been performed.
+  """
+  try:
+    flash_ap.deploy(
+        build_target=build_target,
+        image=image,
+        device=device,
+        flashrom=flashrom,
+        fast=fast,
+        verbose=verbose,
+        dryrun=dryrun)
+  except flash_ap.Error as e:
+    # Reraise as a DeployError for future compatibility.
+    raise DeployError(str(e))
 
 
 def _get_build_config(build_target):
