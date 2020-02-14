@@ -514,7 +514,7 @@ inline int GetFilterIndex(const int filter_index, const int length) {
 }
 
 constexpr int SubsampledValue(int value, int subsampling) {
-  return (subsampling == 0) ? value : DivideBy2(value + 1);
+  return (value + subsampling) >> subsampling;
 }
 
 }  // namespace libgav1
