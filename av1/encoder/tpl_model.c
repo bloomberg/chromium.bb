@@ -297,8 +297,10 @@ static AOM_INLINE void mode_estimation(
   best_mv.as_int = INVALID_MV;
 
   for (rf_idx = 0; rf_idx < INTER_REFS_PER_FRAME; ++rf_idx) {
-    if (ref_frame[rf_idx] == NULL) continue;
-    if (src_ref_frame[rf_idx] == NULL) continue;
+    if (ref_frame[rf_idx] == NULL || src_ref_frame[rf_idx] == NULL) {
+      tpl_stats->mv[rf_idx].as_int = INVALID_MV;
+      continue;
+    }
 
     const YV12_BUFFER_CONFIG *ref_frame_ptr = src_ref_frame[rf_idx];
     int ref_mb_offset =
