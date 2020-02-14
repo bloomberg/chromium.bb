@@ -191,7 +191,7 @@ static int msm_init(struct driver *drv)
 				  &metadata, render_use_flags | BO_USE_SCANOUT);
 
 	msm_add_ubwc_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
-				  &metadata, texture_use_flags | BO_USE_SCANOUT);
+				  &metadata, texture_use_flags);
 
 	return 0;
 }
