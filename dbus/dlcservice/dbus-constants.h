@@ -24,6 +24,8 @@ constexpr char kErrorNeedReboot[] =
     "org.chromium.DlcServiceInterface.NEED_REBOOT";
 constexpr char kErrorInvalidDlc[] =
     "org.chromium.DlcServiceInterface.INVALID_DLC";
+constexpr char kErrorAllocation[] =
+    "org.chromium.DlcServiceInterface.ALLOCATION";
 
 }  // namespace dlcservice
 
