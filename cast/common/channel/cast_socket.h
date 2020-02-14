@@ -15,8 +15,6 @@
 namespace openscreen {
 namespace cast {
 
-int32_t GetNextSocketId();
-
 // Represents a simple message-oriented socket for communicating with the Cast
 // V2 protocol.  It isn't thread-safe, so it should only be used on the same
 // TaskRunner thread as its TlsConnection.
@@ -33,9 +31,7 @@ class CastSocket : public TlsConnection::Client {
                            ::cast::channel::CastMessage message) = 0;
   };
 
-  CastSocket(std::unique_ptr<TlsConnection> connection,
-             Client* client,
-             int32_t socket_id);
+  CastSocket(std::unique_ptr<TlsConnection> connection, Client* client);
   ~CastSocket();
 
   // Sends |message| immediately unless the underlying TLS connection is
@@ -48,7 +44,7 @@ class CastSocket : public TlsConnection::Client {
 
   std::array<uint8_t, 2> GetSanitizedIpAddress();
 
-  int32_t socket_id() const { return socket_id_; }
+  int socket_id() const { return socket_id_; }
 
   void set_audio_only(bool audio_only) { audio_only_ = audio_only; }
   bool audio_only() const { return audio_only_; }
@@ -63,9 +59,11 @@ class CastSocket : public TlsConnection::Client {
     kError = false,
   };
 
+  static int g_next_socket_id_;
+
   const std::unique_ptr<TlsConnection> connection_;
   Client* client_;  // May never be null.
-  const int32_t socket_id_;
+  const int socket_id_;
   bool audio_only_ = false;
   std::vector<uint8_t> read_buffer_;
   State state_ = State::kOpen;

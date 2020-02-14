@@ -12,7 +12,6 @@
 #include <openssl/ssl.h>
 #include <time.h>
 
-#include <atomic>
 #include <string>
 
 #include "util/crypto/openssl_util.h"
@@ -46,7 +45,7 @@ bssl::UniquePtr<X509> CreateCertificateInternal(
 
   // Serial numbers must be unique for this session. As a pretend CA, we should
   // not issue certificates with the same serial number in the same session.
-  static std::atomic_int serial_number(1);
+  static int serial_number(1);
   if (ASN1_INTEGER_set(X509_get_serialNumber(certificate.get()),
                        serial_number++) != 1) {
     return nullptr;

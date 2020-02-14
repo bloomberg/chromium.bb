@@ -37,12 +37,12 @@ bool VirtualConnectionRouter::RemoveHandlerForLocalId(
 
 void VirtualConnectionRouter::TakeSocket(SocketErrorHandler* error_handler,
                                          std::unique_ptr<CastSocket> socket) {
-  int32_t id = socket->socket_id();
+  int id = socket->socket_id();
   socket->SetClient(this);
   sockets_.emplace(id, SocketWithHandler{std::move(socket), error_handler});
 }
 
-void VirtualConnectionRouter::CloseSocket(int32_t id) {
+void VirtualConnectionRouter::CloseSocket(int id) {
   auto it = sockets_.find(id);
   if (it != sockets_.end()) {
     vc_manager_->RemoveConnectionsBySocketId(
@@ -71,7 +71,7 @@ Error VirtualConnectionRouter::SendMessage(VirtualConnection virtual_conn,
 }
 
 void VirtualConnectionRouter::OnError(CastSocket* socket, Error error) {
-  int32_t id = socket->socket_id();
+  int id = socket->socket_id();
   auto it = sockets_.find(id);
   if (it != sockets_.end()) {
     vc_manager_->RemoveConnectionsBySocketId(id, VirtualConnection::kUnknown);

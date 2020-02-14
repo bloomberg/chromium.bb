@@ -17,11 +17,11 @@ namespace openscreen {
 namespace cast {
 
 bool operator<(const std::unique_ptr<SenderSocketFactory::PendingAuth>& a,
-               int32_t b) {
+               int b) {
   return a && a->socket->socket_id() < b;
 }
 
-bool operator<(int32_t a,
+bool operator<(int a,
                const std::unique_ptr<SenderSocketFactory::PendingAuth>& b) {
   return b && a < b->socket->socket_id();
 }
@@ -81,8 +81,8 @@ void SenderSocketFactory::OnConnected(
     return;
   }
 
-  auto socket = MakeSerialDelete<CastSocket>(
-      task_runner_, std::move(connection), this, GetNextSocketId());
+  auto socket =
+      MakeSerialDelete<CastSocket>(task_runner_, std::move(connection), this);
   pending_auth_.emplace_back(
       new PendingAuth{endpoint, media_policy, std::move(socket), client,
                       AuthContext::Create(), std::move(peer_cert.value())});

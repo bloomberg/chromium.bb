@@ -123,7 +123,7 @@ TEST_F(VirtualConnectionRouterTest, CloseSocketRemovesVirtualConnections) {
       VirtualConnection{"receiver-1234", "sender-4321", socket_->socket_id()},
       {});
 
-  int32_t id = socket_->socket_id();
+  int id = socket_->socket_id();
   router_.CloseSocket(id);
   EXPECT_FALSE(manager_.GetConnectionData(
       VirtualConnection{"receiver-1234", "sender-4321", id}));

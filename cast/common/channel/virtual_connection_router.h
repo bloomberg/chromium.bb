@@ -57,7 +57,7 @@ class VirtualConnectionRouter final : public CastSocket::Client {
   // |error_handler| must live until either its OnError or OnClose is called.
   void TakeSocket(SocketErrorHandler* error_handler,
                   std::unique_ptr<CastSocket> socket);
-  void CloseSocket(int32_t id);
+  void CloseSocket(int id);
 
   Error SendMessage(VirtualConnection virtual_conn,
                     ::cast::channel::CastMessage message);
@@ -74,7 +74,7 @@ class VirtualConnectionRouter final : public CastSocket::Client {
   };
 
   VirtualConnectionManager* const vc_manager_;
-  std::map<int32_t, SocketWithHandler> sockets_;
+  std::map<int, SocketWithHandler> sockets_;
   std::map<std::string /* local_id */, CastMessageHandler*> endpoints_;
 };
 

@@ -4,7 +4,6 @@
 
 #include "discovery/mdns/mdns_records.h"
 
-#include <atomic>
 #include <cctype>
 
 #include "absl/strings/ascii.h"
@@ -651,7 +650,7 @@ bool MdnsMessage::CanAddRecord(const MdnsRecord& record) {
 }
 
 uint16_t CreateMessageId() {
-  static std::atomic<uint16_t> id(0);
+  static uint16_t id(0);
   return id++;
 }
 

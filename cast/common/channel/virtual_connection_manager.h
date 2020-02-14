@@ -32,7 +32,7 @@ class VirtualConnectionManager {
   // Returns the number of connections removed.
   size_t RemoveConnectionsByLocalId(const std::string& local_id,
                                     VirtualConnection::CloseReason reason);
-  size_t RemoveConnectionsBySocketId(int32_t socket_id,
+  size_t RemoveConnectionsBySocketId(int socket_id,
                                      VirtualConnection::CloseReason reason);
 
   // Returns the AssociatedData for |virtual_connection| if a connection exists,
@@ -50,7 +50,7 @@ class VirtualConnectionManager {
     VirtualConnection::AssociatedData data;
   };
 
-  std::map<int32_t /* socket_id */,
+  std::map<int /* socket_id */,
            std::multimap<std::string /* local_id */, VCTail>>
       connections_;
 };

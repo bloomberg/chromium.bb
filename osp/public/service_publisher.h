@@ -5,7 +5,6 @@
 #ifndef OSP_PUBLIC_SERVICE_PUBLISHER_H_
 #define OSP_PUBLIC_SERVICE_PUBLISHER_H_
 
-#include <atomic>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -145,7 +144,7 @@ class ServicePublisher {
  protected:
   explicit ServicePublisher(Observer* observer);
 
-  std::atomic<State> state_;
+  State state_;
   ServicePublisherError last_error_;
   Observer* observer_;
 

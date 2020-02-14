@@ -34,7 +34,7 @@ struct FakeCastSocket {
         remote(remote),
         moved_connection(std::make_unique<MockTlsConnection>(local, remote)),
         connection(moved_connection.get()),
-        socket(std::move(moved_connection), &mock_client, 1) {}
+        socket(std::move(moved_connection), &mock_client) {}
 
   IPEndpoint local;
   IPEndpoint remote;
@@ -56,14 +56,14 @@ struct FakeCastSocketPair {
     auto moved_connection =
         std::make_unique<::testing::NiceMock<MockTlsConnection>>(local, remote);
     connection = moved_connection.get();
-    socket = std::make_unique<CastSocket>(std::move(moved_connection),
-                                          &mock_client, 1);
+    socket =
+        std::make_unique<CastSocket>(std::move(moved_connection), &mock_client);
 
     auto moved_peer =
         std::make_unique<::testing::NiceMock<MockTlsConnection>>(remote, local);
     peer_connection = moved_peer.get();
-    peer_socket = std::make_unique<CastSocket>(std::move(moved_peer),
-                                               &mock_peer_client, 2);
+    peer_socket =
+        std::make_unique<CastSocket>(std::move(moved_peer), &mock_peer_client);
 
     ON_CALL(*connection, Send(_, _))
         .WillByDefault(Invoke([this](const void* data, size_t len) {
