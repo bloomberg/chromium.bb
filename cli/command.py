@@ -132,7 +132,8 @@ class CliCommand(object):
     parser.set_defaults(command_class=cls)
 
   @classmethod
-  def AddDeviceArgument(cls, parser, schemes=commandline.DEVICE_SCHEME_SSH):
+  def AddDeviceArgument(cls, parser, schemes=commandline.DEVICE_SCHEME_SSH,
+                        positional=False):
     """Add a device argument to the parser.
 
     This standardizes the help message across all subcommands.
@@ -140,6 +141,7 @@ class CliCommand(object):
     Args:
       parser: The parser to add the device argument to.
       schemes: List of device schemes or single scheme to allow.
+      positional: Whether it should be a positional or named argument.
     """
     help_strings = []
     schemes = list(cros_build_lib.iflatten_instance(schemes))
@@ -155,9 +157,14 @@ class CliCommand(object):
                           'e.g. servo:port:1234 or servo:serial:C1230024192.')
     if commandline.DEVICE_SCHEME_FILE in schemes:
       help_strings.append('Target a local file with file://path.')
-    parser.add_argument('device',
-                        type=commandline.DeviceParser(schemes),
-                        help=' '.join(help_strings))
+    if positional:
+      parser.add_argument('device',
+                          type=commandline.DeviceParser(schemes),
+                          help=' '.join(help_strings))
+    else:
+      parser.add_argument('-d', '--device',
+                          type=commandline.DeviceParser(schemes),
+                          help=' '.join(help_strings))
 
   def Run(self):
     """The command to run."""

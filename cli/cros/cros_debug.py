@@ -60,7 +60,7 @@ To debug a process by its pid:
   def AddParser(cls, parser):
     """Add parser arguments."""
     super(cls, DebugCommand).AddParser(parser)
-    cls.AddDeviceArgument(parser)
+    cls.AddDeviceArgument(parser, positional=True)
     parser.add_argument(
         '--board', default=None, help='The board to use. By default it is '
         'automatically detected. You can override the detected board with '

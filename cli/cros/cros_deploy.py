@@ -42,7 +42,7 @@ For more information of cros build usage:
   def AddParser(cls, parser):
     """Add a parser."""
     super(cls, DeployCommand).AddParser(parser)
-    cls.AddDeviceArgument(parser)
+    cls.AddDeviceArgument(parser, positional=True)
     parser.add_argument(
         'packages', help='Packages to install. You can specify '
         '[category/]package[:slot] or the path to the binary package. '

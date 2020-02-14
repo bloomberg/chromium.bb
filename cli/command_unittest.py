@@ -60,9 +60,17 @@ class TestCommandTest(cros_test_lib.MockTestCase):
   def testAddDeviceArgument(self):
     """Tests CliCommand.AddDeviceArgument()."""
     parser = argparse.ArgumentParser()
-    command.CliCommand.AddDeviceArgument(parser)
+    command.CliCommand.AddDeviceArgument(parser, positional=True)
     # Device should be a positional argument.
     parser.parse_args(['device'])
+
+  def testAddNamedDeviceArgument(self):
+    """Tests CliCommand.AddDeviceArgument()."""
+    parser = argparse.ArgumentParser()
+    command.CliCommand.AddDeviceArgument(parser, positional=False)
+    # Device should be a named argument.
+    parser.parse_args(['--device=device'])
+    parser.parse_args(['-d', 'device'])
 
 
 class MockCommand(partial_mock.PartialMock):

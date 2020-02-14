@@ -73,7 +73,7 @@ Quoting can be tricky; the rules are the same as with ssh:
   def AddParser(cls, parser):
     """Adds a parser."""
     super(cls, ShellCommand).AddParser(parser)
-    cls.AddDeviceArgument(parser)
+    cls.AddDeviceArgument(parser, positional=True)
     parser.add_argument(
         '--private-key', type='path', default=None,
         help='SSH identify file (private key).')
