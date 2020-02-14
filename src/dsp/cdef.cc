@@ -136,7 +136,9 @@ void CdefFilter_C(const void* const source, const ptrdiff_t source_stride,
   const int plane_width = MultiplyBy4(columns4x4) >> subsampling_x;
   const int plane_height = MultiplyBy4(rows4x4) >> subsampling_y;
   const int block_width = std::min(8 >> subsampling_x, plane_width - curr_x);
+  assert(block_width > 2);
   const int block_height = std::min(8 >> subsampling_y, plane_height - curr_y);
+  assert(block_height > 2);
   const auto* src = static_cast<const uint16_t*>(source);
   auto* dst = static_cast<Pixel*>(dest);
   const ptrdiff_t dst_stride = dest_stride / sizeof(Pixel);

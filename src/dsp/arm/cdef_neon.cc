@@ -272,14 +272,6 @@ constexpr int8_t kCdefDirections[8][2][2] = {
     {{-1, 1}, {-2, 2}}, {{0, 1}, {-1, 2}}, {{0, 1}, {0, 2}}, {{0, 1}, {1, 2}},
     {{1, 1}, {2, 2}},   {{1, 0}, {2, 1}},  {{1, 0}, {2, 0}}, {{1, 0}, {2, -1}}};
 
-int Constrain(int diff, int threshold, int damping) {
-  if (threshold == 0) return 0;
-  damping = std::max(0, damping - FloorLog2(threshold));
-  const int sign = (diff < 0) ? -1 : 1;
-  return sign *
-         Clip3(threshold - (std::abs(diff) >> damping), 0, std::abs(diff));
-}
-
 // Load 4 vectors based on the given |direction|.
 void LoadDirection(const uint16_t* const src, const ptrdiff_t stride,
                    uint16x8_t* output, const int direction) {
@@ -529,59 +521,10 @@ void CdefFilter_NEON(const void* const source, const ptrdiff_t source_stride,
   if (block_width == 8) {
     DoCdef<8>(src, source_stride, block_height, direction, primary_strength,
               secondary_strength, damping, dst, dest_stride);
-  } else if (block_width == 4) {
+  } else {
+    assert(block_width == 4);
     DoCdef<4>(src, source_stride, block_height, direction, primary_strength,
               secondary_strength, damping, dst, dest_stride);
-  } else {
-    // TODO(johannkoenig): Fix the tests so they don't run 2xH.
-    int y = 0;
-    do {
-      int x = 0;
-      do {
-        int16_t sum = 0;
-        const uint16_t pixel_value = src[x];
-        uint16_t max_value = pixel_value;
-        uint16_t min_value = pixel_value;
-        for (int k = 0; k < 2; ++k) {
-          const int signs[] = {-1, 1};
-          for (const int& sign : signs) {
-            int dy = sign * kCdefDirections[direction][k][0];
-            int dx = sign * kCdefDirections[direction][k][1];
-            uint16_t value = src[dy * source_stride + dx + x];
-            // Note: the summation can ignore the condition check in SIMD
-            // implementation, because Constrain() will return 0 when
-            // value == kCdefLargeValue.
-            if (value != kCdefLargeValue) {
-              sum += Constrain(value - pixel_value, primary_strength, damping) *
-                     kPrimaryTaps[primary_strength & 1][k];
-              max_value = std::max(value, max_value);
-              min_value = std::min(value, min_value);
-            }
-            const int offsets[] = {-2, 2};
-            for (const int& offset : offsets) {
-              dy = sign * kCdefDirections[(direction + offset) & 7][k][0];
-              dx = sign * kCdefDirections[(direction + offset) & 7][k][1];
-              value = src[dy * source_stride + dx + x];
-              // Note: the summation can ignore the condition check in SIMD
-              // implementation.
-              if (value != kCdefLargeValue) {
-                sum += Constrain(value - pixel_value, secondary_strength,
-                                 damping) *
-                       kSecondaryTaps[k];
-                max_value = std::max(value, max_value);
-                min_value = std::min(value, min_value);
-              }
-            }
-          }
-        }
-
-        dst[x] = static_cast<uint8_t>(Clip3(
-            pixel_value + ((8 + sum - (sum < 0)) >> 4), min_value, max_value));
-      } while (++x < block_width);
-
-      src += source_stride;
-      dst += dest_stride;
-    } while (++y < block_height);
   }
 }
 
