@@ -127,7 +127,7 @@ class DecoderImpl : public Allocable {
  private:
   explicit DecoderImpl(const DecoderSettings* settings);
   StatusCode Init();
-  bool AllocateCurrentFrame(RefCountedBufferPtr* current_frame,
+  bool AllocateCurrentFrame(RefCountedBuffer* current_frame,
                             const ObuFrameHeader& frame_header, int left_border,
                             int right_border, int top_border,
                             int bottom_border);
@@ -137,12 +137,12 @@ class DecoderImpl : public Allocable {
   StatusCode CopyFrameToOutputBuffer(const RefCountedBufferPtr& frame);
   StatusCode DecodeTiles(const ObuParser* obu,
                          FrameScratchBuffer* frame_scratch_buffer,
-                         RefCountedBufferPtr* current_frame_ptr);
+                         RefCountedBuffer* current_frame);
   // Sets the current frame's segmentation map for two cases. The third case
   // is handled in Tile::DecodeBlock().
-  void SetCurrentFrameSegmentationMap(RefCountedBufferPtr* current_frame,
-                                      const ObuFrameHeader& frame_header,
-                                      const SegmentationMap* prev_segment_ids);
+  void SetCurrentFrameSegmentationMap(const ObuFrameHeader& frame_header,
+                                      const SegmentationMap* prev_segment_ids,
+                                      RefCountedBuffer* current_frame);
   // Applies film grain synthesis to the |displayable_frame_ptr| and returns the
   // film grain applied frame. |status| is the output status of this function
   // call. If |status| is not kStatusOk, then the return value will be nullptr.

@@ -247,8 +247,8 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
         LIBGAV1_DLOG(ERROR, "Error when getting FrameScratchBuffer.");
         return kStatusOutOfMemory;
       }
-      status =
-          DecodeTiles(obu.get(), frame_scratch_buffer.get(), &current_frame);
+      status = DecodeTiles(obu.get(), frame_scratch_buffer.get(),
+                           current_frame.get());
       frame_scratch_buffer_pool_.Release(std::move(frame_scratch_buffer));
       if (status != kStatusOk) {
         return status;
@@ -290,18 +290,18 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
   return kStatusOk;
 }
 
-bool DecoderImpl::AllocateCurrentFrame(RefCountedBufferPtr* const current_frame,
+bool DecoderImpl::AllocateCurrentFrame(RefCountedBuffer* const current_frame,
                                        const ObuFrameHeader& frame_header,
                                        int left_border, int right_border,
                                        int top_border, int bottom_border) {
   const ColorConfig& color_config = state_.sequence_header.color_config;
-  (*current_frame)
-      ->set_chroma_sample_position(color_config.chroma_sample_position);
-  return (*current_frame)
-      ->Realloc(color_config.bitdepth, color_config.is_monochrome,
-                frame_header.upscaled_width, frame_header.height,
-                color_config.subsampling_x, color_config.subsampling_y,
-                left_border, right_border, top_border, bottom_border);
+  current_frame->set_chroma_sample_position(
+      color_config.chroma_sample_position);
+  return current_frame->Realloc(
+      color_config.bitdepth, color_config.is_monochrome,
+      frame_header.upscaled_width, frame_header.height,
+      color_config.subsampling_x, color_config.subsampling_y, left_border,
+      right_border, top_border, bottom_border);
 }
 
 StatusCode DecoderImpl::CopyFrameToOutputBuffer(
@@ -365,8 +365,7 @@ void DecoderImpl::ReleaseOutputFrame() {
 
 StatusCode DecoderImpl::DecodeTiles(
     const ObuParser* obu, FrameScratchBuffer* const frame_scratch_buffer,
-    RefCountedBufferPtr* const current_frame_ptr) {
-  RefCountedBufferPtr& current_frame = *current_frame_ptr;
+    RefCountedBuffer* const current_frame) {
   const ObuSequenceHeader& sequence_header = obu->sequence_header();
   const ObuFrameHeader& frame_header = obu->frame_header();
   if (PostFilter::DoDeblock(frame_header, settings_.post_filter_mask)) {
@@ -396,7 +395,7 @@ StatusCode DecoderImpl::DecodeTiles(
   // Use kBorderPixels for the left, right, and top borders. Only the bottom
   // border may need to be bigger.
   const int bottom_border = GetBottomBorderPixels(do_cdef, do_restoration);
-  if (!AllocateCurrentFrame(&current_frame, frame_header, kBorderPixels,
+  if (!AllocateCurrentFrame(current_frame, frame_header, kBorderPixels,
                             kBorderPixels, kBorderPixels, bottom_border)) {
     LIBGAV1_DLOG(ERROR, "Failed to allocate memory for the decoder buffer.");
     return kStatusOutOfMemory;
@@ -666,7 +665,7 @@ StatusCode DecoderImpl::DecodeTiles(
 
       std::unique_ptr<Tile> tile(new (std::nothrow) Tile(
           tile_number, tile_group.data + byte_offset, tile_size,
-          sequence_header, frame_header, current_frame.get(),
+          sequence_header, frame_header, current_frame,
           state_.reference_frame_sign_bias, state_.reference_frame,
           &frame_scratch_buffer->motion_field, state_.reference_order_hint,
           wedge_masks_, frame_scratch_buffer->symbol_decoder_context,
@@ -788,26 +787,24 @@ StatusCode DecoderImpl::DecodeTiles(
   if (threading_strategy_.post_filter_thread_pool() != nullptr) {
     post_filter.ApplyFilteringThreaded();
   }
-  SetCurrentFrameSegmentationMap(&current_frame, frame_header,
-                                 prev_segment_ids);
+  SetCurrentFrameSegmentationMap(frame_header, prev_segment_ids, current_frame);
   return kStatusOk;
 }
 
 void DecoderImpl::SetCurrentFrameSegmentationMap(
-    RefCountedBufferPtr* const current_frame,
-    const ObuFrameHeader& frame_header,
-    const SegmentationMap* prev_segment_ids) {
+    const ObuFrameHeader& frame_header, const SegmentationMap* prev_segment_ids,
+    RefCountedBuffer* const current_frame) {
   if (!frame_header.segmentation.enabled) {
     // All segment_id's are 0.
-    (*current_frame)->segmentation_map()->Clear();
+    current_frame->segmentation_map()->Clear();
   } else if (!frame_header.segmentation.update_map) {
     // Copy from prev_segment_ids.
     if (prev_segment_ids == nullptr) {
       // Treat a null prev_segment_ids pointer as if it pointed to a
       // segmentation map containing all 0s.
-      (*current_frame)->segmentation_map()->Clear();
+      current_frame->segmentation_map()->Clear();
     } else {
-      (*current_frame)->segmentation_map()->CopyFrom(*prev_segment_ids);
+      current_frame->segmentation_map()->CopyFrom(*prev_segment_ids);
     }
   }
 }
