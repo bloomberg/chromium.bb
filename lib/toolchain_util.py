@@ -1077,7 +1077,7 @@ class _CommonPrepareBundle(object):
           'Could not fetch https://%s/%s' % (
               constants.EXTERNAL_GOB_HOST, profile_path))
 
-    return base64.decodestring(contents)
+    return base64.decodestring(contents).decode('utf-8')
 
   def _GetArtifactVersionInEbuild(self, package, variable):
     """Find the version (name) of AFDO artifact from the ebuild.
@@ -1106,30 +1106,31 @@ class _CommonPrepareBundle(object):
 
   def _GetOrderfileName(self):
     """Get the name of the orderfile."""
-    benchmark_afdo, cwp_afdo = _ParseMergedProfileName(
-        self._GetArtifactVersionInGob(arch='silvermont'))
+    artifact_version = self._GetArtifactVersionInGob(arch='silvermont')
+    logging.info('Orderfile artifact version = %s', artifact_version)
+    benchmark_afdo, cwp_afdo = _ParseMergedProfileName(artifact_version)
     return 'chromeos-chrome-orderfile-%s.orderfile' % (
         _GetCombinedAFDOName(cwp_afdo, 'field', benchmark_afdo))
 
-  def _FindLatestOrderfileArtifact(self, gs_url):
+  def _FindLatestOrderfileArtifact(self, gs_urls):
     """Find the latest Ordering file artifact in a bucket.
 
     Args:
-      gs_url: The full path to the GS bucket URL.
+      gs_urls: List of full gs:// directory paths to check.
 
     Returns:
-      The name of the latest eligible ordering file artifact.
+      The path of the latest eligible ordering file artifact.
 
     Raises:
       See _FindLatestAFDOArtifact.
     """
-    return self._FindLatestAFDOArtifact(gs_url, self._RankValidOrderfiles)
+    return self._FindLatestAFDOArtifact(gs_urls, self._RankValidOrderfiles)
 
-  def _FindLatestAFDOArtifact(self, gs_url, rank_func):
+  def _FindLatestAFDOArtifact(self, gs_urls, rank_func):
     """Find the latest AFDO artifact in a bucket.
 
     Args:
-      gs_url: The full path to the GS bucket URL.
+      gs_urls: List of full gs:// directory paths to check.
       rank_func: A function to compare two URLs.  It is passed two URLs, and
           returns whether the first is more or less preferred than the second:
             negative: less preferred.
@@ -1137,40 +1138,50 @@ class _CommonPrepareBundle(object):
             positive: more preferred.
 
     Returns:
-      The name of the latest eligible AFDO artifact.
+      The path of the latest eligible AFDO artifact.
 
     Raises:
       RuntimeError: If no files matches the regex in the bucket.
       ValueError: if regex is not valid.
     """
+    def _FilesOnBranch(all_files, branch):
+      """Return the files that are on this branch.
 
-    def _IsUrlOnBranch(url, branch):
-      """Return true if the url matches this branch."""
-      # Legacy PFQ results look like: latest-chromeos-chrome-amd64-79.afdo.
-      # The branch should appear in the name either as:
-      #   R78-12371.22-1566207135 for kernel/CWP profiles, OR
-      #   chromeos-chrome-amd64-78.0.3877.0 for benchmark profiles
-      return ('latest-' not in url and
-              ('R%s-' % branch in url or '-%s.' % branch in url))
+      Legacy PFQ results look like: latest-chromeos-chrome-amd64-79.afdo.
+      The branch should appear in the name either as:
+      - R78-12371.22-1566207135 for kernel/CWP profiles, OR
+      - chromeos-chrome-amd64-78.0.3877.0 for benchmark profiles
 
-    # Obtain all files from gs_url and filter out those not match
-    # pattern. And filter out text files for legacy PFQ like
-    # latest-chromeos-chrome-amd64-79.afdo
-    all_files = self.gs_context.List(gs_url, details=True)
-    results = [
-        x for x in all_files if _IsUrlOnBranch(x.url, self.chrome_branch)]
+      Args:
+        all_files: (list(string)) list of files from GS.
+        branch: (string) branch number.
 
+      Returns:
+        Files matching the branch.
+      """
+      # Filter out those not match pattern. And filter out text files for legacy
+      # PFQ like latest-chromeos-chrome-amd64-79.afdo.
+      return [x for x in all_files
+              if 'latest-' not in x.url and
+              ('R%s-' % branch in x.url or '-%s.' % branch in x.url)]
+
+    # Obtain all files from the gs_urls.
+    all_files = []
+    for gs_url in gs_urls:
+      try:
+        all_files += self.gs_context.List(gs_url, details=True)
+      except gs.GSNoSuchKey:
+        pass
+
+    results = _FilesOnBranch(all_files, self.chrome_branch)
     if not results:
       # If no results found, it's maybe because we just branched.
       # Try to find the latest profile from last branch.
-      results = [
-          x
-          for x in all_files
-          if _IsUrlOnBranch(x.url, str(int(self.chrome_branch) - 1))]
+      results = _FilesOnBranch(all_files, str(int(self.chrome_branch) - 1))
 
     if not results:
-      raise RuntimeError(
-          'No files found on %s for branch %s' % (gs_url, self.chrome_branch))
+      raise RuntimeError('No files for branch %s found in %s' % (
+          self.chrome_branch, ' '.join(gs_urls)))
 
     latest = None
     for res in results:
@@ -1179,12 +1190,12 @@ class _CommonPrepareBundle(object):
         latest = [rank, res.url]
 
     if not latest:
-      raise RuntimeError('No valid latest artifact was found on %s'
+      raise RuntimeError('No valid latest artifact was found in %s'
                          '(example invalid artifact: %s).' %
-                         (gs_url, results[0].url))
+                         (' '.join(gs_urls), results[0].url))
 
-    name = os.path.basename(latest[1])
-    logging.info('Latest AFDO artifact in %s is %s', gs_url, name)
+    name = latest[1]
+    logging.info('Latest AFDO artifact is %s', name)
     return name
 
   def _UpdateEbuildWithArtifacts(self, package, update_rules):
@@ -1219,10 +1230,9 @@ class _CommonPrepareBundle(object):
     new_name = '%s.new' % old_name
 
     _Patterns = collections.namedtuple('_Patterns', ['match', 'sub'])
-    patterns = set(
-        _Patterns(re.compile(AFDO_ARTIFACT_EBUILD_REGEX % k),
-                  AFDO_ARTIFACT_EBUILD_REPL % v)
-        for k, v in rules.items())
+    patterns = set(_Patterns(re.compile(AFDO_ARTIFACT_EBUILD_REGEX % k),
+                             AFDO_ARTIFACT_EBUILD_REPL % v)
+                   for k, v in rules.items())
 
     want = patterns.copy()
     with open(old_name) as old, open(new_name, 'w') as new:
@@ -1335,26 +1345,21 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
     # for the vetted artifact in the first location given.
     locations = self.input_artifacts.get('UnverifiedOrderingFile',
                                          [ORDERFILE_GS_URL_UNVETTED])
-    vetted_loc = os.path.join(os.path.dirname(locations[0]), 'vetted')
-    name = None
-    loc = None
-    for loc in locations:
-      try:
-        name = self._FindLatestOrderfileArtifact(loc)
-        break
-      except RuntimeError as err:
-        logging.warning('No unverified ordering file in %s: %s', loc, err)
+    path = self._FindLatestOrderfileArtifact(locations)
+    loc, name = os.path.split(path)
 
-    if not name:
-      raise RuntimeError(str(err))
-
+    # If not given as an input_artifact, the vetted location is determined from
+    # the first location given for the unvetted artifact.
+    vetted_loc = self.input_artifacts.get('VerifiedOrderingFile', [None])[0]
+    if not vetted_loc:
+      vetted_loc = os.path.join(os.path.dirname(locations[0]), 'vetted')
     vetted_path = os.path.join(vetted_loc, name)
     if self.gs_context.Exists(vetted_path):
       # The latest unverified ordering file has already been verified.
       logging.info('Pointless build: "%s" exists.', vetted_path)
       return PrepareForBuildReturn.POINTLESS
-    # If we don't have an SDK, then we cannot update the manifest.  There is
-    # little benefit in patching the ebuild before we can update the manifest.
+
+    # If we don't have an SDK, then we cannot update the manifest.
     if self.chroot:
       self._PatchEbuild(self._GetEbuildInfo(constants.CHROME_PN),
                         {'UNVETTED_ORDERFILE': os.path.splitext(name)[0],

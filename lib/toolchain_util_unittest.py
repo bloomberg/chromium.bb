@@ -227,7 +227,8 @@ class CommonPrepareBundleTest(PrepareBundleTest):
     self.assertRaises(ValueError,
                       self.obj._GetArtifactVersionInGob, 'badarch')
 
-    self.assertEqual(self.data, self.obj._GetArtifactVersionInGob(self.arch))
+    self.assertEqual(self.data.decode('utf-8'),
+                     self.obj._GetArtifactVersionInGob(self.arch))
     self.fetch.assert_called_once_with(
         constants.EXTERNAL_GOB_HOST,
         'chromium/src/+/refs/tags/%s/chromeos/profiles/%s.afdo.newest.txt'
@@ -305,18 +306,22 @@ class PrepBundLatestAFDOArtifactTest(PrepareBundleTest):
   def testFindLatestAFDOArtifactPassWithBenchmarkAFDO(self):
     """Test _FindLatestAFDOArtifact returns latest benchmark AFDO."""
     latest_afdo = self.obj._FindLatestAFDOArtifact(
-        self.gs_url, self.obj._RankValidBenchmarkProfiles)
-    self.assertEqual(latest_afdo,
-                     'chromeos-chrome-amd64-78.0.3896.0_rc-r1.afdo.bz2')
+        [self.gs_url], self.obj._RankValidBenchmarkProfiles)
+    self.assertEqual(
+        latest_afdo,
+        os.path.join(self.gs_url,
+                     'chromeos-chrome-amd64-78.0.3896.0_rc-r1.afdo.bz2'))
 
   def testFindLatestAFDOArtifactPassWithOrderfile(self):
     """Test _FindLatestAFDOArtifact return latest orderfile."""
     latest_orderfile = self.obj._FindLatestAFDOArtifact(
-        self.gs_url, self.obj._RankValidOrderfiles)
+        [self.gs_url], self.obj._RankValidOrderfiles)
     self.assertEqual(
         latest_orderfile,
-        'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
-        'benchmark-78.0.3893.0-r1.orderfile.xz')
+        os.path.join(
+            self.gs_url,
+            'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
+            'benchmark-78.0.3893.0-r1.orderfile.xz'))
 
   def testFindLatestAfdoArtifactOnPriorBranch(self):
     """Test that we find a file from prior branch when we have none."""
@@ -324,21 +329,24 @@ class PrepBundLatestAFDOArtifactTest(PrepareBundleTest):
         path='path', CPV=portage_util.SplitCPV(
             'chromeos-base/chromeos-chrome-79.0.3900.0-r1'))
     latest_orderfile = self.obj._FindLatestAFDOArtifact(
-        self.gs_url, self.obj._RankValidOrderfiles)
+        [self.gs_url], self.obj._RankValidOrderfiles)
     self.assertEqual(
         latest_orderfile,
-        'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
-        'benchmark-78.0.3893.0-r1.orderfile.xz')
+        os.path.join(
+            self.gs_url,
+            'chromeos-chrome-orderfile-field-78-3877.0-1567418235-'
+            'benchmark-78.0.3893.0-r1.orderfile.xz'))
 
   def testFindLatestAFDOArtifactFailToFindAnyFiles(self):
     """Test function fails when no files on current branch."""
     self.obj._ebuild_info['chromeos-chrome'] = toolchain_util._EbuildInfo(
         path='path', CPV=portage_util.SplitCPV(
             'chromeos-base/chromeos-chrome-80.0.3950.0-r1'))
+    self.gsc_list.side_effect = gs.GSNoSuchKey('No files')
     with self.assertRaises(RuntimeError) as context:
       self.obj._FindLatestAFDOArtifact(
-          self.gs_url, self.obj._RankValidOrderfiles)
-    self.assertEqual('No files found on %s for branch 80' % self.gs_url,
+          [self.gs_url], self.obj._RankValidOrderfiles)
+    self.assertEqual('No files for branch 80 found in %s' % self.gs_url,
                      str(context.exception))
 
   def testFindLatestAFDOArtifactsFindMaxFromInvalidFiles(self):
@@ -351,7 +359,7 @@ class PrepBundLatestAFDOArtifactTest(PrepareBundleTest):
     self.gsc_list.return_value = mock_gs_list
     with self.assertRaises(RuntimeError) as context:
       self.obj._FindLatestAFDOArtifact(
-          self.gs_url, self.obj._RankValidBenchmarkProfiles)
+          [self.gs_url], self.obj._RankValidBenchmarkProfiles)
     self.assertIn('No valid latest artifact was found', str(context.exception))
 
 
