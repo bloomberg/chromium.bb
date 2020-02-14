@@ -20,7 +20,6 @@
 #include <new>
 #include <utility>
 
-#include "src/frame_buffer_utils.h"
 #include "src/utils/common.h"
 
 namespace libgav1 {
@@ -94,65 +93,17 @@ int InternalFrameBufferList::GetFrameBuffer(
     int bitdepth, Libgav1ImageFormat image_format, int width, int height,
     int left_border, int right_border, int top_border, int bottom_border,
     int stride_alignment, Libgav1FrameBuffer2* frame_buffer) {
-#if LIBGAV1_MAX_BITDEPTH < 10
-  static_cast<void>(bitdepth);
-#endif
-  // stride_alignment must be a power of 2.
-  assert((stride_alignment & (stride_alignment - 1)) == 0);
+  FrameBufferInfo info;
+  StatusCode status = ComputeFrameBufferInfo(
+      bitdepth, image_format, width, height, left_border, right_border,
+      top_border, bottom_border, stride_alignment, &info);
+  if (status != kStatusOk) return -1;
 
-  bool is_monochrome;
-  int8_t subsampling_x;
-  int8_t subsampling_y;
-  DecomposeImageFormat(image_format, &is_monochrome, &subsampling_x,
-                       &subsampling_y);
-
-  // Calculate y_stride (in bytes). It is padded to a multiple of
-  // |stride_alignment| bytes.
-  int y_stride = width + left_border + right_border;
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  if (bitdepth > 8) y_stride *= sizeof(uint16_t);
-#endif
-  y_stride = Align(y_stride, stride_alignment);
-  // Size of the Y plane in bytes.
-  const uint64_t y_plane_size =
-      (height + top_border + bottom_border) * static_cast<uint64_t>(y_stride) +
-      (stride_alignment - 1);
-
-  const int uv_width = is_monochrome ? 0 : width >> subsampling_x;
-  const int uv_height = is_monochrome ? 0 : height >> subsampling_y;
-  const int uv_left_border = is_monochrome ? 0 : left_border >> subsampling_x;
-  const int uv_right_border = is_monochrome ? 0 : right_border >> subsampling_x;
-  const int uv_top_border = is_monochrome ? 0 : top_border >> subsampling_y;
-  const int uv_bottom_border =
-      is_monochrome ? 0 : bottom_border >> subsampling_y;
-
-  // Calculate uv_stride (in bytes). It is padded to a multiple of
-  // |stride_alignment| bytes.
-  int uv_stride = uv_width + uv_left_border + uv_right_border;
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  if (bitdepth > 8) uv_stride *= sizeof(uint16_t);
-#endif
-  uv_stride = Align(uv_stride, stride_alignment);
-  // Size of the U or V plane in bytes.
-  const uint64_t uv_plane_size =
-      is_monochrome ? 0
-                    : (uv_height + uv_top_border + uv_bottom_border) *
-                              static_cast<uint64_t>(uv_stride) +
-                          (stride_alignment - 1);
-
-  if (y_plane_size != static_cast<size_t>(y_plane_size) ||
-      uv_plane_size != static_cast<size_t>(uv_plane_size)) {
+  if (info.uv_buffer_size > SIZE_MAX / 2 ||
+      info.y_buffer_size > SIZE_MAX - 2 * info.uv_buffer_size) {
     return -1;
   }
-
-  const auto y_plane_min_size = static_cast<size_t>(y_plane_size);
-  const auto uv_plane_min_size = static_cast<size_t>(uv_plane_size);
-
-  if (uv_plane_min_size > SIZE_MAX / 2 ||
-      y_plane_min_size > SIZE_MAX - 2 * uv_plane_min_size) {
-    return -1;
-  }
-  const size_t min_size = y_plane_min_size + 2 * uv_plane_min_size;
+  const size_t min_size = info.y_buffer_size + 2 * info.uv_buffer_size;
 
   Buffer* buffer = nullptr;
   for (auto& buffer_ptr : buffers_) {
@@ -177,28 +128,14 @@ int InternalFrameBufferList::GetFrameBuffer(
     buffer->size = min_size;
   }
 
-  uint8_t* y_buffer = buffer->data.get();
-  uint8_t* u_buffer = is_monochrome ? nullptr : y_buffer + y_plane_min_size;
-  uint8_t* v_buffer = is_monochrome ? nullptr : u_buffer + uv_plane_min_size;
-  int left_border_bytes = left_border;
-  int uv_left_border_bytes = uv_left_border;
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  if (bitdepth > 8) {
-    left_border_bytes *= sizeof(uint16_t);
-    uv_left_border_bytes *= sizeof(uint16_t);
-  }
-#endif
-  frame_buffer->plane[0] = AlignAddr(
-      y_buffer + (top_border * y_stride) + left_border_bytes, stride_alignment);
-  frame_buffer->plane[1] =
-      AlignAddr(u_buffer + (uv_top_border * uv_stride) + uv_left_border_bytes,
-                stride_alignment);
-  frame_buffer->plane[2] =
-      AlignAddr(v_buffer + (uv_top_border * uv_stride) + uv_left_border_bytes,
-                stride_alignment);
-  frame_buffer->stride[0] = y_stride;
-  frame_buffer->stride[1] = frame_buffer->stride[2] = uv_stride;
-  frame_buffer->private_data = buffer;
+  uint8_t* const y_buffer = buffer->data.get();
+  uint8_t* const u_buffer =
+      (info.uv_buffer_size == 0) ? nullptr : y_buffer + info.y_buffer_size;
+  uint8_t* const v_buffer =
+      (info.uv_buffer_size == 0) ? nullptr : u_buffer + info.uv_buffer_size;
+  status = Libgav1SetFrameBuffer(&info, y_buffer, u_buffer, v_buffer, buffer,
+                                 frame_buffer);
+  if (status != kStatusOk) return -1;
   buffer->in_use = true;
   return 0;
 }

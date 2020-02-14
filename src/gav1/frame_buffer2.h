@@ -25,12 +25,16 @@
 // be included by both C and C++ files.
 
 #if defined(__cplusplus)
+#include <cstddef>
 #include <cstdint>
 #else
+#include <stddef.h>
 #include <stdint.h>
 #endif  // defined(__cplusplus)
 
 #include "gav1/decoder_buffer.h"
+#include "gav1/status_code.h"
+#include "gav1/symbol_visibility.h"
 
 // The callback functions use the C linkage conventions.
 #if defined(__cplusplus)
@@ -41,7 +45,8 @@ extern "C" {
 typedef struct Libgav1FrameBuffer2 {
   // In the |plane| and |stride| arrays, the elements at indexes 0, 1, and 2
   // are for the Y, U, and V planes, respectively.
-  uint8_t* plane[3];   // Pointers to the plane buffers.
+  uint8_t* plane[3];   // Pointers to the frame (excluding the borders) in the
+                       // data buffers.
   int stride[3];       // Row strides in bytes.
   void* private_data;  // Frame buffer's private data. Available for use by the
                        // release frame buffer callback. Also copied to the
@@ -98,6 +103,44 @@ typedef int (*Libgav1GetFrameBufferCallback2)(
 typedef void (*Libgav1ReleaseFrameBufferCallback2)(void* callback_private_data,
                                                    void* buffer_private_data);
 
+// Libgav1ComputeFrameBufferInfo() and Libgav1SetFrameBuffer() are intended to
+// help clients implement frame buffer callbacks using memory buffers. First,
+// call Libgav1ComputeFrameBufferInfo(). If it succeeds, allocate y_buffer of
+// size info.y_buffer_size and allocate u_buffer and v_buffer, both of size
+// info.uv_buffer_size. Finally, pass y_buffer, u_buffer, v_buffer, and
+// buffer_private_data to Libgav1SetFrameBuffer().
+
+// This structure contains information useful for allocating memory for a frame
+// buffer.
+typedef struct Libgav1FrameBufferInfo {
+  size_t y_buffer_size;   // Size in bytes of the Y buffer.
+  size_t uv_buffer_size;  // Size in bytes of the U or V buffer.
+
+  // The following fields are consumed by Libgav1SetFrameBuffer(). Do not use
+  // them directly.
+  int y_stride;            // Row stride in bytes of the Y buffer.
+  int uv_stride;           // Row stride in bytes of the U or V buffer.
+  size_t y_plane_offset;   // Offset in bytes of the frame (excluding the
+                           // borders) in the Y buffer.
+  size_t uv_plane_offset;  // Offset in bytes of the frame (excluding the
+                           // borders) in the U or V buffer.
+  int stride_alignment;    // The stride_alignment argument passed to
+                           // Libgav1ComputeFrameBufferInfo().
+} Libgav1FrameBufferInfo;
+
+// Computes the information useful for allocating memory for a frame buffer.
+// On success, stores the output in |info|.
+LIBGAV1_PUBLIC Libgav1StatusCode Libgav1ComputeFrameBufferInfo(
+    int bitdepth, Libgav1ImageFormat image_format, int width, int height,
+    int left_border, int right_border, int top_border, int bottom_border,
+    int stride_alignment, Libgav1FrameBufferInfo* info);
+
+// Sets the |frame_buffer| struct.
+LIBGAV1_PUBLIC Libgav1StatusCode Libgav1SetFrameBuffer(
+    const Libgav1FrameBufferInfo* info, uint8_t* y_buffer, uint8_t* u_buffer,
+    uint8_t* v_buffer, void* buffer_private_data,
+    Libgav1FrameBuffer2* frame_buffer);
+
 #if defined(__cplusplus)
 }  // extern "C"
 
@@ -108,6 +151,26 @@ using FrameBuffer2 = Libgav1FrameBuffer2;
 using FrameBufferSizeChangedCallback = Libgav1FrameBufferSizeChangedCallback;
 using GetFrameBufferCallback2 = Libgav1GetFrameBufferCallback2;
 using ReleaseFrameBufferCallback2 = Libgav1ReleaseFrameBufferCallback2;
+using FrameBufferInfo = Libgav1FrameBufferInfo;
+
+inline StatusCode ComputeFrameBufferInfo(int bitdepth, ImageFormat image_format,
+                                         int width, int height, int left_border,
+                                         int right_border, int top_border,
+                                         int bottom_border,
+                                         int stride_alignment,
+                                         FrameBufferInfo* info) {
+  return Libgav1ComputeFrameBufferInfo(bitdepth, image_format, width, height,
+                                       left_border, right_border, top_border,
+                                       bottom_border, stride_alignment, info);
+}
+
+inline StatusCode SetFrameBuffer(const FrameBufferInfo* info, uint8_t* y_buffer,
+                                 uint8_t* u_buffer, uint8_t* v_buffer,
+                                 void* buffer_private_data,
+                                 FrameBuffer2* frame_buffer) {
+  return Libgav1SetFrameBuffer(info, y_buffer, u_buffer, v_buffer,
+                               buffer_private_data, frame_buffer);
+}
 
 }  // namespace libgav1
 #endif  // defined(__cplusplus)

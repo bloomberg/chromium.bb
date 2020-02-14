@@ -27,6 +27,7 @@ list(APPEND libgav1_decoder_sources
             #"${libgav1_source}/dsp/film_grain_common.h"
             "${libgav1_source}/film_grain.cc"
             "${libgav1_source}/film_grain.h"
+            "${libgav1_source}/frame_buffer.cc"
             "${libgav1_source}/frame_buffer_callback_adaptor.cc"
             "${libgav1_source}/frame_buffer_callback_adaptor.h"
             "${libgav1_source}/frame_buffer_utils.h"

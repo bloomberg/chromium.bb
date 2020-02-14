@@ -19,7 +19,6 @@
 #include <memory>
 #include <new>
 
-#include "src/frame_buffer_utils.h"
 #include "src/utils/common.h"
 #include "src/utils/logging.h"
 
@@ -51,75 +50,28 @@ extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
                                      int right_border, int top_border,
                                      int bottom_border, int stride_alignment,
                                      Libgav1FrameBuffer2* frame_buffer2) {
-#if LIBGAV1_MAX_BITDEPTH < 10
-  static_cast<void>(bitdepth);
-#endif
-  // stride_alignment must be a power of 2.
-  assert((stride_alignment & (stride_alignment - 1)) == 0);
-
-  bool is_monochrome;
-  int8_t subsampling_x;
-  int8_t subsampling_y;
-  DecomposeImageFormat(image_format, &is_monochrome, &subsampling_x,
-                       &subsampling_y);
-
-  // Calculate y_stride (in bytes). It is padded to a multiple of
-  // |stride_alignment| bytes.
-  int y_stride = width + left_border + right_border;
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  if (bitdepth > 8) y_stride *= sizeof(uint16_t);
-#endif
-  y_stride = Align(y_stride, stride_alignment);
-  // Size of the Y plane in bytes.
-  const uint64_t y_plane_size =
-      (height + top_border + bottom_border) * static_cast<uint64_t>(y_stride) +
-      (stride_alignment - 1);
-
-  const int uv_width = is_monochrome ? 0 : width >> subsampling_x;
-  const int uv_height = is_monochrome ? 0 : height >> subsampling_y;
-  const int uv_left_border = is_monochrome ? 0 : left_border >> subsampling_x;
-  const int uv_right_border = is_monochrome ? 0 : right_border >> subsampling_x;
-  const int uv_top_border = is_monochrome ? 0 : top_border >> subsampling_y;
-  const int uv_bottom_border =
-      is_monochrome ? 0 : bottom_border >> subsampling_y;
-
-  // Calculate uv_stride (in bytes). It is padded to a multiple of
-  // |stride_alignment| bytes.
-  int uv_stride = uv_width + uv_left_border + uv_right_border;
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  if (bitdepth > 8) uv_stride *= sizeof(uint16_t);
-#endif
-  uv_stride = Align(uv_stride, stride_alignment);
-  // Size of the U or V plane in bytes.
-  const uint64_t uv_plane_size =
-      is_monochrome ? 0
-                    : (uv_height + uv_top_border + uv_bottom_border) *
-                              static_cast<uint64_t>(uv_stride) +
-                          (stride_alignment - 1);
-
-  // Check if it is safe to cast y_plane_size and uv_plane_size to size_t.
-  if (y_plane_size > SIZE_MAX || uv_plane_size > SIZE_MAX) {
-    return -1;
-  }
+  Libgav1FrameBufferInfo info;
+  Libgav1StatusCode status = Libgav1ComputeFrameBufferInfo(
+      bitdepth, image_format, width, height, left_border, right_border,
+      top_border, bottom_border, stride_alignment, &info);
+  if (status != kLibgav1StatusOk) return -1;
 
   std::unique_ptr<FrameBuffer> frame_buffer1(new (std::nothrow) FrameBuffer);
   if (frame_buffer1 == nullptr) return -1;
 
   auto* v1_callbacks =
       static_cast<V1FrameBufferCallbacks*>(callback_private_data);
-  if (v1_callbacks->get(v1_callbacks->callback_private_data,
-                        static_cast<size_t>(y_plane_size),
-                        static_cast<size_t>(uv_plane_size),
-                        frame_buffer1.get()) < 0) {
+  if (v1_callbacks->get(v1_callbacks->callback_private_data, info.y_buffer_size,
+                        info.uv_buffer_size, frame_buffer1.get()) < 0) {
     return -1;
   }
 
   if (frame_buffer1->data[0] == nullptr ||
-      frame_buffer1->size[0] < y_plane_size ||
-      (uv_plane_size != 0 && frame_buffer1->data[1] == nullptr) ||
-      frame_buffer1->size[1] < uv_plane_size ||
-      (uv_plane_size != 0 && frame_buffer1->data[2] == nullptr) ||
-      frame_buffer1->size[2] < uv_plane_size) {
+      frame_buffer1->size[0] < info.y_buffer_size ||
+      (info.uv_buffer_size != 0 && frame_buffer1->data[1] == nullptr) ||
+      frame_buffer1->size[1] < info.uv_buffer_size ||
+      (info.uv_buffer_size != 0 && frame_buffer1->data[2] == nullptr) ||
+      frame_buffer1->size[2] < info.uv_buffer_size) {
     assert(false && "The version 1 get_frame_buffer callback malfunctioned.");
     LIBGAV1_DLOG(ERROR,
                  "The version 1 get_frame_buffer callback malfunctioned.");
@@ -127,34 +79,14 @@ extern "C" int GetFrameBufferAdaptor(void* callback_private_data, int bitdepth,
   }
 
   uint8_t* const y_buffer = frame_buffer1->data[0];
-  uint8_t* const u_buffer = !is_monochrome ? frame_buffer1->data[1] : nullptr;
-  uint8_t* const v_buffer = !is_monochrome ? frame_buffer1->data[2] : nullptr;
+  uint8_t* const u_buffer =
+      (info.uv_buffer_size != 0) ? frame_buffer1->data[1] : nullptr;
+  uint8_t* const v_buffer =
+      (info.uv_buffer_size != 0) ? frame_buffer1->data[2] : nullptr;
 
-  int left_border_bytes = left_border;
-  int uv_left_border_bytes = uv_left_border;
-#if LIBGAV1_MAX_BITDEPTH >= 10
-  if (bitdepth > 8) {
-    left_border_bytes *= sizeof(uint16_t);
-    uv_left_border_bytes *= sizeof(uint16_t);
-  }
-#endif
-  frame_buffer2->plane[0] = AlignAddr(
-      y_buffer + (top_border * y_stride) + left_border_bytes, stride_alignment);
-  frame_buffer2->plane[1] =
-      AlignAddr(u_buffer + (uv_top_border * uv_stride) + uv_left_border_bytes,
-                stride_alignment);
-  frame_buffer2->plane[2] =
-      AlignAddr(v_buffer + (uv_top_border * uv_stride) + uv_left_border_bytes,
-                stride_alignment);
-  assert(!is_monochrome || frame_buffer2->plane[1] == nullptr);
-  assert(!is_monochrome || frame_buffer2->plane[2] == nullptr);
-
-  frame_buffer2->stride[0] = y_stride;
-  frame_buffer2->stride[1] = frame_buffer2->stride[2] = uv_stride;
-
-  frame_buffer2->private_data = frame_buffer1.release();
-
-  return 0;
+  status = Libgav1SetFrameBuffer(&info, y_buffer, u_buffer, v_buffer,
+                                 frame_buffer1.release(), frame_buffer2);
+  return (status == kLibgav1StatusOk) ? 0 : -1;
 }
 
 extern "C" void ReleaseFrameBufferAdaptor(void* callback_private_data,
