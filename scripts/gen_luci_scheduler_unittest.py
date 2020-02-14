@@ -6,11 +6,17 @@
 """Test gen_luci_scheduler."""
 from __future__ import print_function
 
+import sys
+
 from chromite.config import chromeos_config
 from chromite.lib import cros_test_lib
 from chromite.lib import config_lib
 from chromite.lib import config_lib_unittest
 from chromite.scripts import gen_luci_scheduler
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # It's reasonable for unittests to look at internals.
 # pylint: disable=protected-access
