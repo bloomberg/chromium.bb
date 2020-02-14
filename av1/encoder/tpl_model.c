@@ -161,13 +161,19 @@ static uint32_t motion_estimation(AV1_COMP *cpi, MACROBLOCK *x,
   /* restore UMV window */
   x->mv_limits = tmp_mv_limits;
 
-  const int pw = block_size_wide[bsize];
-  const int ph = block_size_high[bsize];
-  bestsme = cpi->find_fractional_mv_step(
-      x, cm, mi_row, mi_col, &center_mv, cpi->common.allow_high_precision_mv,
-      x->errorperbit, &cpi->fn_ptr[bsize], 0, mv_sf->subpel_iters_per_step,
-      cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL, NULL,
-      0, 0, pw, ph, 1, 1);
+  const uint8_t *second_pred = NULL;
+  const uint8_t *mask = NULL;
+  const int mask_stride = 0;
+  const int invert_mask = 0;
+  const int do_reset_fractional_mv = 1;
+  SUBPEL_MOTION_SEARCH_PARAMS ms_params;
+  av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &center_mv,
+                                    cost_list, second_pred, mask, mask_stride,
+                                    invert_mask, do_reset_fractional_mv);
+  ms_params.forced_stop = EIGHTH_PEL;
+  ms_params.var_params.subpel_search_type = USE_2_TAPS;
+  ms_params.mv_cost_params.mv_cost_type = MV_COST_NONE;
+  bestsme = cpi->find_fractional_mv_step(x, cm, &ms_params, &distortion, &sse);
 
   return bestsme;
 }

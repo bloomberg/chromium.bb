@@ -1462,6 +1462,11 @@ static INLINE int get_chessboard_index(int frame_index) {
   return frame_index & 0x1;
 }
 
+static INLINE const int *cond_cost_list_const(const struct AV1_COMP *cpi,
+                                              const int *cost_list) {
+  return cpi->sf.mv_sf.subpel_search_method != SUBPEL_TREE ? cost_list : NULL;
+}
+
 static INLINE int *cond_cost_list(const struct AV1_COMP *cpi, int *cost_list) {
   return cpi->sf.mv_sf.subpel_search_method != SUBPEL_TREE ? cost_list : NULL;
 }

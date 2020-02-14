@@ -154,22 +154,24 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
   const int use_fractional_mv =
       bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0;
   if (use_fractional_mv) {
+    const uint8_t *second_pred = NULL;
+    const uint8_t *mask = NULL;
+    const int mask_stride = 0;
+    const int invert_mask = 0;
+    const int reset_fractional_mv = 1;
     int dis; /* TODO: use dis in distortion calculation later. */
-    const int pw = block_size_wide[bsize];
-    const int ph = block_size_high[bsize];
+
+    SUBPEL_MOTION_SEARCH_PARAMS ms_params;
+    av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &ref_mv,
+                                      cost_list, second_pred, mask, mask_stride,
+                                      invert_mask, reset_fractional_mv);
     switch (mbmi->motion_mode) {
       case SIMPLE_TRANSLATION:
         if (cpi->sf.mv_sf.use_accurate_subpel_search) {
           const int try_second = x->second_best_mv.as_int != INVALID_MV &&
                                  x->second_best_mv.as_int != x->best_mv.as_int;
           const int best_mv_var = cpi->find_fractional_mv_step(
-              x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-              x->errorperbit, &cpi->fn_ptr[bsize],
-              cpi->sf.mv_sf.subpel_force_stop,
-              cpi->sf.mv_sf.subpel_iters_per_step,
-              cond_cost_list(cpi, cost_list), x->nmv_vec_cost, x->mv_cost_stack,
-              &dis, &x->pred_sse[ref], NULL, NULL, 0, 0, pw, ph,
-              cpi->sf.mv_sf.use_accurate_subpel_search, 1);
+              x, cm, &ms_params, &dis, &x->pred_sse[ref]);
 
           if (try_second) {
             SubpelMvLimits subpel_limits;
@@ -181,36 +183,22 @@ void av1_single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
             if (av1_is_subpelmv_in_range(
                     &subpel_limits,
                     get_mv_from_fullmv(&x->best_mv.as_fullmv))) {
+              ms_params.do_reset_fractional_mv = !reset_fractional_mv;
+
               const int this_var = cpi->find_fractional_mv_step(
-                  x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-                  x->errorperbit, &cpi->fn_ptr[bsize],
-                  cpi->sf.mv_sf.subpel_force_stop,
-                  cpi->sf.mv_sf.subpel_iters_per_step,
-                  cond_cost_list(cpi, cost_list), x->nmv_vec_cost,
-                  x->mv_cost_stack, &dis, &x->pred_sse[ref], NULL, NULL, 0, 0,
-                  pw, ph, cpi->sf.mv_sf.use_accurate_subpel_search, 0);
+                  x, cm, &ms_params, &dis, &x->pred_sse[ref]);
               if (this_var < best_mv_var) best_mv = x->best_mv.as_mv;
             }
             x->best_mv.as_mv = best_mv;
           }
         } else {
-          cpi->find_fractional_mv_step(
-              x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-              x->errorperbit, &cpi->fn_ptr[bsize],
-              cpi->sf.mv_sf.subpel_force_stop,
-              cpi->sf.mv_sf.subpel_iters_per_step,
-              cond_cost_list(cpi, cost_list), x->nmv_vec_cost, x->mv_cost_stack,
-              &dis, &x->pred_sse[ref], NULL, NULL, 0, 0, 0, 0, 0, 1);
+          cpi->find_fractional_mv_step(x, cm, &ms_params, &dis,
+                                       &x->pred_sse[ref]);
         }
         break;
       case OBMC_CAUSAL:
-        av1_find_best_obmc_sub_pixel_tree_up(
-            x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-            x->errorperbit, &cpi->fn_ptr[bsize],
-            cpi->sf.mv_sf.subpel_force_stop,
-            cpi->sf.mv_sf.subpel_iters_per_step, x->nmv_vec_cost,
-            x->mv_cost_stack, &dis, &x->pred_sse[ref], pw, ph,
-            cpi->sf.mv_sf.use_accurate_subpel_search);
+        av1_find_best_obmc_sub_pixel_tree_up(x, cm, &ms_params, &dis,
+                                             &x->pred_sse[ref]);
         break;
       default: assert(0 && "Invalid motion mode!\n");
     }
@@ -375,12 +363,12 @@ void av1_joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     if (bestsme < INT_MAX && cpi->common.cur_frame_force_integer_mv == 0) {
       int dis; /* TODO: use dis in distortion calculation later. */
       unsigned int sse;
-      bestsme = cpi->find_fractional_mv_step(
-          x, cm, mi_row, mi_col, &ref_mv[id].as_mv,
-          cpi->common.allow_high_precision_mv, x->errorperbit,
-          &cpi->fn_ptr[bsize], 0, cpi->sf.mv_sf.subpel_iters_per_step, NULL,
-          x->nmv_vec_cost, x->mv_cost_stack, &dis, &sse, second_pred, mask,
-          mask_stride, id, pw, ph, cpi->sf.mv_sf.use_accurate_subpel_search, 1);
+      SUBPEL_MOTION_SEARCH_PARAMS ms_params;
+      av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize,
+                                        &ref_mv[id].as_mv, NULL, second_pred,
+                                        mask, mask_stride, id, 1);
+      ms_params.forced_stop = EIGHTH_PEL;
+      bestsme = cpi->find_fractional_mv_step(x, cm, &ms_params, &dis, &sse);
     }
 
     // Restore the pointer to the first prediction buffer.
@@ -412,8 +400,6 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                                        int *rate_mv, int ref_idx) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
-  const int pw = block_size_wide[bsize];
-  const int ph = block_size_high[bsize];
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = xd->mi[0];
   const int ref = mbmi->ref_frame[ref_idx];
@@ -495,15 +481,12 @@ void av1_compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   if (use_fractional_mv) {
     int dis; /* TODO: use dis in distortion calculation later. */
     unsigned int sse;
-    const int mi_row = xd->mi_row;
-    const int mi_col = xd->mi_col;
-    bestsme = cpi->find_fractional_mv_step(
-        x, cm, mi_row, mi_col, &ref_mv.as_mv,
-        cpi->common.allow_high_precision_mv, x->errorperbit,
-        &cpi->fn_ptr[bsize], 0, cpi->sf.mv_sf.subpel_iters_per_step, NULL,
-        x->nmv_vec_cost, x->mv_cost_stack, &dis, &sse, second_pred, mask,
-        mask_stride, ref_idx, pw, ph, cpi->sf.mv_sf.use_accurate_subpel_search,
-        1);
+    SUBPEL_MOTION_SEARCH_PARAMS ms_params;
+    av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &ref_mv.as_mv,
+                                      NULL, second_pred, mask, mask_stride,
+                                      ref_idx, 1);
+    ms_params.forced_stop = EIGHTH_PEL;
+    bestsme = cpi->find_fractional_mv_step(x, cm, &ms_params, &dis, &sse);
   }
 
   // Restore the pointer to the first unscaled prediction buffer.

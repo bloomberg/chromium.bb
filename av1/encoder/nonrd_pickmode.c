@@ -168,13 +168,17 @@ static int combined_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   rv = !(RDCOST(x->rdmult, (*rate_mv), 0) > best_rd_sofar);
 
   if (rv && search_subpel) {
-    SUBPEL_FORCE_STOP subpel_force_stop = cpi->sf.mv_sf.subpel_force_stop;
-    cpi->find_fractional_mv_step(
-        x, cm, mi_row, mi_col, &ref_mv, cpi->common.allow_high_precision_mv,
-        x->errorperbit, &cpi->fn_ptr[bsize], subpel_force_stop,
-        cpi->sf.mv_sf.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
-        x->nmv_vec_cost, x->mv_cost_stack, &dis, &x->pred_sse[ref], NULL, NULL,
-        0, 0, 0, 0, 0, 1);
+    const uint8_t *second_pred = NULL;
+    const uint8_t *mask = NULL;
+    const int mask_stride = 0;
+    const int invert_mask = 0;
+    const int reset_fractional_mv = 1;
+    SUBPEL_MOTION_SEARCH_PARAMS ms_params;
+    av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &ref_mv,
+                                      cost_list, second_pred, mask, mask_stride,
+                                      invert_mask, reset_fractional_mv);
+    cpi->find_fractional_mv_step(x, cm, &ms_params, &dis, &x->pred_sse[ref]);
+
     *tmp_mv = x->best_mv;
     *rate_mv = av1_mv_bit_cost(&tmp_mv->as_mv, &ref_mv, x->nmv_vec_cost,
                                x->mv_cost_stack, MV_COST_WEIGHT);
@@ -224,12 +228,17 @@ static int search_new_mv(AV1_COMP *cpi, MACROBLOCK *x,
     frame_mv[NEWMV][ref_frame].as_mv.row >>= 3;
     frame_mv[NEWMV][ref_frame].as_mv.col >>= 3;
 
-    cpi->find_fractional_mv_step(
-        x, cm, mi_row, mi_col, &ref_mv, cm->allow_high_precision_mv,
-        x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv_sf.subpel_force_stop,
-        cpi->sf.mv_sf.subpel_iters_per_step, cond_cost_list(cpi, cost_list),
-        x->nmv_vec_cost, x->mv_cost_stack, &dis, &x->pred_sse[ref_frame], NULL,
-        NULL, 0, 0, 0, 0, 0, 1);
+    const uint8_t *second_pred = NULL;
+    const uint8_t *mask = NULL;
+    const int mask_stride = 0;
+    const int invert_mask = 0;
+    const int reset_fractional_mv = 1;
+    SUBPEL_MOTION_SEARCH_PARAMS ms_params;
+    av1_make_default_subpel_ms_params(&ms_params, cpi, x, bsize, &ref_mv,
+                                      cost_list, second_pred, mask, mask_stride,
+                                      invert_mask, reset_fractional_mv);
+    cpi->find_fractional_mv_step(x, cm, &ms_params, &dis,
+                                 &x->pred_sse[ref_frame]);
     frame_mv[NEWMV][ref_frame].as_int = x->best_mv.as_int;
   } else if (!combined_motion_search(cpi, x, bsize, mi_row, mi_col,
                                      &frame_mv[NEWMV][ref_frame], rate_mv,

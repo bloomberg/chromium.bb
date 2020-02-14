@@ -84,15 +84,19 @@ static int tf_motion_search(AV1_COMP *cpi,
   const MV_COST_TYPE ori_mv_cost_type = mb->mv_cost_type;
 
   // Parameters used for motion search.
+  const uint8_t *second_pred = NULL;
+  const uint8_t *mask = NULL;
+  const int mask_stride = 0;
+  const int invert_mask = 0;
+  const int do_reset_fractional_mv = 1;
+  SUBPEL_MOTION_SEARCH_PARAMS ms_params;
+
   const int sadperbit16 = mb->sadperbit16;
   const search_site_config ss_cfg = cpi->ss_cfg[SS_CFG_LOOKAHEAD];
   const SEARCH_METHODS full_search_method = NSTEP;
   const int step_param = av1_init_search_range(
       AOMMAX(frame_to_filter->y_crop_width, frame_to_filter->y_crop_height));
   const SUBPEL_SEARCH_TYPE subpel_search_type = USE_8_TAPS;
-  const int allow_high_precision_mv = cpi->common.allow_high_precision_mv;
-  const int subpel_iters_per_step = cpi->sf.mv_sf.subpel_iters_per_step;
-  const int errorperbit = mb->errorperbit;
   const int force_integer_mv = cpi->common.cur_frame_force_integer_mv;
   const MV_COST_TYPE mv_cost_type =
       min_frame_size >= 720
@@ -138,11 +142,14 @@ static int tf_motion_search(AV1_COMP *cpi,
         frame_to_filter->y_buffer + y_offset, y_stride, &sse);
     mb->e_mbd.mi[0]->mv[0] = mb->best_mv;
   } else {  // Do fractional search on the entire block and all sub-blocks.
-    block_error = cpi->find_fractional_mv_step(
-        mb, &cpi->common, 0, 0, &baseline_mv, allow_high_precision_mv,
-        errorperbit, &cpi->fn_ptr[block_size], 0, subpel_iters_per_step,
-        cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL,
-        NULL, 0, 0, mb_width, mb_height, subpel_search_type, 1);
+    av1_make_default_subpel_ms_params(
+        &ms_params, cpi, mb, BLOCK_32X32, &baseline_mv, cost_list, second_pred,
+        mask, mask_stride, invert_mask, do_reset_fractional_mv);
+    ms_params.forced_stop = EIGHTH_PEL;
+    ms_params.var_params.subpel_search_type = subpel_search_type;
+    block_error = cpi->find_fractional_mv_step(mb, &cpi->common, &ms_params,
+                                               &distortion, &sse);
+
     mb->e_mbd.mi[0]->mv[0] = mb->best_mv;
     *ref_mv = mb->best_mv.as_mv;
     // On 4 sub-blocks.
@@ -166,11 +173,15 @@ static int tf_motion_search(AV1_COMP *cpi,
         // Since we are merely refining the result from full pixel search, we
         // don't need regularization for subpel search
         mb->mv_cost_type = MV_COST_NONE;
+        av1_make_default_subpel_ms_params(&ms_params, cpi, mb, BLOCK_16X16,
+                                          &baseline_mv, cost_list, second_pred,
+                                          mask, mask_stride, invert_mask,
+                                          do_reset_fractional_mv);
+        ms_params.forced_stop = EIGHTH_PEL;
+        ms_params.var_params.subpel_search_type = subpel_search_type;
         subblock_errors[subblock_idx] = cpi->find_fractional_mv_step(
-            mb, &cpi->common, 0, 0, &baseline_mv, allow_high_precision_mv,
-            errorperbit, &cpi->fn_ptr[subblock_size], 0, subpel_iters_per_step,
-            cond_cost_list(cpi, cost_list), NULL, NULL, &distortion, &sse, NULL,
-            NULL, 0, 0, subblock_width, subblock_height, subpel_search_type, 1);
+            mb, &cpi->common, &ms_params, &distortion, &sse);
+
         subblock_mvs[subblock_idx] = mb->best_mv.as_mv;
         ++subblock_idx;
       }
