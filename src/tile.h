@@ -96,9 +96,13 @@ class Tile : public Allocable {
   struct Block;  // Defined after this class.
 
   bool Decode(bool is_main_thread);  // 5.11.2.
-  // Decodes all the columns of the superblock row at |row4x4| that are within
-  // this Tile.
-  bool DecodeSuperBlockRow(int row4x4, TileScratchBuffer* scratch_buffer);
+
+  // Processes all the columns of the superblock row at |row4x4| that are within
+  // this Tile. If |save_symbol_decoder_context| is true, then
+  // SaveSymbolDecoderContext() is invoked for the last superblock row.
+  template <ProcessingMode processing_mode, bool save_symbol_decoder_context>
+  bool ProcessSuperBlockRow(int row4x4, TileScratchBuffer* scratch_buffer);
+
   const ObuSequenceHeader& sequence_header() const { return sequence_header_; }
   const ObuFrameHeader& frame_header() const { return frame_header_; }
   const RefCountedBuffer& current_frame() const { return current_frame_; }
@@ -192,7 +196,7 @@ class Tile : public Allocable {
   using ResidualPtr = uint8_t*;
 
   // Performs member initializations that may fail. Called by Decode() and
-  // DecodeSuperBlockRow().
+  // ProcessSuperBlockRow().
   LIBGAV1_MUST_USE_RESULT bool Init();
 
   // Saves the symbol decoder context of this tile into

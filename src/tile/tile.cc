@@ -537,8 +537,9 @@ bool Tile::Init() {
   return true;
 }
 
-bool Tile::DecodeSuperBlockRow(int row4x4,
-                               TileScratchBuffer* const scratch_buffer) {
+template <ProcessingMode processing_mode, bool save_symbol_decoder_context>
+bool Tile::ProcessSuperBlockRow(int row4x4,
+                                TileScratchBuffer* const scratch_buffer) {
   if (row4x4 < row4x4_start_ || row4x4 >= row4x4_end_) return true;
   if (!initialized_ && !Init()) return false;
   assert(scratch_buffer != nullptr);
@@ -546,15 +547,21 @@ bool Tile::DecodeSuperBlockRow(int row4x4,
   for (int column4x4 = column4x4_start_; column4x4 < column4x4_end_;
        column4x4 += block_width4x4) {
     if (!ProcessSuperBlock(row4x4, column4x4, block_width4x4, scratch_buffer,
-                           kProcessingModeParseAndDecode)) {
+                           processing_mode)) {
       LIBGAV1_DLOG(ERROR, "Error decoding super block row: %d column: %d",
                    row4x4, column4x4);
       return false;
     }
   }
-  if (row4x4 + block_width4x4 >= row4x4_end_) SaveSymbolDecoderContext();
+  if (save_symbol_decoder_context && row4x4 + block_width4x4 >= row4x4_end_) {
+    SaveSymbolDecoderContext();
+  }
   return true;
 }
+
+// Used in non frame parallel mode.
+template bool Tile::ProcessSuperBlockRow<kProcessingModeParseAndDecode, true>(
+    int row4x4, TileScratchBuffer* scratch_buffer);
 
 void Tile::SaveSymbolDecoderContext() {
   if (frame_header_.enable_frame_end_update_cdf &&
@@ -585,7 +592,8 @@ bool Tile::Decode(bool is_main_thread) {
     }
     for (int row4x4 = row4x4_start_; row4x4 < row4x4_end_;
          row4x4 += block_width4x4) {
-      if (!DecodeSuperBlockRow(row4x4, scratch_buffer.get())) {
+      if (!ProcessSuperBlockRow<kProcessingModeParseAndDecode, true>(
+              row4x4, scratch_buffer.get())) {
         pending_tiles_->Decrement(false);
         return false;
       }

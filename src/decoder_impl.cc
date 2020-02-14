@@ -702,8 +702,9 @@ StatusCode DecoderImpl::DecodeTiles(
       for (row4x4 = 0; row4x4 < frame_header.rows4x4;
            row4x4 += block_width4x4) {
         for (const auto& tile_ptr : tiles) {
-          if (!tile_ptr->DecodeSuperBlockRow(row4x4,
-                                             tile_scratch_buffer.get())) {
+          if (!tile_ptr
+                   ->ProcessSuperBlockRow<kProcessingModeParseAndDecode, true>(
+                       row4x4, tile_scratch_buffer.get())) {
             ok = false;
             break;
           }
