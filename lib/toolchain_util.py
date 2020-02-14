@@ -1414,9 +1414,52 @@ class PrepareForBuildHandler(_CommonPrepareBundle):
         'Unexpected artifact type %s.' % self.artifact_name)
 
   def _PrepareVerifiedKernelCwpAfdoFile(self):
-    # TODO(crbug/1019868): implement kernel_*-release-afdo-verify.
-    raise PrepareForBuildHandlerError(
-        'Unimplemented PrepareForBuild: %s' % self.artifact_name)
+    """Prepare to verify the kernel CWP AFDO artifact."""
+    kernel_version = self.additional_args.get('kernel_version')
+    if not kernel_version:
+      raise PrepareForBuildHandlerError(
+          'Could not find kernel version to verify.')
+    cwp_locs = [x for x in self.input_artifacts.get(
+        'UnverifiedKernelCwpAfdoFile', [
+            os.path.join(KERNEL_PROFILE_URL, kernel_version)])]
+    afdo_path = self._FindLatestAFDOArtifact(
+        cwp_locs, self._RankValidCWPProfiles)
+
+    published_path = os.path.join(self.input_artifacts.get(
+        'VerifiedKernelCwpAfdoFile',
+        [os.path.join(KERNEL_AFDO_GS_URL_VETTED, kernel_version)])[0],
+                                  os.path.basename(afdo_path))
+    if self.gs_context.Exists(published_path):
+      # The verified artifact is already present: we are done.
+      logging.info('Pointless build: "%s" exists.', published_path)
+      return PrepareForBuildReturn.POINTLESS
+
+    afdo_dir, afdo_name = os.path.split(
+        afdo_path.replace(KERNEL_AFDO_COMPRESSION_SUFFIX, ''))
+    # The package name cannot have dots, so an underscore is used instead.
+    # For example: chromeos-kernel-4_4-4.4.214-r2087.ebuild.
+    kernel_version = kernel_version.replace('.', '_')
+
+    # Check freshness.
+    age = _GetProfileAge(afdo_name, 'kernel_afdo')
+    if age > KERNEL_ALLOWED_STALE_DAYS:
+      logging.info('Found an expired afdo for kernel %s: %s, skip.',
+                   kernel_version, afdo_name)
+      return PrepareForBuildReturn.POINTLESS
+
+    if age > KERNEL_WARN_STALE_DAYS:
+      _WarnSheriffAboutKernelProfileExpiration(kernel_version, afdo_name)
+
+    # If we don't have an SDK, then we cannot update the manifest.
+    if self.chroot:
+      self._PatchEbuild(
+          self._GetEbuildInfo(
+              'chromeos-kernel-%s' % kernel_version, 'sys-kernel'),
+          {'AFDO_PROFILE_VERSION': afdo_name, 'AFDO_LOCATION': afdo_dir},
+          uprev=True)
+    else:
+      logging.info('No chroot: not patching ebuild.')
+    return PrepareForBuildReturn.NEEDED
 
   def _PrepareUnverifiedChromeCwpAfdoFile(self):
     """Unused: CWP is from elsewhere."""
@@ -1685,9 +1728,23 @@ class BundleArtifactHandler(_CommonPrepareBundle):
         'Unexpected artifact type %s.' % self.artifact_name)
 
   def _BundleVerifiedKernelCwpAfdoFile(self):
-    # TODO(crbug/1019868): implement kernel_*-release-afdo-verify.
-    raise BundleArtifactsHandlerError(
-        'Unimplemented BundleArtifacts: %s' % self.artifact_name)
+    """Bundle the verified kernel CWP AFDO file."""
+    kernel_version = self.additional_args.get('kernel_version')
+    if not kernel_version:
+      raise BundleArtifactsHandlerError('kernel_version not provided.')
+    kernel_version = kernel_version.replace('.', '_')
+    profile_name = self._GetArtifactVersionInEbuild(
+        'chromeos-kernel-%s' % kernel_version, 'AFDO_PROFILE_VERSION'
+    ) + KERNEL_AFDO_COMPRESSION_SUFFIX
+    # The verified profile is in the sysroot with a name similar to:
+    # /usr/lib/debug/boot/chromeos-kernel-4_4-R82-12874.0-1581935639.gcov.xz
+    profile_path = os.path.join(
+        self.chroot.path, self.sysroot_path[1:],
+        'usr', 'lib', 'debug', 'boot',
+        'chromeos-kernel-%s-%s' % (kernel_version, profile_name))
+    verified_profile = os.path.join(self.output_dir, profile_name)
+    shutil.copy2(profile_path, verified_profile)
+    return [verified_profile]
 
   def _BundleUnverifiedChromeCwpAfdoFile(self):
     """Unused: this artifact comes from CWP."""
