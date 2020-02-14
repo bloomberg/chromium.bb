@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <type_traits>
 
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
@@ -28,22 +29,26 @@ namespace dsp {
 namespace {
 
 template <int width, int height, int bitdepth, bool mask_is_inverse>
-void WeightMask_C(const uint16_t* prediction_0, ptrdiff_t stride_0,
-                  const uint16_t* prediction_1, ptrdiff_t stride_1,
-                  uint8_t* mask, ptrdiff_t mask_stride) {
+void WeightMask_C(const void* prediction_0, ptrdiff_t stride_0,
+                  const void* prediction_1, ptrdiff_t stride_1, uint8_t* mask,
+                  ptrdiff_t mask_stride) {
+  using PredType =
+      typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
+  const auto* pred_0 = static_cast<const PredType*>(prediction_0);
+  const auto* pred_1 = static_cast<const PredType*>(prediction_1);
   static_assert(width >= 8, "");
   static_assert(height >= 8, "");
   constexpr int rounding_bits = bitdepth - 8 + ((bitdepth == 12) ? 2 : 4);
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       const int difference = RightShiftWithRounding(
-          std::abs(prediction_0[x] - prediction_1[x]), rounding_bits);
+          std::abs(pred_0[x] - pred_1[x]), rounding_bits);
       const auto mask_value =
           static_cast<uint8_t>(std::min(DivideBy16(difference) + 38, 64));
       mask[x] = mask_is_inverse ? 64 - mask_value : mask_value;
     }
-    prediction_0 += stride_0;
-    prediction_1 += stride_1;
+    pred_0 += stride_0;
+    pred_1 += stride_1;
     mask += mask_stride;
   }
 }

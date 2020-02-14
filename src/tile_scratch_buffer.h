@@ -65,16 +65,18 @@ struct TileScratchBuffer : public MaxAlignedAllocable {
   // buffers will be used at any given time, so it is ok to share them in a
   // union.
   union {
-    // Union usage note: This is used only by functions in the "inter"
-    // prediction path.
-    //
-    // Buffers used for inter prediction process. Compound prediction
-    // calculations always output 16-bit values. Inter/intra calculations output
-    // Pixel values.
-    // TODO(johannkoenig): Add elements to the union to represent the different
-    // possibilities.
+    // Buffers used for prediction process.
+    // Compound prediction calculations always output 16-bit values. Depending
+    // on the bitdepth the values may be treated as int16_t or uint16_t. See
+    // src/dsp/convolve.cc and src/dsp/warp.cc for explanations.
+    // Inter/intra calculations output Pixel values.
+
+    // 10/12 bit compound prediction and 10/12 bit inter/intra prediction.
     alignas(kMaxAlignment) uint16_t
         prediction_buffer[2][kMaxSuperBlockSizeSquareInPixels];
+    // 8 bit compound prediction buffer.
+    alignas(kMaxAlignment) int16_t
+        compound_prediction_buffer_8bpp[2][kMaxSuperBlockSizeSquareInPixels];
 
     // Union usage note: This is used only by functions in the "intra"
     // prediction path.

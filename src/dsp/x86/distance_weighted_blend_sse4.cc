@@ -37,17 +37,13 @@ constexpr int kInterPostRoundBit = 4;
 inline __m128i ComputeWeightedAverage8(const __m128i& pred0,
                                        const __m128i& pred1,
                                        const __m128i& weights) {
-  const __m128i compound_round_offset32 =
-      _mm_set1_epi32((16 << (kBitdepth8 + 4)) + (16 << (kBitdepth8 + 3)));
   const __m128i preds_lo = _mm_unpacklo_epi16(pred0, pred1);
-  const __m128i mult_lo =
-      _mm_sub_epi32(_mm_madd_epi16(preds_lo, weights), compound_round_offset32);
+  const __m128i mult_lo = _mm_madd_epi16(preds_lo, weights);
   const __m128i result_lo =
       RightShiftWithRounding_S32(mult_lo, kInterPostRoundBit + 4);
 
   const __m128i preds_hi = _mm_unpackhi_epi16(pred0, pred1);
-  const __m128i mult_hi =
-      _mm_sub_epi32(_mm_madd_epi16(preds_hi, weights), compound_round_offset32);
+  const __m128i mult_hi = _mm_madd_epi16(preds_hi, weights);
   const __m128i result_hi =
       RightShiftWithRounding_S32(mult_hi, kInterPostRoundBit + 4);
 
@@ -56,13 +52,11 @@ inline __m128i ComputeWeightedAverage8(const __m128i& pred0,
 
 template <int height>
 inline void DistanceWeightedBlend4xH_SSE4_1(
-    const uint16_t* prediction_0, const ptrdiff_t prediction_stride_0,
-    const uint16_t* prediction_1, const ptrdiff_t prediction_stride_1,
+    const int16_t* pred_0, const ptrdiff_t prediction_stride_0,
+    const int16_t* pred_1, const ptrdiff_t prediction_stride_1,
     const uint8_t weight_0, const uint8_t weight_1, void* const dest,
     const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
-  const uint16_t* pred_0 = prediction_0;
-  const uint16_t* pred_1 = prediction_1;
   const __m128i weights = _mm_set1_epi32(weight_0 | (weight_1 << 16));
 
   for (int y = 0; y < height; y += 4) {
@@ -103,13 +97,11 @@ inline void DistanceWeightedBlend4xH_SSE4_1(
 
 template <int height>
 inline void DistanceWeightedBlend8xH_SSE4_1(
-    const uint16_t* prediction_0, const ptrdiff_t prediction_stride_0,
-    const uint16_t* prediction_1, const ptrdiff_t prediction_stride_1,
+    const int16_t* pred_0, const ptrdiff_t prediction_stride_0,
+    const int16_t* pred_1, const ptrdiff_t prediction_stride_1,
     const uint8_t weight_0, const uint8_t weight_1, void* const dest,
     const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
-  const uint16_t* pred_0 = prediction_0;
-  const uint16_t* pred_1 = prediction_1;
   const __m128i weights = _mm_set1_epi32(weight_0 | (weight_1 << 16));
 
   for (int y = 0; y < height; y += 2) {
@@ -134,13 +126,11 @@ inline void DistanceWeightedBlend8xH_SSE4_1(
 }
 
 inline void DistanceWeightedBlendLarge_SSE4_1(
-    const uint16_t* prediction_0, const ptrdiff_t prediction_stride_0,
-    const uint16_t* prediction_1, const ptrdiff_t prediction_stride_1,
+    const int16_t* pred_0, const ptrdiff_t prediction_stride_0,
+    const int16_t* pred_1, const ptrdiff_t prediction_stride_1,
     const uint8_t weight_0, const uint8_t weight_1, const int width,
     const int height, void* const dest, const ptrdiff_t dest_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
-  const uint16_t* pred_0 = prediction_0;
-  const uint16_t* pred_1 = prediction_1;
   const __m128i weights = _mm_set1_epi32(weight_0 | (weight_1 << 16));
 
   int y = height;
@@ -167,24 +157,26 @@ inline void DistanceWeightedBlendLarge_SSE4_1(
 }
 
 void DistanceWeightedBlend_SSE4_1(
-    const uint16_t* prediction_0, const ptrdiff_t prediction_stride_0,
-    const uint16_t* prediction_1, const ptrdiff_t prediction_stride_1,
+    const void* prediction_0, const ptrdiff_t prediction_stride_0,
+    const void* prediction_1, const ptrdiff_t prediction_stride_1,
     const uint8_t weight_0, const uint8_t weight_1, const int width,
     const int height, void* const dest, const ptrdiff_t dest_stride) {
+  const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
+  const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   if (width == 4) {
     if (height == 4) {
-      DistanceWeightedBlend4xH_SSE4_1<4>(prediction_0, prediction_stride_0,
-                                         prediction_1, prediction_stride_1,
-                                         weight_0, weight_1, dest, dest_stride);
+      DistanceWeightedBlend4xH_SSE4_1<4>(pred_0, prediction_stride_0, pred_1,
+                                         prediction_stride_1, weight_0,
+                                         weight_1, dest, dest_stride);
     } else if (height == 8) {
-      DistanceWeightedBlend4xH_SSE4_1<8>(prediction_0, prediction_stride_0,
-                                         prediction_1, prediction_stride_1,
-                                         weight_0, weight_1, dest, dest_stride);
+      DistanceWeightedBlend4xH_SSE4_1<8>(pred_0, prediction_stride_0, pred_1,
+                                         prediction_stride_1, weight_0,
+                                         weight_1, dest, dest_stride);
     } else {
       assert(height == 16);
-      DistanceWeightedBlend4xH_SSE4_1<16>(
-          prediction_0, prediction_stride_0, prediction_1, prediction_stride_1,
-          weight_0, weight_1, dest, dest_stride);
+      DistanceWeightedBlend4xH_SSE4_1<16>(pred_0, prediction_stride_0, pred_1,
+                                          prediction_stride_1, weight_0,
+                                          weight_1, dest, dest_stride);
     }
     return;
   }
@@ -192,33 +184,33 @@ void DistanceWeightedBlend_SSE4_1(
   if (width == 8) {
     switch (height) {
       case 4:
-        DistanceWeightedBlend8xH_SSE4_1<4>(
-            prediction_0, prediction_stride_0, prediction_1,
-            prediction_stride_1, weight_0, weight_1, dest, dest_stride);
+        DistanceWeightedBlend8xH_SSE4_1<4>(pred_0, prediction_stride_0, pred_1,
+                                           prediction_stride_1, weight_0,
+                                           weight_1, dest, dest_stride);
         return;
       case 8:
-        DistanceWeightedBlend8xH_SSE4_1<8>(
-            prediction_0, prediction_stride_0, prediction_1,
-            prediction_stride_1, weight_0, weight_1, dest, dest_stride);
+        DistanceWeightedBlend8xH_SSE4_1<8>(pred_0, prediction_stride_0, pred_1,
+                                           prediction_stride_1, weight_0,
+                                           weight_1, dest, dest_stride);
         return;
       case 16:
-        DistanceWeightedBlend8xH_SSE4_1<16>(
-            prediction_0, prediction_stride_0, prediction_1,
-            prediction_stride_1, weight_0, weight_1, dest, dest_stride);
+        DistanceWeightedBlend8xH_SSE4_1<16>(pred_0, prediction_stride_0, pred_1,
+                                            prediction_stride_1, weight_0,
+                                            weight_1, dest, dest_stride);
         return;
       default:
         assert(height == 32);
-        DistanceWeightedBlend8xH_SSE4_1<32>(
-            prediction_0, prediction_stride_0, prediction_1,
-            prediction_stride_1, weight_0, weight_1, dest, dest_stride);
+        DistanceWeightedBlend8xH_SSE4_1<32>(pred_0, prediction_stride_0, pred_1,
+                                            prediction_stride_1, weight_0,
+                                            weight_1, dest, dest_stride);
 
         return;
     }
   }
 
-  DistanceWeightedBlendLarge_SSE4_1(prediction_0, prediction_stride_0,
-                                    prediction_1, prediction_stride_1, weight_0,
-                                    weight_1, width, height, dest, dest_stride);
+  DistanceWeightedBlendLarge_SSE4_1(pred_0, prediction_stride_0, pred_1,
+                                    prediction_stride_1, weight_0, weight_1,
+                                    width, height, dest, dest_stride);
 }
 
 void Init8bpp() {

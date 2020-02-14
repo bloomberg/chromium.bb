@@ -600,8 +600,21 @@ void Tile::CompoundInterPrediction(
     const int candidate_column, uint8_t* dest, const ptrdiff_t dest_stride) {
   const PredictionParameters& prediction_parameters =
       *block.bp->prediction_parameters;
-  uint16_t* prediction[2] = {block.scratch_buffer->prediction_buffer[0],
-                             block.scratch_buffer->prediction_buffer[1]};
+
+  void* prediction[2];
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  const int bitdepth = sequence_header_.color_config.bitdepth;
+  if (bitdepth > 8) {
+    prediction[0] = block.scratch_buffer->prediction_buffer[0];
+    prediction[1] = block.scratch_buffer->prediction_buffer[1];
+  } else {
+#endif
+    prediction[0] = block.scratch_buffer->compound_prediction_buffer_8bpp[0];
+    prediction[1] = block.scratch_buffer->compound_prediction_buffer_8bpp[1];
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  }
+#endif
+
   switch (prediction_parameters.compound_prediction_type) {
     case kCompoundPredictionTypeWedge:
     case kCompoundPredictionTypeDiffWeighted:
@@ -873,10 +886,10 @@ void Tile::ObmcPrediction(const Block& block, const Plane plane,
 }
 
 void Tile::DistanceWeightedPrediction(
-    uint16_t* prediction_0, ptrdiff_t prediction_stride_0,
-    uint16_t* prediction_1, ptrdiff_t prediction_stride_1, const int width,
-    const int height, const int candidate_row, const int candidate_column,
-    uint8_t* dest, ptrdiff_t dest_stride) {
+    void* prediction_0, ptrdiff_t prediction_stride_0, void* prediction_1,
+    ptrdiff_t prediction_stride_1, const int width, const int height,
+    const int candidate_row, const int candidate_column, uint8_t* dest,
+    ptrdiff_t dest_stride) {
   int distance[2];
   int weight[2];
   for (int reference = 0; reference < 2; ++reference) {

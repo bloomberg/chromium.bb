@@ -17,6 +17,7 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
+#include <type_traits>
 
 #include "src/dsp/dsp.h"
 #include "src/utils/common.h"
@@ -26,20 +27,20 @@ namespace dsp {
 namespace {
 
 template <int bitdepth, typename Pixel>
-void DistanceWeightedBlend_C(const uint16_t* prediction_0,
+void DistanceWeightedBlend_C(const void* prediction_0,
                              const ptrdiff_t prediction_stride_0,
-                             const uint16_t* prediction_1,
+                             const void* prediction_1,
                              const ptrdiff_t prediction_stride_1,
                              const uint8_t weight_0, const uint8_t weight_1,
                              const int width, const int height,
                              void* const dest, const ptrdiff_t dest_stride) {
-  // An offset to cancel offsets used in compound predictor generation that
-  // make intermediate computations non negative.
-  constexpr int compound_round_offset =
-      (16 << (bitdepth + 4)) + (16 << (bitdepth + 3));
   // 7.11.3.2 Rounding variables derivation process
   //   2 * FILTER_BITS(7) - (InterRound0(3|5) + InterRound1(7))
   constexpr int inter_post_round_bits = (bitdepth == 12) ? 2 : 4;
+  using PredType =
+      typename std::conditional<bitdepth == 8, int16_t, uint16_t>::type;
+  const auto* pred_0 = static_cast<const PredType*>(prediction_0);
+  const auto* pred_1 = static_cast<const PredType*>(prediction_1);
   auto* dst = static_cast<Pixel*>(dest);
   const ptrdiff_t dst_stride = dest_stride / sizeof(Pixel);
 
@@ -47,18 +48,18 @@ void DistanceWeightedBlend_C(const uint16_t* prediction_0,
   do {
     int x = 0;
     do {
-      // prediction range: 8bpp: [0, 15471] 10bpp: [0, 61983] 12bpp: [0, 62007].
+      // See warp.cc and convolve.cc for detailed prediction ranges.
       // weight_0 + weight_1 = 16.
-      int res = prediction_0[x] * weight_0 + prediction_1[x] * weight_1;
-      res -= compound_round_offset;
+      int res = pred_0[x] * weight_0 + pred_1[x] * weight_1;
+      res -= (bitdepth == 8) ? 0 : kCompoundOffset * 16;
       dst[x] = static_cast<Pixel>(
           Clip3(RightShiftWithRounding(res, inter_post_round_bits + 4), 0,
                 (1 << bitdepth) - 1));
     } while (++x < width);
 
     dst += dst_stride;
-    prediction_0 += prediction_stride_0;
-    prediction_1 += prediction_stride_1;
+    pred_0 += prediction_stride_0;
+    pred_1 += prediction_stride_1;
   } while (++y < height);
 }
 

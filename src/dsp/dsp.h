@@ -399,11 +399,12 @@ using ConvolveFunc = void (*)(const void* reference, ptrdiff_t reference_stride,
 // a specific setting:
 // ConvolveFunc[is_intra_block_copy][is_compound][has_vertical_filter]
 // [has_horizontal_filter].
-// If is_compound is false, the prediction is clipped to pixel.
+// If is_compound is false, the prediction is clipped to Pixel.
 // If is_compound is true, the range of prediction is:
-//   8bpp: [0, 15471]
-//   10bpp: [0, 61983]
-//   12bpp: [0, 62007]
+//   8bpp:  [-5132,  9212] (int16_t)
+//   10bpp: [ 3988, 61532] (uint16_t)
+//   12bpp: [ 3974, 61559] (uint16_t)
+// See src/dsp/convolve.cc
 using ConvolveFuncs = ConvolveFunc[2][2][2][2];
 
 // Convolve + scale function signature. Section 7.11.3.4.
@@ -438,16 +439,16 @@ using ConvolveScaleFuncs = ConvolveScaleFunc[2];
 
 // Weight mask function signature. Section 7.11.3.12.
 // |prediction_0| is the first input block.
-// |prediction_1| is the second input block.
-// |prediction_stride_0| and |prediction_stride_1| are corresponding strides.
+// |prediction_1| is the second input block. Both blocks are int16_t* when
+// bitdepth == 8 and uint16_t* otherwise.
+// |prediction_stride_0| and |prediction_stride_1| are corresponding strides,
+// given in units of [u]int16_t.
 // |width| and |height| are the prediction width and height.
 // The valid range of block size is [8x8, 128x128] for the luma plane.
 // |mask| is the output buffer. |mask_stride| is the output buffer stride.
-using WeightMaskFunc = void (*)(const uint16_t* prediction_0,
-                                ptrdiff_t stride_0,
-                                const uint16_t* prediction_1,
-                                ptrdiff_t stride_1, uint8_t* mask,
-                                ptrdiff_t mask_stride);
+using WeightMaskFunc = void (*)(const void* prediction_0, ptrdiff_t stride_0,
+                                const void* prediction_1, ptrdiff_t stride_1,
+                                uint8_t* mask, ptrdiff_t mask_stride);
 
 // Weight mask functions signature. The dimensions (in order) are:
 //   * Width index (4 => 0, 8 => 1, 16 => 2 and so on).
@@ -461,14 +462,16 @@ using WeightMaskFuncs = WeightMaskFunc[6][6][2];
 // range of Pixel value.
 // Average blending is in the bottom of Section 7.11.3.1 (COMPOUND_AVERAGE).
 // |prediction_0| is the first input block.
-// |prediction_1| is the second input block.
-// |prediction_stride_0| and |prediction_stride_1| are corresponding strides.
+// |prediction_1| is the second input block. Both blocks are int16_t* when
+// bitdepth == 8 and uint16_t* otherwise.
+// |prediction_stride_0| and |prediction_stride_1| are corresponding strides,
+// given in units of [u]int16_t.
 // |width| and |height| are the same for the first and second input blocks.
 // The valid range of block size is [8x8, 128x128] for the luma plane.
 // |dest| is the output buffer. |dest_stride| is the output buffer stride.
-using AverageBlendFunc = void (*)(const uint16_t* prediction_0,
+using AverageBlendFunc = void (*)(const void* prediction_0,
                                   ptrdiff_t prediction_stride_0,
-                                  const uint16_t* prediction_1,
+                                  const void* prediction_1,
                                   ptrdiff_t prediction_stride_1, int width,
                                   int height, void* dest,
                                   ptrdiff_t dest_stride);
@@ -479,8 +482,10 @@ using AverageBlendFunc = void (*)(const uint16_t* prediction_0,
 // This function takes two blocks (inter frame prediction) and produces a
 // weighted output.
 // |prediction_0| is the first input block.
-// |prediction_1| is the second input block.
-// |prediction_stride_0| and |prediction_stride_1| are corresponding strides.
+// |prediction_1| is the second input block. Both blocks are int16_t* when
+// bitdepth == 8 and uint16_t* otherwise.
+// |prediction_stride_0| and |prediction_stride_1| are corresponding strides,
+// given in units of [u]int16_t.
 // |weight_0| is the weight for the first block. It is derived from the relative
 // distance of the first reference frame and the current frame.
 // |weight_1| is the weight for the second block. It is derived from the
@@ -488,27 +493,24 @@ using AverageBlendFunc = void (*)(const uint16_t* prediction_0,
 // |width| and |height| are the same for the first and second input blocks.
 // The valid range of block size is [8x8, 128x128] for the luma plane.
 // |dest| is the output buffer. |dest_stride| is the output buffer stride.
-using DistanceWeightedBlendFunc = void (*)(const uint16_t* prediction_0,
-                                           ptrdiff_t prediction_stride_0,
-                                           const uint16_t* prediction_1,
-                                           ptrdiff_t prediction_stride_1,
-                                           uint8_t weight_0, uint8_t weight_1,
-                                           int width, int height, void* dest,
-                                           ptrdiff_t dest_stride);
+using DistanceWeightedBlendFunc = void (*)(
+    const void* prediction_0, ptrdiff_t prediction_stride_0,
+    const void* prediction_1, ptrdiff_t prediction_stride_1, uint8_t weight_0,
+    uint8_t weight_1, int width, int height, void* dest, ptrdiff_t dest_stride);
 
 // Mask blending function signature. Section 7.11.3.14.
 // This function takes two blocks and produces a blended output stored into the
 // output block |dest|. The blending is a weighted average process, controlled
 // by values of the mask.
 // |prediction_0| is the first input block. When prediction mode is inter_intra
-// (or wedge_inter_intra), this refers to the inter frame prediction.
-// |prediction_stride_0| is the stride, given in units of uint16_t.
+// (or wedge_inter_intra), this refers to the inter frame prediction. It is
+// int16_t* when bitdepth == 8 and uint16_t* otherwise.
+// |prediction_stride_0| is the stride, given in units of [u]int16_t.
 // |prediction_1| is the second input block. When prediction mode is inter_intra
 // (or wedge_inter_intra), this refers to the intra frame prediction and uses
 // Pixel values. It is only used for intra frame prediction when bitdepth >= 10.
-// |prediction_stride_1| is the stride, given in units of uint16_t. Because this
-// is only used for intra frame prediction with bitdepth >= 10 it is also in
-// units of Pixel.
+// It is int16_t* when bitdepth == 8 and uint16_t* otherwise.
+// |prediction_stride_1| is the stride, given in units of [u]int16_t.
 // |mask| is an integer array, whose value indicates the weight of the blending.
 // |mask_stride| is corresponding stride.
 // |width|, |height| are the same for both input blocks.
@@ -524,9 +526,9 @@ using DistanceWeightedBlendFunc = void (*)(const uint16_t* prediction_0,
 // |is_wedge_inter_intra| indicates if the mask is for the wedge prediction.
 // |dest| is the output block.
 // |dest_stride| is the corresponding stride for dest.
-using MaskBlendFunc = void (*)(const uint16_t* prediction_0,
+using MaskBlendFunc = void (*)(const void* prediction_0,
                                ptrdiff_t prediction_stride_0,
-                               const uint16_t* prediction_1,
+                               const void* prediction_1,
                                ptrdiff_t prediction_stride_1,
                                const uint8_t* mask, ptrdiff_t mask_stride,
                                int width, int height, void* dest,

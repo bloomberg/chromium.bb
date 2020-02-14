@@ -441,9 +441,9 @@ class Tile : public Allocable {
                            ObmcDirection blending_direction);
   void ObmcPrediction(const Block& block, Plane plane, int width,
                       int height);  // 7.11.3.9.
-  void DistanceWeightedPrediction(uint16_t* prediction_0,
+  void DistanceWeightedPrediction(void* prediction_0,
                                   ptrdiff_t prediction_stride_0,
-                                  uint16_t* prediction_1,
+                                  void* prediction_1,
                                   ptrdiff_t prediction_stride_1, int width,
                                   int height, int candidate_row,
                                   int candidate_column, uint8_t* dest,

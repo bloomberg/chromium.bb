@@ -34,6 +34,30 @@ namespace {
 // Number of extra bits of precision in warped filtering.
 constexpr int kWarpedDiffPrecisionBits = 10;
 
+// Warp prediction output ranges.
+// Bitdepth:  8 Input range:            [       0,      255]
+//   8bpp intermediate offset: 16384.
+//   intermediate range:                [    4399,    61009]
+//   first pass output range:           [     550,     7626]
+//   8bpp intermediate offset removal: 262144.
+//   intermediate range:                [ -620566,  1072406]
+//   second pass output range:          [       0,      255]
+//   compound second pass output range: [   -4848,     8378]
+//
+// Bitdepth: 10 Input range:            [       0,     1023]
+//   intermediate range:                [  -48081,   179025]
+//   first pass output range:           [   -6010,    22378]
+//   intermediate range:                [-2103516,  4198620]
+//   second pass output range:          [       0,     1023]
+//   compound second pass output range: [    8142,    57378]
+//
+// Bitdepth: 12 Input range:            [       0,     4095]
+//   intermediate range:                [ -192465,   716625]
+//   first pass output range:           [   -6015,    22395]
+//   intermediate range:                [-2105190,  4201830]
+//   second pass output range:          [       0,     4095]
+//   compound second pass output range: [    8129,    57403]
+
 template <bool is_compound, int bitdepth, typename Pixel>
 void Warp_C(const void* const source, ptrdiff_t source_stride,
             const int source_width, const int source_height,
@@ -182,7 +206,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           if (is_compound) {
             int sum = row_border_pixel
                       << ((14 - kRoundBitsHorizontal) - kRoundBitsVertical);
-            sum += unsigned_offset;
+            sum += (bitdepth == 8) ? 0 : unsigned_offset;
             Memset(dst_row, sum, 8);
           } else {
             Memset(dst_row, row_border_pixel, 8);
@@ -233,7 +257,8 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             }
             sum = RightShiftWithRounding(sum, kRoundBitsVertical);
             if (is_compound) {
-              dst_row[x] = static_cast<DestType>(sum + unsigned_offset);
+              sum += (bitdepth == 8) ? 0 : unsigned_offset;
+              dst_row[x] = static_cast<DestType>(sum);
             } else {
               dst_row[x] = static_cast<DestType>(Clip3(sum, 0, kMaxPixel));
             }
@@ -412,6 +437,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           if (is_compound) {
             // Warp output is a predictor, whose type is uint16_t.
             // Clipping is applied at the stage of final pixel value output.
+            sum -= (bitdepth == 8) ? unsigned_offset : 0;
             dst_row[x] = static_cast<DestType>(sum);
           } else {
             dst_row[x] = static_cast<DestType>(

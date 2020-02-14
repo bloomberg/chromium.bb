@@ -59,6 +59,9 @@ void HorizontalFilter(const int sx4, const int16_t alpha,
     sx += alpha;
   }
   Transpose8x8(filter);
+  // TODO(johannkoenig): An offset is only strictly required for the horizontal
+  // pass. It should be possible to remove it before storing to the intermediate
+  // buffer.
   // For 8 bit, the range of sum is within uint16_t, if we add a horizontal
   // offset. horizontal_offset guarantees sum is nonnegative.
   //
@@ -146,13 +149,14 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
     // same, store one sample per row in a column vector.
     int16_t intermediate_result_column[15];
   };
-  constexpr int unsigned_offset = (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
+  // TODO(johannkoenig): Remove as many of these offsets as possible. Only the
+  // first pass offset should be required.
   constexpr int horizontal_offset = 1 << (bitdepth + kFilterBits - 1);
   constexpr int vertical_offset =
       1 << (bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal);
   const auto* const src = static_cast<const uint8_t*>(source);
   using DestType =
-      typename std::conditional<is_compound, uint16_t, uint8_t>::type;
+      typename std::conditional<is_compound, int16_t, uint8_t>::type;
   auto* dst = static_cast<DestType*>(dest);
 
   assert(block_width >= 8);
@@ -247,10 +251,10 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           DestType* dst_row = dst + start_x - block_start_x;
           for (int y = 0; y < 8; ++y) {
             if (is_compound) {
-              const uint16x8_t sum = vdupq_n_u16(
-                  (row_border_pixel + kSingleRoundOffset)
-                  << (kInterRoundBitsVertical - kRoundBitsVertical));
-              vst1q_u16(reinterpret_cast<uint16_t*>(dst_row), sum);
+              const int16x8_t sum =
+                  vdupq_n_s16(row_border_pixel << (kInterRoundBitsVertical -
+                                                   kRoundBitsVertical));
+              vst1q_s16(reinterpret_cast<int16_t*>(dst_row), sum);
             } else {
               memset(dst_row, row_border_pixel, 8);
             }
@@ -304,7 +308,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             const int16_t sum_descale =
                 RightShiftWithRounding(sum, kRoundBitsVertical);
             if (is_compound) {
-              dst_row[x] = sum_descale + unsigned_offset;
+              dst_row[x] = sum_descale;
             } else {
               tmp[x] = sum_descale;
             }
@@ -333,14 +337,11 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             sum_high =
                 vmlal_n_s16(sum_high, vget_high_s16(filter[k]), intermediate);
           }
-          int16x8_t sum =
+          const int16x8_t sum =
               vcombine_s16(vrshrn_n_s32(sum_low, kRoundBitsVertical),
                            vrshrn_n_s32(sum_high, kRoundBitsVertical));
           if (is_compound) {
-            const int16x8_t offset = vdupq_n_s16(unsigned_offset);
-            sum = vaddq_s16(sum, offset);
-            vst1q_u16(reinterpret_cast<uint16_t*>(dst_row),
-                      vreinterpretq_u16_s16(sum));
+            vst1q_s16(reinterpret_cast<int16_t*>(dst_row), sum);
           } else {
             vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovun_s16(sum));
           }
@@ -461,12 +462,19 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             vcombine_u16(vrshrn_n_u32(sum_low_u32, kRoundBitsVertical),
                          vrshrn_n_u32(sum_high_u32, kRoundBitsVertical));
         if (is_compound) {
-          vst1q_u16(reinterpret_cast<uint16_t*>(dst_row), sum);
+          // TODO(johannkoenig): There are better ways of dealing with this
+          // offset for 8bpp. In the meantime use the 10/12bpp constant but
+          // shifted down.
+          const uint16x8_t compound_offset = vdupq_n_u16(kCompoundOffset >> 2);
+          const int16x8_t sum_signed =
+              vreinterpretq_s16_u16(vsubq_u16(sum, compound_offset));
+          vst1q_s16(reinterpret_cast<int16_t*>(dst_row), sum_signed);
         } else {
           const uint16x8_t single_round_offset =
               vdupq_n_u16(kSingleRoundOffset);
-          const uint16x8_t sum_clip = vqsubq_u16(sum, single_round_offset);
-          vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovn_u16(sum_clip));
+          const int16x8_t sum_signed =
+              vreinterpretq_s16_u16(vsubq_u16(sum, single_round_offset));
+          vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovun_s16(sum_signed));
         }
         dst_row += dest_stride;
         sy4 += delta;

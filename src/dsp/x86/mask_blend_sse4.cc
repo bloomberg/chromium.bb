@@ -116,9 +116,9 @@ inline __m128i GetInterIntraMask8(const uint8_t* mask, ptrdiff_t stride) {
   return mask_val;
 }
 
-inline void WriteMaskBlendLine4x2(const uint16_t* const pred_0,
+inline void WriteMaskBlendLine4x2(const int16_t* const pred_0,
                                   const ptrdiff_t pred_stride_0,
-                                  const uint16_t* const pred_1,
+                                  const int16_t* const pred_1,
                                   const ptrdiff_t pred_stride_1,
                                   const __m128i pred_mask_0,
                                   const __m128i pred_mask_1, uint8_t* dst,
@@ -139,23 +139,19 @@ inline void WriteMaskBlendLine4x2(const uint16_t* const pred_0,
   const __m128i compound_pred = _mm_packus_epi32(
       _mm_srli_epi32(compound_pred_lo, 6), _mm_srli_epi32(compound_pred_hi, 6));
 
-  const __m128i compound_round_offset =
-      _mm_set1_epi16((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3)));
-  // res -= compound_round_offset;
   // dst[x] = static_cast<Pixel>(
   //     Clip3(RightShiftWithRounding(res, inter_post_round_bits), 0,
   //           (1 << kBitdepth8) - 1));
-  const __m128i result = RightShiftWithRounding_S16(
-      _mm_sub_epi16(compound_pred, compound_round_offset), 4);
+  const __m128i result = RightShiftWithRounding_S16(compound_pred, 4);
   const __m128i res = _mm_packus_epi16(result, result);
   Store4(dst, res);
   Store4(dst + dst_stride, _mm_srli_si128(res, 4));
 }
 
 template <int subsampling_x, int subsampling_y>
-inline void MaskBlending4x4_SSE4(const uint16_t* pred_0,
+inline void MaskBlending4x4_SSE4(const int16_t* pred_0,
                                  const ptrdiff_t prediction_stride_0,
-                                 const uint16_t* pred_1,
+                                 const int16_t* pred_1,
                                  const ptrdiff_t prediction_stride_1,
                                  const uint8_t* mask,
                                  const ptrdiff_t mask_stride, uint8_t* dst,
@@ -180,9 +176,9 @@ inline void MaskBlending4x4_SSE4(const uint16_t* pred_0,
 }
 
 template <int subsampling_x, int subsampling_y>
-inline void MaskBlending4xH_SSE4(const uint16_t* pred_0,
+inline void MaskBlending4xH_SSE4(const int16_t* pred_0,
                                  const ptrdiff_t pred_stride_0,
-                                 const int height, const uint16_t* pred_1,
+                                 const int height, const int16_t* pred_1,
                                  const ptrdiff_t pred_stride_1,
                                  const uint8_t* const mask_ptr,
                                  const ptrdiff_t mask_stride, uint8_t* dst,
@@ -240,13 +236,13 @@ inline void MaskBlending4xH_SSE4(const uint16_t* pred_0,
 
 template <int subsampling_x, int subsampling_y>
 inline void MaskBlend_SSE4(
-    const uint16_t* prediction_0, const ptrdiff_t prediction_stride_0,
-    const uint16_t* prediction_1, const ptrdiff_t prediction_stride_1,
+    const void* prediction_0, const ptrdiff_t prediction_stride_0,
+    const void* prediction_1, const ptrdiff_t prediction_stride_1,
     const uint8_t* const mask_ptr, const ptrdiff_t mask_stride, const int width,
     const int height, void* dest, const ptrdiff_t dst_stride) {
   auto* dst = static_cast<uint8_t*>(dest);
-  const uint16_t* pred_0 = prediction_0;
-  const uint16_t* pred_1 = prediction_1;
+  const auto* pred_0 = static_cast<const int16_t*>(prediction_0);
+  const auto* pred_1 = static_cast<const int16_t*>(prediction_1);
   const ptrdiff_t pred_stride_0 = prediction_stride_0;
   const ptrdiff_t pred_stride_1 = prediction_stride_1;
   if (width == 4) {
@@ -279,14 +275,10 @@ inline void MaskBlend_SSE4(
 
       const __m128i res = _mm_packus_epi32(_mm_srli_epi32(compound_pred_lo, 6),
                                            _mm_srli_epi32(compound_pred_hi, 6));
-      const __m128i compound_round_offset =
-          _mm_set1_epi16((1 << (kBitdepth8 + 4)) + (1 << (kBitdepth8 + 3)));
-      // res -= compound_round_offset;
       // dst[x] = static_cast<Pixel>(
       //     Clip3(RightShiftWithRounding(res, inter_post_round_bits), 0,
       //           (1 << kBitdepth8) - 1));
-      const __m128i result = RightShiftWithRounding_S16(
-          _mm_sub_epi16(res, compound_round_offset), 4);
+      const __m128i result = RightShiftWithRounding_S16(res, 4);
       StoreLo8(dst + x, _mm_packus_epi16(result, result));
 
       x += 8;

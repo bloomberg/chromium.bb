@@ -33,6 +33,28 @@ constexpr int kSubPixelMask = (1 << kSubPixelBits) - 1;
 constexpr int kHorizontalOffset = 3;
 constexpr int kVerticalOffset = 3;
 
+// Compound prediction output ranges.
+// Bitdepth:  8 Input range:            [       0,      255]
+//   intermediate range:                [   -7140,    23460]
+//   first pass output range:           [   -1785,     5865]
+//   intermediate range:                [ -328440,   589560]
+//   second pass output range:          [       0,      255]
+//   compound second pass output range: [   -5132,     9212]
+//
+// Bitdepth: 10 Input range:            [       0,     1023]
+//   intermediate range:                [  -28644,    94116]
+//   first pass output range:           [   -7161,    23529]
+//   intermediate range:                [-1317624,  2365176]
+//   second pass output range:          [       0,     1023]
+//   compound second pass output range: [    3988,    61532]
+//
+// Bitdepth: 12 Input range:            [       0,     4095]
+//   intermediate range:                [ -114660,   376740]
+//   first pass output range:           [   -7166,    23546]
+//   intermediate range:                [-1318560,  2366880]
+//   second pass output range:          [       0,     4095]
+//   compound second pass output range: [    3974,    61559]
+
 template <int bitdepth, typename Pixel>
 void ConvolveScale2D_C(const void* const reference,
                        const ptrdiff_t reference_stride,
@@ -173,8 +195,6 @@ void ConvolveCompoundScale2D_C(const void* const reference,
   // Vertical filter.
   filter_index = GetFilterIndex(vertical_filter_index, height);
   intermediate = intermediate_result;
-  // TODO(b/146439793): Remove this offset.
-  const int blend_offset = (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   int p = subpixel_y & 1023;
   y = 0;
   do {
@@ -188,8 +208,9 @@ void ConvolveCompoundScale2D_C(const void* const reference,
             intermediate[((p >> kScaleSubPixelBits) + k) * intermediate_stride +
                          x];
       }
-      dest[x] =
-          RightShiftWithRounding(sum, kRoundBitsVertical - 1) + blend_offset;
+      sum = RightShiftWithRounding(sum, kRoundBitsVertical - 1);
+      sum += (bitdepth == 8) ? 0 : kCompoundOffset;
+      dest[x] = sum;
     } while (++x < width);
 
     dest += pred_stride;
@@ -251,8 +272,6 @@ void ConvolveCompound2D_C(const void* const reference,
   filter_id = ((subpixel_y & 1023) >> 6) & kSubPixelMask;
   // If |filter_id| == 0 then ConvolveHorizontal() should be called.
   assert(filter_id != 0);
-  // TODO(b/146439793): Remove this offset.
-  const int blend_offset = (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   y = 0;
   do {
     int x = 0;
@@ -262,8 +281,9 @@ void ConvolveCompound2D_C(const void* const reference,
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] *
                intermediate[k * intermediate_stride + x];
       }
-      dest[x] =
-          RightShiftWithRounding(sum, kRoundBitsVertical - 1) + blend_offset;
+      sum = RightShiftWithRounding(sum, kRoundBitsVertical - 1);
+      sum += (bitdepth == 8) ? 0 : kCompoundOffset;
+      dest[x] = sum;
     } while (++x < width);
 
     dest += pred_stride;
@@ -469,7 +489,7 @@ void ConvolveCompoundCopy_C(const void* const reference,
   do {
     int x = 0;
     do {
-      int sum = (1 << bitdepth) + (1 << (bitdepth - 1));
+      int sum = (bitdepth == 8) ? 0 : ((1 << bitdepth) + (1 << (bitdepth - 1)));
       sum += src[x];
       dest[x] = sum << kRoundBitsVertical;
     } while (++x < width);
@@ -499,8 +519,6 @@ void ConvolveCompoundHorizontal_C(
   const int filter_id = (subpixel_x >> 6) & kSubPixelMask;
   // Copy filters must call ConvolveCopy().
   assert(filter_id != 0);
-  // TODO(b/146439793): Remove this offset.
-  const int blend_offset = (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   int y = 0;
   do {
     int x = 0;
@@ -510,7 +528,8 @@ void ConvolveCompoundHorizontal_C(
         sum += kHalfSubPixelFilters[filter_index][filter_id][k] * src[x + k];
       }
       sum = RightShiftWithRounding(sum, kRoundBitsHorizontal - 1);
-      dest[x] = sum + blend_offset;
+      sum += (bitdepth == 8) ? 0 : kCompoundOffset;
+      dest[x] = sum;
     } while (++x < width);
 
     src += src_stride;
@@ -542,8 +561,6 @@ void ConvolveCompoundVertical_C(const void* const reference,
   const int filter_id = (subpixel_y >> 6) & kSubPixelMask;
   // Copy filters must call ConvolveCopy().
   assert(filter_id != 0);
-  // TODO(b/146439793): Remove this offset.
-  const int blend_offset = (1 << (bitdepth + 4)) + (1 << (bitdepth + 3));
   int y = 0;
   do {
     int x = 0;
@@ -554,7 +571,8 @@ void ConvolveCompoundVertical_C(const void* const reference,
                src[k * src_stride + x];
       }
       sum = RightShiftWithRounding(sum, kRoundBitsHorizontal - 1);
-      dest[x] = sum + blend_offset;
+      sum += (bitdepth == 8) ? 0 : kCompoundOffset;
+      dest[x] = sum;
     } while (++x < width);
     src += src_stride;
     dest += pred_stride;

@@ -41,6 +41,9 @@ enum {
   kInterRoundBitsCompoundVertical = 7,  // 8, 10 & 12-bit compound prediction.
   kInterRoundBitsVertical = 11,         // 8 & 10-bit, single prediction.
   kInterRoundBitsVertical12bpp = 9,
+  // Offset applied to 10bpp and 12bpp predictors to allow storing them in
+  // uint16_t. Removed before blending.
+  kCompoundOffset = (1 << 14) + (1 << 13),
 };  // anonymous enum
 
 extern const int8_t kFilterIntraTaps[kNumFilterIntraPredictors][8][8];
