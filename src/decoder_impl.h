@@ -129,6 +129,10 @@ class DecoderImpl : public Allocable {
                             int right_border, int top_border,
                             int bottom_border);
   void ReleaseOutputFrame();
+  // Decodes all the frames contained in the given temporal unit. Blocks until
+  // all the frames are decoded.
+  StatusCode DecodeTemporalUnit(const EncodedFrame& encoded_frame,
+                                const DecoderBuffer** out_ptr);
   // Populates buffer_ with values from |frame|. Adds a reference to |frame|
   // in output_frame_.
   StatusCode CopyFrameToOutputBuffer(const RefCountedBufferPtr& frame);

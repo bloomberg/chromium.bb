@@ -178,6 +178,11 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
     return kStatusOk;
   }
   const EncodedFrame encoded_frame = encoded_frames_.Pop();
+  return DecodeTemporalUnit(encoded_frame, out_ptr);
+}
+
+StatusCode DecoderImpl::DecodeTemporalUnit(const EncodedFrame& encoded_frame,
+                                           const DecoderBuffer** out_ptr) {
   std::unique_ptr<ObuParser> obu(new (std::nothrow) ObuParser(
       encoded_frame.data, encoded_frame.size, &buffer_pool_, &state_));
   if (obu == nullptr) {
