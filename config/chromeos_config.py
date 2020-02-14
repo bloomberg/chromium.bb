@@ -3042,6 +3042,8 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       archive_build_debug=True,
   )
 
+  # TODO(b/146630610): gandof is switched to pi since R81, this builder config
+  # is still kept for R79 and R80. Remove this once completely retired.
   site_config.Add(
       'gandof-android-nyc-pre-flight-branch',
       site_config.templates.pre_flight_branch,
@@ -3221,8 +3223,7 @@ def BranchScheduleConfig():
 
   RELEASES = [
       ('release-R81-12871.B',
-       ['gandof-android-nyc-pre-flight-branch',
-        'grunt-android-pi-pre-flight-branch'],
+       ['grunt-android-pi-pre-flight-branch'],
        'chell-chrome-no-afdo-uprev-pre-flight-branch',
        ['orderfile-generate-toolchain',
         'orderfile-verify-toolchain'],
