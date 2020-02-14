@@ -42,6 +42,7 @@ import gclient_utils
 import gerrit_util
 import git_common
 import git_footers
+import git_new_branch
 import metrics
 import metrics_utils
 import owners
@@ -259,62 +260,6 @@ def _git_branch_config_key(branch, key):
   """Helper method to return Git config key for a branch."""
   assert branch, 'branch name is required to set git config for it'
   return 'branch.%s.%s' % (branch, key)
-
-
-def _git_get_branch_config_value(key, default=None, value_type=str,
-                                 branch=False):
-  """Returns git config value of given or current branch if any.
-
-  Returns default in all other cases.
-  """
-  assert value_type in (int, str, bool)
-  if branch is False:  # Distinguishing default arg value from None.
-    branch = GetCurrentBranch()
-
-  if not branch:
-    return default
-
-  args = ['config']
-  if value_type == bool:
-    args.append('--bool')
-  # `git config` also has --int, but apparently git config suffers from integer
-  # overflows (http://crbug.com/640115), so don't use it.
-  args.append(_git_branch_config_key(branch, key))
-  code, out = RunGitWithCode(args)
-  if code == 0:
-    value = out.strip()
-    if value_type == int:
-      return int(value)
-    if value_type == bool:
-      return bool(value.lower() == 'true')
-    return value
-  return default
-
-
-def _git_set_branch_config_value(key, value, branch=None, **kwargs):
-  """Sets or unsets the git branch config value.
-
-  If value is None, the key will be unset, otherwise it will be set.
-  If no branch is given, the currently checked out branch is used.
-  """
-  if not branch:
-    branch = GetCurrentBranch()
-    assert branch, 'a branch name OR currently checked out branch is required'
-  args = ['config']
-  # Check for boolean first, because bool is int, but int is not bool.
-  if value is None:
-    args.append('--unset')
-  elif isinstance(value, bool):
-    args.append('--bool')
-    value = str(value).lower()
-  else:
-    # `git config` also has --int, but apparently git config suffers from
-    # integer overflows (http://crbug.com/640115), so don't use it.
-    value = str(value)
-  args.append(_git_branch_config_key(branch, key))
-  if value is not None:
-    args.append(value)
-  RunGit(args, **kwargs)
 
 
 def _get_properties_from_options(options):
@@ -969,28 +914,6 @@ class Settings(object):
     return RunGit(['config', param], **kwargs).strip()
 
 
-def ShortBranchName(branch):
-  """Convert a name like 'refs/heads/foo' to just 'foo'."""
-  return branch.replace('refs/heads/', '', 1)
-
-
-def GetCurrentBranchRef():
-  """Returns branch ref (e.g., refs/heads/master) or None."""
-  return RunGit(['symbolic-ref', 'HEAD'],
-                stderr=subprocess2.VOID, error_ok=True).strip() or None
-
-
-def GetCurrentBranch():
-  """Returns current branch or None.
-
-  For refs/heads/* branches, returns just last part. For others, full ref.
-  """
-  branchref = GetCurrentBranchRef()
-  if branchref:
-    return ShortBranchName(branchref)
-  return None
-
-
 class _CQState(object):
   """Enum for states of CL with respect to CQ."""
   NONE = 'none'
@@ -1107,7 +1030,7 @@ class Changelist(object):
     self.branchref = branchref
     if self.branchref:
       assert branchref.startswith('refs/heads/')
-      self.branch = ShortBranchName(self.branchref)
+      self.branch = scm.GIT.ShortBranchName(self.branchref)
     else:
       self.branch = None
     self.upstream_branch = None
@@ -1158,11 +1081,11 @@ class Changelist(object):
   def GetBranch(self):
     """Returns the short branch name, e.g. 'master'."""
     if not self.branch:
-      branchref = GetCurrentBranchRef()
+      branchref = scm.GIT.GetBranchRef(settings.GetRoot())
       if not branchref:
         return None
       self.branchref = branchref
-      self.branch = ShortBranchName(self.branchref)
+      self.branch = scm.GIT.ShortBranchName(self.branchref)
     return self.branch
 
   def GetBranchRef(self):
@@ -1174,20 +1097,17 @@ class Changelist(object):
     """Clears cached branch data of this object."""
     self.branch = self.branchref = None
 
-  def _GitGetBranchConfigValue(self, key, default=None, **kwargs):
-    assert 'branch' not in kwargs, 'this CL branch is used automatically'
-    kwargs['branch'] = self.GetBranch()
-    return _git_get_branch_config_value(key, default, **kwargs)
+  def _GitGetBranchConfigValue(self, key, default=None):
+    return scm.GIT.GetBranchConfig(
+        settings.GetRoot(), self.GetBranch(), key, default)
 
-  def _GitSetBranchConfigValue(self, key, value, **kwargs):
-    assert 'branch' not in kwargs, 'this CL branch is used automatically'
-    assert self.GetBranch(), (
-        'this CL must have an associated branch to %sset %s%s' %
-          ('un' if value is None else '',
-           key,
-           '' if value is None else ' to %r' % value))
-    kwargs['branch'] = self.GetBranch()
-    return _git_set_branch_config_value(key, value, **kwargs)
+  def _GitSetBranchConfigValue(self, key, value):
+    action = 'set %s to %r' % (key, value)
+    if not value:
+      action = 'unset %s' % key
+    assert self.GetBranch(), 'a branch is needed to ' + action
+    return scm.GIT.SetBranchConfig(
+        settings.GetRoot(), self.GetBranch(), key, value)
 
   @staticmethod
   def FetchUpstreamTuple(branch):
@@ -1232,7 +1152,7 @@ class Changelist(object):
       while branch not in seen_branches:
         seen_branches.add(branch)
         remote, branch = self.FetchUpstreamTuple(branch)
-        branch = ShortBranchName(branch)
+        branch = scm.GIT.ShortBranchName(branch)
         if remote != '.' or branch.startswith('refs/remotes'):
           break
       else:
@@ -1356,8 +1276,9 @@ class Changelist(object):
   def GetIssue(self):
     """Returns the issue number as a int or None if not set."""
     if self.issue is None and not self.lookedup_issue:
-      self.issue = self._GitGetBranchConfigValue(
-          self.IssueConfigKey(), value_type=int)
+      self.issue = self._GitGetBranchConfigValue(self.IssueConfigKey())
+      if self.issue is not None:
+        self.issue = int(self.issue)
       self.lookedup_issue = True
     return self.issue
 
@@ -1394,8 +1315,9 @@ class Changelist(object):
   def GetPatchset(self):
     """Returns the patchset number as a int or None if not set."""
     if self.patchset is None and not self.lookedup_patchset:
-      self.patchset = self._GitGetBranchConfigValue(
-          self.PatchsetConfigKey(), value_type=int)
+      self.patchset = self._GitGetBranchConfigValue(self.PatchsetConfigKey())
+      if self.patchset is not None:
+        self.patchset = int(self.patchset)
       self.lookedup_patchset = True
     return self.patchset
 
@@ -1407,7 +1329,7 @@ class Changelist(object):
     else:
       self.patchset = int(patchset)
     self._GitSetBranchConfigValue(
-        self.PatchsetConfigKey(), self.patchset)
+        self.PatchsetConfigKey(), str(self.patchset))
 
   def SetIssue(self, issue=None):
     """Set this branch's issue. If issue isn't given, clears the issue."""
@@ -1415,7 +1337,7 @@ class Changelist(object):
     if issue:
       issue = int(issue)
       self._GitSetBranchConfigValue(
-          self.IssueConfigKey(), issue)
+          self.IssueConfigKey(), str(issue))
       self.issue = issue
       codereview_server = self.GetCodereviewServer()
       if codereview_server:
@@ -1431,7 +1353,10 @@ class Changelist(object):
           self.CodereviewServerConfigKey(),
       ] + self._PostUnsetIssueProperties()
       for prop in reset_suffixes:
-        self._GitSetBranchConfigValue(prop, None, error_ok=True)
+        try:
+          self._GitSetBranchConfigValue(prop, None)
+        except subprocess2.CalledProcessError:
+          pass
       msg = RunGit(['log', '-1', '--format=%B']).strip()
       if msg and git_footers.get_footer_change_id(msg):
         print('WARNING: The change patched into this branch has a Change-Id. '
@@ -1569,8 +1494,8 @@ class Changelist(object):
     print_stats(git_diff_args)
     ret = self.CMDUploadChange(options, git_diff_args, custom_cl_base, change)
     if not ret:
-      _git_set_branch_config_value('last-upload-hash',
-                                   RunGit(['rev-parse', 'HEAD']).strip())
+      self._GitSetBranchConfigValue(
+          'last-upload-hash', RunGit(['rev-parse', 'HEAD']).strip())
       # Run post upload hooks, if specified.
       if settings.GetRunPostUploadHook():
         presubmit_support.DoPostUploadExecuter(
@@ -1651,7 +1576,7 @@ class Changelist(object):
     if not self._gerrit_server:
       # If we're on a branch then get the server potentially associated
       # with that branch.
-      if self.GetIssue():
+      if self.GetIssue() and self.GetBranch():
         self._gerrit_server = self._GitGetBranchConfigValue(
             self.CodereviewServerConfigKey())
         if self._gerrit_server:
@@ -3482,7 +3407,7 @@ def CMDcreds_check(parser, args):
 def CMDbaseurl(parser, args):
   """Gets or sets base-url for this branch."""
   branchref = RunGit(['symbolic-ref', 'HEAD']).strip()
-  branch = ShortBranchName(branchref)
+  branch = scm.GIT.ShortBranchName(branchref)
   _, args = parser.parse_args(args)
   if not args:
     print('Current base-url:')
@@ -3728,7 +3653,7 @@ def CMDarchive(parser, args):
     print('No branches with closed codereview issues found.')
     return 0
 
-  current_branch = GetCurrentBranch()
+  current_branch = scm.GIT.GetBranch(settings.GetRoot())
 
   print('\nBranches with closed issues that will be archived:\n')
   if options.notags:
@@ -3840,7 +3765,7 @@ def CMDstatus(parser, args):
                            fine_grained=not options.fast,
                            max_processes=options.maxjobs)
 
-  current_branch = GetCurrentBranch()
+  current_branch = scm.GIT.GetBranch(settings.GetRoot())
 
   def FormatBranchName(branch, colorize=False):
     """Simulates 'git branch' behavior. Colorizes and prefixes branch name with
@@ -3851,7 +3776,7 @@ def CMDstatus(parser, args):
     if branch == current_branch:
       asterisk = "* "
       color = Fore.GREEN
-    branch_name = ShortBranchName(branch)
+    branch_name = scm.GIT.ShortBranchName(branch)
 
     if colorize:
       return asterisk + color + branch_name + Fore.RESET
@@ -3953,7 +3878,7 @@ def CMDissue(parser, args):
       git_config[name] = val
 
     for branch in branches:
-      config_key = _git_branch_config_key(ShortBranchName(branch),
+      config_key = _git_branch_config_key(scm.GIT.ShortBranchName(branch),
                                           Changelist.IssueConfigKey())
       issue = git_config.get(config_key)
       if issue:
@@ -4618,7 +4543,7 @@ def CMDpatch(parser, args):
     if options.force:
       RunGit(['branch', '-D', options.newbranch],
              stderr=subprocess2.PIPE, error_ok=True)
-    RunGit(['new-branch', options.newbranch])
+    git_new_branch.main(options.newbranch)
 
   cl = Changelist(
       codereview_host=target_issue_arg.hostname, issue=target_issue_arg.issue)

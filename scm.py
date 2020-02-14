@@ -187,12 +187,18 @@ class GIT(object):
   @staticmethod
   def GetBranchRef(cwd):
     """Returns the full branch reference, e.g. 'refs/heads/master'."""
-    return GIT.Capture(['symbolic-ref', 'HEAD'], cwd=cwd)
+    try:
+      return GIT.Capture(['symbolic-ref', 'HEAD'], cwd=cwd)
+    except subprocess2.CalledProcessError:
+      return None
 
   @staticmethod
   def GetBranch(cwd):
     """Returns the short branch name, e.g. 'master'."""
-    return GIT.ShortBranchName(GIT.GetBranchRef(cwd))
+    branchref = GIT.GetBranchRef(cwd)
+    if branchref:
+      return GIT.ShortBranchName(branchref)
+    return None
 
   @staticmethod
   def GetRemoteBranches(cwd):

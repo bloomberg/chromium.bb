@@ -6,12 +6,14 @@
 
 """Unit tests for git_cl.py."""
 
+from __future__ import print_function
 from __future__ import unicode_literals
 
 import datetime
 import json
 import logging
 import os
+import pprint
 import shutil
 import sys
 import tempfile
@@ -35,6 +37,8 @@ import gerrit_util
 import git_cl
 import git_common
 import git_footers
+import git_new_branch
+import scm
 import subprocess2
 
 
@@ -95,6 +99,29 @@ class PresubmitMock(object):
   @staticmethod
   def should_continue():
     return True
+
+
+class GitMocks(object):
+  def __init__(self, config=None, branchref=None):
+    self.branchref = branchref or 'refs/heads/master'
+    self.config = config or {}
+
+  def GetBranchRef(self, _root):
+    return self.branchref
+
+  def NewBranch(self, branchref):
+    self.branchref = branchref
+
+  def GetConfig(self, _root, key, default=None):
+    return self.config.get(key, default)
+
+  def SetConfig(self, _root, key, value=None):
+    if value:
+      self.config[key] = value
+      return
+    if key not in self.config:
+      raise CERR1
+    del self.config[key]
 
 
 class WatchlistsMock(object):
@@ -628,9 +655,16 @@ class TestGitCl(unittest.TestCase):
         'git_cl.DieWithError',
         lambda msg, change=None: self._mocked_call('DieWithError', msg)).start()
     mock.patch('git_cl.Settings.GetRoot', return_value='').start()
+    self.mockGit = GitMocks()
+    mock.patch('scm.GIT.GetBranchRef', self.mockGit.GetBranchRef).start()
+    mock.patch('scm.GIT.GetConfig', self.mockGit.GetConfig).start()
+    mock.patch('scm.GIT.SetConfig', self.mockGit.SetConfig).start()
+    mock.patch('git_new_branch.main', self.mockGit.NewBranch).start()
     mock.patch(
-        'git_cl.Changelist.FetchUpstreamTuple',
+        'scm.GIT.FetchUpstreamTuple',
         return_value=('origin', 'refs/heads/master')).start()
+    mock.patch(
+        'scm.GIT.CaptureStatus', return_value=[('M', 'foo.txt')]).start()
     # It's important to reset settings to not have inter-tests interference.
     git_cl.settings = None
     self.addCleanup(mock.patch.stopall)
@@ -639,21 +673,13 @@ class TestGitCl(unittest.TestCase):
     try:
       self.assertEqual([], self.calls)
     except AssertionError:
-      if not self.has_failed():
-        raise
-      # Sadly, has_failed() returns True if this OR any other tests before this
-      # one have failed.
-      git_cl.logging.error(
-          '!!!!!!  IF YOU SEE THIS, READ BELOW, IT WILL SAVE YOUR TIME  !!!!!\n'
-          'There are un-consumed self.calls after this test has finished.\n'
-          'If you don\'t know which test this is, run:\n'
-          '   tests/git_cl_tests.py -v\n'
-          'If you are already running only this test, then **first** fix the '
-          'problem whose exception is emitted below by unittest runner.\n'
-          'Else, to be sure what\'s going on, run this test **alone** with \n'
-          '    tests/git_cl_tests.py TestGitCl.<name>\n'
-          'and follow instructions above.\n' +
-          '=' * 80)
+      calls = ''.join('  %s\n' % str(call) for call in self.calls[:5])
+      if len(self.calls) > 5:
+        calls += ' ...\n'
+      self.fail(
+          '\n'
+          'There are un-consumed calls after this test has finished:\n' +
+          calls)
     finally:
       super(TestGitCl, self).tearDown()
 
@@ -731,9 +757,6 @@ class TestGitCl(unittest.TestCase):
   def _git_post_upload_calls(cls):
     return [
         ((['git', 'rev-parse', 'HEAD'],), 'hash'),
-        ((['git', 'symbolic-ref', 'HEAD'],), 'hash'),
-        ((['git',
-           'config', 'branch.hash.last-upload-hash', 'hash'],), ''),
         ((['git', 'config', 'rietveld.run-post-upload-hook'],), ''),
     ]
 
@@ -773,25 +796,11 @@ class TestGitCl(unittest.TestCase):
 
     calls = [((cmd, ), CERR1)]
 
-    if custom_cl_base:
-      calls += [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ]
-
     calls.extend([
         ((['git', 'config', 'remote.origin.url'],),
-         'https://%s.googlesource.com/my/repo' % short_hostname),
+         'https://%s.googlesource.com/my/repo' % short_hostname)
     ])
 
-    calls += [
-      ((['git', 'config', 'branch.master.gerritissue'],),
-        CERR1 if issue is None else str(issue)),
-    ]
-
-    if issue:
-      calls.extend([
-          ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
-      ])
     return calls
 
   @classmethod
@@ -800,11 +809,6 @@ class TestGitCl(unittest.TestCase):
                          custom_cl_base=None, short_hostname='chromium',
                          change_id=None):
     calls = cls._is_gerrit_calls(True)
-    if not custom_cl_base:
-      calls += [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ]
-
 
     if custom_cl_base:
       ancestor_revision = custom_cl_base
@@ -853,11 +857,6 @@ class TestGitCl(unittest.TestCase):
                                     get_remote_branch=False)
     calls += [
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
-
-      ((['git', '-c', 'core.quotePath=false', 'diff', '--name-status',
-         '--no-renames', '-r', ancestor_revision + '...'],),
-       'M\t.gitignore\n'),
-      ((['git', 'config', 'branch.master.gerritpatchset'],), CERR1),
     ]
 
     if not issue:
@@ -1174,15 +1173,6 @@ class TestGitCl(unittest.TestCase):
         ),
     ]
 
-    if squash:
-      calls += [
-          ((['git', 'config', 'branch.master.gerritissue', '123456'],),
-           ''),
-          ((['git', 'config', 'branch.master.gerritserver',
-             'https://chromium-review.googlesource.com'],), ''),
-          ((['git', 'config', 'branch.master.gerritsquashhash',
-             'abcdef0123456789'],), ''),
-      ]
     # TODO(crbug/877717): this should never be used.
     if squash and short_hostname != 'chromium':
       calls += [
@@ -1266,6 +1256,11 @@ class TestGitCl(unittest.TestCase):
     mock.patch('os.path.isfile',
               lambda path: self._mocked_call(['os.path.isfile', path])).start()
 
+    self.mockGit.config['branch.master.gerritissue'] = (
+        str(issue) if issue else None)
+    self.mockGit.config['remote.origin.url'] = (
+        'https://%s.googlesource.com/my/repo' % short_hostname)
+
     self.calls = self._gerrit_base_calls(
         issue=issue,
         fetched_description=fetched_description or description,
@@ -1299,6 +1294,15 @@ class TestGitCl(unittest.TestCase):
     # Uncomment when debugging.
     # print('\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls))))
     git_cl.main(['upload'] + upload_args)
+    if squash:
+      self.assertEqual(
+          '123456', scm.GIT.GetBranchConfig(None, 'master', 'gerritissue'))
+      self.assertEqual(
+          'https://chromium-review.googlesource.com',
+          scm.GIT.GetBranchConfig(None, 'master', 'gerritserver'))
+      self.assertEqual(
+          'abcdef0123456789',
+          scm.GIT.GetBranchConfig(None, 'master', 'gerritsquashhash'))
 
   def test_gerrit_upload_traces_no_gitcookies(self):
     self._run_gerrit_upload_test(
@@ -1751,179 +1755,106 @@ class TestGitCl(unittest.TestCase):
     # Patch when local tree is dirty.
     self.assertNotEqual(git_cl.main(['patch', '123456']), 0)
 
-  @staticmethod
-  def _get_gerrit_codereview_server_calls(value=None,
-                                          git_short_host='host',
-                                          detect_branch=True,
-                                          detect_server=True):
-    """Returns calls executed by Changelist.GetCodereviewServer.
+  def assertIssueAndPatchset(
+      self, branch='master', issue='123456', patchset='7',
+      git_short_host='chromium'):
+    self.assertEqual(
+        issue, scm.GIT.GetBranchConfig(None, branch, 'gerritissue'))
+    self.assertEqual(
+        patchset, scm.GIT.GetBranchConfig(None, branch, 'gerritpatchset'))
+    self.assertEqual(
+        'https://%s-review.googlesource.com' % git_short_host,
+        scm.GIT.GetBranchConfig(None, branch, 'gerritserver'))
 
-    If value is given, branch.<BRANCH>.gerritcodereview is already set.
-    """
-    calls = []
-    if detect_branch:
-      calls.append(((['git', 'symbolic-ref', 'HEAD'],), 'master'))
-    if detect_server:
-      calls.append(((['git', 'config', 'branch.master.gerritserver'],),
-                    CERR1 if value is None else value))
-    if value is None:
-      calls += [
-        ((['git', 'config', 'remote.origin.url'],),
-         'https://%s.googlesource.com/my/repo' % git_short_host),
-      ]
-    return calls
-
-  def _patch_common(self, force_codereview=False,
-                    new_branch=False, git_short_host='host',
-                    detect_gerrit_server=False,
-                    actual_codereview=None,
-                    codereview_in_url=False):
+  def _patch_common(self, git_short_host='chromium'):
     mock.patch('git_cl.IsGitVersionAtLeast', return_value=True).start()
 
-    if new_branch:
-      self.calls = [((['git', 'new-branch', 'master'],), '')]
-
-    if codereview_in_url and actual_codereview == 'rietveld':
-      self.calls += [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ]
-
-    if not force_codereview and not codereview_in_url:
-      # These calls detect codereview to use.
-      self.calls += [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ]
-    if detect_gerrit_server:
-      self.calls += self._get_gerrit_codereview_server_calls(
-          git_short_host=git_short_host,
-          detect_branch=not new_branch and force_codereview)
-      actual_codereview = 'gerrit'
-
-    if actual_codereview == 'gerrit':
-      self.calls += [
-        (('GetChangeDetail', git_short_host + '-review.googlesource.com',
-          'my%2Frepo~123456', ['ALL_REVISIONS', 'CURRENT_COMMIT']),
-         {
-           'current_revision': '7777777777',
-           'revisions': {
-             '1111111111': {
-               '_number': 1,
-               'fetch': {'http': {
-                 'url': 'https://%s.googlesource.com/my/repo' % git_short_host,
-                 'ref': 'refs/changes/56/123456/1',
-               }},
-             },
-             '7777777777': {
-               '_number': 7,
-               'fetch': {'http': {
-                 'url': 'https://%s.googlesource.com/my/repo' % git_short_host,
-                 'ref': 'refs/changes/56/123456/7',
-               }},
-             },
+    self.calls += [
+      ((['git', 'config', 'remote.origin.url'],),
+       'https://%s.googlesource.com/my/repo' % git_short_host),
+      (('GetChangeDetail', git_short_host + '-review.googlesource.com',
+        'my%2Frepo~123456', ['ALL_REVISIONS', 'CURRENT_COMMIT']),
+       {
+         'current_revision': '7777777777',
+         'revisions': {
+           '1111111111': {
+             '_number': 1,
+             'fetch': {'http': {
+               'url': 'https://%s.googlesource.com/my/repo' % git_short_host,
+               'ref': 'refs/changes/56/123456/1',
+             }},
            },
-         }),
-      ]
+           '7777777777': {
+             '_number': 7,
+             'fetch': {'http': {
+               'url': 'https://%s.googlesource.com/my/repo' % git_short_host,
+               'ref': 'refs/changes/56/123456/7',
+             }},
+           },
+         },
+       }),
+    ]
 
   def test_patch_gerrit_default(self):
-    self._patch_common(git_short_host='chromium', detect_gerrit_server=True)
+    self._patch_common()
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
-      ((['git', 'config', 'branch.master.gerritissue', '123456'],),
-        ''),
-      ((['git', 'config', 'branch.master.gerritserver',
-        'https://chromium-review.googlesource.com'],), ''),
-      ((['git', 'config', 'branch.master.gerritpatchset', '7'],), ''),
       ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
-      ((['git', 'config', 'branch.master.last-upload-hash', 'deadbeef'],), ''),
-      ((['git', 'config', 'branch.master.gerritsquashhash', 'deadbeef'],), ''),
     ]
     self.assertEqual(git_cl.main(['patch', '123456']), 0)
+    self.assertIssueAndPatchset()
 
   def test_patch_gerrit_new_branch(self):
-    self._patch_common(
-        git_short_host='chromium', detect_gerrit_server=True, new_branch=True)
+    self._patch_common()
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
-      ((['git', 'config', 'branch.master.gerritissue', '123456'],),
-        ''),
-      ((['git', 'config', 'branch.master.gerritserver',
-        'https://chromium-review.googlesource.com'],), ''),
-      ((['git', 'config', 'branch.master.gerritpatchset', '7'],), ''),
       ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
-      ((['git', 'config', 'branch.master.last-upload-hash', 'deadbeef'],), ''),
-      ((['git', 'config', 'branch.master.gerritsquashhash', 'deadbeef'],), ''),
     ]
-    self.assertEqual(git_cl.main(['patch', '-b', 'master', '123456']), 0)
+    self.assertEqual(git_cl.main(['patch', '-b', 'feature', '123456']), 0)
+    self.assertIssueAndPatchset(branch='feature')
 
   def test_patch_gerrit_force(self):
-    self._patch_common(
-        force_codereview=True, git_short_host='host', detect_gerrit_server=True)
+    self._patch_common('host')
     self.calls += [
       ((['git', 'fetch', 'https://host.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
-      ((['git', 'config', 'branch.master.gerritissue', '123456'],),
-       ''),
-      ((['git', 'config', 'branch.master.gerritserver',
-        'https://host-review.googlesource.com'],), ''),
-      ((['git', 'config', 'branch.master.gerritpatchset', '7'],), ''),
       ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
-      ((['git', 'config', 'branch.master.last-upload-hash', 'deadbeef'],), ''),
-      ((['git', 'config', 'branch.master.gerritsquashhash', 'deadbeef'],), ''),
     ]
     self.assertEqual(git_cl.main(['patch', '123456', '--force']), 0)
+    self.assertIssueAndPatchset(git_short_host='host')
 
   def test_patch_gerrit_guess_by_url(self):
-    self.calls += self._get_gerrit_codereview_server_calls(
-        git_short_host='else', detect_server=False)
-    self._patch_common(
-        actual_codereview='gerrit', git_short_host='else',
-        codereview_in_url=True, detect_gerrit_server=False)
+    self._patch_common('else')
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
-      ((['git', 'config', 'branch.master.gerritissue', '123456'],),
-       ''),
-      ((['git', 'config', 'branch.master.gerritserver',
-        'https://else-review.googlesource.com'],), ''),
-      ((['git', 'config', 'branch.master.gerritpatchset', '1'],), ''),
       ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
-      ((['git', 'config', 'branch.master.last-upload-hash', 'deadbeef'],), ''),
-      ((['git', 'config', 'branch.master.gerritsquashhash', 'deadbeef'],), ''),
     ]
     self.assertEqual(git_cl.main(
       ['patch', 'https://else-review.googlesource.com/#/c/123456/1']), 0)
+    self.assertIssueAndPatchset(patchset='1', git_short_host='else')
 
   def test_patch_gerrit_guess_by_url_with_repo(self):
-    self.calls += self._get_gerrit_codereview_server_calls(
-        git_short_host='else', detect_server=False)
-    self._patch_common(
-        actual_codereview='gerrit', git_short_host='else',
-        codereview_in_url=True, detect_gerrit_server=False)
+    self._patch_common('else')
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
-      ((['git', 'config', 'branch.master.gerritissue', '123456'],),
-       ''),
-      ((['git', 'config', 'branch.master.gerritserver',
-        'https://else-review.googlesource.com'],), ''),
-      ((['git', 'config', 'branch.master.gerritpatchset', '1'],), ''),
       ((['git', 'rev-parse', 'FETCH_HEAD'],), 'deadbeef'),
-      ((['git', 'config', 'branch.master.last-upload-hash', 'deadbeef'],), ''),
-      ((['git', 'config', 'branch.master.gerritsquashhash', 'deadbeef'],), ''),
     ]
     self.assertEqual(git_cl.main(
       ['patch', 'https://else-review.googlesource.com/c/my/repo/+/123456/1']),
       0)
+    self.assertIssueAndPatchset(patchset='1', git_short_host='else')
 
   def test_patch_gerrit_conflict(self):
-    self._patch_common(detect_gerrit_server=True, git_short_host='chromium')
+    self._patch_common()
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
@@ -1939,8 +1870,6 @@ class TestGitCl(unittest.TestCase):
       side_effect=gerrit_util.GerritError(404, ''))
   def test_patch_gerrit_not_exists(self, *_mocks):
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.gerritserver'],), CERR1),
       ((['git', 'config', 'remote.origin.url'],),
        'https://chromium.googlesource.com/my/repo'),
       (('DieWithError',
@@ -2085,11 +2014,10 @@ class TestGitCl(unittest.TestCase):
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
   def _cmd_set_commit_gerrit_common(self, vote, notify=None):
+    self.mockGit.config['branch.master.gerritissue'] = '123'
+    self.mockGit.config['branch.master.gerritserver'] = (
+        'https://chromium-review.googlesource.com')
     self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
-        ((['git', 'config', 'branch.feature.gerritserver'],),
-         'https://chromium-review.googlesource.com'),
         ((['git', 'config', 'remote.origin.url'],),
          'https://chromium.googlesource.com/infra/infra.git'),
         (('SetReview', 'chromium-review.googlesource.com',
@@ -2149,7 +2077,6 @@ class TestGitCl(unittest.TestCase):
 
   def test_description(self):
     self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
         ((['git', 'config', 'remote.origin.url'],),
          'https://chromium.googlesource.com/my/repo'),
         (('GetChangeDetail', 'chromium-review.googlesource.com',
@@ -2198,9 +2125,9 @@ class TestGitCl(unittest.TestCase):
               UpdateDescription).start()
     mock.patch('git_cl.gclient_utils.RunEditor', RunEditor).start()
 
+    self.mockGit.config['branch.master.gerritissue'] = '123'
+
     self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
         ((['git', 'config', 'rietveld.bug-prefix'],), CERR1),
         ((['git', 'config', 'core.editor'],), 'vi'),
@@ -2225,9 +2152,9 @@ class TestGitCl(unittest.TestCase):
               lambda *args: current_desc).start()
     mock.patch('git_cl.gclient_utils.RunEditor', RunEditor).start()
 
+    self.mockGit.config['branch.master.gerritissue'] = '123'
+
     self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
         ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
         ((['git', 'config', 'rietveld.bug-prefix'],), CERR1),
         ((['git', 'config', 'core.editor'],), 'vi'),
@@ -2246,7 +2173,6 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
        'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'tag', 'git-cl-archived-456-foo', 'foo'],), ''),
       ((['git', 'branch', '-D', 'foo'],), '')
     ]
@@ -2265,7 +2191,6 @@ class TestGitCl(unittest.TestCase):
        'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],),
        'refs/tags/git-cl-archived-456-foo'),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'tag', 'git-cl-archived-456-foo-2', 'foo'],), ''),
       ((['git', 'branch', '-D', 'foo'],), '')
     ]
@@ -2283,7 +2208,6 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master'),
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
     ]
 
     mock.patch('git_cl.get_cl_statuses',
@@ -2298,7 +2222,6 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master')
     ]
 
     mock.patch('git_cl.get_cl_statuses',
@@ -2314,7 +2237,6 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'branch', '-D', 'foo'],), '')
     ]
 
@@ -2331,7 +2253,6 @@ class TestGitCl(unittest.TestCase):
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/heads'],),
          'refs/heads/master\nrefs/heads/foo\nrefs/heads/bar'),
       ((['git', 'for-each-ref', '--format=%(refname)', 'refs/tags'],), ''),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'tag', 'git-cl-archived-456-foo', 'foo'],),
         'refs/tags/git-cl-archived-456-foo'),
       ((['git', 'branch', '-D', 'foo'],), CERR1),
@@ -2348,45 +2269,36 @@ class TestGitCl(unittest.TestCase):
     self.assertEqual(0, git_cl.main(['archive', '-f']))
 
   def test_cmd_issue_erase_existing(self):
+    self.mockGit.config['branch.master.gerritissue'] = '123'
+    self.mockGit.config['branch.master.gerritserver'] = (
+         'https://chromium-review.googlesource.com')
     self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        # Let this command raise exception (retcode=1) - it should be ignored.
-        ((['git', 'config', '--unset', 'branch.feature.last-upload-hash'],),
-         CERR1),
-        ((['git', 'config', '--unset', 'branch.feature.gerritissue'],), ''),
-        ((['git', 'config', '--unset', 'branch.feature.gerritpatchset'],), ''),
-        ((['git', 'config', '--unset', 'branch.feature.gerritserver'],), ''),
-        ((['git', 'config', '--unset', 'branch.feature.gerritsquashhash'],),
-         ''),
         ((['git', 'log', '-1', '--format=%B'],), 'This is a description'),
     ]
     self.assertEqual(0, git_cl.main(['issue', '0']))
+    self.assertNotIn('branch.master.gerritissue', self.mockGit.config)
+    self.assertNotIn('branch.master.gerritserver', self.mockGit.config)
 
   def test_cmd_issue_erase_existing_with_change_id(self):
+    self.mockGit.config['branch.master.gerritissue'] = '123'
+    self.mockGit.config['branch.master.gerritserver'] = (
+         'https://chromium-review.googlesource.com')
     mock.patch('git_cl.Changelist.FetchDescription',
               lambda _: 'This is a description\n\nChange-Id: Ideadbeef').start()
     self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        # Let this command raise exception (retcode=1) - it should be ignored.
-        ((['git', 'config', '--unset', 'branch.feature.last-upload-hash'],),
-         CERR1),
-        ((['git', 'config', '--unset', 'branch.feature.gerritissue'],), ''),
-        ((['git', 'config', '--unset', 'branch.feature.gerritpatchset'],), ''),
-        ((['git', 'config', '--unset', 'branch.feature.gerritserver'],), ''),
-        ((['git', 'config', '--unset', 'branch.feature.gerritsquashhash'],),
-         ''),
         ((['git', 'log', '-1', '--format=%B'],),
          'This is a description\n\nChange-Id: Ideadbeef'),
         ((['git', 'commit', '--amend', '-m', 'This is a description\n'],), ''),
     ]
     self.assertEqual(0, git_cl.main(['issue', '0']))
+    self.assertNotIn('branch.master.gerritissue', self.mockGit.config)
+    self.assertNotIn('branch.master.gerritserver', self.mockGit.config)
 
   def test_cmd_issue_json(self):
+    self.mockGit.config['branch.master.gerritissue'] = '123'
+    self.mockGit.config['branch.master.gerritserver'] = (
+         'https://chromium-review.googlesource.com')
     self.calls = [
-        ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-        ((['git', 'config', 'branch.feature.gerritissue'],), '123'),
-        ((['git', 'config', 'branch.feature.gerritserver'],),
-         'https://chromium-review.googlesource.com'),
         (('write_json', 'output.json',
           {'issue': 123,
            'issue_url': 'https://chromium-review.googlesource.com/123'}),
@@ -2438,13 +2350,11 @@ class TestGitCl(unittest.TestCase):
     cl._GerritCommitMsgHookCheck(offer_removal=True)
 
   def test_GerritCmdLand(self):
+    self.mockGit.config['branch.master.gerritsquashhash'] = 'deadbeaf'
+    self.mockGit.config['branch.master.gerritserver'] = (
+        'chromium-review.googlesource.com')
     self.calls += [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
-      ((['git', 'config', 'branch.feature.gerritsquashhash'],),
-       'deadbeaf'),
       ((['git', 'diff', 'deadbeaf'],), ''),  # No diff.
-      ((['git', 'config', 'branch.feature.gerritserver'],),
-       'chromium-review.googlesource.com'),
     ]
     cl = git_cl.Changelist(issue=123)
     cl._GetChangeDetail = lambda *args, **kwargs: {
@@ -2625,9 +2535,8 @@ class TestGitCl(unittest.TestCase):
         sys.stdout.getvalue())
 
   def test_git_cl_comment_add_gerrit(self):
+    self.mockGit.branchref = None
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), CERR1),
-      ((['git', 'symbolic-ref', 'HEAD'],), CERR1),
       ((['git', 'config', 'remote.origin.url'],),
        'https://chromium.googlesource.com/infra/infra'),
       (('SetReview', 'chromium-review.googlesource.com', 'infra%2Finfra~10',
@@ -2639,7 +2548,6 @@ class TestGitCl(unittest.TestCase):
   @mock.patch('git_cl.Changelist.GetBranch', return_value='foo')
   def test_git_cl_comments_fetch_gerrit(self, *_mocks):
     self.calls = [
-      ((['git', 'config', 'branch.foo.gerritserver'],), ''),
       ((['git', 'config', 'remote.origin.url'],),
        'https://chromium.googlesource.com/infra/infra'),
       (('GetChangeDetail', 'chromium-review.googlesource.com',
@@ -2717,7 +2625,6 @@ class TestGitCl(unittest.TestCase):
       }),
       (('GetChangeRobotComments', 'chromium-review.googlesource.com',
         'infra%2Finfra~1'), {}),
-      ((['git', 'config', 'branch.foo.gerritpatchset', '2'],), ''),
     ] * 2 + [
       (('write_json', 'output.json', [
         {
@@ -2784,7 +2691,6 @@ class TestGitCl(unittest.TestCase):
     # of autogenerated comment), and unlike other types of comments, only robot
     # comments from the latest patchset are shown.
     self.calls = [
-      ((['git', 'config', 'branch.foo.gerritserver'],), ''),
       ((['git', 'config', 'remote.origin.url'],),
        'https://chromium.googlesource.com/infra/infra'),
       (('GetChangeDetail', 'chromium-review.googlesource.com',
@@ -2870,7 +2776,6 @@ class TestGitCl(unittest.TestCase):
           },
         ],
       }),
-      ((['git', 'config', 'branch.foo.gerritpatchset', '2'],), ''),
     ]
     expected_comments_summary = [
        git_cl._CommentSummary(date=datetime.datetime(2017, 3, 17, 5, 30, 37),
@@ -2898,7 +2803,6 @@ class TestGitCl(unittest.TestCase):
 
     url = 'https://chromium.googlesource.com/my/repo'
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'remote.origin.url'],),
        '/cache/this-dir-exists'),
       (('os.path.isdir', '/cache/this-dir-exists'),
@@ -2924,7 +2828,6 @@ class TestGitCl(unittest.TestCase):
               lambda *a: self._mocked_call('logging.error', *a)).start()
 
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'remote.origin.url'],),
        '/cache/this-dir-doesnt-exist'),
       (('os.path.isdir', '/cache/this-dir-doesnt-exist'),
@@ -2953,7 +2856,6 @@ class TestGitCl(unittest.TestCase):
               lambda *a: self._mocked_call('logging.error', *a)).start()
 
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'remote.origin.url'],),
        '/cache/this-dir-exists'),
       (('os.path.isdir', '/cache/this-dir-exists'), True),
@@ -2974,7 +2876,6 @@ class TestGitCl(unittest.TestCase):
 
   def test_gerrit_change_identifier_with_project(self):
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'remote.origin.url'],),
        'https://chromium.googlesource.com/a/my/repo.git/'),
     ]
@@ -2986,7 +2887,6 @@ class TestGitCl(unittest.TestCase):
               lambda *a: self._mocked_call('logging.error', *a)).start()
 
     self.calls = [
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'remote.origin.url'],), CERR1),
       (('logging.error',
           'Remote "%(remote)s" for branch "%(branch)s" points to "%(url)s", '
