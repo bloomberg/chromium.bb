@@ -26,6 +26,7 @@
 #include "av1/encoder/gop_structure.h"
 #include "av1/encoder/pass2_strategy.h"
 #include "av1/encoder/ratectrl.h"
+#include "av1/encoder/tpl_model.h"
 #include "av1/encoder/use_flat_gop_model_params.h"
 
 #define DEFAULT_KF_BOOST 2300
@@ -681,7 +682,7 @@ static int adjust_boost_bits_for_target_level(const AV1_COMP *const cpi,
 
 static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
                                    int64_t gf_group_bits, int gf_arf_bits,
-                                   int max_bits, int key_frame, int use_arf) {
+                                   int key_frame, int use_arf) {
   int64_t total_group_bits = gf_group_bits;
 
   // For key frames the frame target rate is already set and it
@@ -743,9 +744,6 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
             (int)(((int64_t)arf_depth_bits[gf_group->layer_depth[idx]] *
                    gf_group->arf_boost[idx]) /
                   arf_depth_boost[gf_group->layer_depth[idx]]);
-        gf_group->bit_allocation[idx] =
-            clamp(gf_group->bit_allocation[idx], 0,
-                  AOMMIN(max_bits, (int)total_group_bits));
         break;
       case INTNL_OVERLAY_UPDATE:
       case OVERLAY_UPDATE:
@@ -759,13 +757,6 @@ static void allocate_gf_group_bits(GF_GROUP *gf_group, RATE_CONTROL *const rc,
   // Setting this frame to use 0 bit (of out the current GOP budget) will
   // simplify logics in reference frame management.
   gf_group->bit_allocation[gf_group_size] = 0;
-}
-
-// Given the maximum allowed height of the pyramid structure, return the fixed
-// GF length to be used.
-static INLINE int get_fixed_gf_length(int max_pyr_height) {
-  (void)max_pyr_height;
-  return MAX_GF_INTERVAL;
 }
 
 // Returns true if KF group and GF group both are almost completely static.
@@ -1058,9 +1049,8 @@ void set_last_prev_low_err(int *cur_start_ptr, int *cur_last_ptr, int *cut_pos,
 
 // This function decides the gf group length of future frames in batch
 // rc->gf_intervals is modified to store the group lengths
-static void calculate_gf_length(AV1_COMP *cpi) {
+static void calculate_gf_length(AV1_COMP *cpi, int max_gop_length) {
   RATE_CONTROL *const rc = &cpi->rc;
-  AV1EncoderConfig *const oxcf = &cpi->oxcf;
   TWO_PASS *const twopass = &cpi->twopass;
   FIRSTPASS_STATS next_frame;
   const FIRSTPASS_STATS *const start_pos = twopass->stats_in;
@@ -1093,7 +1083,7 @@ static void calculate_gf_length(AV1_COMP *cpi) {
   // TODO(urvang): Try logic to vary min and max interval based on q.
   const int active_min_gf_interval = rc->min_gf_interval;
   const int active_max_gf_interval =
-      AOMMIN(rc->max_gf_interval, get_fixed_gf_length(oxcf->gf_max_pyr_height));
+      AOMMIN(rc->max_gf_interval, max_gop_length);
 
   i = 0;
   const int max_intervals = cpi->lap_enabled ? 1 : NUM_GF_INTERVALS;
@@ -1288,7 +1278,8 @@ static void define_gf_group_pass0(AV1_COMP *cpi,
 // Analyse and define a gf/arf group.
 #define MAX_GF_BOOST 5400
 static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
-                            const EncodeFrameParams *const frame_params) {
+                            const EncodeFrameParams *const frame_params,
+                            int max_gop_length, int is_final_pass) {
   AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
   AV1EncoderConfig *const oxcf = &cpi->oxcf;
@@ -1368,7 +1359,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
   // TODO(urvang): Try logic to vary min and max interval based on q.
   const int active_min_gf_interval = rc->min_gf_interval;
   const int active_max_gf_interval =
-      AOMMIN(rc->max_gf_interval, get_fixed_gf_length(oxcf->gf_max_pyr_height));
+      AOMMIN(rc->max_gf_interval, max_gop_length);
 
   double avg_sr_coded_error = 0;
   double avg_tr_coded_error = 0;
@@ -1682,7 +1673,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 #endif
 
   // Adjust KF group bits and error remaining.
-  twopass->kf_group_error_left -= (int64_t)gf_group_err;
+  if (is_final_pass) twopass->kf_group_error_left -= (int64_t)gf_group_err;
 
   // Set up the structure of this Group-Of-Pictures (same as GF_GROUP)
   av1_gop_setup_structure(cpi, frame_params);
@@ -1709,8 +1700,6 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame,
 void av1_gop_bit_allocation(const AV1_COMP *cpi, RATE_CONTROL *const rc,
                             GF_GROUP *gf_group, int is_key_frame, int use_arf,
                             int64_t gf_group_bits) {
-  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
-
   // Calculate the extra bits to be used for boosted frame(s)
   int gf_arf_bits = calculate_boost_bits(rc->baseline_gf_interval,
                                          rc->gfu_boost, gf_group_bits);
@@ -1718,8 +1707,8 @@ void av1_gop_bit_allocation(const AV1_COMP *cpi, RATE_CONTROL *const rc,
                                                    gf_group_bits, 1);
 
   // Allocate bits to each of the frames in the GF group.
-  allocate_gf_group_bits(gf_group, rc, gf_group_bits, gf_arf_bits,
-                         frame_max_bits(rc, oxcf), is_key_frame, use_arf);
+  allocate_gf_group_bits(gf_group, rc, gf_group_bits, gf_arf_bits, is_key_frame,
+                         use_arf);
 }
 
 // Minimum % intra coding observed in first pass (1.0 = 100%)
@@ -2061,7 +2050,7 @@ static void find_next_key_frame(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
 
     // Not all frames in the group are necessarily used in calculating boost.
     if ((sr_accumulator < (kf_raw_err * 1.50)) &&
-        (i <= (rc->max_gf_interval * 4))) {
+        (i <= rc->max_gf_interval * 2)) {
       double frame_boost;
       double zm_factor;
 
@@ -2228,6 +2217,7 @@ static void setup_target_rate(AV1_COMP *cpi) {
 
 void av1_get_second_pass_params(AV1_COMP *cpi,
                                 EncodeFrameParams *const frame_params,
+                                const EncodeFrameInput *const frame_input,
                                 unsigned int frame_flags) {
   RATE_CONTROL *const rc = &cpi->rc;
   TWO_PASS *const twopass = &cpi->twopass;
@@ -2322,11 +2312,20 @@ void av1_get_second_pass_params(AV1_COMP *cpi,
   if (rc->frames_till_gf_update_due == 0) {
     assert(cpi->common.current_frame.frame_number == 0 ||
            gf_group->index == gf_group->size);
-    if (rc->intervals_till_gf_calculate_due == 0) {
-      calculate_gf_length(cpi);
-    }
+    int max_gop_length = MAX_GF_INTERVAL;
+    // TODO(jingning): Remove redundant computations here.
+    if (cpi->oxcf.lag_in_frames >= 32) {
+      calculate_gf_length(cpi, max_gop_length);
+      define_gf_group(cpi, &this_frame, frame_params, max_gop_length, 0);
 
-    define_gf_group(cpi, &this_frame, frame_params);
+      if (!av1_tpl_setup_stats(cpi, 1, frame_params, frame_input))
+        max_gop_length = 16;
+    } else {
+      max_gop_length = 16;
+    }
+    calculate_gf_length(cpi, max_gop_length);
+    define_gf_group(cpi, &this_frame, frame_params, max_gop_length, 1);
+
     rc->frames_till_gf_update_due = rc->baseline_gf_interval;
     cpi->num_gf_group_show_frames = 0;
     assert(gf_group->index == 0);

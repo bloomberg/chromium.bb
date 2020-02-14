@@ -25,6 +25,7 @@ void av1_init_single_pass_lap(AV1_COMP *cpi);
 
 void av1_get_second_pass_params(struct AV1_COMP *cpi,
                                 struct EncodeFrameParams *const frame_params,
+                                const EncodeFrameInput *const frame_input,
                                 unsigned int frame_flags);
 
 void av1_twopass_postencode_update(struct AV1_COMP *cpi);

@@ -946,7 +946,7 @@ static int denoise_and_encode(AV1_COMP *const cpi, uint8_t *const dest,
     av1_set_frame_size(cpi, cm->width, cm->height);
     av1_set_speed_features_framesize_independent(cpi, oxcf->speed);
     if (cpi->oxcf.enable_tpl_model) {
-      av1_tpl_setup_stats(cpi, frame_params, frame_input);
+      av1_tpl_setup_stats(cpi, 0, frame_params, frame_input);
     }
   }
 
@@ -1176,7 +1176,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
       oxcf->lag_in_frames == 0)
     av1_get_one_pass_rt_params(cpi, &frame_params, *frame_flags);
   else if (!is_stat_generation_stage(cpi))
-    av1_get_second_pass_params(cpi, &frame_params, *frame_flags);
+    av1_get_second_pass_params(cpi, &frame_params, &frame_input, *frame_flags);
 #endif
   FRAME_UPDATE_TYPE frame_update_type = get_frame_update_type(gf_group);
 
@@ -1287,7 +1287,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
       if (cpi->gf_group.index == 1 && cpi->oxcf.enable_tpl_model) {
         av1_configure_buffer_updates(cpi, &frame_params, frame_update_type, 0);
         av1_set_frame_size(cpi, cm->width, cm->height);
-        av1_tpl_setup_stats(cpi, &frame_params, &frame_input);
+        av1_tpl_setup_stats(cpi, 0, &frame_params, &frame_input);
         assert(cpi->num_gf_group_show_frames == 1);
       }
     }
