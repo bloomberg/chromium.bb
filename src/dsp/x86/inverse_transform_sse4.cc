@@ -1197,6 +1197,135 @@ LIBGAV1_ALWAYS_INLINE void Adst8_SSE4_1(void* dest, const void* source,
   }
 }
 
+LIBGAV1_ALWAYS_INLINE bool Adst8DcOnly(void* dest, const void* source,
+                                       int non_zero_coeff_count,
+                                       bool should_round, int row_shift) {
+  if (non_zero_coeff_count > 1) {
+    return false;
+  }
+
+  auto* dst = static_cast<int16_t*>(dest);
+  const auto* const src = static_cast<const int16_t*>(source);
+  __m128i s[8];
+
+  const __m128i v_src = _mm_shufflelo_epi16(_mm_cvtsi32_si128(src[0]), 0);
+  const __m128i v_mask = _mm_set1_epi16(should_round ? 0xffff : 0);
+  const __m128i v_kTransformRowMultiplier =
+      _mm_set1_epi16(kTransformRowMultiplier << 3);
+  const __m128i v_src_round =
+      _mm_mulhrs_epi16(v_src, v_kTransformRowMultiplier);
+  // stage 1.
+  s[1] = _mm_blendv_epi8(v_src, v_src_round, v_mask);
+
+  // stage 2.
+  ButterflyRotation_FirstIsZero(&s[0], &s[1], 60, true);
+
+  // stage 3.
+  s[4] = s[0];
+  s[5] = s[1];
+
+  // stage 4.
+  ButterflyRotation_4(&s[4], &s[5], 48, true);
+
+  // stage 5.
+  s[2] = s[0];
+  s[3] = s[1];
+  s[6] = s[4];
+  s[7] = s[5];
+
+  // stage 6.
+  ButterflyRotation_4(&s[2], &s[3], 32, true);
+  ButterflyRotation_4(&s[6], &s[7], 32, true);
+
+  // stage 7.
+  __m128i x[8];
+  const __m128i v_zero = _mm_setzero_si128();
+  x[0] = s[0];
+  x[1] = _mm_subs_epi16(v_zero, s[4]);
+  x[2] = s[6];
+  x[3] = _mm_subs_epi16(v_zero, s[2]);
+  x[4] = s[3];
+  x[5] = _mm_subs_epi16(v_zero, s[7]);
+  x[6] = s[5];
+  x[7] = _mm_subs_epi16(v_zero, s[1]);
+
+  const __m128i x1_x0 = _mm_unpacklo_epi16(x[0], x[1]);
+  const __m128i x3_x2 = _mm_unpacklo_epi16(x[2], x[3]);
+  const __m128i x5_x4 = _mm_unpacklo_epi16(x[4], x[5]);
+  const __m128i x7_x6 = _mm_unpacklo_epi16(x[6], x[7]);
+  const __m128i x3_x0 = _mm_unpacklo_epi32(x1_x0, x3_x2);
+  const __m128i x7_x4 = _mm_unpacklo_epi32(x5_x4, x7_x6);
+
+  const __m128i v_row_shift_add = _mm_set1_epi32(row_shift);
+  const __m128i v_row_shift = _mm_cvtepu32_epi64(v_row_shift_add);
+  const __m128i a = _mm_add_epi32(_mm_cvtepi16_epi32(x3_x0), v_row_shift_add);
+  const __m128i a1 = _mm_add_epi32(_mm_cvtepi16_epi32(x7_x4), v_row_shift_add);
+  const __m128i b = _mm_sra_epi32(a, v_row_shift);
+  const __m128i b1 = _mm_sra_epi32(a1, v_row_shift);
+  StoreUnaligned16(dst, _mm_packs_epi32(b, b1));
+
+  return true;
+}
+
+LIBGAV1_ALWAYS_INLINE bool Adst8DcOnlyColumn(void* dest, const void* source,
+                                             int non_zero_coeff_count,
+                                             int width) {
+  if (non_zero_coeff_count > 1) {
+    return false;
+  }
+
+  auto* dst = static_cast<int16_t*>(dest);
+  const auto* const src = static_cast<const int16_t*>(source);
+  __m128i s[8];
+
+  int i = 0;
+  do {
+    const __m128i v_src = LoadLo8(&src[i]);
+    // stage 1.
+    s[1] = v_src;
+
+    // stage 2.
+    ButterflyRotation_FirstIsZero(&s[0], &s[1], 60, true);
+
+    // stage 3.
+    s[4] = s[0];
+    s[5] = s[1];
+
+    // stage 4.
+    ButterflyRotation_4(&s[4], &s[5], 48, true);
+
+    // stage 5.
+    s[2] = s[0];
+    s[3] = s[1];
+    s[6] = s[4];
+    s[7] = s[5];
+
+    // stage 6.
+    ButterflyRotation_4(&s[2], &s[3], 32, true);
+    ButterflyRotation_4(&s[6], &s[7], 32, true);
+
+    // stage 7.
+    __m128i x[8];
+    const __m128i v_zero = _mm_setzero_si128();
+    x[0] = s[0];
+    x[1] = _mm_subs_epi16(v_zero, s[4]);
+    x[2] = s[6];
+    x[3] = _mm_subs_epi16(v_zero, s[2]);
+    x[4] = s[3];
+    x[5] = _mm_subs_epi16(v_zero, s[7]);
+    x[6] = s[5];
+    x[7] = _mm_subs_epi16(v_zero, s[1]);
+
+    for (int j = 0; j < 8; ++j) {
+      StoreLo8(&dst[j * width], x[j]);
+    }
+    i += 4;
+    dst += 4;
+  } while (i < width);
+
+  return true;
+}
+
 template <ButterflyRotationFunc bufferfly_rotation, bool stage_is_rectangular>
 LIBGAV1_ALWAYS_INLINE void Adst16_SSE4_1(void* dest, const void* source,
                                          int32_t step, bool transpose) {
@@ -2269,9 +2398,17 @@ void Adst8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
   const int tx_height = kTransformHeight[tx_size];
 
   if (is_row) {
+    const bool should_round = kShouldRound[tx_size];
+    const uint8_t row_shift = kTransformRowShift[tx_size];
+
+    if (Adst8DcOnly(&src[0], &src[0], non_zero_coeff_count, should_round,
+                    row_shift)) {
+      return;
+    }
+
     const int num_rows =
         GetNumRows<8>(tx_type, tx_height, non_zero_coeff_count);
-    if (kShouldRound[tx_size]) {
+    if (should_round) {
       ApplyRounding<8>(src, num_rows);
     }
 
@@ -2289,7 +2426,6 @@ void Adst8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
         i += 8;
       } while (i < num_rows);
     }
-    const uint8_t row_shift = kTransformRowShift[tx_size];
     if (row_shift > 0) {
       RowShift<8>(src, num_rows, row_shift);
     }
@@ -2301,18 +2437,20 @@ void Adst8TransformLoop_SSE4_1(TransformType tx_type, TransformSize tx_size,
     FlipColumns<8>(src, tx_width);
   }
 
-  if (tx_width == 4) {
-    // Process 4 1d adst8 columns in parallel.
-    Adst8_SSE4_1<ButterflyRotation_4, true>(&src[0], &src[0], 4,
-                                            /*transpose=*/false);
-  } else {
-    // Process 8 1d adst8 columns in parallel per iteration.
-    int i = 0;
-    do {
-      Adst8_SSE4_1<ButterflyRotation_8, false>(&src[i], &src[i], tx_width,
-                                               /*transpose=*/false);
-      i += 8;
-    } while (i < tx_width);
+  if (!Adst8DcOnlyColumn(&src[0], &src[0], non_zero_coeff_count, tx_width)) {
+    if (tx_width == 4) {
+      // Process 4 1d adst8 columns in parallel.
+      Adst8_SSE4_1<ButterflyRotation_4, true>(&src[0], &src[0], 4,
+                                              /*transpose=*/false);
+    } else {
+      // Process 8 1d adst8 columns in parallel per iteration.
+      int i = 0;
+      do {
+        Adst8_SSE4_1<ButterflyRotation_8, false>(&src[i], &src[i], tx_width,
+                                                 /*transpose=*/false);
+        i += 8;
+      } while (i < tx_width);
+    }
   }
   StoreToFrameWithRound</*enable_flip_rows=*/true>(frame, start_x, start_y,
                                                    tx_width, 8, src, tx_type);
