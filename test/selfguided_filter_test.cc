@@ -410,8 +410,7 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Combine(::testing::Values(av1_apply_selfguided_restoration_avx2),
                        ::testing::ValuesIn(highbd_params_avx2)));
 #endif
-// TODO(b/141858830,b/141859709): neon is currently disabled due to use of
-// uninitialized memory.
+
 #if HAVE_NEON
 const int highbd_params_neon[] = { 8, 10, 12 };
 INSTANTIATE_TEST_CASE_P(
