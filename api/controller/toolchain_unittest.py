@@ -7,8 +7,6 @@
 
 from __future__ import print_function
 
-import sys
-
 from chromite.api import api_config
 from chromite.api import controller
 from chromite.api.controller import toolchain
@@ -21,10 +19,6 @@ from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import toolchain_util
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
-
 
 # pylint: disable=protected-access
 

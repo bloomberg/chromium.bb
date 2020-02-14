@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import sys
 
 from google.protobuf import json_format
 
@@ -19,9 +18,6 @@ from chromite.lib import chroot_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class RouterTest(cros_test_lib.RunCommandTempDirTestCase,

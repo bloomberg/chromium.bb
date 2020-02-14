@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import sys
 
 from chromite.api import faux
 from chromite.api import validate
@@ -18,9 +17,6 @@ from chromite.lib import constants
 from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.service import packages
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 ANDROIDPIN_MASK_PATH = os.path.join(constants.SOURCE_ROOT,

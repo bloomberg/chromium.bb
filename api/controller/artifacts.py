@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import os
-import sys
 
 from chromite.api import controller
 from chromite.api import faux
@@ -23,9 +22,6 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import sysroot_lib
 from chromite.service import artifacts
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def _GetImageDir(build_root, target):

@@ -15,7 +15,6 @@ import contextlib
 import functools
 import os
 import shutil
-import sys
 
 from google.protobuf import message as protobuf_message
 
@@ -23,9 +22,6 @@ from chromite.api.controller import controller_util
 from chromite.api.gen.chromiumos import common_pb2
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class Error(Exception):

@@ -7,8 +7,6 @@
 
 from __future__ import print_function
 
-import sys
-
 import mock
 
 from chromite.api import api_config
@@ -21,9 +19,6 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib.build_target_util import BuildTarget
 from chromite.service import packages
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class MarkStableTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):

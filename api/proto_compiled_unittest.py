@@ -8,15 +8,11 @@
 from __future__ import print_function
 
 import os
-import sys
 
 from chromite.api import compile_build_api_proto
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class ProtoGeneratedTest(cros_test_lib.TempDirTestCase):

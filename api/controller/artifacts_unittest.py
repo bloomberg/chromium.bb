@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import collections
 import os
-import sys
 
 import mock
 
@@ -25,9 +24,6 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import sysroot_lib
 from chromite.service import artifacts as artifacts_svc
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 PinnedGuestImage = collections.namedtuple('PinnedGuestImage',

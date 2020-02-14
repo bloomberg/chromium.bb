@@ -7,10 +7,9 @@
 
 from __future__ import print_function
 
-import contextlib
 import os
-import sys
 
+import contextlib
 import mock
 
 from chromite.api import api_config
@@ -27,9 +26,6 @@ from chromite.lib import portage_util
 from chromite.scripts import cros_set_lsb_release
 from chromite.service import test as test_service
 from chromite.utils import key_value_store
-
-
-assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class DebugInfoTestTest(cros_test_lib.MockTempDirTestCase,
