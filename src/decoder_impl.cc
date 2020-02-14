@@ -379,12 +379,11 @@ StatusCode DecoderImpl::DecodeTiles(
       return kStatusOutOfMemory;
     }
   }
-  LoopRestorationInfo loop_restoration_info(
-      frame_header.loop_restoration, frame_header.upscaled_width,
-      frame_header.height, sequence_header.color_config.subsampling_x,
-      sequence_header.color_config.subsampling_y,
-      sequence_header.color_config.is_monochrome);
-  if (!loop_restoration_info.Allocate()) {
+  if (!frame_scratch_buffer->loop_restoration_info.Reset(
+          &frame_header.loop_restoration, frame_header.upscaled_width,
+          frame_header.height, sequence_header.color_config.subsampling_x,
+          sequence_header.color_config.subsampling_y,
+          sequence_header.color_config.is_monochrome)) {
     LIBGAV1_DLOG(ERROR,
                  "Failed to allocate memory for loop restoration info units.");
     return kStatusOutOfMemory;
@@ -631,9 +630,9 @@ StatusCode DecoderImpl::DecodeTiles(
   PostFilter post_filter(
       frame_header, sequence_header, &frame_scratch_buffer->loop_filter_mask,
       frame_scratch_buffer->cdef_index,
-      frame_scratch_buffer->inter_transform_sizes, &loop_restoration_info,
-      &block_parameters_holder, current_frame->buffer(),
-      &frame_scratch_buffer->deblock_buffer, dsp,
+      frame_scratch_buffer->inter_transform_sizes,
+      &frame_scratch_buffer->loop_restoration_info, &block_parameters_holder,
+      current_frame->buffer(), &frame_scratch_buffer->deblock_buffer, dsp,
       threading_strategy_.post_filter_thread_pool(),
       frame_scratch_buffer->threaded_window_buffer.get(),
       frame_scratch_buffer->superres_line_buffer.get(),

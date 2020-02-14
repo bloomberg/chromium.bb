@@ -39,15 +39,7 @@ struct LoopRestorationUnitInfo {
 
 class LoopRestorationInfo {
  public:
-  LoopRestorationInfo(const LoopRestoration& loop_restoration, uint32_t width,
-                      uint32_t height, int8_t subsampling_x,
-                      int8_t subsampling_y, bool is_monochrome)
-      : loop_restoration_(loop_restoration),
-        width_(width),
-        height_(height),
-        subsampling_x_(subsampling_x),
-        subsampling_y_(subsampling_y),
-        is_monochrome_(is_monochrome) {}
+  LoopRestorationInfo() = default;
 
   // Non copyable/movable.
   LoopRestorationInfo(const LoopRestorationInfo&) = delete;
@@ -55,7 +47,9 @@ class LoopRestorationInfo {
   LoopRestorationInfo(LoopRestorationInfo&&) = delete;
   LoopRestorationInfo& operator=(LoopRestorationInfo&&) = delete;
 
-  bool Allocate();
+  bool Reset(const LoopRestoration* loop_restoration, uint32_t width,
+             uint32_t height, int8_t subsampling_x, int8_t subsampling_y,
+             bool is_monochrome);
   // Populates the |unit_info| for the super block at |row4x4|, |column4x4|.
   // Returns true on success, false otherwise.
   bool PopulateUnitInfoForSuperBlock(Plane plane, BlockSize block_size,
@@ -94,13 +88,11 @@ class LoopRestorationInfo {
   RestorationUnitInfo* loop_restoration_info_[kMaxPlanes];
   // Owns the memory that loop_restoration_info_[plane] points to.
   std::unique_ptr<RestorationUnitInfo[]> loop_restoration_info_buffer_;
+  int loop_restoration_info_buffer_size_ = 0;
   bool plane_needs_filtering_[kMaxPlanes];
-  const LoopRestoration& loop_restoration_;
-  uint32_t width_;
-  uint32_t height_;
+  const LoopRestoration* loop_restoration_;
   int8_t subsampling_x_;
   int8_t subsampling_y_;
-  bool is_monochrome_;
   int num_horizontal_units_[kMaxPlanes];
   int num_vertical_units_[kMaxPlanes];
   int num_units_[kMaxPlanes];

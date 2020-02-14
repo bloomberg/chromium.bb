@@ -22,6 +22,7 @@
 #include <mutex>  // NOLINT (unapproved c++11 header)
 
 #include "src/loop_filter_mask.h"
+#include "src/loop_restoration_info.h"
 #include "src/residual_buffer_pool.h"
 #include "src/symbol_decoder_context.h"
 #include "src/threading_strategy.h"
@@ -37,6 +38,7 @@ namespace libgav1 {
 // DecoderImpl::DecodeTiles().
 struct FrameScratchBuffer {
   LoopFilterMask loop_filter_mask;
+  LoopRestorationInfo loop_restoration_info;
   Array2D<int16_t> cdef_index;
   Array2D<TransformSize> inter_transform_sizes;
   TemporalMotionField motion_field;

@@ -40,40 +40,53 @@ constexpr LoopRestorationType kBitstreamRestorationTypeMap[] = {
 
 }  // namespace
 
-bool LoopRestorationInfo::Allocate() {
-  const int num_planes = is_monochrome_ ? kMaxPlanesMonochrome : kMaxPlanes;
+bool LoopRestorationInfo::Reset(const LoopRestoration* const loop_restoration,
+                                uint32_t width, uint32_t height,
+                                int8_t subsampling_x, int8_t subsampling_y,
+                                bool is_monochrome) {
+  loop_restoration_ = loop_restoration;
+  subsampling_x_ = subsampling_x;
+  subsampling_y_ = subsampling_y;
+
+  const int num_planes = is_monochrome ? kMaxPlanesMonochrome : kMaxPlanes;
   int total_num_units = 0;
   for (int plane = kPlaneY; plane < num_planes; ++plane) {
-    if (loop_restoration_.type[plane] == kLoopRestorationTypeNone) {
+    if (loop_restoration_->type[plane] == kLoopRestorationTypeNone) {
       plane_needs_filtering_[plane] = false;
       continue;
     }
     plane_needs_filtering_[plane] = true;
-    const int width = (plane == kPlaneY)
-                          ? width_
-                          : RightShiftWithRounding(width_, subsampling_x_);
-    const int height = (plane == kPlaneY)
-                           ? height_
-                           : RightShiftWithRounding(height_, subsampling_y_);
-    num_horizontal_units_[plane] =
-        std::max(1, (width + DivideBy2(loop_restoration_.unit_size[plane])) /
-                        loop_restoration_.unit_size[plane]);
-    num_vertical_units_[plane] =
-        std::max(1, (height + DivideBy2(loop_restoration_.unit_size[plane])) /
-                        loop_restoration_.unit_size[plane]);
+    const int plane_width = (plane == kPlaneY)
+                                ? width
+                                : RightShiftWithRounding(width, subsampling_x_);
+    const int plane_height =
+        (plane == kPlaneY) ? height
+                           : RightShiftWithRounding(height, subsampling_y_);
+    num_horizontal_units_[plane] = std::max(
+        1, (plane_width + DivideBy2(loop_restoration_->unit_size[plane])) /
+               loop_restoration_->unit_size[plane]);
+    num_vertical_units_[plane] = std::max(
+        1, (plane_height + DivideBy2(loop_restoration_->unit_size[plane])) /
+               loop_restoration_->unit_size[plane]);
     num_units_[plane] =
         num_horizontal_units_[plane] * num_vertical_units_[plane];
     total_num_units += num_units_[plane];
   }
-  // Allocate the RestorationUnitInfo arrays for all planes in a single heap
-  // allocation and divide up the buffer into arrays of the right sizes.
-  loop_restoration_info_buffer_.reset(new (std::nothrow)
-                                          RestorationUnitInfo[total_num_units]);
-  if (loop_restoration_info_buffer_ == nullptr) return false;
+  if (total_num_units > loop_restoration_info_buffer_size_) {
+    // Allocate the RestorationUnitInfo arrays for all planes in a single heap
+    // allocation and divide up the buffer into arrays of the right sizes.
+    loop_restoration_info_buffer_.reset(
+        new (std::nothrow) RestorationUnitInfo[total_num_units]);
+    if (loop_restoration_info_buffer_ == nullptr) {
+      loop_restoration_info_buffer_size_ = 0;
+      return false;
+    }
+    loop_restoration_info_buffer_size_ = total_num_units;
+  }
   RestorationUnitInfo* loop_restoration_info =
       loop_restoration_info_buffer_.get();
   for (int plane = kPlaneY; plane < num_planes; ++plane) {
-    if (loop_restoration_.type[plane] == kLoopRestorationTypeNone) {
+    if (loop_restoration_->type[plane] == kLoopRestorationTypeNone) {
       continue;
     }
     loop_restoration_info_[plane] = loop_restoration_info;
@@ -90,15 +103,15 @@ bool LoopRestorationInfo::PopulateUnitInfoForSuperBlock(
   if (!plane_needs_filtering_[plane]) return false;
   const int denominator_column =
       is_superres_scaled
-          ? loop_restoration_.unit_size[plane] * kSuperResScaleNumerator
-          : loop_restoration_.unit_size[plane];
+          ? loop_restoration_->unit_size[plane] * kSuperResScaleNumerator
+          : loop_restoration_->unit_size[plane];
   const int numerator_column =
       is_superres_scaled ? superres_scale_denominator : 1;
   const int pixel_column_start =
       RowOrColumn4x4ToPixel(column4x4, plane, subsampling_x_);
   const int pixel_column_end = RowOrColumn4x4ToPixel(
       column4x4 + kNum4x4BlocksWide[block_size], plane, subsampling_x_);
-  const int unit_row = loop_restoration_.unit_size[plane];
+  const int unit_row = loop_restoration_->unit_size[plane];
   const int pixel_row_start =
       RowOrColumn4x4ToPixel(row4x4, plane, subsampling_y_);
   const int pixel_row_end = RowOrColumn4x4ToPixel(
@@ -123,15 +136,15 @@ void LoopRestorationInfo::ReadUnitCoefficients(
     int unit_id,
     std::array<RestorationUnitInfo, kMaxPlanes>* const reference_unit_info) {
   LoopRestorationType unit_restoration_type = kLoopRestorationTypeNone;
-  if (loop_restoration_.type[plane] == kLoopRestorationTypeSwitchable) {
+  if (loop_restoration_->type[plane] == kLoopRestorationTypeSwitchable) {
     unit_restoration_type = kBitstreamRestorationTypeMap
         [reader->ReadSymbol<kRestorationTypeSymbolCount>(
             symbol_decoder_context->restoration_type_cdf)];
-  } else if (loop_restoration_.type[plane] == kLoopRestorationTypeWiener) {
+  } else if (loop_restoration_->type[plane] == kLoopRestorationTypeWiener) {
     const bool use_wiener =
         reader->ReadSymbol(symbol_decoder_context->use_wiener_cdf);
     if (use_wiener) unit_restoration_type = kLoopRestorationTypeWiener;
-  } else if (loop_restoration_.type[plane] == kLoopRestorationTypeSgrProj) {
+  } else if (loop_restoration_->type[plane] == kLoopRestorationTypeSgrProj) {
     const bool use_sgrproj =
         reader->ReadSymbol(symbol_decoder_context->use_sgrproj_cdf);
     if (use_sgrproj) unit_restoration_type = kLoopRestorationTypeSgrProj;
