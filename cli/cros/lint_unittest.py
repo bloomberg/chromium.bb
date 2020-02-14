@@ -237,6 +237,11 @@ class DocStringCheckerTest(CheckerTestCase):
       Arguments:
         some: arg
       """,
+      """we want Args, not Params
+
+      Params:
+        some: arg
+      """,
       """section order is wrong here
 
       Raises:

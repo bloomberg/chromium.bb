@@ -353,7 +353,10 @@ class DocStringChecker(pylint.checkers.BaseChecker):
             'prop', 'props', 'properties',
             'member', 'members',
         },
-        'Args': {'arg', 'argument', 'arguments'},
+        'Args': {
+            'arg', 'argument', 'arguments',
+            'param', 'params', 'parameter', 'parameters',
+        },
         'Returns': {
             'ret', 'rets', 'return', 'retrun', 'retruns', 'result', 'results',
         },
