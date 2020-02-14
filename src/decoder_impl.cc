@@ -184,8 +184,8 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
     LIBGAV1_DLOG(ERROR, "Failed to initialize OBU parser.");
     return kStatusOutOfMemory;
   }
-  if (state_.has_sequence_header) {
-    obu->set_sequence_header(state_.sequence_header);
+  if (has_sequence_header_) {
+    obu->set_sequence_header(sequence_header_);
   }
   RefCountedBufferPtr current_frame;
   RefCountedBufferPtr displayable_frame;
@@ -201,18 +201,17 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
                        return obu_header.type == kObuSequenceHeader;
                      }) != obu->obu_headers().end()) {
       const ObuSequenceHeader& sequence_header = obu->sequence_header();
-      if (!state_.has_sequence_header ||
-          state_.sequence_header.color_config.bitdepth !=
+      if (!has_sequence_header_ ||
+          sequence_header_.color_config.bitdepth !=
               sequence_header.color_config.bitdepth ||
-          state_.sequence_header.color_config.is_monochrome !=
+          sequence_header_.color_config.is_monochrome !=
               sequence_header.color_config.is_monochrome ||
-          state_.sequence_header.color_config.subsampling_x !=
+          sequence_header_.color_config.subsampling_x !=
               sequence_header.color_config.subsampling_x ||
-          state_.sequence_header.color_config.subsampling_y !=
+          sequence_header_.color_config.subsampling_y !=
               sequence_header.color_config.subsampling_y ||
-          state_.sequence_header.max_frame_width !=
-              sequence_header.max_frame_width ||
-          state_.sequence_header.max_frame_height !=
+          sequence_header_.max_frame_width != sequence_header.max_frame_width ||
+          sequence_header_.max_frame_height !=
               sequence_header.max_frame_height) {
         const Libgav1ImageFormat image_format =
             ComposeImageFormat(sequence_header.color_config.is_monochrome,
@@ -229,8 +228,8 @@ StatusCode DecoderImpl::DequeueFrame(const DecoderBuffer** out_ptr) {
           return kStatusUnknownError;
         }
       }
-      state_.sequence_header = sequence_header;
-      state_.has_sequence_header = true;
+      sequence_header_ = sequence_header;
+      has_sequence_header_ = true;
       tile_scratch_buffer_pool_.Reset(sequence_header.color_config.bitdepth);
     }
     if (!obu->frame_header().show_existing_frame) {
@@ -294,7 +293,7 @@ bool DecoderImpl::AllocateCurrentFrame(RefCountedBuffer* const current_frame,
                                        const ObuFrameHeader& frame_header,
                                        int left_border, int right_border,
                                        int top_border, int bottom_border) {
-  const ColorConfig& color_config = state_.sequence_header.color_config;
+  const ColorConfig& color_config = sequence_header_.color_config;
   current_frame->set_chroma_sample_position(
       color_config.chroma_sample_position);
   return current_frame->Realloc(
@@ -328,12 +327,12 @@ StatusCode DecoderImpl::CopyFrameToOutputBuffer(
       return kStatusInvalidArgument;
     }
   }
-  buffer_.color_range = state_.sequence_header.color_config.color_range;
-  buffer_.color_primary = state_.sequence_header.color_config.color_primary;
+  buffer_.color_range = sequence_header_.color_config.color_range;
+  buffer_.color_primary = sequence_header_.color_config.color_primary;
   buffer_.transfer_characteristics =
-      state_.sequence_header.color_config.transfer_characteristics;
+      sequence_header_.color_config.transfer_characteristics;
   buffer_.matrix_coefficients =
-      state_.sequence_header.color_config.matrix_coefficients;
+      sequence_header_.color_config.matrix_coefficients;
 
   buffer_.bitdepth = yuv_buffer->bitdepth();
   const int num_planes =

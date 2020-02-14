@@ -67,9 +67,6 @@ struct DecoderState {
   // Clears all the reference frames.
   void ClearReferenceFrames();
 
-  ObuSequenceHeader sequence_header = {};
-  // If true, sequence_header is valid.
-  bool has_sequence_header = false;
   // reference_valid and reference_frame_id are used only if
   // sequence_header_.frame_id_numbers_present is true.
   // The reference_valid array is indexed by a reference picture slot number.
@@ -170,6 +167,10 @@ class DecoderImpl : public Allocable {
   TileScratchBufferPool tile_scratch_buffer_pool_;
   WedgeMaskArray wedge_masks_;
   FrameScratchBufferPool frame_scratch_buffer_pool_;
+
+  ObuSequenceHeader sequence_header_ = {};
+  // If true, sequence_header is valid.
+  bool has_sequence_header_ = false;
 
   const DecoderSettings& settings_;
 };
