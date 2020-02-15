@@ -505,7 +505,8 @@ url::Origin GetOriginForURLLoaderFactory(
   //
   // TODO(lukasza): https://crbug.com/1029092: The CHECK below should also apply
   // to opaque origin.
-  if (!result.opaque()) {
+  if (!result.opaque() && navigation_request &&
+      !navigation_request->common_params().url.IsAboutBlank()) {
     auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
     CHECK(policy->CanAccessDataForOrigin(
         navigation_request->GetRenderFrameHost()->GetProcess()->GetID(),
