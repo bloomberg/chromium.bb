@@ -181,9 +181,13 @@ def uprev_android(tracking_branch,
       command,
       stdout=True,
       enter_chroot=True,
+      encoding='utf-8',
       chroot_args=chroot.get_enter_args())
 
-  android_atom = _parse_android_atom(result)
+  portage_atom_string = result.stdout.strip()
+  android_atom = None
+  if portage_atom_string:
+    android_atom = portage_atom_string.splitlines()[-1].partition('=')[-1]
   if not android_atom:
     logging.info('Found nothing to rev.')
     return None
@@ -200,24 +204,6 @@ def uprev_android(tracking_branch,
           'Cannot emerge-%s =%s\nIs Android pinned to an older '
           'version?', target, android_atom)
       raise AndroidIsPinnedUprevError(android_atom)
-
-  return android_atom
-
-
-def _parse_android_atom(result):
-  """Helper to parse the atom from the cros_mark_android_as_stable output.
-
-  This function is largely just intended to make testing easier.
-
-  Args:
-    result (cros_build_lib.CommandResult): The cros_mark_android_as_stable
-      command result.
-  """
-  portage_atom_string = result.output.strip()
-
-  android_atom = None
-  if portage_atom_string:
-    android_atom = portage_atom_string.splitlines()[-1].partition('=')[-1]
 
   return android_atom
 

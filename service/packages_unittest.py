@@ -24,6 +24,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
+from chromite.lib import partial_mock
 from chromite.lib import portage_util
 from chromite.lib.chroot_lib import Chroot
 from chromite.lib.uprev_lib import GitRef
@@ -37,9 +38,8 @@ class UprevAndroidTest(cros_test_lib.RunCommandTestCase):
 
   def test_success(self):
     """Test successful run handling."""
-    self.PatchObject(packages, '_parse_android_atom',
-                     return_value='ANDROID_ATOM=android/android-1.0')
-
+    self.rc.AddCmdResult(partial_mock.In('cros_mark_android_as_stable'),
+                         stdout='ANDROID_ATOM=android/android-1.0\n')
     build_targets = [build_target_util.BuildTarget(t) for t in ['foo', 'bar']]
 
     packages.uprev_android('refs/tracking-branch', 'android/package',
@@ -52,7 +52,8 @@ class UprevAndroidTest(cros_test_lib.RunCommandTestCase):
 
   def test_no_uprev(self):
     """Test no uprev handling."""
-    self.PatchObject(packages, '_parse_android_atom', return_value=None)
+    self.rc.AddCmdResult(partial_mock.In('cros_mark_android_as_stable'),
+                         stdout='')
     build_targets = [build_target_util.BuildTarget(t) for t in ['foo', 'bar']]
     packages.uprev_android('refs/tracking-branch', 'android/package',
                            'refs/android-build-branch', Chroot(),
