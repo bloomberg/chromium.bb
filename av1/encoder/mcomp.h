@@ -129,7 +129,7 @@ typedef struct {
   int mask_stride;
   int invert_mask;
   int w, h;
-} SUBPEL_SEARCH_VARIANCE_PARAMS;
+} SUBPEL_SEARCH_VAR_PARAMS;
 
 // This struct holds subpixel motion search parameters that should be constant
 // during the search
@@ -145,7 +145,7 @@ typedef struct {
   MV_COST_PARAMS mv_cost_params;
 
   // Distortion calculation params
-  SUBPEL_SEARCH_VARIANCE_PARAMS var_params;
+  SUBPEL_SEARCH_VAR_PARAMS var_params;
 } SUBPEL_MOTION_SEARCH_PARAMS;
 
 void av1_make_default_subpel_ms_params(
