@@ -8,10 +8,14 @@
 from __future__ import print_function
 
 import os
+import sys
 
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.scripts import gconv_strip
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class GconvStriptTest(cros_test_lib.MockTempDirTestCase):
@@ -47,6 +51,7 @@ module charset_foo   charset_A     USED_MODULE
         'charset_bar', 'charset_foo'])
     self.PatchObject(gconv_strip.lddtree, 'ParseELF', return_value={})
     class _StubStat(object):
+      """Fake for lstat."""
       st_size = 0
     self.PatchObject(gconv_strip.os, 'lstat', return_value=_StubStat)
     self.PatchObject(gconv_strip.os, 'unlink')

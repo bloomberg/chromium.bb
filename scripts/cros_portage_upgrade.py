@@ -13,6 +13,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 
 import portage  # pylint: disable=import-error
@@ -27,6 +28,9 @@ from chromite.lib import operation
 from chromite.lib import portage_util
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import merge_package_status as mps
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 oper = operation.Operation('cros_portage_upgrade')

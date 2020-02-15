@@ -11,6 +11,7 @@ import filecmp
 import os
 import re
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -24,6 +25,10 @@ from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import upgrade_table as utable
 from chromite.scripts import cros_portage_upgrade as cpu
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 # This left in, but disabled, until we can get GetCurrentVersionsTest
 # working again.

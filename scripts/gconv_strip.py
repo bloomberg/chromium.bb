@@ -12,6 +12,7 @@ import glob
 import operator
 import os
 import stat
+import sys
 
 import ahocorasick  # pylint: disable=import-error
 import lddtree
@@ -20,6 +21,9 @@ from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 # Path pattern to search for the gconv-modules file.

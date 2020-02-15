@@ -12,11 +12,16 @@ from __future__ import print_function
 
 import os
 import re
+import sys
 
 from chromite.lib import commandline
 from chromite.lib import operation
 from chromite.lib import table
 from chromite.lib import upgrade_table as utable
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
 
 COL_PACKAGE = utable.UpgradeTable.COL_PACKAGE
 COL_SLOT = utable.UpgradeTable.COL_SLOT
