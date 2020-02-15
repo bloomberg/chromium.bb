@@ -293,133 +293,133 @@ using std::make_tuple;
 // hard to support, so optimizations for this target are disabled.
 #if defined(_WIN64) || !defined(_MSC_VER) || defined(__clang__)
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, CDEFBlockTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_sse2),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(SSE2, CDEFFindDirTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_sse2,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSE2, CDEFFindDirTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_sse2,
+                                                      &cdef_find_dir_c)));
 #endif
 #if HAVE_SSSE3
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSSE3, CDEFBlockTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_ssse3),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(SSSE3, CDEFFindDirTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_ssse3,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSSE3, CDEFFindDirTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_ssse3,
+                                                      &cdef_find_dir_c)));
 #endif
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, CDEFBlockTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_sse4_1),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(SSE4_1, CDEFFindDirTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_sse4_1,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, CDEFFindDirTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_sse4_1,
+                                                      &cdef_find_dir_c)));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, CDEFBlockTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_avx2),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(AVX2, CDEFFindDirTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_avx2,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(AVX2, CDEFFindDirTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_avx2,
+                                                      &cdef_find_dir_c)));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NEON, CDEFBlockTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_neon),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(NEON, CDEFFindDirTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_neon,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(NEON, CDEFFindDirTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_neon,
+                                                      &cdef_find_dir_c)));
 #endif
 
 // Test speed for all supported architectures
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, CDEFSpeedTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_sse2),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(SSE2, CDEFFindDirSpeedTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_sse2,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSE2, CDEFFindDirSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_sse2,
+                                                      &cdef_find_dir_c)));
 #endif
 
 #if HAVE_SSSE3
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSSE3, CDEFSpeedTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_ssse3),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(SSSE3, CDEFFindDirSpeedTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_ssse3,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSSE3, CDEFFindDirSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_ssse3,
+                                                      &cdef_find_dir_c)));
 #endif
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, CDEFSpeedTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_sse4_1),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(SSE4_1, CDEFFindDirSpeedTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_sse4_1,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, CDEFFindDirSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_sse4_1,
+                                                      &cdef_find_dir_c)));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, CDEFSpeedTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_avx2),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(AVX2, CDEFFindDirSpeedTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_avx2,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(AVX2, CDEFFindDirSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_avx2,
+                                                      &cdef_find_dir_c)));
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NEON, CDEFSpeedTest,
     ::testing::Combine(::testing::Values(&cdef_filter_block_neon),
                        ::testing::Values(&cdef_filter_block_c),
                        ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                          BLOCK_8X8),
                        ::testing::Range(0, 16), ::testing::Range(8, 13, 2)));
-INSTANTIATE_TEST_CASE_P(NEON, CDEFFindDirSpeedTest,
-                        ::testing::Values(make_tuple(&cdef_find_dir_neon,
-                                                     &cdef_find_dir_c)));
+INSTANTIATE_TEST_SUITE_P(NEON, CDEFFindDirSpeedTest,
+                         ::testing::Values(make_tuple(&cdef_find_dir_neon,
+                                                      &cdef_find_dir_c)));
 #endif
 
 #endif  // defined(_WIN64) || !defined(_MSC_VER)

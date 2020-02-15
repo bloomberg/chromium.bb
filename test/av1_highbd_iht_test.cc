@@ -186,8 +186,8 @@ const IHbdHtParam kArrayIhtParam[] = {
   make_tuple(PARAM_LIST_4X4, FLIPADST_ADST, 12),
 };
 
-INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdInvHTNxN,
-                        ::testing::ValuesIn(kArrayIhtParam));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, AV1HighbdInvHTNxN,
+                         ::testing::ValuesIn(kArrayIhtParam));
 #endif  // HAVE_SSE4_1
 
 typedef void (*HighbdInvTxfm2dFunc)(const int32_t *input, uint8_t *output,
@@ -351,12 +351,12 @@ TEST_P(AV1HighbdInvTxfm2d, DISABLED_Speed) {
 }
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdInvTxfm2d,
-                        ::testing::Values(av1_highbd_inv_txfm_add_sse4_1));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, AV1HighbdInvTxfm2d,
+                         ::testing::Values(av1_highbd_inv_txfm_add_sse4_1));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(AVX2, AV1HighbdInvTxfm2d,
-                        ::testing::Values(av1_highbd_inv_txfm_add_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1HighbdInvTxfm2d,
+                         ::testing::Values(av1_highbd_inv_txfm_add_avx2));
 #endif
 }  // namespace

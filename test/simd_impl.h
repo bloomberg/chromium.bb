@@ -352,10 +352,10 @@ MY_TEST_P(ARCH_POSTFIX(V64_V256), TestIntrinsics) {
   TestSimd1Arg<c_v64, c_v256>(kIterations, mask, maskwidth, name);
 }
 
-// Add a macro layer since INSTANTIATE_TEST_CASE_P will quote the name
+// Add a macro layer since INSTANTIATE_TEST_SUITE_P will quote the name
 // so we need to expand it first with the prefix
 #define INSTANTIATE(name, type, ...) \
-  INSTANTIATE_TEST_CASE_P(name, type, ::testing::Values(__VA_ARGS__))
+  INSTANTIATE_TEST_SUITE_P(name, type, ::testing::Values(__VA_ARGS__))
 
 #define SIMD_TUPLE(name, mask, maskwidth) \
   std::make_tuple(mask, maskwidth, static_cast<const char *>(#name))

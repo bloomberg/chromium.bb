@@ -245,13 +245,13 @@ TEST_P(IntProColTest, Random) {
 
 using std::make_tuple;
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, AverageTest,
     ::testing::Values(make_tuple(16, 16, 1, 8, &aom_avg_8x8_c),
                       make_tuple(16, 16, 1, 4, &aom_avg_4x4_c)));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, AverageTest,
     ::testing::Values(make_tuple(16, 16, 0, 8, &aom_avg_8x8_sse2),
                       make_tuple(16, 16, 5, 8, &aom_avg_8x8_sse2),
@@ -260,7 +260,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(16, 16, 5, 4, &aom_avg_4x4_sse2),
                       make_tuple(32, 32, 15, 4, &aom_avg_4x4_sse2)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, IntProRowTest,
     ::testing::Values(make_tuple(16, &aom_int_pro_row_sse2, &aom_int_pro_row_c),
                       make_tuple(32, &aom_int_pro_row_sse2, &aom_int_pro_row_c),
@@ -268,7 +268,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(128, &aom_int_pro_row_sse2,
                                  &aom_int_pro_row_c)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, IntProColTest,
     ::testing::Values(make_tuple(16, &aom_int_pro_col_sse2, &aom_int_pro_col_c),
                       make_tuple(32, &aom_int_pro_col_sse2, &aom_int_pro_col_c),
@@ -278,7 +278,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NEON, AverageTest,
     ::testing::Values(make_tuple(16, 16, 0, 8, &aom_avg_8x8_neon),
                       make_tuple(16, 16, 5, 8, &aom_avg_8x8_neon),

@@ -91,7 +91,7 @@ TEST_P(Trans4x4WHT, MemCheck) { RunMemCheck(); }
 TEST_P(Trans4x4WHT, InvAccuracyCheck) { RunInvAccuracyCheck(0); }
 using std::make_tuple;
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, Trans4x4WHT,
     ::testing::Values(make_tuple(&av1_highbd_fwht4x4_c, &iwht4x4_10, DCT_DCT,
                                  AOM_BITS_10, 16),

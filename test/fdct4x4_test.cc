@@ -99,26 +99,26 @@ TEST_P(Trans4x4FDCTInt16, MemCheck) { RunMemCheck(); }
 using std::make_tuple;
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(NEON, Trans4x4FDCTTranLow,
-                        ::testing::Values(make_tuple(&aom_fdct4x4_neon,
-                                                     &fdct4x4_ref, AOM_BITS_8,
-                                                     16)));
+INSTANTIATE_TEST_SUITE_P(NEON, Trans4x4FDCTTranLow,
+                         ::testing::Values(make_tuple(&aom_fdct4x4_neon,
+                                                      &fdct4x4_ref, AOM_BITS_8,
+                                                      16)));
 
-INSTANTIATE_TEST_CASE_P(NEON, Trans4x4FDCTInt16,
-                        ::testing::Values(make_tuple(&aom_fdct4x4_lp_neon,
-                                                     &fdct4x4_lp_ref,
-                                                     AOM_BITS_8, 16)));
+INSTANTIATE_TEST_SUITE_P(NEON, Trans4x4FDCTInt16,
+                         ::testing::Values(make_tuple(&aom_fdct4x4_lp_neon,
+                                                      &fdct4x4_lp_ref,
+                                                      AOM_BITS_8, 16)));
 #endif
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, Trans4x4FDCTTranLow,
-                        ::testing::Values(make_tuple(&aom_fdct4x4_sse2,
-                                                     &fdct4x4_ref, AOM_BITS_8,
-                                                     16)));
+INSTANTIATE_TEST_SUITE_P(SSE2, Trans4x4FDCTTranLow,
+                         ::testing::Values(make_tuple(&aom_fdct4x4_sse2,
+                                                      &fdct4x4_ref, AOM_BITS_8,
+                                                      16)));
 
-INSTANTIATE_TEST_CASE_P(SSE2, Trans4x4FDCTInt16,
-                        ::testing::Values(make_tuple(&aom_fdct4x4_lp_sse2,
-                                                     &fdct4x4_lp_ref,
-                                                     AOM_BITS_8, 16)));
+INSTANTIATE_TEST_SUITE_P(SSE2, Trans4x4FDCTInt16,
+                         ::testing::Values(make_tuple(&aom_fdct4x4_lp_sse2,
+                                                      &fdct4x4_lp_ref,
+                                                      AOM_BITS_8, 16)));
 #endif
 }  // namespace

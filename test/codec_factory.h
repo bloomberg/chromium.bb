@@ -162,7 +162,7 @@ class AV1CodecFactory : public CodecFactory {
 const libaom_test::AV1CodecFactory kAV1;
 
 #define AV1_INSTANTIATE_TEST_CASE(test, ...)                                \
-  INSTANTIATE_TEST_CASE_P(                                                  \
+  INSTANTIATE_TEST_SUITE_P(                                                 \
       AV1, test,                                                            \
       ::testing::Combine(                                                   \
           ::testing::Values(static_cast<const libaom_test::CodecFactory *>( \

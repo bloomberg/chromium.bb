@@ -270,17 +270,17 @@ TEST_P(WienerTest, DISABLED_Speed) {
   RunWienerTest(WIENER_WIN_CHROMA, 200);
 }
 
-INSTANTIATE_TEST_CASE_P(C, WienerTest, ::testing::Values(compute_stats_opt_c));
+INSTANTIATE_TEST_SUITE_P(C, WienerTest, ::testing::Values(compute_stats_opt_c));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, WienerTest,
-                        ::testing::Values(av1_compute_stats_sse4_1));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, WienerTest,
+                         ::testing::Values(av1_compute_stats_sse4_1));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
 
-INSTANTIATE_TEST_CASE_P(AVX2, WienerTest,
-                        ::testing::Values(av1_compute_stats_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, WienerTest,
+                         ::testing::Values(av1_compute_stats_avx2));
 #endif  // HAVE_AVX2
 
 }  // namespace wiener_lowbd
@@ -570,17 +570,17 @@ TEST_P(WienerTestHighbd, DISABLED_Speed) {
   RunWienerTest(WIENER_WIN_CHROMA, 200, AOM_BITS_12);
 }
 
-INSTANTIATE_TEST_CASE_P(C, WienerTestHighbd,
-                        ::testing::Values(compute_stats_highbd_opt_c));
+INSTANTIATE_TEST_SUITE_P(C, WienerTestHighbd,
+                         ::testing::Values(compute_stats_highbd_opt_c));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, WienerTestHighbd,
-                        ::testing::Values(av1_compute_stats_highbd_sse4_1));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, WienerTestHighbd,
+                         ::testing::Values(av1_compute_stats_highbd_sse4_1));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(AVX2, WienerTestHighbd,
-                        ::testing::Values(av1_compute_stats_highbd_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, WienerTestHighbd,
+                         ::testing::Values(av1_compute_stats_highbd_avx2));
 #endif  // HAVE_AVX2
 
 }  // namespace wiener_highbd

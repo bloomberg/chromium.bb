@@ -127,14 +127,14 @@ TEST_P(AV1CornerMatchTest, CheckOutput) { RunCheckOutput(1); }
 TEST_P(AV1CornerMatchTest, DISABLED_Speed) { RunCheckOutput(100000); }
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AV1CornerMatchTest,
     ::testing::Values(make_tuple(0, &av1_compute_cross_correlation_sse4_1),
                       make_tuple(1, &av1_compute_cross_correlation_sse4_1)));
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, AV1CornerMatchTest,
     ::testing::Values(make_tuple(0, &av1_compute_cross_correlation_avx2),
                       make_tuple(1, &av1_compute_cross_correlation_avx2)));

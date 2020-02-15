@@ -224,8 +224,8 @@ const IntraPredFunc<IntraPred> LowbdIntraPredTestVector[] = {
   lowbd_intrapred(v, sse2),       lowbd_intrapred(h, sse2),
 };
 
-INSTANTIATE_TEST_CASE_P(SSE2, LowbdIntraPredTest,
-                        ::testing::ValuesIn(LowbdIntraPredTestVector));
+INSTANTIATE_TEST_SUITE_P(SSE2, LowbdIntraPredTest,
+                         ::testing::ValuesIn(LowbdIntraPredTestVector));
 
 #endif  // HAVE_SSE2
 
@@ -235,8 +235,8 @@ const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorSsse3[] = {
   lowbd_intrapred(smooth, ssse3),
 };
 
-INSTANTIATE_TEST_CASE_P(SSSE3, LowbdIntraPredTest,
-                        ::testing::ValuesIn(LowbdIntraPredTestVectorSsse3));
+INSTANTIATE_TEST_SUITE_P(SSSE3, LowbdIntraPredTest,
+                         ::testing::ValuesIn(LowbdIntraPredTestVectorSsse3));
 
 #endif  // HAVE_SSSE3
 
@@ -252,8 +252,8 @@ const IntraPredFunc<IntraPred> LowbdIntraPredTestVectorAvx2[] = {
   lowbd_entry(paeth, 32, 16, avx2),   lowbd_entry(paeth, 32, 32, avx2),
 };
 
-INSTANTIATE_TEST_CASE_P(AVX2, LowbdIntraPredTest,
-                        ::testing::ValuesIn(LowbdIntraPredTestVectorAvx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, LowbdIntraPredTest,
+                         ::testing::ValuesIn(LowbdIntraPredTestVectorAvx2));
 
 #endif  // HAVE_AVX2
 
@@ -265,8 +265,8 @@ const IntraPredFunc<HighbdIntraPred> HighbdIntraPredTestVectorNeon[] = {
   highbd_entry(dc, 64, 64, neon, 8),
 };
 
-INSTANTIATE_TEST_CASE_P(NEON, HighbdIntraPredTest,
-                        ::testing::ValuesIn(HighbdIntraPredTestVectorNeon));
+INSTANTIATE_TEST_SUITE_P(NEON, HighbdIntraPredTest,
+                         ::testing::ValuesIn(HighbdIntraPredTestVectorNeon));
 
 #endif  // HAVE_NEON
 #endif  // CONFIG_AV1_HIGHBITDEPTH

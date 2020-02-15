@@ -158,7 +158,7 @@ TEST_P(SumSquaresTest, DISABLED_Speed) { RunSpeedTest(); }
 
 #if HAVE_SSE2
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, SumSquaresTest,
     ::testing::Values(TestFuncs(&aom_sum_squares_2d_i16_c,
                                 &aom_sum_squares_2d_i16_sse2)));
@@ -166,7 +166,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, SumSquaresTest,
     ::testing::Values(TestFuncs(&aom_sum_squares_2d_i16_c,
                                 &aom_sum_squares_2d_i16_avx2)));
@@ -225,9 +225,9 @@ TEST_P(SumSquares1DTest, ExtremeValues) {
 }
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, SumSquares1DTest,
-                        ::testing::Values(TestFuncs1D(
-                            aom_sum_squares_i16_c, aom_sum_squares_i16_sse2)));
+INSTANTIATE_TEST_SUITE_P(SSE2, SumSquares1DTest,
+                         ::testing::Values(TestFuncs1D(
+                             aom_sum_squares_i16_c, aom_sum_squares_i16_sse2)));
 
 #endif  // HAVE_SSE2
 
@@ -392,8 +392,8 @@ TestSSEFuncs sse_sse4[] = {
   TestSSEFuncs(&aom_highbd_sse_c, &aom_highbd_sse_sse4_1)
 #endif
 };
-INSTANTIATE_TEST_CASE_P(SSE4_1, SSETest,
-                        Combine(ValuesIn(sse_sse4), Range(4, 129, 4)));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, SSETest,
+                         Combine(ValuesIn(sse_sse4), Range(4, 129, 4)));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
@@ -404,8 +404,8 @@ TestSSEFuncs sse_avx2[] = {
   TestSSEFuncs(&aom_highbd_sse_c, &aom_highbd_sse_avx2)
 #endif
 };
-INSTANTIATE_TEST_CASE_P(AVX2, SSETest,
-                        Combine(ValuesIn(sse_avx2), Range(4, 129, 4)));
+INSTANTIATE_TEST_SUITE_P(AVX2, SSETest,
+                         Combine(ValuesIn(sse_avx2), Range(4, 129, 4)));
 #endif  // HAVE_AVX2
 
 //////////////////////////////////////////////////////////////////////////////
@@ -543,15 +543,15 @@ TEST_P(SSE_Sum_Test, DISABLED_Speed) {
 #if HAVE_SSE2
 TestSSE_SumFuncs sse_sum_sse2[] = { TestSSE_SumFuncs(
     &aom_get_blk_sse_sum_c, &aom_get_blk_sse_sum_sse2) };
-INSTANTIATE_TEST_CASE_P(SSE2, SSE_Sum_Test,
-                        Combine(ValuesIn(sse_sum_sse2), Range(4, 65, 4)));
+INSTANTIATE_TEST_SUITE_P(SSE2, SSE_Sum_Test,
+                         Combine(ValuesIn(sse_sum_sse2), Range(4, 65, 4)));
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2
 TestSSE_SumFuncs sse_sum_avx2[] = { TestSSE_SumFuncs(
     &aom_get_blk_sse_sum_c, &aom_get_blk_sse_sum_avx2) };
-INSTANTIATE_TEST_CASE_P(AVX2, SSE_Sum_Test,
-                        Combine(ValuesIn(sse_sum_avx2), Range(4, 65, 4)));
+INSTANTIATE_TEST_SUITE_P(AVX2, SSE_Sum_Test,
+                         Combine(ValuesIn(sse_sum_avx2), Range(4, 65, 4)));
 #endif  // HAVE_AVX2
 
 //////////////////////////////////////////////////////////////////////////////
@@ -679,17 +679,17 @@ TEST_P(Lowbd2dVarTest, DISABLED_Speed) { RunSpeedTest(); }
 
 #if HAVE_SSE2
 
-INSTANTIATE_TEST_CASE_P(SSE2, Lowbd2dVarTest,
-                        ::testing::Values(TestFuncVar2D(&aom_var_2d_u8_c,
-                                                        &aom_var_2d_u8_sse2)));
+INSTANTIATE_TEST_SUITE_P(SSE2, Lowbd2dVarTest,
+                         ::testing::Values(TestFuncVar2D(&aom_var_2d_u8_c,
+                                                         &aom_var_2d_u8_sse2)));
 
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2
 
-INSTANTIATE_TEST_CASE_P(AVX2, Lowbd2dVarTest,
-                        ::testing::Values(TestFuncVar2D(&aom_var_2d_u8_c,
-                                                        &aom_var_2d_u8_avx2)));
+INSTANTIATE_TEST_SUITE_P(AVX2, Lowbd2dVarTest,
+                         ::testing::Values(TestFuncVar2D(&aom_var_2d_u8_c,
+                                                         &aom_var_2d_u8_avx2)));
 
 #endif  // HAVE_SSE2
 
@@ -811,17 +811,17 @@ TEST_P(Highbd2dVarTest, DISABLED_Speed) { RunSpeedTest(); }
 
 #if HAVE_SSE2
 
-INSTANTIATE_TEST_CASE_P(SSE2, Highbd2dVarTest,
-                        ::testing::Values(TestFuncVar2D(&aom_var_2d_u16_c,
-                                                        &aom_var_2d_u16_sse2)));
+INSTANTIATE_TEST_SUITE_P(
+    SSE2, Highbd2dVarTest,
+    ::testing::Values(TestFuncVar2D(&aom_var_2d_u16_c, &aom_var_2d_u16_sse2)));
 
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2
 
-INSTANTIATE_TEST_CASE_P(AVX2, Highbd2dVarTest,
-                        ::testing::Values(TestFuncVar2D(&aom_var_2d_u16_c,
-                                                        &aom_var_2d_u16_avx2)));
+INSTANTIATE_TEST_SUITE_P(
+    AVX2, Highbd2dVarTest,
+    ::testing::Values(TestFuncVar2D(&aom_var_2d_u16_c, &aom_var_2d_u16_avx2)));
 
 #endif  // HAVE_SSE2
 }  // namespace

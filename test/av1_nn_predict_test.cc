@@ -210,8 +210,8 @@ TEST_P(NnPredictTest, DISABLED_Speed) {
 }
 
 #if HAVE_SSE3
-INSTANTIATE_TEST_CASE_P(SSE3, NnPredictTest,
-                        ::testing::Values(av1_nn_predict_sse3));
+INSTANTIATE_TEST_SUITE_P(SSE3, NnPredictTest,
+                         ::testing::Values(av1_nn_predict_sse3));
 #endif
 
 }  // namespace

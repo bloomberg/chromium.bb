@@ -178,14 +178,14 @@ TEST_P(PixelProjErrorTest, ExtremeValues) {
 TEST_P(PixelProjErrorTest, DISABLED_Speed) { RunPixelProjErrorTest(200000); }
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, PixelProjErrorTest,
-                        ::testing::Values(av1_lowbd_pixel_proj_error_sse4_1));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, PixelProjErrorTest,
+                         ::testing::Values(av1_lowbd_pixel_proj_error_sse4_1));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
 
-INSTANTIATE_TEST_CASE_P(AVX2, PixelProjErrorTest,
-                        ::testing::Values(av1_lowbd_pixel_proj_error_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, PixelProjErrorTest,
+                         ::testing::Values(av1_lowbd_pixel_proj_error_avx2));
 #endif  // HAVE_AVX2
 
 }  // namespace pickrst_test_lowbd
@@ -345,14 +345,14 @@ TEST_P(PixelProjHighbdErrorTest, DISABLED_Speed) {
 }
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, PixelProjHighbdErrorTest,
-                        ::testing::Values(av1_highbd_pixel_proj_error_sse4_1));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, PixelProjHighbdErrorTest,
+                         ::testing::Values(av1_highbd_pixel_proj_error_sse4_1));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
 
-INSTANTIATE_TEST_CASE_P(AVX2, PixelProjHighbdErrorTest,
-                        ::testing::Values(av1_highbd_pixel_proj_error_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, PixelProjHighbdErrorTest,
+                         ::testing::Values(av1_highbd_pixel_proj_error_avx2));
 #endif  // HAVE_AVX2
 
 }  // namespace pickrst_test_highbd
@@ -526,8 +526,8 @@ TEST_P(GetProjSubspaceTest, DISABLED_Speed) { RunGetProjSubspaceTest(200000); }
 
 #if HAVE_AVX2
 
-INSTANTIATE_TEST_CASE_P(AVX2, GetProjSubspaceTest,
-                        ::testing::Values(av1_calc_proj_params_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, GetProjSubspaceTest,
+                         ::testing::Values(av1_calc_proj_params_avx2));
 #endif  // HAVE_AVX2
 
 }  // namespace get_proj_subspace_test_lowbd

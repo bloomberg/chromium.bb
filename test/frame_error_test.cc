@@ -147,7 +147,7 @@ TEST_P(AV1FrameErrorTest, DISABLED_Speed) {
 }
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, AV1FrameErrorTest,
     ::testing::Combine(::testing::Values(&av1_calc_frame_error_sse2),
                        ::testing::ValuesIn(kBlockWidth),
@@ -155,7 +155,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, AV1FrameErrorTest,
     ::testing::Combine(::testing::Values(&av1_calc_frame_error_avx2),
                        ::testing::ValuesIn(kBlockWidth),

@@ -157,7 +157,7 @@ AV1_INSTANTIATE_TEST_CASE(
                        ::testing::Values(0)));
 
 // Test AV1 decode in with different numbers of threads.
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AV1MultiThreaded, TestVectorTest,
     ::testing::Combine(
         ::testing::Values(

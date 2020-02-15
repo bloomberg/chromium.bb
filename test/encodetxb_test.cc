@@ -178,8 +178,8 @@ TEST_P(EncodeTxbTest, DISABLED_SpeedTestGetNzMapContexts) {
 }
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, EncodeTxbTest,
-                        ::testing::Values(av1_get_nz_map_contexts_sse2));
+INSTANTIATE_TEST_SUITE_P(SSE2, EncodeTxbTest,
+                         ::testing::Values(av1_get_nz_map_contexts_sse2));
 #endif
 
 typedef void (*av1_txb_init_levels_func)(const tran_low_t *const coeff,
@@ -249,13 +249,13 @@ TEST_P(EncodeTxbInitLevelTest, DISABLED_Speed) {
 }
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, EncodeTxbInitLevelTest,
     ::testing::Combine(::testing::Values(&av1_txb_init_levels_sse4_1),
                        ::testing::Range(0, static_cast<int>(TX_SIZES_ALL), 1)));
 #endif
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, EncodeTxbInitLevelTest,
     ::testing::Combine(::testing::Values(&av1_txb_init_levels_avx2),
                        ::testing::Range(0, static_cast<int>(TX_SIZES_ALL), 1)));

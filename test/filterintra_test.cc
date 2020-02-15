@@ -129,7 +129,7 @@ const TX_SIZE kTxSize[] = { TX_4X4,  TX_8X8,  TX_16X16, TX_32X32, TX_4X8,
                             TX_8X4,  TX_8X16, TX_16X8,  TX_16X32, TX_32X16,
                             TX_4X16, TX_16X4, TX_8X32,  TX_32X8 };
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AV1FilterIntraPredTest,
     ::testing::Combine(::testing::ValuesIn(kPredFuncMdArray),
                        ::testing::ValuesIn(kTxSize)));

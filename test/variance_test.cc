@@ -1083,23 +1083,23 @@ TEST_P(AvxObmcSubpelVarianceTest, Ref) { RefTest(); }
 TEST_P(AvxObmcSubpelVarianceTest, ExtremeRef) { ExtremeRefTest(); }
 TEST_P(AvxObmcSubpelVarianceTest, DISABLED_Speed) { SpeedTest(); }
 
-INSTANTIATE_TEST_CASE_P(C, SumOfSquaresTest,
-                        ::testing::Values(aom_get_mb_ss_c));
+INSTANTIATE_TEST_SUITE_P(C, SumOfSquaresTest,
+                         ::testing::Values(aom_get_mb_ss_c));
 
 typedef TestParams<Get4x4SseFunc> SseParams;
-INSTANTIATE_TEST_CASE_P(C, AvxSseTest,
-                        ::testing::Values(SseParams(2, 2,
-                                                    &aom_get4x4sse_cs_c)));
+INSTANTIATE_TEST_SUITE_P(C, AvxSseTest,
+                         ::testing::Values(SseParams(2, 2,
+                                                     &aom_get4x4sse_cs_c)));
 
 typedef TestParams<VarianceMxNFunc> MseParams;
-INSTANTIATE_TEST_CASE_P(C, AvxMseTest,
-                        ::testing::Values(MseParams(4, 4, &aom_mse16x16_c),
-                                          MseParams(4, 3, &aom_mse16x8_c),
-                                          MseParams(3, 4, &aom_mse8x16_c),
-                                          MseParams(3, 3, &aom_mse8x8_c)));
+INSTANTIATE_TEST_SUITE_P(C, AvxMseTest,
+                         ::testing::Values(MseParams(4, 4, &aom_mse16x16_c),
+                                           MseParams(4, 3, &aom_mse16x8_c),
+                                           MseParams(3, 4, &aom_mse8x16_c),
+                                           MseParams(3, 3, &aom_mse8x8_c)));
 
 typedef TestParams<VarianceMxNFunc> VarianceParams;
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, AvxVarianceTest,
     ::testing::Values(VarianceParams(7, 7, &aom_variance128x128_c),
                       VarianceParams(7, 6, &aom_variance128x64_c),
@@ -1126,7 +1126,7 @@ INSTANTIATE_TEST_CASE_P(
                       VarianceParams(2, 4, &aom_variance4x16_c)));
 
 typedef TestParams<SubpixVarMxNFunc> SubpelVarianceParams;
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, AvxSubpelVarianceTest,
     ::testing::Values(
         SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_c, 0),
@@ -1154,7 +1154,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelVarianceParams(2, 4, &aom_sub_pixel_variance4x16_c, 0)));
 
 typedef TestParams<SubpixAvgVarMxNFunc> SubpelAvgVarianceParams;
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, AvxSubpelAvgVarianceTest,
     ::testing::Values(
         SubpelAvgVarianceParams(7, 7, &aom_sub_pixel_avg_variance128x128_c, 0),
@@ -1182,7 +1182,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelAvgVarianceParams(2, 4, &aom_sub_pixel_avg_variance4x16_c, 0)));
 
 typedef TestParams<DistWtdSubpixAvgVarMxNFunc> DistWtdSubpelAvgVarianceParams;
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, AvxDistWtdSubpelAvgVarianceTest,
     ::testing::Values(DistWtdSubpelAvgVarianceParams(
                           6, 6, &aom_dist_wtd_sub_pixel_avg_variance64x64_c, 0),
@@ -1225,7 +1225,7 @@ INSTANTIATE_TEST_CASE_P(
                           2, 4, &aom_dist_wtd_sub_pixel_avg_variance4x16_c,
                           0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, AvxObmcSubpelVarianceTest,
     ::testing::Values(
         ObmcSubpelVarianceParams(7, 7, &aom_obmc_sub_pixel_variance128x128_c,
@@ -1273,7 +1273,7 @@ TEST_P(AvxHBDSubpelVarianceTest, DISABLED_Speed) { SpeedTest(); }
 TEST_P(AvxHBDSubpelAvgVarianceTest, Ref) { RefTest(); }
 
 /* TODO(debargha): This test does not support the highbd version
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, AvxHBDMseTest,
     ::testing::Values(make_tuple(4, 4, &aom_highbd_12_mse16x16_c),
                       make_tuple(4, 4, &aom_highbd_12_mse16x8_c),
@@ -1358,11 +1358,11 @@ const VarianceParams kArrayHBDVariance_c[] = {
   VarianceParams(4, 2, &aom_highbd_8_variance16x4_c, 8),
   VarianceParams(2, 4, &aom_highbd_8_variance4x16_c, 8),
 };
-INSTANTIATE_TEST_CASE_P(C, AvxHBDVarianceTest,
-                        ::testing::ValuesIn(kArrayHBDVariance_c));
+INSTANTIATE_TEST_SUITE_P(C, AvxHBDVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDVariance_c));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AvxHBDVarianceTest,
     ::testing::Values(
         VarianceParams(2, 2, &aom_highbd_8_variance4x4_sse4_1, 8),
@@ -1439,8 +1439,8 @@ const SubpelVarianceParams kArrayHBDSubpelVariance_c[] = {
   SubpelVarianceParams(4, 2, &aom_highbd_12_sub_pixel_variance16x4_c, 12),
   SubpelVarianceParams(2, 4, &aom_highbd_12_sub_pixel_variance4x16_c, 12),
 };
-INSTANTIATE_TEST_CASE_P(C, AvxHBDSubpelVarianceTest,
-                        ::testing::ValuesIn(kArrayHBDSubpelVariance_c));
+INSTANTIATE_TEST_SUITE_P(C, AvxHBDSubpelVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDSubpelVariance_c));
 
 const SubpelAvgVarianceParams kArrayHBDSubpelAvgVariance_c[] = {
   SubpelAvgVarianceParams(7, 7, &aom_highbd_8_sub_pixel_avg_variance128x128_c,
@@ -1550,8 +1550,8 @@ const SubpelAvgVarianceParams kArrayHBDSubpelAvgVariance_c[] = {
   SubpelAvgVarianceParams(2, 4, &aom_highbd_12_sub_pixel_avg_variance4x16_c,
                           12),
 };
-INSTANTIATE_TEST_CASE_P(C, AvxHBDSubpelAvgVarianceTest,
-                        ::testing::ValuesIn(kArrayHBDSubpelAvgVariance_c));
+INSTANTIATE_TEST_SUITE_P(C, AvxHBDSubpelAvgVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDSubpelAvgVariance_c));
 
 const ObmcSubpelVarianceParams kArrayHBDObmcSubpelVariance_c[] = {
   ObmcSubpelVarianceParams(7, 7, &aom_highbd_obmc_sub_pixel_variance128x128_c,
@@ -1669,21 +1669,21 @@ const ObmcSubpelVarianceParams kArrayHBDObmcSubpelVariance_c[] = {
   ObmcSubpelVarianceParams(2, 4, &aom_highbd_12_obmc_sub_pixel_variance4x16_c,
                            12),
 };
-INSTANTIATE_TEST_CASE_P(C, AvxHBDObmcSubpelVarianceTest,
-                        ::testing::ValuesIn(kArrayHBDObmcSubpelVariance_c));
+INSTANTIATE_TEST_SUITE_P(C, AvxHBDObmcSubpelVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDObmcSubpelVariance_c));
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, SumOfSquaresTest,
-                        ::testing::Values(aom_get_mb_ss_sse2));
+INSTANTIATE_TEST_SUITE_P(SSE2, SumOfSquaresTest,
+                         ::testing::Values(aom_get_mb_ss_sse2));
 
-INSTANTIATE_TEST_CASE_P(SSE2, AvxMseTest,
-                        ::testing::Values(MseParams(4, 4, &aom_mse16x16_sse2),
-                                          MseParams(4, 3, &aom_mse16x8_sse2),
-                                          MseParams(3, 4, &aom_mse8x16_sse2),
-                                          MseParams(3, 3, &aom_mse8x8_sse2)));
+INSTANTIATE_TEST_SUITE_P(SSE2, AvxMseTest,
+                         ::testing::Values(MseParams(4, 4, &aom_mse16x16_sse2),
+                                           MseParams(4, 3, &aom_mse16x8_sse2),
+                                           MseParams(3, 4, &aom_mse8x16_sse2),
+                                           MseParams(3, 3, &aom_mse8x8_sse2)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, AvxVarianceTest,
     ::testing::Values(VarianceParams(7, 7, &aom_variance128x128_sse2),
                       VarianceParams(7, 6, &aom_variance128x64_sse2),
@@ -1708,7 +1708,7 @@ INSTANTIATE_TEST_CASE_P(
                       VarianceParams(2, 3, &aom_variance4x8_sse2),
                       VarianceParams(2, 2, &aom_variance4x4_sse2)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, AvxSubpelVarianceTest,
     ::testing::Values(
         SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_sse2, 0),
@@ -1735,7 +1735,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelVarianceParams(4, 2, &aom_sub_pixel_variance16x4_sse2, 0),
         SubpelVarianceParams(2, 4, &aom_sub_pixel_variance4x16_sse2, 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, AvxSubpelAvgVarianceTest,
     ::testing::Values(
         SubpelAvgVarianceParams(7, 7, &aom_sub_pixel_avg_variance128x128_sse2,
@@ -1768,7 +1768,7 @@ INSTANTIATE_TEST_CASE_P(
 
 #if CONFIG_AV1_HIGHBITDEPTH
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AvxSubpelVarianceTest,
     ::testing::Values(
         SubpelVarianceParams(2, 2, &aom_highbd_8_sub_pixel_variance4x4_sse4_1,
@@ -1778,7 +1778,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelVarianceParams(2, 2, &aom_highbd_12_sub_pixel_variance4x4_sse4_1,
                              12)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AvxSubpelAvgVarianceTest,
     ::testing::Values(
         SubpelAvgVarianceParams(2, 2,
@@ -1793,7 +1793,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSE4_1
 
 /* TODO(debargha): This test does not support the highbd version
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, AvxHBDMseTest,
     ::testing::Values(MseParams(4, 4, &aom_highbd_12_mse16x16_sse2),
                       MseParams(4, 3, &aom_highbd_12_mse16x8_sse2),
@@ -1869,8 +1869,8 @@ const VarianceParams kArrayHBDVariance_sse2[] = {
   // VarianceParams(4, 2, &aom_highbd_8_variance16x4_sse2, 8),
   // VarianceParams(2, 4, &aom_highbd_8_variance4x16_sse2, 8),
 };
-INSTANTIATE_TEST_CASE_P(SSE2, AvxHBDVarianceTest,
-                        ::testing::ValuesIn(kArrayHBDVariance_sse2));
+INSTANTIATE_TEST_SUITE_P(SSE2, AvxHBDVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDVariance_sse2));
 
 #if HAVE_AVX2
 
@@ -1890,8 +1890,8 @@ const VarianceParams kArrayHBDVariance_avx2[] = {
   VarianceParams(3, 3, &aom_highbd_10_variance8x8_avx2, 10),
 };
 
-INSTANTIATE_TEST_CASE_P(AVX2, AvxHBDVarianceTest,
-                        ::testing::ValuesIn(kArrayHBDVariance_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, AvxHBDVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDVariance_avx2));
 #endif  // HAVE_AVX2
 
 const SubpelVarianceParams kArrayHBDSubpelVariance_sse2[] = {
@@ -1957,8 +1957,8 @@ const SubpelVarianceParams kArrayHBDSubpelVariance_sse2[] = {
   SubpelVarianceParams(4, 2, &aom_highbd_8_sub_pixel_variance16x4_sse2, 8),
   // SubpelVarianceParams(2, 4, &aom_highbd_8_sub_pixel_variance4x16_sse2, 8),
 };
-INSTANTIATE_TEST_CASE_P(SSE2, AvxHBDSubpelVarianceTest,
-                        ::testing::ValuesIn(kArrayHBDSubpelVariance_sse2));
+INSTANTIATE_TEST_SUITE_P(SSE2, AvxHBDSubpelVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDSubpelVariance_sse2));
 
 const SubpelAvgVarianceParams kArrayHBDSubpelAvgVariance_sse2[] = {
   SubpelAvgVarianceParams(6, 6, &aom_highbd_12_sub_pixel_avg_variance64x64_sse2,
@@ -2066,13 +2066,13 @@ const SubpelAvgVarianceParams kArrayHBDSubpelAvgVariance_sse2[] = {
   // &aom_highbd_8_sub_pixel_avg_variance4x16_sse2, 8),
 };
 
-INSTANTIATE_TEST_CASE_P(SSE2, AvxHBDSubpelAvgVarianceTest,
-                        ::testing::ValuesIn(kArrayHBDSubpelAvgVariance_sse2));
+INSTANTIATE_TEST_SUITE_P(SSE2, AvxHBDSubpelAvgVarianceTest,
+                         ::testing::ValuesIn(kArrayHBDSubpelAvgVariance_sse2));
 #endif  // HAVE_SSE2
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
 #if HAVE_SSSE3
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSSE3, AvxSubpelVarianceTest,
     ::testing::Values(
         SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_ssse3, 0),
@@ -2099,7 +2099,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelVarianceParams(4, 2, &aom_sub_pixel_variance16x4_ssse3, 0),
         SubpelVarianceParams(2, 4, &aom_sub_pixel_variance4x16_ssse3, 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSSE3, AvxSubpelAvgVarianceTest,
     ::testing::Values(
         SubpelAvgVarianceParams(7, 7, &aom_sub_pixel_avg_variance128x128_ssse3,
@@ -2139,7 +2139,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelAvgVarianceParams(2, 4, &aom_sub_pixel_avg_variance4x16_ssse3,
                                 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSSE3, AvxDistWtdSubpelAvgVarianceTest,
     ::testing::Values(
         DistWtdSubpelAvgVarianceParams(
@@ -2190,7 +2190,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSSE3
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AvxObmcSubpelVarianceTest,
     ::testing::Values(
         ObmcSubpelVarianceParams(7, 7,
@@ -2241,10 +2241,11 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(AVX2, AvxMseTest,
-                        ::testing::Values(MseParams(4, 4, &aom_mse16x16_avx2)));
+INSTANTIATE_TEST_SUITE_P(AVX2, AvxMseTest,
+                         ::testing::Values(MseParams(4, 4,
+                                                     &aom_mse16x16_avx2)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, AvxVarianceTest,
     ::testing::Values(VarianceParams(7, 7, &aom_variance128x128_avx2),
                       VarianceParams(7, 6, &aom_variance128x64_avx2),
@@ -2262,7 +2263,7 @@ INSTANTIATE_TEST_CASE_P(
                       VarianceParams(4, 3, &aom_variance16x8_avx2),
                       VarianceParams(4, 2, &aom_variance16x4_avx2)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, AvxSubpelVarianceTest,
     ::testing::Values(
         SubpelVarianceParams(7, 7, &aom_sub_pixel_variance128x128_avx2, 0),
@@ -2274,7 +2275,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelVarianceParams(5, 5, &aom_sub_pixel_variance32x32_avx2, 0),
         SubpelVarianceParams(5, 4, &aom_sub_pixel_variance32x16_avx2, 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, AvxSubpelAvgVarianceTest,
     ::testing::Values(
         SubpelAvgVarianceParams(7, 7, &aom_sub_pixel_avg_variance128x128_avx2,
@@ -2292,14 +2293,15 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_AVX2
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(NEON, AvxSseTest,
-                        ::testing::Values(SseParams(2, 2,
-                                                    &aom_get4x4sse_cs_neon)));
+INSTANTIATE_TEST_SUITE_P(NEON, AvxSseTest,
+                         ::testing::Values(SseParams(2, 2,
+                                                     &aom_get4x4sse_cs_neon)));
 
-INSTANTIATE_TEST_CASE_P(NEON, AvxMseTest,
-                        ::testing::Values(MseParams(4, 4, &aom_mse16x16_neon)));
+INSTANTIATE_TEST_SUITE_P(NEON, AvxMseTest,
+                         ::testing::Values(MseParams(4, 4,
+                                                     &aom_mse16x16_neon)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NEON, AvxVarianceTest,
     ::testing::Values(VarianceParams(6, 6, &aom_variance64x64_neon),
                       VarianceParams(6, 5, &aom_variance64x32_neon),
@@ -2310,7 +2312,7 @@ INSTANTIATE_TEST_CASE_P(
                       VarianceParams(3, 4, &aom_variance8x16_neon),
                       VarianceParams(3, 3, &aom_variance8x8_neon)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NEON, AvxSubpelVarianceTest,
     ::testing::Values(
         SubpelVarianceParams(6, 6, &aom_sub_pixel_variance64x64_neon, 0),
@@ -2320,20 +2322,20 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_NEON
 
 #if HAVE_MSA
-INSTANTIATE_TEST_CASE_P(MSA, SumOfSquaresTest,
-                        ::testing::Values(aom_get_mb_ss_msa));
+INSTANTIATE_TEST_SUITE_P(MSA, SumOfSquaresTest,
+                         ::testing::Values(aom_get_mb_ss_msa));
 
-INSTANTIATE_TEST_CASE_P(MSA, AvxSseTest,
-                        ::testing::Values(SseParams(2, 2,
-                                                    &aom_get4x4sse_cs_msa)));
+INSTANTIATE_TEST_SUITE_P(MSA, AvxSseTest,
+                         ::testing::Values(SseParams(2, 2,
+                                                     &aom_get4x4sse_cs_msa)));
 
-INSTANTIATE_TEST_CASE_P(MSA, AvxMseTest,
-                        ::testing::Values(MseParams(4, 4, &aom_mse16x16_msa),
-                                          MseParams(4, 3, &aom_mse16x8_msa),
-                                          MseParams(3, 4, &aom_mse8x16_msa),
-                                          MseParams(3, 3, &aom_mse8x8_msa)));
+INSTANTIATE_TEST_SUITE_P(MSA, AvxMseTest,
+                         ::testing::Values(MseParams(4, 4, &aom_mse16x16_msa),
+                                           MseParams(4, 3, &aom_mse16x8_msa),
+                                           MseParams(3, 4, &aom_mse8x16_msa),
+                                           MseParams(3, 3, &aom_mse8x8_msa)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MSA, AvxVarianceTest,
     ::testing::Values(VarianceParams(6, 6, &aom_variance64x64_msa),
                       VarianceParams(6, 5, &aom_variance64x32_msa),
@@ -2349,7 +2351,7 @@ INSTANTIATE_TEST_CASE_P(
                       VarianceParams(2, 3, &aom_variance4x8_msa),
                       VarianceParams(2, 2, &aom_variance4x4_msa)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MSA, AvxSubpelVarianceTest,
     ::testing::Values(
         SubpelVarianceParams(2, 2, &aom_sub_pixel_variance4x4_msa, 0),
@@ -2366,7 +2368,7 @@ INSTANTIATE_TEST_CASE_P(
         SubpelVarianceParams(6, 5, &aom_sub_pixel_variance64x32_msa, 0),
         SubpelVarianceParams(6, 6, &aom_sub_pixel_variance64x64_msa, 0)));
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     MSA, AvxSubpelAvgVarianceTest,
     ::testing::Values(
         SubpelAvgVarianceParams(6, 6, &aom_sub_pixel_avg_variance64x64_msa, 0),

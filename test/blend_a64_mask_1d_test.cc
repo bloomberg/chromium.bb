@@ -194,13 +194,13 @@ static void blend_a64_vmask_ref(uint8_t *dst, uint32_t dst_stride,
                        0, 0);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, BlendA64Mask1DTest8B,
     ::testing::Values(TestFuncs(blend_a64_hmask_ref, aom_blend_a64_hmask_c),
                       TestFuncs(blend_a64_vmask_ref, aom_blend_a64_vmask_c)));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, BlendA64Mask1DTest8B,
     ::testing::Values(
         TestFuncs(blend_a64_hmask_ref, aom_blend_a64_hmask_sse4_1),
@@ -208,11 +208,11 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSE4_1
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(NEON, BlendA64Mask1DTest8B,
-                        ::testing::Values(TestFuncs(blend_a64_hmask_ref,
-                                                    aom_blend_a64_hmask_neon),
-                                          TestFuncs(blend_a64_vmask_ref,
-                                                    aom_blend_a64_vmask_neon)));
+INSTANTIATE_TEST_SUITE_P(
+    NEON, BlendA64Mask1DTest8B,
+    ::testing::Values(TestFuncs(blend_a64_hmask_ref, aom_blend_a64_hmask_neon),
+                      TestFuncs(blend_a64_vmask_ref,
+                                aom_blend_a64_vmask_neon)));
 #endif  // HAVE_NEON
 
 //////////////////////////////////////////////////////////////////////////////
@@ -321,7 +321,7 @@ static void highbd_blend_a64_vmask_ref(
       BlendA64Mask1DTestHBD::kMaxMaskSize, w, h, 0, 0, bd);
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, BlendA64Mask1DTestHBD,
     ::testing::Values(TestFuncsHBD(highbd_blend_a64_hmask_ref,
                                    aom_highbd_blend_a64_hmask_c),
@@ -329,7 +329,7 @@ INSTANTIATE_TEST_CASE_P(
                                    aom_highbd_blend_a64_vmask_c)));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, BlendA64Mask1DTestHBD,
     ::testing::Values(TestFuncsHBD(highbd_blend_a64_hmask_ref,
                                    aom_highbd_blend_a64_hmask_sse4_1),

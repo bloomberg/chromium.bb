@@ -218,7 +218,7 @@ const QuantizeFuncParams qfps[4] = {
                      1024),
 };
 
-INSTANTIATE_TEST_CASE_P(SSE4_1, AV1QuantizeTest, ::testing::ValuesIn(qfps));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, AV1QuantizeTest, ::testing::ValuesIn(qfps));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
@@ -233,7 +233,7 @@ const QuantizeFuncParams qfps_avx2[4] = {
                      1024),
 };
 
-INSTANTIATE_TEST_CASE_P(AVX2, AV1QuantizeTest, ::testing::ValuesIn(qfps_avx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, AV1QuantizeTest, ::testing::ValuesIn(qfps_avx2));
 #endif  // HAVE_AVX2
 
 }  // namespace

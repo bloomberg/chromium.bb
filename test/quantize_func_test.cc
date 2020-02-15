@@ -408,8 +408,8 @@ const QuantizeParam kQParamArrayAvx2[] = {
              static_cast<TX_SIZE>(TX_4X4), TYPE_B, AOM_BITS_8)
 };
 
-INSTANTIATE_TEST_CASE_P(AVX2, QuantizeTest,
-                        ::testing::ValuesIn(kQParamArrayAvx2));
+INSTANTIATE_TEST_SUITE_P(AVX2, QuantizeTest,
+                         ::testing::ValuesIn(kQParamArrayAvx2));
 #endif  // HAVE_AVX2
 
 #if HAVE_SSE2
@@ -499,8 +499,8 @@ const QuantizeParam kQParamArraySSE2[] = {
              static_cast<TX_SIZE>(TX_64X64), TYPE_B, AOM_BITS_8)
 };
 
-INSTANTIATE_TEST_CASE_P(SSE2, QuantizeTest,
-                        ::testing::ValuesIn(kQParamArraySSE2));
+INSTANTIATE_TEST_SUITE_P(SSE2, QuantizeTest,
+                         ::testing::ValuesIn(kQParamArraySSE2));
 #endif
 
 #if HAVE_NEON
@@ -517,12 +517,12 @@ const QuantizeParam kQParamArrayNEON[] = {
              static_cast<TX_SIZE>(TX_32X8), TYPE_FP, AOM_BITS_8)
 };
 
-INSTANTIATE_TEST_CASE_P(NEON, QuantizeTest,
-                        ::testing::ValuesIn(kQParamArrayNEON));
+INSTANTIATE_TEST_SUITE_P(NEON, QuantizeTest,
+                         ::testing::ValuesIn(kQParamArrayNEON));
 #endif
 
 #if HAVE_SSSE3 && ARCH_X86_64
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSSE3, QuantizeTest,
     ::testing::Values(
         make_tuple(&aom_quantize_b_c, &aom_quantize_b_ssse3,
@@ -535,7 +535,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSSE3 && ARCH_X86_64
 
 #if HAVE_AVX && ARCH_X86_64
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX, QuantizeTest,
     ::testing::Values(
         make_tuple(&aom_quantize_b_c, &aom_quantize_b_avx,

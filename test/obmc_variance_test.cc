@@ -157,8 +157,8 @@ const ObmcVarianceTest::ParamType sse4_functions[] = {
   TestFuncs(aom_obmc_variance4x16_c, aom_obmc_variance4x16_sse4_1),
 };
 
-INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcVarianceTest,
-                        ::testing::ValuesIn(sse4_functions));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, ObmcVarianceTest,
+                         ::testing::ValuesIn(sse4_functions));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
@@ -188,8 +188,8 @@ const ObmcVarianceTest::ParamType avx2_functions[] = {
   TestFuncs(aom_obmc_variance4x16_c, aom_obmc_variance4x16_avx2),
 };
 
-INSTANTIATE_TEST_CASE_P(AVX2, ObmcVarianceTest,
-                        ::testing::ValuesIn(avx2_functions));
+INSTANTIATE_TEST_SUITE_P(AVX2, ObmcVarianceTest,
+                         ::testing::ValuesIn(avx2_functions));
 #endif  // HAVE_AVX2
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -390,8 +390,8 @@ ObmcVarianceHBDTest::ParamType sse4_functions_hbd[] = {
             aom_highbd_12_obmc_variance4x16_sse4_1, 12),
 };
 
-INSTANTIATE_TEST_CASE_P(SSE4_1, ObmcVarianceHBDTest,
-                        ::testing::ValuesIn(sse4_functions_hbd));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, ObmcVarianceHBDTest,
+                         ::testing::ValuesIn(sse4_functions_hbd));
 #endif  // HAVE_SSE4_1
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 }  // namespace

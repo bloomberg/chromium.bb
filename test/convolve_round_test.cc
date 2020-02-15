@@ -178,7 +178,7 @@ const ConvolveRoundParam kConvRndParamArray[] = {
              &highbd_convolve_rounding_12<av1_highbd_convolve_rounding_avx2>,
              HIGHBITDEPTH_TEST)
 };
-INSTANTIATE_TEST_CASE_P(AVX2, ConvolveRoundTest,
-                        ::testing::ValuesIn(kConvRndParamArray));
+INSTANTIATE_TEST_SUITE_P(AVX2, ConvolveRoundTest,
+                         ::testing::ValuesIn(kConvRndParamArray));
 #endif  // HAVE_AVX2
 }  // namespace

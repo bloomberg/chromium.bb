@@ -238,7 +238,7 @@ const MaskedSADParam msad_test[] = {
   make_tuple(&aom_masked_sad64x16_ssse3, &aom_masked_sad64x16_c),
 };
 
-INSTANTIATE_TEST_CASE_P(SSSE3, MaskedSADTest, ::testing::ValuesIn(msad_test));
+INSTANTIATE_TEST_SUITE_P(SSSE3, MaskedSADTest, ::testing::ValuesIn(msad_test));
 
 #if CONFIG_AV1_HIGHBITDEPTH
 const HighbdMaskedSADParam hbd_msad_test[] = {
@@ -269,8 +269,8 @@ const HighbdMaskedSADParam hbd_msad_test[] = {
   make_tuple(&aom_highbd_masked_sad64x16_ssse3, &aom_highbd_masked_sad64x16_c),
 };
 
-INSTANTIATE_TEST_CASE_P(SSSE3, HighbdMaskedSADTest,
-                        ::testing::ValuesIn(hbd_msad_test));
+INSTANTIATE_TEST_SUITE_P(SSSE3, HighbdMaskedSADTest,
+                         ::testing::ValuesIn(hbd_msad_test));
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 #endif  // HAVE_SSSE3
 
@@ -300,8 +300,8 @@ const MaskedSADParam msad_avx2_test[] = {
   make_tuple(&aom_masked_sad64x16_avx2, &aom_masked_sad64x16_ssse3)
 };
 
-INSTANTIATE_TEST_CASE_P(AVX2, MaskedSADTest,
-                        ::testing::ValuesIn(msad_avx2_test));
+INSTANTIATE_TEST_SUITE_P(AVX2, MaskedSADTest,
+                         ::testing::ValuesIn(msad_avx2_test));
 
 #if CONFIG_AV1_HIGHBITDEPTH
 const HighbdMaskedSADParam hbd_msad_avx2_test[] = {
@@ -341,8 +341,8 @@ const HighbdMaskedSADParam hbd_msad_avx2_test[] = {
              &aom_highbd_masked_sad64x16_ssse3)
 };
 
-INSTANTIATE_TEST_CASE_P(AVX2, HighbdMaskedSADTest,
-                        ::testing::ValuesIn(hbd_msad_avx2_test));
+INSTANTIATE_TEST_SUITE_P(AVX2, HighbdMaskedSADTest,
+                         ::testing::ValuesIn(hbd_msad_avx2_test));
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 #endif  // HAVE_AVX2
 

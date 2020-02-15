@@ -92,7 +92,7 @@ TEST_P(DecodePerfTest, PerfTest) {
 }
 
 // TODO(jimbankoski): Enabled when we have actual AV1 Decode vectors.
-// INSTANTIATE_TEST_CASE_P(AV1, DecodePerfTest,
+// INSTANTIATE_TEST_SUITE_P(AV1, DecodePerfTest,
 //                        ::testing::ValuesIn(kAV1DecodePerfVectors));
 
 class AV1NewEncodeDecodePerfTest

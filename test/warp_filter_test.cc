@@ -29,12 +29,12 @@ TEST_P(AV1WarpFilterTest, DISABLED_Speed) {
   RunSpeedTest(std::get<3>(GET_PARAM(0)));
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, AV1WarpFilterTest,
     libaom_test::AV1WarpFilter::BuildParams(av1_warp_affine_c));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, AV1WarpFilterTest,
     libaom_test::AV1WarpFilter::BuildParams(av1_warp_affine_sse4_1));
 
@@ -46,20 +46,20 @@ TEST_P(AV1HighbdWarpFilterTest, DISABLED_Speed) {
   RunSpeedTest(std::get<4>(GET_PARAM(0)));
 }
 
-INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdWarpFilterTest,
-                        libaom_test::AV1HighbdWarpFilter::BuildParams(
-                            av1_highbd_warp_affine_sse4_1));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, AV1HighbdWarpFilterTest,
+                         libaom_test::AV1HighbdWarpFilter::BuildParams(
+                             av1_highbd_warp_affine_sse4_1));
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, AV1WarpFilterTest,
     libaom_test::AV1WarpFilter::BuildParams(av1_warp_affine_avx2));
 #endif  // HAVE_AVX2
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NEON, AV1WarpFilterTest,
     libaom_test::AV1WarpFilter::BuildParams(av1_warp_affine_neon));
 #endif  // HAVE_NEON

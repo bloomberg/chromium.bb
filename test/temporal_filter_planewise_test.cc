@@ -214,9 +214,9 @@ TemporalFilterPlanewiseFuncParam temporal_filter_planewise_test_avx2[] = {
   TemporalFilterPlanewiseFuncParam(&av1_apply_temporal_filter_planewise_c,
                                    &av1_apply_temporal_filter_planewise_avx2)
 };
-INSTANTIATE_TEST_CASE_P(AVX2, TemporalFilterPlanewiseTest,
-                        Combine(ValuesIn(temporal_filter_planewise_test_avx2),
-                                Range(64, 65, 4)));
+INSTANTIATE_TEST_SUITE_P(AVX2, TemporalFilterPlanewiseTest,
+                         Combine(ValuesIn(temporal_filter_planewise_test_avx2),
+                                 Range(64, 65, 4)));
 #endif  // HAVE_AVX2
 
 #if HAVE_SSE2
@@ -224,9 +224,9 @@ TemporalFilterPlanewiseFuncParam temporal_filter_planewise_test_sse2[] = {
   TemporalFilterPlanewiseFuncParam(&av1_apply_temporal_filter_planewise_c,
                                    &av1_apply_temporal_filter_planewise_sse2)
 };
-INSTANTIATE_TEST_CASE_P(SSE2, TemporalFilterPlanewiseTest,
-                        Combine(ValuesIn(temporal_filter_planewise_test_sse2),
-                                Range(64, 65, 4)));
+INSTANTIATE_TEST_SUITE_P(SSE2, TemporalFilterPlanewiseTest,
+                         Combine(ValuesIn(temporal_filter_planewise_test_sse2),
+                                 Range(64, 65, 4)));
 #endif  // HAVE_SSE2
 
 }  // namespace

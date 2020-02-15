@@ -90,20 +90,20 @@ TEST_P(AV1SubtractBlockTest, SimpleSubtract) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(C, AV1SubtractBlockTest,
-                        ::testing::Values(aom_subtract_block_c));
+INSTANTIATE_TEST_SUITE_P(C, AV1SubtractBlockTest,
+                         ::testing::Values(aom_subtract_block_c));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(SSE2, AV1SubtractBlockTest,
-                        ::testing::Values(aom_subtract_block_sse2));
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1SubtractBlockTest,
+                         ::testing::Values(aom_subtract_block_sse2));
 #endif
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(NEON, AV1SubtractBlockTest,
-                        ::testing::Values(aom_subtract_block_neon));
+INSTANTIATE_TEST_SUITE_P(NEON, AV1SubtractBlockTest,
+                         ::testing::Values(aom_subtract_block_neon));
 #endif
 #if HAVE_MSA
-INSTANTIATE_TEST_CASE_P(MSA, AV1SubtractBlockTest,
-                        ::testing::Values(aom_subtract_block_msa));
+INSTANTIATE_TEST_SUITE_P(MSA, AV1SubtractBlockTest,
+                         ::testing::Values(aom_subtract_block_msa));
 #endif
 
 #if CONFIG_AV1_HIGHBITDEPTH
@@ -245,8 +245,8 @@ const Params kAV1HBDSubtractBlock_sse2[] = {
   make_tuple(128, 128, 12, &aom_highbd_subtract_block_c)
 };
 
-INSTANTIATE_TEST_CASE_P(SSE2, AV1HBDSubtractBlockTest,
-                        ::testing::ValuesIn(kAV1HBDSubtractBlock_sse2));
+INSTANTIATE_TEST_SUITE_P(SSE2, AV1HBDSubtractBlockTest,
+                         ::testing::ValuesIn(kAV1HBDSubtractBlock_sse2));
 #endif  // HAVE_SSE2
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 }  // namespace

@@ -230,14 +230,14 @@ TEST_P(HadamardLowbdTest, CompareReferenceRandom) { CompareReferenceRandom(); }
 
 TEST_P(HadamardLowbdTest, VaryStride) { VaryStride(); }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, HadamardLowbdTest,
     ::testing::Values(HadamardFuncWithSize(&aom_hadamard_8x8_c, 8),
                       HadamardFuncWithSize(&aom_hadamard_16x16_c, 16),
                       HadamardFuncWithSize(&aom_hadamard_32x32_c, 32)));
 
 #if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE2, HadamardLowbdTest,
     ::testing::Values(HadamardFuncWithSize(&aom_hadamard_8x8_sse2, 8),
                       HadamardFuncWithSize(&aom_hadamard_16x16_sse2, 16),
@@ -245,14 +245,14 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, HadamardLowbdTest,
     ::testing::Values(HadamardFuncWithSize(&aom_hadamard_16x16_avx2, 16),
                       HadamardFuncWithSize(&aom_hadamard_32x32_avx2, 32)));
 #endif  // HAVE_AVX2
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NEON, HadamardLowbdTest,
     ::testing::Values(HadamardFuncWithSize(&aom_hadamard_8x8_neon, 8),
                       HadamardFuncWithSize(&aom_hadamard_16x16_neon, 16)));

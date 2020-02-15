@@ -246,15 +246,15 @@ TEST_P(BlendA64MaskTest8B, DISABLED_Speed) {
   }
 }
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(SSE4_1, BlendA64MaskTest8B,
-                        ::testing::Values(TestFuncs(
-                            aom_blend_a64_mask_c, aom_blend_a64_mask_sse4_1)));
+INSTANTIATE_TEST_SUITE_P(SSE4_1, BlendA64MaskTest8B,
+                         ::testing::Values(TestFuncs(
+                             aom_blend_a64_mask_c, aom_blend_a64_mask_sse4_1)));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(AVX2, BlendA64MaskTest8B,
-                        ::testing::Values(TestFuncs(aom_blend_a64_mask_sse4_1,
-                                                    aom_blend_a64_mask_avx2)));
+INSTANTIATE_TEST_SUITE_P(AVX2, BlendA64MaskTest8B,
+                         ::testing::Values(TestFuncs(aom_blend_a64_mask_sse4_1,
+                                                     aom_blend_a64_mask_avx2)));
 #endif  // HAVE_AVX2
 
 //////////////////////////////////////////////////////////////////////////////
@@ -342,21 +342,21 @@ TEST_P(BlendA64MaskTest8B_d16, ExtremeValues) {
 }
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, BlendA64MaskTest8B_d16,
     ::testing::Values(TestFuncs_d16(aom_lowbd_blend_a64_d16_mask_c,
                                     aom_lowbd_blend_a64_d16_mask_sse4_1)));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, BlendA64MaskTest8B_d16,
     ::testing::Values(TestFuncs_d16(aom_lowbd_blend_a64_d16_mask_c,
                                     aom_lowbd_blend_a64_d16_mask_avx2)));
 #endif  // HAVE_AVX2
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     NEON, BlendA64MaskTest8B_d16,
     ::testing::Values(TestFuncs_d16(aom_lowbd_blend_a64_d16_mask_c,
                                     aom_lowbd_blend_a64_d16_mask_neon)));
@@ -457,7 +457,7 @@ TEST_P(BlendA64MaskTestHBD, ExtremeValues) {
 }
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, BlendA64MaskTestHBD,
     ::testing::Values(TestFuncsHBD(aom_highbd_blend_a64_mask_c,
                                    aom_highbd_blend_a64_mask_sse4_1)));
@@ -589,19 +589,19 @@ TEST_P(BlendA64MaskTestHBD_d16, DISABLED_Speed) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     C, BlendA64MaskTestHBD_d16,
     ::testing::Values(TestFuncsHBD_d16(aom_highbd_blend_a64_d16_mask_c, NULL)));
 
 #if HAVE_SSE4_1
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, BlendA64MaskTestHBD_d16,
     ::testing::Values(TestFuncsHBD_d16(aom_highbd_blend_a64_d16_mask_c,
                                        aom_highbd_blend_a64_d16_mask_sse4_1)));
 #endif  // HAVE_SSE4_1
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     AVX2, BlendA64MaskTestHBD_d16,
     ::testing::Values(TestFuncsHBD_d16(aom_highbd_blend_a64_d16_mask_c,
                                        aom_highbd_blend_a64_d16_mask_avx2)));
@@ -610,7 +610,7 @@ INSTANTIATE_TEST_CASE_P(
 // TODO(slavarnway): Enable the following in the avx2 commit. (56501)
 #if 0
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(
+INSTANTIATE_TEST_SUITE_P(
     SSE4_1, BlendA64MaskTestHBD,
     ::testing::Values(TestFuncsHBD(aom_highbd_blend_a64_mask_c,
                                    aom_highbd_blend_a64_mask_avx2)));
