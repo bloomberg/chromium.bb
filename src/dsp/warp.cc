@@ -74,38 +74,21 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
       is_compound ? kInterRoundBitsCompoundVertical
                   : (bitdepth == 12) ? kInterRoundBitsVertical12bpp
                                      : kInterRoundBitsVertical;
-  // These offsets allow intermediate calculations to remain in 16 bits when
-  // |bitdepth| is 8.
-  // The worst case calculations for |kWarpedFilters| are a set of positive taps
-  // which sum to 175 or negative taps which sum to -47.
-  // For |bitdepth| == 8 the right set of input values could generate
-  // intermediate values of 255 * 175 = 44625 / 0xAE51 or 255 * -47 = -11985.
-  // Both situations end up using the MSB which makes it impossible to
-  // distinguish between negative values or positive values over 32768.
-  // In order to compensate for this we add a constant value:
-  // |horizontal_offset|. This shifts the range up. It is now 61009 to 4399 and
-  // fits comfortably in uint16_t.
-  // |vertical_offset| ensures the result of the second pass is unsigned but can
-  // not keep the value within 16 bits.
-  // |unsigned_offset| is the delta between the compensated result and the
-  // natural result.
-  // These are not beneficial for |bitdepth| > 8 because it will always be
-  // necessary to step up to 32 bit intermediates.
-  // TODO(b/146439793): Remove the offset before storing the result.
-  constexpr int unsigned_offset =
-      ((1 << bitdepth) + (1 << (bitdepth - 1)))
-      << ((14 - kRoundBitsHorizontal) - kRoundBitsVertical);
-  constexpr int horizontal_offset = (1 << (bitdepth - 1)) << kFilterBits;
-  constexpr int vertical_offset = (1 << bitdepth)
-                                  << (2 * kFilterBits - kRoundBitsHorizontal);
+
+  // Only used for 8bpp. Allows for keeping the first pass intermediates within
+  // uint16_t. With 10/12bpp the intermediate value will always require int32_t.
+  constexpr int first_pass_offset = (bitdepth == 8) ? 1 << 14 : 0;
+  constexpr int offset_removal =
+      (first_pass_offset >> kRoundBitsHorizontal) * 128;
+
   constexpr int kMaxPixel = (1 << bitdepth) - 1;
   union {
-    // Intermediate_result is the output of the horizontal filtering and
-    // rounding. The range is within 16 bits (unsigned).
-    uint16_t intermediate_result[15][8];  // 15 rows, 8 columns.
+    // |intermediate_result| is the output of the horizontal filtering and
+    // rounding. The range is within int16_t.
+    int16_t intermediate_result[15][8];  // 15 rows, 8 columns.
     // In the simple special cases where the samples in each row are all the
     // same, store one sample per row in a column vector.
-    uint16_t intermediate_result_column[15];
+    int16_t intermediate_result_column[15];
   };
   const auto* const src = static_cast<const Pixel*>(source);
   source_stride /= sizeof(Pixel);
@@ -172,7 +155,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
       // follows:
       //   for (int x = -4; x < 4; ++x) {
       //     const int offset = ...;
-      //     int sum = horizontal_offset;
+      //     int sum = first_pass_offset;
       //     for (int k = 0; k < 8; ++k) {
       //       const int column = Clip3(ix4 + x + k - 3, 0, source_width - 1);
       //       sum += kWarpedFilters[offset][k] * src_row[column];
@@ -206,7 +189,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           if (is_compound) {
             int sum = row_border_pixel
                       << ((14 - kRoundBitsHorizontal) - kRoundBitsVertical);
-            sum += (bitdepth == 8) ? 0 : unsigned_offset;
+            sum += (bitdepth == 8) ? 0 : kCompoundOffset;
             Memset(dst_row, sum, 8);
           } else {
             Memset(dst_row, row_border_pixel, 8);
@@ -257,7 +240,7 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             }
             sum = RightShiftWithRounding(sum, kRoundBitsVertical);
             if (is_compound) {
-              sum += (bitdepth == 8) ? 0 : unsigned_offset;
+              sum += (bitdepth == 8) ? 0 : kCompoundOffset;
               dst_row[x] = static_cast<DestType>(sum);
             } else {
               dst_row[x] = static_cast<DestType>(Clip3(sum, 0, kMaxPixel));
@@ -299,13 +282,9 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             assert(offset >= 0);
             assert(offset < 3 * kWarpedPixelPrecisionShifts + 1);
             // For SIMD optimization:
-            // For 8 bit, the range of sum is within uint16_t, if we add an
-            // horizontal offset:
-            int sum = horizontal_offset;
-            // Horizontal_offset guarantees sum is non negative.
-            // If horizontal_offset is used, intermediate_result needs to be
-            // uint16_t.
-            // For 10/12 bit, the range of sum is within 32 bits.
+            // |first_pass_offset| guarantees the sum fits in uint16_t for 8bpp.
+            // For 10/12 bit, the range of sum requires 32 bits.
+            int sum = first_pass_offset;
             for (int k = 0; k < 8; ++k) {
               // We assume the source frame has left and right borders of at
               // least 13 pixels that extend the frame boundary pixels.
@@ -320,9 +299,8 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
               const int column = ix4 + x + k - 3;
               sum += kWarpedFilters[offset][k] * src_row[column];
             }
-            assert(sum >= 0 && sum < (horizontal_offset << 2));
-            intermediate_result[y + 7][x + 4] = static_cast<uint16_t>(
-                RightShiftWithRounding(sum, kRoundBitsHorizontal));
+            intermediate_result[y + 7][x + 4] =
+                RightShiftWithRounding(sum, kRoundBitsHorizontal);
             sx += alpha;
           }
           sx4 += beta;
@@ -356,13 +334,9 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
             assert(offset >= 0);
             assert(offset < 3 * kWarpedPixelPrecisionShifts + 1);
             // For SIMD optimization:
-            // For 8 bit, the range of sum is within uint16_t, if we add an
-            // horizontal offset:
-            int sum = horizontal_offset;
-            // Horizontal_offset guarantees sum is non negative.
-            // If horizontal_offset is used, intermediate_result needs to be
-            // uint16_t.
-            // For 10/12 bit, the range of sum is within 32 bits.
+            // |first_pass_offset| guarantees the sum fits in uint16_t for 8bpp.
+            // For 10/12 bit, the range of sum requires 32 bits.
+            int sum = first_pass_offset;
             for (int k = 0; k < 8; ++k) {
               // We assume the source frame has left and right borders of at
               // least 13 pixels that extend the frame boundary pixels.
@@ -377,9 +351,9 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
               const int column = ix4 + x + k - 3;
               sum += kWarpedFilters[offset][k] * src_row[column];
             }
-            assert(sum >= 0 && sum < (horizontal_offset << 2));
-            intermediate_result[y + 7][x + 4] = static_cast<uint16_t>(
-                RightShiftWithRounding(sum, kRoundBitsHorizontal));
+            intermediate_result[y + 7][x + 4] =
+                RightShiftWithRounding(sum, kRoundBitsHorizontal) -
+                offset_removal;
             sx += alpha;
           }
           sx4 += beta;
@@ -426,22 +400,17 @@ void Warp_C(const void* const source, ptrdiff_t source_stride,
           // prove that 0 <= offset <= 3 * 2^6.
           assert(offset >= 0);
           assert(offset < 3 * kWarpedPixelPrecisionShifts + 1);
-          // Similar to horizontal_offset, vertical_offset guarantees sum
-          // before shifting is non negative:
-          int sum = vertical_offset;
+          int sum = 0;
           for (int k = 0; k < 8; ++k) {
             sum += kWarpedFilters[offset][k] * intermediate_result[y + k][x];
           }
-          assert(sum >= 0 && sum < (vertical_offset << 2));
+          sum -= offset_removal;
           sum = RightShiftWithRounding(sum, kRoundBitsVertical);
           if (is_compound) {
-            // Warp output is a predictor, whose type is uint16_t.
-            // Clipping is applied at the stage of final pixel value output.
-            sum -= (bitdepth == 8) ? unsigned_offset : 0;
+            sum += (bitdepth == 8) ? 0 : kCompoundOffset;
             dst_row[x] = static_cast<DestType>(sum);
           } else {
-            dst_row[x] = static_cast<DestType>(
-                Clip3(sum - unsigned_offset, 0, kMaxPixel));
+            dst_row[x] = static_cast<DestType>(Clip3(sum, 0, kMaxPixel));
           }
           sy += gamma;
         }

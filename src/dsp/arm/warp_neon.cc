@@ -39,6 +39,9 @@ namespace {
 
 // Number of extra bits of precision in warped filtering.
 constexpr int kWarpedDiffPrecisionBits = 10;
+constexpr int kFirstPassOffset = 1 << 14;
+constexpr int kOffsetRemoval =
+    (kFirstPassOffset >> kInterRoundBitsHorizontal) * 128;
 
 // Applies the horizontal filter to one source row and stores the result in
 // |intermediate_result_row|. |intermediate_result_row| is a row in the 15x8
@@ -47,7 +50,6 @@ constexpr int kWarpedDiffPrecisionBits = 10;
 // src_row_centered contains 16 "centered" samples of a source row. (We center
 // the samples by subtracting 128 from the samples.)
 void HorizontalFilter(const int sx4, const int16_t alpha,
-                      const int horizontal_offset,
                       const int8x16_t src_row_centered,
                       int16_t intermediate_result_row[8]) {
   int sx = sx4 - MultiplyBy4(alpha);
@@ -59,37 +61,11 @@ void HorizontalFilter(const int sx4, const int16_t alpha,
     sx += alpha;
   }
   Transpose8x8(filter);
-  // TODO(johannkoenig): An offset is only strictly required for the horizontal
-  // pass. It should be possible to remove it before storing to the intermediate
-  // buffer.
-  // For 8 bit, the range of sum is within uint16_t, if we add a horizontal
-  // offset. horizontal_offset guarantees sum is nonnegative.
-  //
-  // Proof:
-  // Given that the minimum (most negative) sum of the negative filter
-  // coefficients is -47 and the maximum sum of the positive filter
-  // coefficients is 175, the range of the horizontal filter output is
-  //   -47 * 255 <= output <= 175 * 255
-  // Since -2^14 < -47 * 255, adding -2^14 (= horizontal_offset) to the
-  // horizontal filter output produces a positive value:
-  //   0 < output + 2^14 <= 175 * 255 + 2^14
-  // The final rounding right shift by 3 (= kInterRoundBitsHorizontal) bits
-  // adds 2^2 to the sum:
-  //   0 < output + 2^14 + 2^2 <= 175 * 255 + 2^14 + 2^2 = 61013
-  // Since 61013 < 2^16, the final sum (right before the right shift by 3
-  // bits) will not overflow uint16_t. In addition, the value after the right
-  // shift by 3 bits is in the following range:
-  //   0 <= intermediate_result[y][x] < 2^13
-  // This property is used in determining the range of the vertical filtering
-  // output. [End of proof.]
-  //
-  // We can do signed int16_t arithmetic and just treat the final result as
-  // uint16_t when we shift it right.
-  //
-  // We add 128 * 128 to horizontal_offset to undo the centering of the source
-  // row samples. Every centered sample is smaller than the actual sample by
-  // 128, and the sum of the filter coefficients is 128.
-  int16x8_t sum = vdupq_n_s16(horizontal_offset + 128 * 128);
+  // Add kFirstPassOffset to ensure |sum| stays within uint16_t.
+  // Add 128 (offset) * 128 (filter sum) (also 1 << 14) to account for the
+  // centering of the source samples. These combined are 1 << 15 or -32768.
+  int16x8_t sum =
+      vdupq_n_s16(static_cast<int16_t>(kFirstPassOffset + 128 * 128));
   // Unrolled k = 0..7 loop. We need to manually unroll the loop because the
   // third argument (an index value) to vextq_s8() must be a constant
   // (immediate). src_row_window is a sliding window of length 8 into
@@ -119,10 +95,11 @@ void HorizontalFilter(const int sx4, const int16_t alpha,
   src_row_window = vget_low_s8(vextq_s8(src_row_centered, src_row_centered, 7));
   sum = vmlal_s8(sum, filter[7], src_row_window);
   // End of unrolled k = 0..7 loop.
-  // Treat sum as unsigned for the right shift.
-  sum = vreinterpretq_s16_u16(
-      vrshrq_n_u16(vreinterpretq_u16_s16(sum), kInterRoundBitsHorizontal));
-  vst1q_s16(intermediate_result_row, sum);
+  // Due to the offset |sum| is guaranteed to be unsigned.
+  uint16x8_t sum_unsigned = vreinterpretq_u16_s16(sum);
+  sum_unsigned = vrshrq_n_u16(sum_unsigned, kInterRoundBitsHorizontal);
+  // After the shift |sum_unsigned| will fit into int16_t.
+  vst1q_s16(intermediate_result_row, vreinterpretq_s16_u16(sum_unsigned));
 }
 
 template <bool is_compound>
@@ -134,8 +111,6 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
                const int block_height, const int16_t alpha, const int16_t beta,
                const int16_t gamma, const int16_t delta, void* dest,
                const ptrdiff_t dest_stride) {
-  constexpr int bitdepth = 8;
-  constexpr int kSingleRoundOffset = (1 << bitdepth) + (1 << (bitdepth - 1));
   constexpr int kRoundBitsVertical =
       is_compound ? kInterRoundBitsCompoundVertical : kInterRoundBitsVertical;
   union {
@@ -149,11 +124,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
     // same, store one sample per row in a column vector.
     int16_t intermediate_result_column[15];
   };
-  // TODO(johannkoenig): Remove as many of these offsets as possible. Only the
-  // first pass offset should be required.
-  constexpr int horizontal_offset = 1 << (bitdepth + kFilterBits - 1);
-  constexpr int vertical_offset =
-      1 << (bitdepth + 2 * kFilterBits - kInterRoundBitsHorizontal);
+
   const auto* const src = static_cast<const uint8_t*>(source);
   using DestType =
       typename std::conditional<is_compound, int16_t, uint8_t>::type;
@@ -216,7 +187,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
       // follows:
       //   for (int x = -4; x < 4; ++x) {
       //     const int offset = ...;
-      //     int sum = horizontal_offset;
+      //     int sum = first_pass_offset;
       //     for (int k = 0; k < 8; ++k) {
       //       const int column = Clip3(ix4 + x + k - 3, 0, source_width - 1);
       //       sum += kWarpedFilters[offset][k] * src_row[column];
@@ -382,7 +353,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
             vreinterpretq_s8_u8(vsubq_u8(src_row_v, vdupq_n_u8(128)));
         int sx4 = (x4 & ((1 << kWarpedModelPrecisionBits) - 1)) - beta * 7;
         for (int y = -7; y < 8; ++y) {
-          HorizontalFilter(sx4, alpha, horizontal_offset, src_row_centered,
+          HorizontalFilter(sx4, alpha, src_row_centered,
                            intermediate_result[y + 7]);
           sx4 += beta;
         }
@@ -408,7 +379,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           // Convert src_row_v to int8 (subtract 128).
           const int8x16_t src_row_centered =
               vreinterpretq_s8_u8(vsubq_u8(src_row_v, vdupq_n_u8(128)));
-          HorizontalFilter(sx4, alpha, horizontal_offset, src_row_centered,
+          HorizontalFilter(sx4, alpha, src_row_centered,
                            intermediate_result[y + 7]);
           sx4 += beta;
         }
@@ -430,23 +401,7 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           sy += gamma;
         }
         Transpose8x8(filter);
-        // Similar to horizontal_offset, vertical_offset guarantees sum before
-        // shifting is nonnegative.
-        //
-        // Proof:
-        // The range of an entry in intermediate_result is
-        //   0 <= intermediate_result[y][x] < 2^13
-        // The range of the vertical filter output is
-        //   -47 * 2^13 < output < 175 * 2^13
-        // Since -2^19 < -47 * 2^13, adding -2^19 (= vertical_offset) to the
-        // vertical filter output produces a positive value:
-        //   0 < output + 2^19 < 175 * 2^13 + 2^19
-        // The final rounding right shift by either 7 or 11 bits adds at most
-        // 2^10 to the sum:
-        //   0 < output + 2^19 + rounding < 175 * 2^13 + 2^19 + 2^10 = 1958912
-        // Since 1958912 = 0x1DE400 < 2^22, shifting it right by 7 or 11 bits
-        // brings the value under 2^15, which fits in uint16_t.
-        int32x4_t sum_low = vdupq_n_s32(vertical_offset);
+        int32x4_t sum_low = vdupq_n_s32(-kOffsetRemoval);
         int32x4_t sum_high = sum_low;
         for (int k = 0; k < 8; ++k) {
           const int16x8_t intermediate = vld1q_s16(intermediate_result[y + k]);
@@ -455,26 +410,13 @@ void Warp_NEON(const void* const source, const ptrdiff_t source_stride,
           sum_high = vmlal_s16(sum_high, vget_high_s16(filter[k]),
                                vget_high_s16(intermediate));
         }
-        // Because of the offset these values are unsigned.
-        const uint32x4_t sum_low_u32 = vreinterpretq_u32_s32(sum_low);
-        const uint32x4_t sum_high_u32 = vreinterpretq_u32_s32(sum_high);
-        const uint16x8_t sum =
-            vcombine_u16(vrshrn_n_u32(sum_low_u32, kRoundBitsVertical),
-                         vrshrn_n_u32(sum_high_u32, kRoundBitsVertical));
+        const int16x8_t sum =
+            vcombine_s16(vrshrn_n_s32(sum_low, kRoundBitsVertical),
+                         vrshrn_n_s32(sum_high, kRoundBitsVertical));
         if (is_compound) {
-          // TODO(johannkoenig): There are better ways of dealing with this
-          // offset for 8bpp. In the meantime use the 10/12bpp constant but
-          // shifted down.
-          const uint16x8_t compound_offset = vdupq_n_u16(kCompoundOffset >> 2);
-          const int16x8_t sum_signed =
-              vreinterpretq_s16_u16(vsubq_u16(sum, compound_offset));
-          vst1q_s16(reinterpret_cast<int16_t*>(dst_row), sum_signed);
+          vst1q_s16(reinterpret_cast<int16_t*>(dst_row), sum);
         } else {
-          const uint16x8_t single_round_offset =
-              vdupq_n_u16(kSingleRoundOffset);
-          const int16x8_t sum_signed =
-              vreinterpretq_s16_u16(vsubq_u16(sum, single_round_offset));
-          vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovun_s16(sum_signed));
+          vst1_u8(reinterpret_cast<uint8_t*>(dst_row), vqmovun_s16(sum));
         }
         dst_row += dest_stride;
         sy4 += delta;
