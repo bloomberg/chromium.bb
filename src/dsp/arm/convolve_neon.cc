@@ -2445,19 +2445,21 @@ void ConvolveCompoundCopy_NEON(
 
     int y = 0;
     do {
-      // TODO(johannkoenig): Do 2 at a time.
       v_src = Load4<0>(&src[0], v_src);
+      src += src_stride;
+      v_src = Load4<1>(&src[0], v_src);
+      src += src_stride;
       const uint16x8_t v_dest = vshll_n_u8(v_src, final_shift);
       vst1_u16(&dest[0], vget_low_u16(v_dest));
-      src += src_stride;
       dest += pred_stride;
-    } while (++y < height);
+      vst1_u16(&dest[0], vget_high_u16(v_dest));
+      dest += pred_stride;
+      y += 2;
+    } while (y < height);
   } else {  // width == 2
     assert(width == 2);
     int y = 0;
     do {
-      // TODO(johannkoenig): Consider loading up a vector when |height| > 2 and
-      // doing 4 at a time.
       dest[0] = src[0] << final_shift;
       dest[1] = src[1] << final_shift;
       src += src_stride;
@@ -2930,7 +2932,6 @@ void ConvolveIntraBlockCopyVertical_NEON(
       row = below;
     } while (++y < height);
   } else if (width == 4) {
-    // TODO(johannkoenig): Do 2 at a time.
     uint8x8_t row = Load4(src);
     uint8x8_t below = vdup_n_u8(0);
     src += reference_stride;
