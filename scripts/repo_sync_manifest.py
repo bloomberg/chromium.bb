@@ -19,6 +19,8 @@ the same options.
 
 from __future__ import print_function
 
+import sys
+
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
@@ -27,6 +29,9 @@ from chromite.lib import cros_logging as logging
 from chromite.lib import config_lib
 from chromite.lib import gerrit
 from chromite.lib import osutils
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 def GetParser():

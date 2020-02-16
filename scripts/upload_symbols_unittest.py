@@ -54,6 +54,9 @@ from chromite.scripts import cros_generate_breakpad_symbols
 from chromite.scripts import upload_symbols
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 class SymbolsTestBase(cros_test_lib.MockTempDirTestCase):
   """Base class for most symbols tests."""
 
