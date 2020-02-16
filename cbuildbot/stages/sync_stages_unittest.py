@@ -75,7 +75,7 @@ class BootstrapStageTest(generic_stages_unittest.AbstractStageTestCase,
     #   '--nobootstrap'
     #   '--manifest-repo-url'
     self.assertCommandContains([
-        'chromite/cbuildbot/cbuildbot',
+        'chromite/bin/cbuildbot',
         'sync-test-cbuildbot',
         '-r',
         os.path.join(self.tempdir, 'buildroot'),

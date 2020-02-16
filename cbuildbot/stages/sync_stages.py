@@ -261,7 +261,7 @@ class BootstrapStage(PatchChangesStage):
     # Re-exec into new instance of cbuildbot, with proper command line args.
     cbuildbot_path = constants.PATH_TO_CBUILDBOT
     if not os.path.exists(os.path.join(self.tempdir, cbuildbot_path)):
-      cbuildbot_path = 'chromite/cbuildbot/cbuildbot'
+      cbuildbot_path = 'chromite/bin/cbuildbot'
     cmd = self.FilterArgsForTargetCbuildbot(self.tempdir, cbuildbot_path,
                                             self._run.options)
 
