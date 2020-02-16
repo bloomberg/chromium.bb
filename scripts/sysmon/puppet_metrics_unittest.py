@@ -12,11 +12,15 @@ from __future__ import print_function
 
 import io
 import os
+import sys
 
 import mock
 
 from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import puppet_metrics
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 _SUMMARY = u"""\

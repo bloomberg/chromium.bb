@@ -284,7 +284,8 @@ def BuildTestSets(tests, chroot_available, network, config_skew, jobs=1,
   def PythonWrappers(tests):
     for test in tests:
       if pyver is None or pyver == 'py2':
-        if os.path.basename(os.path.realpath(test)) != 'wrapper3.py':
+        if (os.path.basename(os.path.realpath(test)) not in
+            {'virtualenv_wrapper.py', 'wrapper3.py'}):
           yield (test, 'python2')
       if pyver is None or pyver == 'py3':
         yield (test, 'python3')

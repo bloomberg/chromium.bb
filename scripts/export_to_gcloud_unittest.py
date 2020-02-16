@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import io
+import sys
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import export_to_gcloud
@@ -17,6 +18,9 @@ try:
   datastore = pytest.importorskip('gcloud.datastore')
 except ImportError:
   from gcloud import datastore
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 class GetEntitiesTest(cros_test_lib.TestCase):

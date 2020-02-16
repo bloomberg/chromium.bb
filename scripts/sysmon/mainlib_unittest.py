@@ -10,13 +10,20 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
+import sys
+
 import mock
 
 from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import mainlib
 
 
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
+
+
 @cros_test_lib.pytestmark_mock_error
+
+
 class TestTimedCallback(cros_test_lib.TestCase):
   """Tests for _TimedCallback."""
 

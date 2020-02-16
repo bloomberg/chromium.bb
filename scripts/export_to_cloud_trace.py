@@ -11,6 +11,7 @@ import itertools
 import json
 import os
 import pprint
+import sys
 import time
 
 from googleapiclient import discovery
@@ -29,6 +30,9 @@ try:
   inotify_simple = pytest.importorskip('inotify_simple')
 except ImportError:
   import inotify_simple
+
+
+assert sys.version_info >= (3, 6), 'This module requires Python 3.6+'
 
 
 BATCH_PATIENCE = 10 * 60
