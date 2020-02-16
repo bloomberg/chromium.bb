@@ -1103,7 +1103,7 @@ void PostFilter::ApplyLoopRestorationForSuperBlock(
       RightShiftWithRounding(upscaled_width_, subsampling_x);
   const int plane_height = RightShiftWithRounding(height_, subsampling_y);
   Array2DView<Pixel> loop_restored_window(
-      source_buffer_->aligned_height(plane), stride / sizeof(Pixel),
+      current_process_unit_height, stride / sizeof(Pixel),
       reinterpret_cast<Pixel*>(loop_restoration_buffer_[plane] + y * stride +
                                x * pixel_size_));
   ApplyLoopRestorationForOneUnit<Pixel>(
