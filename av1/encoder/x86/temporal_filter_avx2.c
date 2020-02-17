@@ -19,10 +19,10 @@
 #define SSE_STRIDE (BW + 2)
 
 DECLARE_ALIGNED(32, static const uint32_t, sse_bytemask[4][8]) = {
-  { 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000, 0x0000 },
-  { 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000, 0x0000 },
-  { 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0x0000 },
-  { 0x0000, 0x0000, 0x0000, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF }
+  { 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0, 0, 0 },
+  { 0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0, 0 },
+  { 0, 0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0 },
+  { 0, 0, 0, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF }
 };
 
 DECLARE_ALIGNED(32, static const uint8_t, shufflemask_16b[2][16]) = {
@@ -104,7 +104,7 @@ static AOM_FORCE_INLINE __m256i xx_load_and_pad(uint16_t *src, int col,
     // For the last column, replicate the last element twice to the right
     v128tmp = _mm_shuffle_epi8(v128tmp, *(__m128i *)shufflemask_16b[1]);
   }
-  return _mm256_cvtepi16_epi32(v128tmp);
+  return _mm256_cvtepu16_epi32(v128tmp);
 }
 
 static AOM_FORCE_INLINE int32_t xx_mask_and_hadd(__m256i vsum, int i) {
@@ -131,16 +131,17 @@ static void apply_temporal_filter_planewise(
     const uint8_t *frame1, const unsigned int stride, const uint8_t *frame2,
     const unsigned int stride2, const int block_width, const int block_height,
     const double sigma, const int decay_control, unsigned int *accumulator,
-    uint16_t *count) {
-  const double h = decay_control * (0.7 + log(sigma + 1.0));
-  const double beta = 1.0;
-
-  uint16_t frame_sse[SSE_STRIDE * BH];
-  uint32_t acc_5x5_sse[BH][BW];
-
+    uint16_t *count, uint16_t *luma_sq_error, uint16_t *chroma_sq_error,
+    int plane, int ss_x_shift, int ss_y_shift) {
   assert(TF_PLANEWISE_FILTER_WINDOW_LENGTH == 5);
   assert(((block_width == 32) && (block_height == 32)) ||
          ((block_width == 16) && (block_height == 16)));
+  if (plane > PLANE_TYPE_Y) assert(chroma_sq_error != NULL);
+
+  uint32_t acc_5x5_sse[BH][BW];
+  const double h = decay_control * (0.7 + log(sigma + 1.0));
+  uint16_t *frame_sse =
+      (plane == PLANE_TYPE_Y) ? luma_sq_error : chroma_sq_error;
 
   if (block_width == 32) {
     get_squared_error_32x32_avx2(frame1, stride, frame2, stride2, block_width,
@@ -200,17 +201,29 @@ static void apply_temporal_filter_planewise(
       const int pixel_value = frame2[i * stride2 + j];
 
       int diff_sse = acc_5x5_sse[i][j];
-      diff_sse /= (TF_PLANEWISE_FILTER_WINDOW_LENGTH *
-                   TF_PLANEWISE_FILTER_WINDOW_LENGTH);
+      int num_ref_pixels =
+          TF_PLANEWISE_FILTER_WINDOW_LENGTH * TF_PLANEWISE_FILTER_WINDOW_LENGTH;
 
-      double scaled_diff = -diff_sse / (2 * beta * h * h);
-      // clamp the value to avoid underflow in exp()
-      if (scaled_diff < -15) scaled_diff = -15;
-      double w = exp(scaled_diff);
-      const int weight = (int)(w * TF_PLANEWISE_FILTER_WEIGHT_SCALE);
+      // Filter U-plane and V-plane using Y-plane. This is because motion
+      // search is only done on Y-plane, so the information from Y-plane will
+      // be more accurate.
+      if (plane != PLANE_TYPE_Y) {
+        for (int ii = 0; ii < (1 << ss_y_shift); ++ii) {
+          for (int jj = 0; jj < (1 << ss_x_shift); ++jj) {
+            const int yy = (i << ss_y_shift) + ii;  // Y-coord on Y-plane.
+            const int xx = (j << ss_x_shift) + jj;  // X-coord on Y-plane.
+            diff_sse += luma_sq_error[yy * SSE_STRIDE + xx];
+            ++num_ref_pixels;
+          }
+        }
+      }
+      const double scaled_diff =
+          AOMMAX(-(double)(diff_sse / num_ref_pixels) / (2 * h * h), -15.0);
+      const int adjusted_weight =
+          (int)(exp(scaled_diff) * TF_PLANEWISE_FILTER_WEIGHT_SCALE);
 
-      count[k] += weight;
-      accumulator[k] += weight * pixel_value;
+      count[k] += adjusted_weight;
+      accumulator[k] += adjusted_weight * pixel_value;
     }
   }
 }
@@ -232,6 +245,12 @@ void av1_apply_temporal_filter_planewise_avx2(
   const int mb_height = block_size_high[block_size];
   const int mb_width = block_size_wide[block_size];
   const int mb_pels = mb_height * mb_width;
+  uint16_t luma_sq_error[SSE_STRIDE * BH];
+  uint16_t *chroma_sq_error =
+      (num_planes > 0)
+          ? (uint16_t *)aom_malloc(SSE_STRIDE * BH * sizeof(uint16_t))
+          : NULL;
+
   for (int plane = 0; plane < num_planes; ++plane) {
     const uint32_t plane_h = mb_height >> mbd->plane[plane].subsampling_y;
     const uint32_t plane_w = mb_width >> mbd->plane[plane].subsampling_x;
@@ -239,9 +258,16 @@ void av1_apply_temporal_filter_planewise_avx2(
     const int frame_offset = mb_row * plane_h * frame_stride + mb_col * plane_w;
 
     const uint8_t *ref = ref_frame->buffers[plane] + frame_offset;
+    const int ss_x_shift =
+        mbd->plane[plane].subsampling_x - mbd->plane[0].subsampling_x;
+    const int ss_y_shift =
+        mbd->plane[plane].subsampling_y - mbd->plane[0].subsampling_y;
+
     apply_temporal_filter_planewise(
         ref, frame_stride, pred + mb_pels * plane, plane_w, plane_w, plane_h,
         noise_levels[plane], decay_control, accum + mb_pels * plane,
-        count + mb_pels * plane);
+        count + mb_pels * plane, luma_sq_error, chroma_sq_error, plane,
+        ss_x_shift, ss_y_shift);
   }
+  if (chroma_sq_error != NULL) aom_free(chroma_sq_error);
 }

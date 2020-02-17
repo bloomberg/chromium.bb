@@ -952,12 +952,16 @@ void av1_apply_temporal_filter_others(
   assert(num_planes >= 1 && num_planes <= MAX_MB_PLANE);
 
   if (use_planewise_strategy) {  // Commonly used for high-resolution video.
-    // TODO(any): avx2 and sse2 version should also support high bit-depth, and
-    // they should be changed to consider cross-plane information (see C
-    // function) before using.
-    av1_apply_temporal_filter_planewise_c(frame_to_filter, mbd, block_size,
+    // TODO(any): avx2 and sse2 version should also support high bit-depth.
+    if (is_frame_high_bitdepth(frame_to_filter)) {
+      av1_apply_temporal_filter_planewise_c(frame_to_filter, mbd, block_size,
+                                            mb_row, mb_col, num_planes,
+                                            noise_levels, pred, accum, count);
+    } else {
+      av1_apply_temporal_filter_planewise(frame_to_filter, mbd, block_size,
                                           mb_row, mb_col, num_planes,
                                           noise_levels, pred, accum, count);
+    }
   } else {  // Commonly used for low-resolution video.
     const int adj_strength = strength + 2 * (mbd->bd - 8);
     if (num_planes == 1) {
