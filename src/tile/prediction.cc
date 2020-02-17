@@ -962,7 +962,7 @@ void Tile::BuildConvolveBlock(
           ? current_frame_.buffer()
           : reference_frames_[reference_frame_index]->buffer();
   Array2DView<const Pixel> reference_block(
-      reference_buffer->displayed_height(plane),
+      reference_buffer->height(plane),
       reference_buffer->stride(plane) / sizeof(Pixel),
       reinterpret_cast<const Pixel*>(reference_buffer->data(plane)));
   auto* const block_head = reinterpret_cast<Pixel*>(block_buffer);
@@ -1179,11 +1179,9 @@ void Tile::BlockWarpProcess(const Block& block, const Plane plane,
   ptrdiff_t source_stride =
       reference_frames_[reference_frame_index]->buffer()->stride(plane);
   const int source_width =
-      reference_frames_[reference_frame_index]->buffer()->displayed_width(
-          plane);
+      reference_frames_[reference_frame_index]->buffer()->width(plane);
   const int source_height =
-      reference_frames_[reference_frame_index]->buffer()->displayed_height(
-          plane);
+      reference_frames_[reference_frame_index]->buffer()->height(plane);
   uint16_t* const prediction = block.scratch_buffer->prediction_buffer[index];
   if (is_compound) {
     dsp_.warp_compound(

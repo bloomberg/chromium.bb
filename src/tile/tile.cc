@@ -455,10 +455,10 @@ Tile::Tile(
     // In AV1, a transform block of height H starts at a y coordinate that is
     // a multiple of H. If a transform block at the bottom of the frame has
     // height H, then Reconstruct() will write up to the row with index
-    // Align(buffer->displayed_height(plane), H) - 1. Therefore the maximum
-    // number of rows Reconstruct() may write to is
-    // Align(buffer->displayed_height(plane), max_tx_length).
-    buffer_[plane].Reset(Align(buffer->displayed_height(plane), max_tx_length),
+    // Align(buffer->height(plane), H) - 1. Therefore the maximum number of
+    // rows Reconstruct() may write to is
+    // Align(buffer->height(plane), max_tx_length).
+    buffer_[plane].Reset(Align(buffer->height(plane), max_tx_length),
                          buffer->stride(plane), buffer->data(plane));
     const int plane_height =
         RightShiftWithRounding(frame_header_.height, subsampling_y_[plane]);

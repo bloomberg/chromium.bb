@@ -346,8 +346,8 @@ StatusCode DecoderImpl::CopyFrameToOutputBuffer(
   for (; plane < num_planes; ++plane) {
     buffer_.stride[plane] = yuv_buffer->stride(plane);
     buffer_.plane[plane] = yuv_buffer->data(plane);
-    buffer_.displayed_width[plane] = yuv_buffer->displayed_width(plane);
-    buffer_.displayed_height[plane] = yuv_buffer->displayed_height(plane);
+    buffer_.displayed_width[plane] = yuv_buffer->width(plane);
+    buffer_.displayed_height[plane] = yuv_buffer->height(plane);
   }
   for (; plane < kMaxPlanes; ++plane) {
     buffer_.stride[plane] = 0;
