@@ -162,11 +162,8 @@ bool BufferPool::OnFrameBufferSizeChanged(int bitdepth,
                                           int width, int height,
                                           int left_border, int right_border,
                                           int top_border, int bottom_border) {
-  const int aligned_width = Align(width, 8);
-  const int aligned_height = Align(height, 8);
   return on_frame_buffer_size_changed_(callback_private_data_, bitdepth,
-                                       image_format, aligned_width,
-                                       aligned_height, left_border,
+                                       image_format, width, height, left_border,
                                        right_border, top_border, bottom_border,
                                        /*stride_alignment=*/16) == 0;
 }

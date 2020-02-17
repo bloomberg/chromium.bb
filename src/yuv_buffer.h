@@ -54,33 +54,26 @@ class YuvBuffer {
   //   16-byte aligned
   //          |
   //          v
-  //        BBBBBBBBBBBBBBBBBBBBBBBBBBBBpppp
-  //        BBBBBBBBBBBBBBBBBBBBBBBBBBBBpppp
-  //        BB01234567890123456789....BBpppp
-  //        BB11234567890123456789....BBpppp
-  //        BB21234567890123456789....BBpppp
-  //        BB31234567890123456789....BBpppp
-  //        BB41234567890123456789....BBpppp
-  //        BB51234567890123456789....BBpppp
-  //        BB........................BBpppp
-  //        BB........................BBpppp
-  //        BBBBBBBBBBBBBBBBBBBBBBBBBBBBpppp
-  //        BBBBBBBBBBBBBBBBBBBBBBBBBBBBpppp
+  //        ++++++++++++++++++++++++pppppppp
+  //        ++++++++++++++++++++++++pppppppp
+  //        ++01234567890123456789++pppppppp
+  //        ++11234567890123456789++pppppppp
+  //        ++21234567890123456789++pppppppp
+  //        ++31234567890123456789++pppppppp
+  //        ++41234567890123456789++pppppppp
+  //        ++51234567890123456789++pppppppp
+  //        ++++++++++++++++++++++++pppppppp
+  //        ++++++++++++++++++++++++pppppppp
   //        |                              |
   //        |<-- stride (multiple of 16) ->|
   //
   // The video frame has 6 rows of 20 pixels each. Each row is shown as the
   // pattern r1234567890123456789, where |r| is 0, 1, 2, 3, 4, 5.
   //
-  // Realloc() first aligns |width| and |height| to multiples of 8 pixels. The
-  // pixels added in this step are shown as dots ('.'). In this example, the
-  // aligned width is 24 pixels and the aligned height is 8 pixels. NOTE: The
-  // purpose of this step is unknown. We should be able to remove this step.
+  // Realloc() first adds a border of 2 pixels around the video frame. The
+  // border pixels are shown as '+'.
   //
-  // Realloc() then adds a border of 2 pixels around this region. The border
-  // pixels are shown as capital 'B'.
-  //
-  // Each row is now padded to a multiple of the default alignment in bytes,
+  // Each row is then padded to a multiple of the default alignment in bytes,
   // which is 16. The padding bytes are shown as lowercase 'p'. (Since
   // |bitdepth| is 8 in this example, each pixel is one byte.) The padded size
   // in bytes is the stride. In this example, the stride is 32 bytes.
@@ -104,18 +97,11 @@ class YuvBuffer {
   int8_t subsampling_x() const { return subsampling_x_; }
   int8_t subsampling_y() const { return subsampling_y_; }
 
-  int aligned_width(int plane) const {
+  int displayed_width(int plane) const {
     return (plane == kPlaneY) ? y_width_ : uv_width_;
   }
-  int aligned_height(int plane) const {
-    return (plane == kPlaneY) ? y_height_ : uv_height_;
-  }
-
-  int displayed_width(int plane) const {
-    return (plane == kPlaneY) ? y_crop_width_ : uv_crop_width_;
-  }
   int displayed_height(int plane) const {
-    return (plane == kPlaneY) ? y_crop_height_ : uv_crop_height_;
+    return (plane == kPlaneY) ? y_height_ : uv_height_;
   }
 
   // Returns border sizes in pixels.
@@ -194,25 +180,17 @@ class YuvBuffer {
   int bitdepth_ = 0;
   bool is_monochrome_ = false;
 
-  // y_crop_width_ and y_crop_height_ are the original width and height (the
-  // |width| and |height| arguments passed to the Realloc() method). y_width_
-  // and y_height_ are the original width and height padded to a multiple of
-  // 8.
+  // y_width_ and y_height_ are the |width| and |height| arguments passed to the
+  // Realloc() method.
   //
-  // The UV widths and heights are computed from Y widths and heights as
+  // uv_width_ and uv_height_ are computed from y_width_ and y_height_ as
   // follows:
-  //   uv_crop_width_ = (y_crop_width_ + subsampling_x_) >> subsampling_x_
-  //   uv_crop_height_ = (y_crop_height_ + subsampling_y_) >> subsampling_y_
-  //   uv_width_ = y_width_ >> subsampling_x_
-  //   uv_height_ = y_height_ >> subsampling_y_
+  //   uv_width_ = (y_width_ + subsampling_x_) >> subsampling_x_
+  //   uv_height_ = (y_height_ + subsampling_y_) >> subsampling_y_
   int y_width_ = 0;
   int uv_width_ = 0;
   int y_height_ = 0;
   int uv_height_ = 0;
-  int y_crop_width_ = 0;
-  int uv_crop_width_ = 0;
-  int y_crop_height_ = 0;
-  int uv_crop_height_ = 0;
 
   int left_border_[kMaxPlanes] = {};
   int right_border_[kMaxPlanes] = {};

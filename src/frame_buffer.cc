@@ -72,8 +72,10 @@ Libgav1StatusCode Libgav1ComputeFrameBufferInfo(
       (height + top_border + bottom_border) * static_cast<uint64_t>(y_stride) +
       (stride_alignment - 1);
 
-  const int uv_width = is_monochrome ? 0 : width >> subsampling_x;
-  const int uv_height = is_monochrome ? 0 : height >> subsampling_y;
+  const int uv_width =
+      is_monochrome ? 0 : libgav1::SubsampledValue(width, subsampling_x);
+  const int uv_height =
+      is_monochrome ? 0 : libgav1::SubsampledValue(height, subsampling_y);
   const int uv_left_border = is_monochrome ? 0 : left_border >> subsampling_x;
   const int uv_right_border = is_monochrome ? 0 : right_border >> subsampling_x;
   const int uv_top_border = is_monochrome ? 0 : top_border >> subsampling_y;
