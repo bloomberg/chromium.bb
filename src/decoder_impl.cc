@@ -888,6 +888,7 @@ RefCountedBufferPtr DecoderImpl::ApplyFilmGrain(
       *status = kStatusOutOfMemory;
       return nullptr;
     }
+    *status = kStatusOk;
     return film_grain_frame;
   }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
@@ -913,6 +914,7 @@ RefCountedBufferPtr DecoderImpl::ApplyFilmGrain(
     *status = kStatusOutOfMemory;
     return nullptr;
   }
+  *status = kStatusOk;
   return film_grain_frame;
 }
 
