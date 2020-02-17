@@ -474,10 +474,6 @@ typedef struct MV_SPEED_FEATURES {
   // Pattern to be used for exhaustive mesh searches of intraBC ME.
   MESH_PATTERN intrabc_mesh_patterns[MAX_MESH_STEP];
 
-  // Use to control hash generation and use of the same
-  // Applicable only for screen contents
-  int disable_hash_me;
-
   // Reduce single motion search range based on MV result of prior ref_mv_idx.
   int reduce_search_range;
 

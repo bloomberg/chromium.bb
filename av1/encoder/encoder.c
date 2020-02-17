@@ -5957,8 +5957,7 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 #endif  // DUMP_RECON_FRAMES
 
 static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
-                         const YV12_BUFFER_CONFIG *last_picture,
-                         hash_table *last_hash_table) {
+                         const YV12_BUFFER_CONFIG *last_picture) {
   aom_clear_system_state();
   // check use hash ME
   int k;
@@ -5970,7 +5969,6 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
   int T = 0;  // total block
   int C = 0;  // match with collocated block
   int S = 0;  // smooth region but not match with collocated block
-  int M = 0;  // match with other block
 
   const int pic_width = cur_picture->y_width;
   const int pic_height = cur_picture->y_height;
@@ -6024,34 +6022,19 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
         S++;
         continue;
       }
-      if (av1_use_hash_me(cpi)) {
-        uint32_t hash_value_1;
-        uint32_t hash_value_2;
-        av1_get_block_hash_value(
-            cur_picture->y_buffer + y_pos * stride_cur + x_pos, stride_cur,
-            block_size, &hash_value_1, &hash_value_2,
-            (cur_picture->flags & YV12_FLAG_HIGHBITDEPTH), &cpi->td.mb);
-        // Hashing does not work for highbitdepth currently.
-        // TODO(Roger): Make it work for highbitdepth.
-        if (av1_has_exact_match(last_hash_table, hash_value_1, hash_value_2)) {
-          M++;
-        }
-      }
     }
   }
 
   assert(T > 0);
-  double csm_rate = ((double)(C + S + M)) / ((double)(T));
-  double m_rate = ((double)(M)) / ((double)(T));
+  double cs_rate = ((double)(C + S)) / ((double)(T));
 
-  cpi->csm_rate_array[cpi->rate_index] = csm_rate;
-  cpi->m_rate_array[cpi->rate_index] = m_rate;
+  cpi->cs_rate_array[cpi->rate_index] = cs_rate;
 
   cpi->rate_index = (cpi->rate_index + 1) % max_history_size;
   cpi->rate_size++;
   cpi->rate_size = AOMMIN(cpi->rate_size, max_history_size);
 
-  if (csm_rate < threshold_current) {
+  if (cs_rate < threshold_current) {
     return 0;
   }
 
@@ -6059,29 +6042,22 @@ static int is_integer_mv(AV1_COMP *cpi, const YV12_BUFFER_CONFIG *cur_picture,
     return 1;
   }
 
-  double csm_average = 0.0;
-  double m_average = 0.0;
+  double cs_average = 0.0;
 
   for (k = 0; k < cpi->rate_size; k++) {
-    csm_average += cpi->csm_rate_array[k];
-    m_average += cpi->m_rate_array[k];
+    cs_average += cpi->cs_rate_array[k];
   }
-  csm_average /= cpi->rate_size;
-  m_average /= cpi->rate_size;
+  cs_average /= cpi->rate_size;
 
-  if (csm_average < threshold_average) {
+  if (cs_average < threshold_average) {
     return 0;
   }
 
-  if (M > (T - C - S) / 3) {
+  if ((T - C - S) < 0) {
     return 1;
   }
 
-  if (csm_rate > 0.99 && m_rate > 0.01) {
-    return 1;
-  }
-
-  if (csm_average + m_average > 1.01) {
+  if (cs_average > 1.01) {
     return 1;
   }
 
@@ -6261,8 +6237,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
       // Adaptive mode: see what previous frame encoded did
       if (cpi->unscaled_last_source != NULL) {
         cm->cur_frame_force_integer_mv =
-            is_integer_mv(cpi, cpi->source, cpi->unscaled_last_source,
-                          cpi->previous_hash_table);
+            is_integer_mv(cpi, cpi->source, cpi->unscaled_last_source);
       } else {
         cpi->common.cur_frame_force_integer_mv = 0;
       }
@@ -6278,11 +6253,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   assert(hash_me_has_at_most_two_refs(cm->buffer_pool->frame_bufs) &&
          "Hash-me is leaking memory!");
 #endif
-
-  if (!is_stat_generation_stage(cpi) && cpi->need_to_clear_prev_hash_table) {
-    av1_hash_table_clear_all(cpi->previous_hash_table);
-    cpi->need_to_clear_prev_hash_table = 0;
-  }
 
   // Set default state for segment based loop filter update flags.
   cm->lf.mode_ref_delta_update = 0;
@@ -6480,14 +6450,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   cm->last_frame_type = current_frame->frame_type;
 
   av1_rc_postencode_update(cpi, *size);
-
-  // Store encoded frame's hash table for in_integer_mv() next time.
-  // Beware! If we don't update previous_hash_table here we will leak the
-  // items stored in cur_frame's hash_table!
-  if (!is_stat_generation_stage(cpi) && av1_use_hash_me(cpi)) {
-    cpi->previous_hash_table = &cm->cur_frame->hash_table;
-    cpi->need_to_clear_prev_hash_table = 1;
-  }
 
   // Clear the one shot update flags for segmentation map and mode/ref loop
   // filter deltas.

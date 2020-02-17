@@ -293,9 +293,6 @@ static void set_good_speed_features_framesize_independent(
   sf->part_sf.prune_ext_partition_types_search_level = 1;
   sf->part_sf.simple_motion_search_prune_rect = 1;
 
-  // TODO(any): Clean-up code related to hash_me in inter frames
-  sf->mv_sf.disable_hash_me = frame_is_intra_only(cm) ? 0 : 1;
-
   sf->inter_sf.disable_wedge_search_edge_thresh = 0;
   sf->inter_sf.disable_wedge_search_var_thresh = 0;
   // TODO(debargha): Test, tweak and turn on either 1 or 2
@@ -953,7 +950,6 @@ static AOM_INLINE void init_mv_sf(MV_SPEED_FEATURES *mv_sf) {
   mv_sf->auto_mv_step_size = 0;
   mv_sf->adaptive_motion_search = 0;
   mv_sf->use_accurate_subpel_search = USE_8_TAPS;
-  mv_sf->disable_hash_me = 0;
   mv_sf->reduce_search_range = 0;
   mv_sf->prune_mesh_search = 0;
   mv_sf->exhaustive_searches_thresh = 0;
