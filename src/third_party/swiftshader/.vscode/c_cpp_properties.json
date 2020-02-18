@@ -1,0 +1,59 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "defines": [
+                "ENABLE_RR_DEBUG_INFO=1",
+                "VERIFY_LLVM_IR=1"
+            ],
+            "includePath": [
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/third_party/marl/include",
+                "${workspaceFolder}/third_party/SPIRV-Headers/include",
+                "${workspaceFolder}/third_party/llvm-7.0/llvm/include",
+                "${workspaceFolder}/third_party/llvm-7.0/configs/common/include",
+                "${workspaceFolder}/third_party/llvm-7.0/configs/linux/include"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11"
+        },
+        {
+            "name": "Mac",
+            "defines": [
+                "ENABLE_RR_DEBUG_INFO=1",
+                "VERIFY_LLVM_IR=1"
+            ],
+            "includePath": [
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/third_party/marl/include",
+                "${workspaceFolder}/third_party/SPIRV-Headers/include",
+                "${workspaceFolder}/third_party/llvm-7.0/llvm/include",
+                "${workspaceFolder}/third_party/llvm-7.0/configs/common/include",
+                "${workspaceFolder}/third_party/llvm-7.0/configs/darwin/include"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11"
+        },
+        {
+            "name": "Win32",
+            "defines": [
+                "ENABLE_RR_DEBUG_INFO=1",
+                "VERIFY_LLVM_IR=1"
+            ],
+            "includePath": [
+                "${workspaceFolder}/src",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/third_party/marl/include",
+                "${workspaceFolder}/third_party/SPIRV-Headers/include",
+                "${workspaceFolder}/third_party/llvm-7.0/llvm/include",
+                "${workspaceFolder}/third_party/llvm-7.0/configs/common/include",
+                "${workspaceFolder}/third_party/llvm-7.0/configs/windows/include"
+            ],
+            "cStandard": "c11",
+            "cppStandard": "c++11"
+        }
+    ],
+    "version": 4
+}
