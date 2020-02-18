@@ -118,6 +118,12 @@ sobel_xy av1_sobel(const uint8_t *input, int stride, int i, int j,
 void av1_inter_mode_data_init(struct TileDataEnc *tile_data);
 void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);
 
+#if !CONFIG_REALTIME_ONLY
+static INLINE int coded_to_superres_mi(int mi_col, int denom) {
+  return (mi_col * denom + SCALE_NUMERATOR / 2) / SCALE_NUMERATOR;
+}
+#endif
+
 static INLINE int av1_encoder_get_relative_dist(const OrderHintInfo *oh, int a,
                                                 int b) {
   if (!oh->enable_order_hint) return 0;

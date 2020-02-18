@@ -573,6 +573,7 @@ static void set_good_speed_features_framesize_independent(
     sf->part_sf.ext_partition_eval_thresh =
         cm->allow_screen_content_tools ? BLOCK_8X8 : BLOCK_16X16;
 
+    sf->inter_sf.prune_inter_modes_based_on_tpl = boosted ? 0 : 1;
     sf->inter_sf.disable_interinter_wedge = 1;
     sf->inter_sf.disable_obmc = 1;
     sf->inter_sf.disable_onesided_comp = 1;
@@ -968,6 +969,7 @@ static AOM_INLINE void init_inter_sf(INTER_MODE_SPEED_FEATURES *inter_sf) {
   inter_sf->reuse_inter_intra_mode = 0;
   inter_sf->disable_sb_level_coeff_cost_upd = 0;
   inter_sf->disable_sb_level_mv_cost_upd = 0;
+  inter_sf->prune_inter_modes_based_on_tpl = 0;
   inter_sf->prune_comp_search_by_single_result = 0;
   inter_sf->skip_repeated_ref_mv = 0;
   inter_sf->skip_repeated_newmv = 0;

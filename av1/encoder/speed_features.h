@@ -656,6 +656,9 @@ typedef struct INTER_MODE_SPEED_FEATURES {
   // cpi->oxcf.coeff_cost_upd_freq = COST_UPD_SB (i.e. set at SB level)
   int disable_sb_level_mv_cost_upd;
 
+  // Prune inter modes based on tpl stats
+  int prune_inter_modes_based_on_tpl;
+
   // Model based breakout after interpolation filter search
   // 0: no breakout
   // 1: use model based rd breakout

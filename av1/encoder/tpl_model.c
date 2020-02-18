@@ -378,12 +378,12 @@ static AOM_INLINE void mode_estimation(
 
     inter_cost = tpl_get_satd_cost(x, src_diff, bw, src_mb_buffer, src_stride,
                                    predictor, bw, coeff, bw, bh, tx_size);
+    // Store inter cost for each ref frame
+    tpl_stats->pred_error[rf_idx] = AOMMAX(1, inter_cost);
 
     if (inter_cost < best_inter_cost) {
       memcpy(best_coeff, coeff, sizeof(best_coeff));
       best_rf_idx = rf_idx;
-
-      if (rf_idx == 0) tpl_stats->pred_error[rf_idx] = inter_cost;
 
       best_inter_cost = inter_cost;
       best_mv.as_int = x->best_mv.as_int;
@@ -393,11 +393,6 @@ static AOM_INLINE void mode_estimation(
         xd->mi[0]->mv[0].as_int = best_mv.as_int;
       }
     }
-  }
-
-  if (best_rf_idx >= 0) {
-    tpl_stats->pred_error[best_rf_idx] =
-        best_inter_cost - tpl_stats->pred_error[0];
   }
 
   if (best_inter_cost < INT64_MAX) {
