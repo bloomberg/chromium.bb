@@ -1,0 +1,6 @@
+include_rules = [
+  "+net",
+  "+components/metrics",
+  "+services/network/public/cpp",
+  "+services/network/test",
+]

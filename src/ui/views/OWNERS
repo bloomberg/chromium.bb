@@ -1,0 +1,25 @@
+# Prefer tapted@ for mac specific changes.
+
+kylixrd@chromium.org
+msw@chromium.org
+pbos@chromium.org
+pkasting@chromium.org
+robliao@chromium.org
+sky@chromium.org
+tapted@chromium.org
+weili@chromium.org
+
+# Prefer ellyjones@ for any changes to these files.
+per-file *_mac.*=ellyjones@chromium.org
+per-file *_cocoa.*=ellyjones@chromium.org
+per-file *.mm=ellyjones@chromium.org
+
+# If you're doing structural changes get a review from one of the OWNERS.
+per-file BUILD.gn=*
+
+per-file interactive_ui_tests_manifest.json=set noparent
+per-file interactive_ui_tests_manifest.json=file://ipc/SECURITY_OWNERS
+per-file unittests_manifest.json=set noparent
+per-file unittests_manifest.json=file://ipc/SECURITY_OWNERS
+
+# COMPONENT: Internals>Views

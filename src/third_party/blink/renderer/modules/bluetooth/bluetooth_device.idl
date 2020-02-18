@@ -1,0 +1,19 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// https://webbluetoothcg.github.io/web-bluetooth/#bluetoothdevice
+
+[
+    Exposed=Window,
+    RuntimeEnabled=WebBluetooth,
+    SecureContext
+] interface BluetoothDevice : EventTarget {
+    readonly    attribute DOMString id;
+    readonly    attribute DOMString?                 name;
+    readonly    attribute BluetoothRemoteGATTServer  gatt;
+
+    attribute EventHandler ongattserverdisconnected;
+};
+
+// TODO: Include ServiceEventHandlers mixin (https://crbug.com/421670)

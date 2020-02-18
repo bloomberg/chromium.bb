@@ -1,0 +1,7 @@
+AXWebArea AXSelected='0'
+++AXList AXOrientation='AXVerticalOrientation' AXSelected='0' AXSelectedChildren=["AXStaticText Item 4","AXStaticText Item 5"] AXVisibleChildren=["AXStaticText Item 1","AXStaticText Item 2","AXStaticText Item 3","AXStaticText Item 4","AXStaticText Item 5"]
+++++AXStaticText AXValue='Item 1' AXSelected='0'
+++++AXStaticText AXValue='Item 2' AXSelected='0'
+++++AXStaticText AXValue='Item 3' AXSelected='0'
+++++AXStaticText AXValue='Item 4' AXSelected='1'
+++++AXStaticText AXValue='Item 5' AXSelected='1'

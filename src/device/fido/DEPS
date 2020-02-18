@@ -1,0 +1,10 @@
+include_rules = [
+  "+components/apdu",
+  "+components/cbor",
+  "+crypto",
+  "+net/base",
+  "+net/cert",
+  "+ui/base/l10n",
+  "+third_party/boringssl/src/include",
+  "+third_party/microsoft_webauthn",
+]

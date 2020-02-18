@@ -1,0 +1,37 @@
+Tests ES6 harmony scope sections.
+
+Set timer for test function.
+Script execution paused.
+
+Scope variables sidebar pane:
+Block
+    block2: "catch(e) {...}"
+    const2: 2
+Catch
+    e: Error: An exception
+    at innerFunction (...)
+    at testFunction (...)
+Block
+    block1: "block {...}"
+    const1: 1
+Local
+    x: 2014
+    innerFunctionBlockVar: 2116
+    innerFunctionLocalVar: 2016
+    negInf: -Infinity
+    negZero: -0
+    this: undefined
+Block
+    makeClosureDeeperBlockVar: "block.deep.TextParam"
+Closure (window.makeClosure)
+    n: "TextParam"
+    makeClosureBlockVar: "block.TextParam"
+    makeClosureLocalVar: "local.TextParam"
+    makeClosureDeeperLocalVar: "local.deep.TextParam"
+Script
+    globalScriptLet: 41
+    globalScriptConst: 42
+WindowGlobal
+    <section collapsed>
+Script execution resumed.
+

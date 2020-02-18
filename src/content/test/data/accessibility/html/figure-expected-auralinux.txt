@@ -1,0 +1,3 @@
+[document web]
+++[panel] xml-roles:figure
+++++[image] name='Sunspots' xml-roles:img

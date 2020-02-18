@@ -1,0 +1,403 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
+
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
+
+namespace blink {
+namespace {
+// This is experimentally determined and corresponds to the UA decided
+// parameter as mentioned in spec.
+constexpr float kProximityRatio = 1.0 / 3.0;
+}  // namespace
+// TODO(sunyunjia): Move the static functions to an anonymous namespace.
+
+SnapCoordinator::SnapCoordinator() : snap_containers_() {}
+
+SnapCoordinator::~SnapCoordinator() = default;
+
+// Returns the layout box's next ancestor that can be a snap container.
+// The origin may be either a snap area or a snap container.
+LayoutBox* FindSnapContainer(const LayoutBox& origin_box) {
+  // According to the new spec
+  // https://drafts.csswg.org/css-scroll-snap/#snap-model
+  // "Snap positions must only affect the nearest ancestor (on the element’s
+  // containing block chain) scroll container".
+  Element* document_element = origin_box.GetDocument().documentElement();
+  LayoutBox* box = origin_box.ContainingBlock();
+  while (box && !box->HasOverflowClip() && !box->IsLayoutView() &&
+         box->GetNode() != document_element) {
+    box = box->ContainingBlock();
+  }
+
+  // If we reach to document element then we dispatch to layout view.
+  if (box && box->GetNode() == document_element)
+    return origin_box.GetDocument().GetLayoutView();
+
+  return box;
+}
+
+// Snap types are categorized according to the spec
+// https://drafts.csswg.org/css-scroll-snap-1/#snap-axis
+cc::ScrollSnapType GetPhysicalSnapType(const LayoutBox& snap_container) {
+  cc::ScrollSnapType scroll_snap_type =
+      snap_container.Style()->GetScrollSnapType();
+  if (scroll_snap_type.axis == cc::SnapAxis::kInline) {
+    if (snap_container.Style()->IsHorizontalWritingMode())
+      scroll_snap_type.axis = cc::SnapAxis::kX;
+    else
+      scroll_snap_type.axis = cc::SnapAxis::kY;
+  }
+  if (scroll_snap_type.axis == cc::SnapAxis::kBlock) {
+    if (snap_container.Style()->IsHorizontalWritingMode())
+      scroll_snap_type.axis = cc::SnapAxis::kY;
+    else
+      scroll_snap_type.axis = cc::SnapAxis::kX;
+  }
+  // Writing mode does not affect the cases where axis is kX, kY or kBoth.
+  return scroll_snap_type;
+}
+
+// Adding a snap container means that the element's descendant snap areas need
+// to be reassigned to it. First we find the snap container ancestor of the new
+// snap container, then check its snap areas to see if their closest ancestor is
+// changed to the new snap container.
+// E.g., if A1 and A2's ancestor, C2, is C1's descendant and becomes scrollable
+// then C2 becomes a snap container then the snap area assignments change:
+//  Before            After adding C2
+//       C1              C1
+//       |               |
+//   +-------+         +-----+
+//   |  |    |         C2    |
+//   A1 A2   A3      +---+   A3
+//                   |   |
+//                   A1  A2
+// The snap container data does not need to be updated because it will be
+// updated at the end of the layout.
+void SnapCoordinator::AddSnapContainer(LayoutBox& snap_container) {
+  snap_containers_.insert(&snap_container);
+
+  LayoutBox* ancestor_snap_container = FindSnapContainer(snap_container);
+  // If an ancestor doesn't exist then this means that the element is being
+  // attached now; this means that it won't have any descendants that are
+  // assigned to an ancestor snap container.
+  if (!ancestor_snap_container) {
+    DCHECK(!snap_container.Parent());
+    return;
+  }
+  SnapAreaSet* snap_areas = ancestor_snap_container->SnapAreas();
+  if (!snap_areas)
+    return;
+  Vector<LayoutBox*> snap_areas_to_reassign;
+  for (auto* snap_area : *snap_areas) {
+    if (FindSnapContainer(*snap_area) == &snap_container)
+      snap_areas_to_reassign.push_back(snap_area);
+  }
+  for (auto* snap_area : snap_areas_to_reassign)
+    snap_area->SetSnapContainer(&snap_container);
+}
+
+void SnapCoordinator::RemoveSnapContainer(LayoutBox& snap_container) {
+  LayoutBox* ancestor_snap_container = FindSnapContainer(snap_container);
+
+  // We remove the snap container if it is no longer scrollable, or if the
+  // element is detached.
+  // - If it is no longer scrollable, then we reassign its snap areas to the
+  // next ancestor snap container.
+  // - If it is detached, then we simply clear its snap areas since they will be
+  // detached as well.
+  if (ancestor_snap_container) {
+    // No need to update the ancestor's snap container data because it will be
+    // updated at the end of the layout.
+    snap_container.ReassignSnapAreas(*ancestor_snap_container);
+  } else {
+    DCHECK(!snap_container.Parent());
+    snap_container.ClearSnapAreas();
+  }
+  // We don't need to update the old snap container's data since the
+  // corresponding ScrollableArea is being removed, and thus the snap container
+  // data is removed too.
+  snap_container.SetNeedsPaintPropertyUpdate();
+  snap_containers_.erase(&snap_container);
+}
+
+void SnapCoordinator::SnapContainerDidChange(LayoutBox& snap_container) {
+  // Scroll snap properties have no effect on the document element instead they
+  // are propagated to (See Document::PropagateStyleToViewport) and handled by
+  // the LayoutView.
+  if (snap_container.GetNode() ==
+      snap_container.GetDocument().documentElement())
+    return;
+
+  // Per specification snap positions only affect *scroll containers* [1]. So if
+  // the layout box is not a scroll container we ignore it here even if it has
+  // non-none scroll-snap-type. Note that in blink, existence of scrollable area
+  // directly maps to being a scroll container in the specification. [1]
+  // https://drafts.csswg.org/css-scroll-snap/#overview
+  if (!snap_container.GetScrollableArea()) {
+    DCHECK(!snap_containers_.Contains(&snap_container));
+    return;
+  }
+
+  // Note that even if scroll snap type is 'none' we continue to maintain its
+  // snap container entry as long as the element is a scroller. This is because
+  // while the scroller does not snap, it still captures the snap areas in its
+  // subtree for whom it is the nearest ancestor scroll container per spec [1].
+  //
+  // [1] https://drafts.csswg.org/css-scroll-snap/#overview
+
+  // TODO(sunyunjia): Only update when the localframe doesn't need layout.
+  UpdateSnapContainerData(snap_container);
+}
+
+void SnapCoordinator::SnapAreaDidChange(LayoutBox& snap_area,
+                                        cc::ScrollSnapAlign scroll_snap_align) {
+  LayoutBox* old_container = snap_area.SnapContainer();
+  if (scroll_snap_align.alignment_inline == cc::SnapAlignment::kNone &&
+      scroll_snap_align.alignment_block == cc::SnapAlignment::kNone) {
+    snap_area.SetSnapContainer(nullptr);
+    if (old_container)
+      UpdateSnapContainerData(*old_container);
+    return;
+  }
+
+  // If there is no ancestor snap container then this means that this snap
+  // area is being detached. In the worst case, the layout view is the
+  // ancestor snap container, which should exist as long as the document is
+  // not destroyed.
+  if (LayoutBox* new_container = FindSnapContainer(snap_area)) {
+    snap_area.SetSnapContainer(new_container);
+    // TODO(sunyunjia): consider keep the SnapAreas in a map so it is
+    // easier to update.
+    // TODO(sunyunjia): Only update when the localframe doesn't need layout.
+    UpdateSnapContainerData(*new_container);
+    if (old_container && old_container != new_container)
+      UpdateSnapContainerData(*old_container);
+  }
+}
+
+void SnapCoordinator::ReSnapAllContainers() {
+  for (const auto* container : snap_containers_) {
+    auto* scrollable_area = ScrollableArea::GetForScrolling(container);
+    ScrollOffset initial_offset = scrollable_area->GetScrollOffset();
+    scrollable_area->SnapAfterLayout();
+
+    // If this is the first time resnapping all containers then this means this
+    // is the initial layout. We record whenever the initial scroll offset
+    // changes as a result of snapping.
+    // TODO(majidvp): This is here to measure potential web-compat impact of
+    // launching this feature. We should remove it once it is launched.
+    // crbug.com/866127
+    if (!did_first_resnap_all_containers_ &&
+        scrollable_area->GetScrollOffset() != initial_offset) {
+      UseCounter::Count(container->GetDocument(),
+                        WebFeature::kScrollSnapCausesScrollOnInitialLayout);
+    }
+  }
+  did_first_resnap_all_containers_ = true;
+}
+
+void SnapCoordinator::UpdateAllSnapContainerData() {
+  for (auto* container : snap_containers_)
+    UpdateSnapContainerData(*container);
+}
+
+void SnapCoordinator::UpdateSnapContainerData(LayoutBox& snap_container) {
+  ScrollableArea* scrollable_area =
+      ScrollableArea::GetForScrolling(&snap_container);
+  const auto* old_snap_container_data = scrollable_area->GetSnapContainerData();
+  auto snap_type = GetPhysicalSnapType(snap_container);
+
+  // Scrollers that don't have any snap areas assigned to them and don't snap
+  // require no further processing. These are the most common types and thus
+  // returning as early as possible ensures efficiency.
+  if (!old_snap_container_data && snap_type.is_none)
+    return;
+
+  cc::SnapContainerData snap_container_data(snap_type);
+
+  DCHECK(scrollable_area);
+  DCHECK(snap_containers_.Contains(&snap_container));
+
+  // When snap type is 'none' we don't perform any snapping so there is no need
+  // to keep the area data up to date. So just update the type and skip updating
+  // areas as an optimization.
+  if (!snap_container_data.scroll_snap_type().is_none) {
+    FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+        scrollable_area->MaximumScrollOffset());
+    snap_container_data.set_max_position(
+        gfx::ScrollOffset(max_position.X(), max_position.Y()));
+
+    // Scroll-padding represents inward offsets from the corresponding edge of
+    // the scrollport.
+    // https://drafts.csswg.org/css-scroll-snap-1/#scroll-padding Scrollport is
+    // the visual viewport of the scroll container (through which the scrollable
+    // overflow region can be viewed) coincides with its padding box.
+    // https://drafts.csswg.org/css-overflow-3/#scrollport. So we use the
+    // LayoutRect of the padding box here. The coordinate is relative to the
+    // container's border box.
+    PhysicalRect container_rect(snap_container.PhysicalPaddingBoxRect());
+
+    const ComputedStyle* container_style = snap_container.Style();
+    LayoutRectOutsets container_padding(
+        // The percentage of scroll-padding is different from that of normal
+        // padding, as scroll-padding resolves the percentage against
+        // corresponding dimension of the scrollport[1], while the normal
+        // padding resolves that against "width".[2,3] We use
+        // MinimumValueForLength here to ensure kAuto is resolved to
+        // LayoutUnit() which is the correct behavior for padding.
+        // [1] https://drafts.csswg.org/css-scroll-snap-1/#scroll-padding
+        //     "relative to the corresponding dimension of the scroll
+        //     container’s
+        //      scrollport"
+        // [2] https://drafts.csswg.org/css-box/#padding-props
+        // [3] See for example LayoutBoxModelObject::ComputedCSSPadding where it
+        //     uses |MinimumValueForLength| but against the "width".
+        MinimumValueForLength(container_style->ScrollPaddingTop(),
+                              container_rect.Height()),
+        MinimumValueForLength(container_style->ScrollPaddingRight(),
+                              container_rect.Width()),
+        MinimumValueForLength(container_style->ScrollPaddingBottom(),
+                              container_rect.Height()),
+        MinimumValueForLength(container_style->ScrollPaddingLeft(),
+                              container_rect.Width()));
+    container_rect.Contract(container_padding);
+    snap_container_data.set_rect(FloatRect(container_rect));
+
+    if (snap_container_data.scroll_snap_type().strictness ==
+        cc::SnapStrictness::kProximity) {
+      PhysicalSize size = container_rect.size;
+      size.Scale(kProximityRatio);
+      gfx::ScrollOffset range(size.width.ToFloat(), size.height.ToFloat());
+      snap_container_data.set_proximity_range(range);
+    }
+
+    cc::TargetSnapAreaElementIds new_target_ids;
+    const cc::TargetSnapAreaElementIds old_target_ids =
+        old_snap_container_data
+            ? old_snap_container_data->GetTargetSnapAreaElementIds()
+            : cc::TargetSnapAreaElementIds();
+
+    if (SnapAreaSet* snap_areas = snap_container.SnapAreas()) {
+      for (const LayoutBox* snap_area : *snap_areas) {
+        cc::SnapAreaData snap_area_data =
+            CalculateSnapAreaData(*snap_area, snap_container);
+        // The target snap elements should be preserved in the new container
+        // only if the respective snap areas are still present.
+        if (old_target_ids.x == snap_area_data.element_id)
+          new_target_ids.x = old_target_ids.x;
+        if (old_target_ids.y == snap_area_data.element_id)
+          new_target_ids.y = old_target_ids.y;
+
+        snap_container_data.AddSnapAreaData(snap_area_data);
+      }
+    }
+    snap_container_data.SetTargetSnapAreaElementIds(new_target_ids);
+  }
+
+  if (!old_snap_container_data ||
+      *old_snap_container_data != snap_container_data) {
+    snap_container.SetNeedsPaintPropertyUpdate();
+    scrollable_area->SetSnapContainerData(snap_container_data);
+  }
+}
+
+static cc::ScrollSnapAlign GetPhysicalAlignment(
+    const ComputedStyle& area_style,
+    const ComputedStyle& container_style) {
+  cc::ScrollSnapAlign align = area_style.GetScrollSnapAlign();
+  if (container_style.IsHorizontalWritingMode())
+    return align;
+
+  cc::SnapAlignment tmp = align.alignment_inline;
+  align.alignment_inline = align.alignment_block;
+  align.alignment_block = tmp;
+
+  if (container_style.IsFlippedBlocksWritingMode()) {
+    if (align.alignment_inline == cc::SnapAlignment::kStart) {
+      align.alignment_inline = cc::SnapAlignment::kEnd;
+    } else if (align.alignment_inline == cc::SnapAlignment::kEnd) {
+      align.alignment_inline = cc::SnapAlignment::kStart;
+    }
+  }
+  return align;
+}
+
+cc::SnapAreaData SnapCoordinator::CalculateSnapAreaData(
+    const LayoutBox& snap_area,
+    const LayoutBox& snap_container) {
+  const ComputedStyle* container_style = snap_container.Style();
+  const ComputedStyle* area_style = snap_area.Style();
+  cc::SnapAreaData snap_area_data;
+
+  // We assume that the snap_container is the snap_area's ancestor in layout
+  // tree, as the snap_container is found by walking up the layout tree in
+  // FindSnapContainer(). Under this assumption,
+  // snap_area.LocalToAncestorRect() returns the snap_area's position relative
+  // to the snap container's border box, while ignoring scroll offset.
+  PhysicalRect area_rect = snap_area.PhysicalBorderBoxRect();
+  area_rect = snap_area.LocalToAncestorRect(
+      area_rect, &snap_container,
+      kTraverseDocumentBoundaries | kIgnoreScrollOffset);
+
+  LayoutRectOutsets area_margin(
+      area_style->ScrollMarginTop(), area_style->ScrollMarginRight(),
+      area_style->ScrollMarginBottom(), area_style->ScrollMarginLeft());
+  area_rect.Expand(area_margin);
+  snap_area_data.rect = FloatRect(area_rect);
+
+  cc::ScrollSnapAlign align =
+      GetPhysicalAlignment(*area_style, *container_style);
+  snap_area_data.scroll_snap_align = align;
+
+  snap_area_data.must_snap =
+      (area_style->ScrollSnapStop() == EScrollSnapStop::kAlways);
+
+  snap_area_data.element_id = CompositorElementIdFromDOMNodeId(
+      DOMNodeIds::IdForNode(snap_area.GetNode()));
+
+  return snap_area_data;
+}
+
+#ifndef NDEBUG
+
+void SnapCoordinator::ShowSnapAreaMap() {
+  for (auto* const container : snap_containers_)
+    ShowSnapAreasFor(container);
+}
+
+void SnapCoordinator::ShowSnapAreasFor(const LayoutBox* container) {
+  LOG(INFO) << *container->GetNode();
+  if (SnapAreaSet* snap_areas = container->SnapAreas()) {
+    for (auto* const snap_area : *snap_areas) {
+      LOG(INFO) << "    " << *snap_area->GetNode();
+    }
+  }
+}
+
+void SnapCoordinator::ShowSnapDataFor(const LayoutBox* snap_container) {
+  if (!snap_container)
+    return;
+  ScrollableArea* scrollable_area =
+      ScrollableArea::GetForScrolling(snap_container);
+  const auto* optional_data =
+      scrollable_area ? scrollable_area->GetSnapContainerData() : nullptr;
+  if (optional_data)
+    LOG(INFO) << *optional_data;
+}
+
+#endif
+
+}  // namespace blink

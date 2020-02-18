@@ -1,0 +1,5 @@
+file://chrome/browser/permissions/PERMISSIONS_OWNERS
+felt@chromium.org
+
+# COMPONENT: UI>Browser>Permissions>Prompts
+# TEAM: permissions-dev@chromium.org

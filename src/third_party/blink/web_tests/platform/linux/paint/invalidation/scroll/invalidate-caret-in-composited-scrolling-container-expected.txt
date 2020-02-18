@@ -1,0 +1,46 @@
+{
+  "layers": [
+    {
+      "name": "Scrolling Contents Layer",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutTextControl INPUT id='root'",
+      "position": [-1, -1],
+      "bounds": [63, 24],
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 63, 24],
+          "reason": "full layer"
+        },
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 61, 22],
+          "reason": "full layer"
+        },
+        {
+          "object": "Caret",
+          "rect": [58, 4, 1, 16],
+          "reason": "caret"
+        }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [8, 8, 0, 1]
+      ]
+    }
+  ]
+}
+

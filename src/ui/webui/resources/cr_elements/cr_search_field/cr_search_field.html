@@ -1,0 +1,74 @@
+<link rel="import" href="../../html/polymer.html">
+
+<link rel="import" href="../cr_icon_button/cr_icon_button.html">
+<link rel="import" href="../cr_input/cr_input.html">
+<link rel="import" href="../icons.html">
+<link rel="import" href="../shared_style_css.html">
+<link rel="import" href="../shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="cr_search_field_behavior.html">
+
+<dom-module id="cr-search-field">
+  <template>
+    <style include="cr-shared-style">
+      :host {
+        display: flex;
+        user-select: none;
+      }
+
+      #searchIcon {
+        align-self: center;
+        height: 16px;
+        padding: 4px;
+        vertical-align: middle;
+        width: 16px;
+      }
+
+      #searchInput {
+        --cr-input-background-color: transparent;
+        --cr-input-border-bottom: 1px solid var(--cr-secondary-text-color);
+        --cr-input-border-radius: 0;
+        --cr-input-error-display: none;
+        --cr-input-min-height: 24px;
+        --cr-input-padding-end: 0;
+        --cr-input-padding-start: 0;
+        --cr-input-padding-bottom: 2px;
+        --cr-input-padding-top: 2px;
+        align-self: stretch;
+        color: var(--cr-primary-text-color);
+        display: block;
+        font-size: 92.3076923%;  /* To 12px from 13px. */
+        width: 160px;  /* Special width for search input. */
+      }
+
+      :host([has-search-text]) #searchInput {
+        --cr-input-padding-end: 20px;
+      }
+
+      #clearSearch {
+        /* A 16px icon that fits on the input line. */
+        --cr-icon-button-icon-size: 16px;
+        --cr-icon-button-size: 24px;
+        margin-inline-end: -4px;
+        margin-inline-start: 4px;
+        position: absolute;
+        right: 0;
+      }
+
+      :host-context([dir='rtl']) #clearSearch {
+        left: 0;
+        right: auto;
+      }
+    </style>
+    <iron-icon id="searchIcon" icon="cr:search"></iron-icon>
+    <cr-input id="searchInput" on-search="onSearchTermSearch"
+        on-input="onSearchTermInput" aria-label$="[[label]]" type="search"
+        autofocus="[[autofocus]]" placeholder="[[label]]" spellcheck="false">
+      <cr-icon-button id="clearSearch" class="icon-cancel"
+          hidden$="[[!hasSearchText]]" slot="suffix" on-click="onTapClear_"
+          title="[[clearLabel]]">
+      </cr-icon-button>
+    </cr-input>
+  </template>
+  <script src="cr_search_field.js"></script>
+</dom-module>

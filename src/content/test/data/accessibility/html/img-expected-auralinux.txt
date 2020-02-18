@@ -1,0 +1,6 @@
+[document web]
+++[section]
+++++[image] name='pipe' xml-roles:img
+++++[static] name=' '
+++++[static] name=' '
+++++[image] name='  ' xml-roles:img

@@ -1,0 +1,51 @@
+<link rel="import" href="../../html/polymer.html">
+
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="../../cr_elements/icons.html">
+<link rel="import" href="../../cr_elements/shared_vars_css.html">
+<link rel="import" href="../../html/i18n_behavior.html">
+<link rel="import" href="../../html/load_time_data.html">
+<link rel="import" href="../../html/web_ui_listener_behavior.html">
+
+<dom-module id="managed-footnote">
+  <template>
+    <style>
+      :host {
+        align-items: center;
+        border-top: 1px solid var(--cr-separator-color);
+        color: var(--cr-secondary-text-color);
+        display: none;
+        /* Should be 13px when <html> font-size is 16px */
+        font-size: 0.8125rem;
+        justify-content: center;
+        padding: 0 24px;
+      }
+
+      :host([is-managed_]) {
+        display: flex;
+      }
+
+      a[href] {
+        color: var(--cr-link-color);
+        text-decoration: none;
+      }
+
+      iron-icon {
+        align-self: flex-start;
+        flex-shrink: 0;
+        height: 20px;
+        padding-inline-end: var(--managed-footnote-icon-padding, 8px);
+        width: 20px;
+      }
+    </style>
+
+    <template is="dom-if" if="[[isManaged_]]">
+      <iron-icon icon="cr:domain"></iron-icon>
+      <div id="content"
+          inner-h-t-m-l="[[getManagementString_(showDeviceInfo)]]">
+      </div>
+    </template>
+  </template>
+  <script src="managed_footnote.js"></script>
+</dom-module>

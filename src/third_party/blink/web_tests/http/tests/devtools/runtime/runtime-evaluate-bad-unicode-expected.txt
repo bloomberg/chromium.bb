@@ -1,0 +1,9 @@
+Tests TestRunner.RuntimeAgent.evaluate can handle invalid Unicode characters.
+
+"'ô¿¿'==='\u{10FFFF}'" -> true
+"'ï¿¾' === '\uFFFE'" -> true
+"'í €' === '\uD800'" -> true
+"'ô¿¿'.codePointAt(0).toString(16)" -> 10ffff
+"'í €'.codePointAt(0).toString(16)" -> d800
+"String.fromCodePoint(0x10ffff)" -> ô¿¿
+

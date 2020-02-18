@@ -1,0 +1,14 @@
+rootWebArea
+++genericContainer
+++++dateTime inputType='month'
+++++++genericContainer
+++++++++genericContainer
+++++++++++spinButton name='Month' valueForRange=0.00 minValueForRange=1.00 maxValueForRange=12.00
+++++++++++++staticText name='---------'
+++++++++++++++inlineTextBox name='---------'
+++++++++++staticText name=' '
+++++++++++++inlineTextBox name=' '
+++++++++++spinButton name='Year' valueForRange=0.00 minValueForRange=1.00 maxValueForRange=275760.00
+++++++++++++staticText name='----'
+++++++++++++++inlineTextBox name='----'
+++++++popUpButton name='Show date picker' haspopup=menu

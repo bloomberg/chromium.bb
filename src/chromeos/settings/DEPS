@@ -1,0 +1,14 @@
+noparent = True
+
+include_rules = [
+  "+base",
+  "+chromeos/constants",
+  "+chromeos/login/login_state",
+  "+third_party/icu",
+]
+
+specific_include_rules = {
+  ".*test\.cc|mock.*\.*": [
+    "+testing",
+  ],
+}

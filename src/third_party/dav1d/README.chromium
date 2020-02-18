@@ -1,0 +1,34 @@
+Name: dav1d is an AV1 decoder :)
+Short Name: dav1d
+URL: https://code.videolan.org/videolan/dav1d
+Version: master
+License: 2-Clause BSD
+License File: LICENSE
+Security Critical: yes
+Source: https://code.videolan.org/videolan/dav1d
+
+--[ DESCRIPTION ] ------------------
+This contains the source to the dav1d video decoder; used for AV1 decoding in
+Chromium. The LICENSE file is copied from libdav1d/COPYING.
+
+
+--[ UPDATING ] ------------------
+To update run "git pull" within the libdav1d directory to sync your local copy
+of the checkout to upstream. Then you need to update the configuration files
+and source listing.
+
+First have clang (//third_party/llvm-build/Release+Asserts/bin), clang-cl
+(https://chromium.googlesource.com/chromium/src/+/lkgr/docs/win_cross.md),
+and meson (https://github.com/mesonbuild/meson/releases) in your path. Then you
+can run ./generate_configs.py
+
+Next you should update the dav1d_generated.gni file, to that run the
+./generate_sources.py command.
+
+Hopefully all that works and then you can roll DEPS to the new revision with
+all the updated configuration files. If not, you'll need to debug the bots :(
+
+
+-- [ OPEN ISSUES ] ------------------
+meson v0.51.1 (and possibly some earlier versions), have a bug with clang-cl on
+linux. See https://github.com/mesonbuild/meson/issues/5639 for issue and fix.
